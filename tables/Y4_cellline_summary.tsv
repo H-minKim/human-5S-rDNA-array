@@ -1,0 +1,7 @@
+assembly	n_units	terminal_depths	gaps	jac_lag1	jac_lag2	jac_lag3	n_groups	n_uncalled
+GM12878_hap1	20	2,5,7	3,2	0.8049	0.8412	0.8365	2	0
+GM12878_hap2	20	none	—	0.9713	0.9762	0.9788	1	0
+HepG2_piece4	20	2,4	2	0.8552	0.8829	0.8496	2	0
+HepG2_piece5	15	none	—	0.9109	0.9143	0.9184	2	0
+K562_hapA	20	none	—	0.9321	0.9109	0.9026	1	0
+K562_hapB	20	4,7,11,13,15,18,20	3,4,2,2,3,2	0.6867	0.7926	0.7789	3	0

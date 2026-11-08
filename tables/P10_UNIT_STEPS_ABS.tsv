@@ -1,0 +1,4 @@
+family	n_rising_reads	med_total_rise	med_max_step	frac_rise_lt0.1	frac_rise_0.1_0.3	frac_rise_ge0.3	med_n_up_steps_ge0.1
+5S	189	0.735	0.661	0.067	0.024	0.910	2
+D4Z4_4q	111	0.323	0.193	0.184	0.664	0.152	2
+D4Z4_10q	88	0.278	0.161	0.314	0.628	0.058	1

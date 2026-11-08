@@ -1,0 +1,5 @@
+pair_kind	n_pairs	median_pct	mean_pct	q25	q75	p90	frac_over_1pct	frac_over_0.5pct
+terminal-ordinary (neighbor)	1179	2.0536	2.0644	2.0089	2.0982	2.1429	0.9992	1.0000
+ordinary-ordinary (distal neighbor)	6392	0.2679	0.3792	0.0893	0.5357	0.9375	0.0854	0.2552
+central neighbor	6143	0.3571	0.5021	0.1339	0.7143	1.1161	0.1193	0.3860
+proximal neighbor	7574	0.5357	0.6106	0.2232	0.7589	1.2946	0.1522	0.5098

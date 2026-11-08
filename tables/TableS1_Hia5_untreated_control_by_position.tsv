@@ -1,0 +1,17 @@
+# Table S1 - false positive m6A per position in the Hia5 untreated control
+# Sample - HG002 ONT chrom_acc flowcell PBA15131 (@RG SM:_Minus_CS_E, the side with no Hia5)
+# reads 4,000 - anchored 3,430 - global m6A/A = 0.00970 - ML threshold 128
+# Produced by analysis/tf_untreated.py from the flowcell PBA15131 read set named above.
+#
+# This control is ONT. Our main result is PacBio.
+# A different platform carries a different bias, so this number cannot be used to correct
+# a PacBio occupancy. Its use stops at the direction, that is, whether the caller calls m6A
+# more or less readily at that position.
+window	interval	n_A_positions	n_m6A	m6A_per_A	fold_over_global
+TFIIIB	-28..-10	7120	135	0.01896	1.954
+ICR	+57..+68	5106	38	0.00744	0.767
+A-box	+50..+64	8602	87	0.01011	1.042
+C-box	+80..+97	9126	91	0.00997	1.027
+gene 5'	0..+44	30714	313	0.01019	1.050
+upstream	-200..-100	39836	691	0.01735	1.787
+gene 3'	+120..+200	61768	313	0.00507	0.522

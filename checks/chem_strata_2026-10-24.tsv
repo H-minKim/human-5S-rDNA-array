@@ -1,0 +1,26 @@
+# WHAT THIS TABLE IS
+# The two-state structure and the valley position of Fig. 4 a-b and of Supplementary
+# Figure S4 A, measured again within each sequencing chemistry stratum (R9, R10 and
+# unknown) so that the chemistry mix cannot be what produces either shape. Each panel
+# keeps its own ruler and only the stratum column was added.
+# RESULT, Fig. 4 a-b: the two-state structure is identical in every stratum (low peak 0.029,
+# high peak ~0.85). The valley is 0.4950 overall, 0.4950 in R9 (143 individuals) and 0.4950
+# in the 96 not in the Release 2 index; R10 (41 individuals) sits at 0.4470.
+# RESULT, S4 A: HPRC is stable across strata (valley 0.5068 / 0.5084 / 0.5062 / 0.5078).
+# The 1kGP row is not: pooled it shows 16 peaks and a valley at 0.186, which matches neither
+# R10 (6 peaks, 0.5192) nor R9 (23 peaks, 0.3924). The GIAB row's 465 units are 51% HG008-T.
+block	stratum	haplotypes	individuals	units_or_readunits	mean_or_valley	n_peaks	peak_low	peak_high	valley	ratio
+1kGP	all	18	10	1265	0.717	16	0.039	0.883	0.186	0.0153
+1kGP	R10	6	3	546	0.7311	6	0.036	0.883	0.5192	0.001
+1kGP	R9	12	7	719	0.7062	23	0.045	0.916	0.3924	0.0202
+GIAB	all	6	4	465	0.7231	7	0.043	0.847	0.581	0.0026
+GIAB	normal(hg002-4)	4	3	228	0.7149	10	0.01	0.906	0.4366	0.0037
+GIAB	tumour(HG008-T)	2	1	237	0.7311	4	0.041	0.844	0.5464	0.0
+HPRC	all	510	280	47483	0.6635	3	0.038	0.838	0.5068	0.027
+HPRC	R1041	73	41	7097	0.6698	2	0.039	0.828	0.5084	0.0198
+HPRC	R941	271	143	24402	0.6581	3	0.036	0.843	0.5062	0.0283
+HPRC	unknown (outside the index)	166	96	15984	0.669	4	0.041	0.837	0.5078	0.0264
+H2-trough	all		280	778798	0.495		0.029	0.853		0.0396
+H2-trough	R1041		41	112310	0.447		0.029	0.851		0.0364
+H2-trough	R941		143	405338	0.495		0.029	0.855		0.0401
+H2-trough	unknown (outside the index)		96	261150	0.495		0.029	0.851		0.0384

@@ -1,0 +1,19 @@
+folder	file	md5	role	what	produces	read_by
+fig05	fig05/fig5_main_v2.py	88582cdbecc9	draw	Fig 5 A-H
+fig05	fig05/fig5_main.py	bc9bac669da6	draw	Fig 5 A(1)(2) schematic, lifted by fig05/fig5_main_v2.py
+fig05	fig05/spec423_fig5.py	fa23c7888cd5	draw	423.5 pt layout post-pass
+common/fig05_figS7	common/fig05_figS7/panelborrow.py	3357f6fc6f27	draw	panel borrowing
+common/fig05_figS7	common/fig05_figS7/f2_theme2_actuation.py	cbf92b23e130	draw	source that Fig S7 C borrows a panel from (read as text by panelborrow)
+analysis	analysis/a01_unit_tracks.py	f324034eb926	compute	per-read unit tracks from ft add-nucleosomes calls	a01_tracks/<sample>.<src>.tsv.gz	fig05/fig5_main_v2.py
+analysis	analysis/a13_beta_mixture.py	cb0c0a500f78	compute	two-component beta-binomial fit; source of the per-unit beta	a13_unit_state_gmm.tsv.gz;a13_mixture_params.tsv	(upstream of zg1, zk1b, zt2, zy7, r20)
+analysis	analysis/s01_subunit_profile.py	23db861e825a	compute	5S element bounds for the band under Fig 5 D-E	s01_element_bounds.tsv;s01_subunit_profile.tsv	fig05/fig5_main_v2.py
+analysis	analysis/zg2_m6a_frac_profile.py	eb60450c3653	compute	m6A molecules over coverage, per position	REF2_20261010d_m6a_depth_denominator_by_position.tsv;REF2_20261010e_m6a_depth_denominator_within_unit.tsv	fig05/fig5_main_v2.py
+analysis	analysis/zk1b_m6a_by_state_cut508.py	c977e4a4d3e2	compute	m6A per position split by unit state at beta <= 0.508	REF2_20261011_m6a_within_unit_by_state_cut508.tsv	fig05/fig5_main_v2.py
+analysis	analysis/zy7_make_hmm_tables.py	c4e418e7fe8b	compute	FiberHMM occupancy and large-MSP tables, paired within read	HMM_20261014_pooled_profile.tsv;HMM_20261014_largeMSP_paired_comparison.tsv;HMM_20261014_occupancy_paired_points.tsv;HMM_20261014_unpaired_vs_paired.tsv;HMM_20261014_by_region.tsv	fig05/fig5_main_v2.py;figS7/fig5_supp_v3.py
+analysis	analysis/zq2_make_tables_2026-10-29.py	f1276fb2b991	compute	the AluY window added to the element table, and the two legend values taken from tables instead of being written into the figure	HMM_20261029_alu_by_region.tsv;HMM_20261029_paired_molecule_fraction.tsv;HMM_20261029_labelling_rate_ratio.tsv	fig05/fig5_main_v2.py;figS7/fig5_supp_v3.py
+analysis	analysis/a_lib.py	0380f6abd34c	lib	unit table and sequence loader shared by the producers		(imported by the compute scripts)
+analysis	analysis/bamlite.py	2682f47ac735	lib	minimal BAM reader (this is why no pysam is used)		(imported by the compute scripts)
+analysis	analysis/p02_lib.py	312f30ef376b	lib	SEQ -> reference coordinate transfer via CIGAR		(imported by the compute scripts)
+analysis	analysis/zg1_pooled_profile.py	6851c3f1716a	compute	pooled per-position profile on the unit axis	REF2_20261010c_pooled_profile.tsv	figS7/fig5_supp_v3.py
+analysis	analysis/zt2_cell_positions.py	2896a519b79a	compute	per-cell position count and depth for the Fig S7 A panel	REF2_20261012_positions_and_depth_by_bin.tsv	figS7/fig5_supp_v3.py
+analysis	analysis/r20_actuation_perunit.py	59f11d06c653	compute	per-unit actuation profile; also the source of the cohort counts	r20_actuation_profile_REF.tsv;r20_actuation_unified.tsv	fig05/fig5_main_v2.py;figS7/fig5_supp_v3.py

@@ -1,0 +1,23 @@
+# URL ledger of the 17 cancer samples. COLO829 = downloads.pacbcloud.com/public/revio/2023Q2 (the PacBio Revio public release), HG008 = ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab, and the rest = ftp.sra.ebi.ac.uk (ENA)
+# Step: read extraction.
+HG008-T	https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/BCM_Revio_20240313/HG008-T_PacBio-HiFi-Revio_20240313_106x_CHM13v2.0.bam
+HG008-N-D	https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/BCM_Revio_20240313/HG008-N-D_PacBio-HiFi-Revio_20240313_68x_CHM13v2.0.bam
+HG008-N-P	https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/PacBio_Revio_20240125/HG008-N-P_PacBio-HiFi-Revio_20240125_35x_CHM13v2.0.bam
+COLO829-T	https://downloads.pacbcloud.com/public/revio/2023Q2/COLO829/COLO829/m84039_230312_025934_s1.hifi_reads.bc2026.bam
+COLO829-T	https://downloads.pacbcloud.com/public/revio/2023Q2/COLO829/COLO829/m84039_230328_000836_s3.hifi_reads.bc2025.bam
+COLO829-BL	https://downloads.pacbcloud.com/public/revio/2023Q2/COLO829/COLO829-BL/m84039_230327_230708_s1.hifi_reads.bc2007.bam
+COLO829-BL	https://downloads.pacbcloud.com/public/revio/2023Q2/COLO829/COLO829-BL/m84039_230327_233730_s2.hifi_reads.bc2007.bam
+HCC1395-T	https://downloads.pacbcloud.com/public/revio/2023Q2/HCC1395/HCC1395/m84039_230414_235240_s2.hifi_reads.default.bam
+HCC1395-T	https://downloads.pacbcloud.com/public/revio/2023Q2/HCC1395/HCC1395/m84039_230415_002321_s3.hifi_reads.default.bam
+HCC1395-BL	https://downloads.pacbcloud.com/public/revio/2023Q2/HCC1395/HCC1395-BL/m84039_230412_183900_s2.hifi_reads.bc2002.bam
+HCC1395-BL	https://downloads.pacbcloud.com/public/revio/2023Q2/HCC1395/HCC1395-BL/m84039_230415_005427_s4.hifi_reads.bc2002.bam
+H1437-T	https://ftp.sra.ebi.ac.uk/vol1/fastq/SRR283/079/SRR28305179/SRR28305179_subreads.fastq.gz
+H1437-N	https://ftp.sra.ebi.ac.uk/vol1/fastq/SRR283/075/SRR28305175/SRR28305175_subreads.fastq.gz
+H2009-T	https://ftp.sra.ebi.ac.uk/vol1/fastq/SRR283/072/SRR28305172/SRR28305172_subreads.fastq.gz
+H2009-N	https://ftp.sra.ebi.ac.uk/vol1/fastq/SRR283/069/SRR28305169/SRR28305169_subreads.fastq.gz
+HCC1937-T	https://ftp.sra.ebi.ac.uk/vol1/fastq/SRR283/085/SRR28305185/SRR28305185_subreads.fastq.gz
+HCC1937-N	https://ftp.sra.ebi.ac.uk/vol1/fastq/SRR283/082/SRR28305182/SRR28305182_subreads.fastq.gz
+HCC1954-T	https://ftp.sra.ebi.ac.uk/vol1/fastq/SRR283/063/SRR28305163/SRR28305163_subreads.fastq.gz
+HCC1954-N	https://ftp.sra.ebi.ac.uk/vol1/fastq/SRR283/060/SRR28305160/SRR28305160_subreads.fastq.gz
+Hs578T-T	https://ftp.sra.ebi.ac.uk/vol1/fastq/SRR315/082/SRR31537482/SRR31537482_subreads.fastq.gz
+Hs578T-N	https://ftp.sra.ebi.ac.uk/vol1/fastq/SRR315/079/SRR31537479/SRR31537479_subreads.fastq.gz

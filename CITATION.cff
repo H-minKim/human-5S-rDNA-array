@@ -1,0 +1,39 @@
+cff-version: 1.2.0
+message: >-
+  If you use this code or the deposited tables, please cite the manuscript in
+  preferred-citation. The archived release of this repository has its own DOI,
+  which is given in the Data Availability statement of that manuscript.
+title: "human-5S-rDNA-array: analysis code for the human 5S rDNA array manuscript"
+abstract: >-
+  Code that builds a flank-to-flank 5S rDNA array reference for each haplotype,
+  places long reads on it, and measures sequence variation, CpG methylation and
+  chromatin accessibility one repeat unit at a time. The repository also holds
+  the result tables the figure code reads.
+type: software
+authors:
+  - family-names: "Kim"
+    given-names: "Hyungmin"
+license: MIT
+repository-code: "https://github.com/H-minKim/human-5S-rDNA-array"
+url: "https://github.com/H-minKim/human-5S-rDNA-array"
+version: 1.0.0
+date-released: 2026-11-09
+keywords:
+  - 5S rDNA
+  - tandem array
+  - long-read sequencing
+  - DNA methylation
+  - Fiber-seq
+  - chromatin accessibility
+  - RNA polymerase III
+preferred-citation:
+  type: article
+  title: >-
+    Long-read analysis of complete human 5S rDNA arrays reveals a zoned
+    organization with two-state unit methylation linked to chromatin
+    architecture
+  authors:
+    - family-names: "Kim"
+      given-names: "Hyungmin"
+  year: 2026
+  notes: "Manuscript; journal and DOI to be added on publication."

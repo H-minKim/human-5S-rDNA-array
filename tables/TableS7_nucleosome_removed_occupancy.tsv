@@ -1,0 +1,13 @@
+# Table S7 - occupancy with nucleosome occlusion removed - methylation split in two at beta 0.508
+# Site definition - the centre of the TF call is inside the window and its size is in the range
+# TFIIIB centre -28..-10, size 30-59 / ICR centre +57..+68, size 20-49
+# Nucleosome free - molecules with no nucleosome interval overlapping that window
+site	stratum	n_molecules	n_tf_calls	occupancy	n_nucleosome_free	n_tf_calls_nucleosome_free	occupancy_nucleosome_free
+TFIIIB	low	7451	444	0.05959	2679	444	0.16573
+TFIIIB	high	22879	43	0.00188	3191	43	0.01348
+ICR	low	7451	226	0.03033	2312	226	0.09775
+ICR	high	22879	301	0.01316	3218	301	0.09354
+#
+site	raw_low_over_high	nucleosome_free_low_over_high	open_fraction_difference
+TFIIIB	31.7057	12.2990	2.5779
+ICR	2.3055	1.0451	2.2061

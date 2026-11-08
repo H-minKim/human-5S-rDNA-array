@@ -1,0 +1,12 @@
+Figure	Panels	Role	Script	Script md5	Input tables (measured: every file the script actually opened)	Upstream script that made them (in this deposit)
+Figure 6	A-F	draw	fig06/fig06_A-F_grid_scan_and_strata.py	dd41fdd1f05e	fhmm_peaks_5bp_bin.npz (770e363293f6); fhmm_peaks_v2.npz (0408bc5a43a5); occlusion_bin.npz (631b18a6aaf6); peaks_both_v2.tsv (61dac6219562); scan_maps_v2.npz (d8f6ffe89e40); assets/Fig5C_type1_promoter_schematic.svg (308a7a2d213b)	analysis/zzz_binary_split.py (seed 20261012); analysis/zzs_peaks_meth_10bp_fix.py (seed 20261011); analysis/zzt_gridwide_rank.py (seed 20261011)
+Figure 6	G-J	draw	fig06/fig06_G-J_cell_lines.py	cb4dcd6e726f	cells\nucfree_GM12878all.json (5e342d4eb87d); cells\nucfree_K562all.json (f3466e657600); cells\sig_GM12878all.json (785e81f3cc2c); cells\sig_GM12878all.npz (91dd00c0a7ba); cells\sig_HepG2.json (e2b80f6900e5); cells\sig_HepG2.npz (110f3f9a710c); cells\sig_K562all.json (44e1a70e4c02); cells\sig_K562all.npz (e0b42e9b4d59); cells\strata_GM12878all_gene.json (8cd1c97e007f); cells\strata_GM12878all_gene.npz (bf448a695782); cells\strata_K562all_gene.json (cbf3567bf030); cells\strata_K562all_gene.npz (66fe0dfedad6)	analysis/cell_fhmm_units.py -> analysis/cell_units2.py -> analysis/cell_strata_all.py (seed 20261013), analysis/cell_sig_run_all.py with analysis/cell_sig_lib.py (seed 20261012), analysis/cell_nucfree.py (seed 20261014); *these start from the FiberHMM calls.bam of the cell-line Fiber-seq, which was produced by another run
+Figure 6	A-F	compute	analysis/zzz_binary_split.py	ce6e6cd29420
+Figure 6	A-F	compute	analysis/zzs_peaks_meth_10bp_fix.py	00e73704f77d
+Figure 6	A-F	compute	analysis/zzt_gridwide_rank.py	5b2a45ca3b25
+Figure 6	G-J	compute	analysis/cell_fhmm_units.py	a4a39b57f855
+Figure 6	G-J	compute	analysis/cell_units2.py	9640d38f5ce9
+Figure 6	G-J	compute	analysis/cell_strata_all.py	a2c47e221441
+Figure 6	G-J	compute	analysis/cell_sig_run_all.py	697eab12b953
+Figure 6	G-J	compute	analysis/cell_sig_lib.py	dd77c1383206
+Figure 6	G-J	compute	analysis/cell_nucfree.py	36a6a8251398

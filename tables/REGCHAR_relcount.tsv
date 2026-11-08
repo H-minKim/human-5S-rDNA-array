@@ -1,0 +1,41 @@
+item	N_bin	N_mean	N_relative	count_mean	count_relative	n_haplotypes
+proximal-character region (within depth 10)	1	58.71	0.6201	1.4660	0.9169	103
+proximal-character region (within depth 10)	2	74.85	0.7906	1.4952	0.9352	105
+proximal-character region (within depth 10)	3	88.97	0.9398	1.4609	0.9137	115
+proximal-character region (within depth 10)	4	106.03	1.1199	1.6204	1.0134	108
+proximal-character region (within depth 10)	5	142.09	1.5008	1.9455	1.2168	110
+distal-character region (within depth 10)	1	58.71	0.6201	1.8641	1.0025	103
+distal-character region (within depth 10)	2	74.85	0.7906	1.4762	0.7939	105
+distal-character region (within depth 10)	3	88.97	0.9398	1.7913	0.9633	115
+distal-character region (within depth 10)	4	106.03	1.1199	2.2500	1.2100	108
+distal-character region (within depth 10)	5	142.09	1.5008	1.9091	1.0267	110
+central units (both depths >30)	1	58.71	0.6201	2.0971	0.0594	103
+central units (both depths >30)	2	74.85	0.7906	14.8476	0.4204	105
+central units (both depths >30)	3	88.97	0.9398	28.9739	0.8203	115
+central units (both depths >30)	4	106.03	1.1199	46.0278	1.3032	108
+central units (both depths >30)	5	142.09	1.5008	82.0909	2.3242	110
+central units (both depths >10)	1	58.71	0.6201	38.7087	0.5184	103
+central units (both depths >10)	2	74.85	0.7906	54.8476	0.7345	105
+central units (both depths >10)	3	88.97	0.9398	68.9739	0.9237	115
+central units (both depths >10)	4	106.03	1.1199	86.0278	1.1520	108
+central units (both depths >10)	5	142.09	1.5008	122.0909	1.6350	110
+central units (both depths >5)	1	58.71	0.6201	48.7087	0.5752	103
+central units (both depths >5)	2	74.85	0.7906	64.8476	0.7658	105
+central units (both depths >5)	3	88.97	0.9398	78.9739	0.9327	115
+central units (both depths >5)	4	106.03	1.1199	96.0278	1.1341	108
+central units (both depths >5)	5	142.09	1.5008	132.0909	1.5600	110
+proportional single variant 2205TC (U84C)	1	58.71	0.6201	1.7476	0.6871	103
+proportional single variant 2205TC (U84C)	2	74.85	0.7906	1.8476	0.7264	105
+proportional single variant 2205TC (U84C)	3	88.97	0.9398	2.2261	0.8752	115
+proportional single variant 2205TC (U84C)	4	106.03	1.1199	2.6574	1.0448	108
+proportional single variant 2205TC (U84C)	5	142.09	1.5008	4.1727	1.6406	110
+fixed single variant 2235TG	1	58.71	0.6201	1.0000	0.9169	103
+fixed single variant 2235TG	2	74.85	0.7906	1.0095	0.9257	105
+fixed single variant 2235TG	3	88.97	0.9398	1.3826	1.2678	115
+fixed single variant 2235TG	4	106.03	1.1199	0.8889	0.8151	108
+fixed single variant 2235TG	5	142.09	1.5008	1.1455	1.0503	110
+fixed single variant D1096:1 (terminal-type diagnostic)	1	58.71	0.6201	1.6505	1.0240	103
+fixed single variant D1096:1 (terminal-type diagnostic)	2	74.85	0.7906	1.6381	1.0163	105
+fixed single variant D1096:1 (terminal-type diagnostic)	3	88.97	0.9398	1.9565	1.2139	115
+fixed single variant D1096:1 (terminal-type diagnostic)	4	106.03	1.1199	1.5278	0.9479	108
+fixed single variant D1096:1 (terminal-type diagnostic)	5	142.09	1.5008	1.2727	0.7896	110

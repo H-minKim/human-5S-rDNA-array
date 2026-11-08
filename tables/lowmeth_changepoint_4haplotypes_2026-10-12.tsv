@@ -1,0 +1,9 @@
+haplotype	end	k_hat_in_frame	k_ci_lo	k_ci_hi	p_low	p_high	φ	total_calls	units_with_values	k_hat_110_frame	k_ci_110_frame
+K562 hapA	proximal	13	13	13	0.029	0.558	8.28	2285	39
+K562 hapA	distal	11	11	39	0.114	0.500	7.07	729	14
+K562 hapB (98-unit frame)	proximal	18	16	20	0.154	0.588	9.36	1046	39	19	17–21
+K562 hapB (98-unit frame)	distal	14	12	15	0.043	0.560	3.92	348	23	14	12–15
+GM12878 hap1	proximal	1	1	1	0.353	0.721	6.95	6843	40
+GM12878 hap1	distal	8	8	8	0.236	0.683	3.07	3245	38
+GM12878 hap2	proximal	13	13	13	0.337	0.734	4.68	8362	40
+GM12878 hap2	distal	10	8	21	0.228	0.701	9.63	3711	30

@@ -1,0 +1,11 @@
+# Command lines recorded in the @PG header of each calls.bam (read with pysam on the compute node, 2026-10-22).
+# BAMs used by the K562/GM12878 panels (Fig. 6 G-J, S9 C-F): K562all and GM12878all (whole pool). K562r and GM12878FS are the placed-read set of an earlier version and are not used by those panels.
+calls_bam	pn	vn	command_line
+K562all	samtools	1.19.2	samtools sort -o all/K562all.bam all/K562all.u.bam
+K562all	fiberhmm-call	2.16.8	$HOME/fhmm/venv/bin/fiberhmm-call -i all/K562all.bam -o out/K562all.calls.bam --enzyme hia5 --seq pacbio -c 8 --primary --no-qc
+GM12878all	samtools	1.19.2	samtools sort -o all/GM12878all.bam all/GM12878all.u.bam
+GM12878all	fiberhmm-call	2.16.8	$HOME/fhmm/venv/bin/fiberhmm-call -i all/GM12878all.bam -o out/GM12878all.calls.bam --enzyme hia5 --seq pacbio -c 8 --primary --no-qc
+K562r	samtools	1.19.2	samtools sort -@2 -o $HOME/p11_v11/AOG8_K562r/bam/K562r.AOJVG.K562_FIBERSEQ_HIFI_EpiCypher.G8v3.bam /tmp/mkbam_ao_K562r.AOJVG.sam
+K562r	fiberhmm-call	2.16.8	$HOME/fhmm/venv/bin/fiberhmm-call -i $HOME/p11_v11/AOG8_K562r/bam/K562r.AOJVG.K562_FIBERSEQ_HIFI_EpiCypher.G8v3.bam -o $HOME/cells/out/K562r.calls.bam --enzyme hia5 --seq pacbio -c 8 --primary --no-qc
+GM12878FS	samtools	1.19.2	samtools sort -@2 -o $HOME/p11_v11/AOG8_GM12878FS/bam/GM12878FS.AOJVG.GM12878_FIBERSEQ_UW.G8v3.bam /tmp/mkbam_ao_GM12878FS.AOJVG.sam
+GM12878FS	fiberhmm-call	2.16.8	$HOME/fhmm/venv/bin/fiberhmm-call -i $HOME/p11_v11/AOG8_GM12878FS/bam/GM12878FS.AOJVG.GM12878_FIBERSEQ_UW.G8v3.bam -o $HOME/cells/out/GM12878FS.calls.bam --enzyme hia5 --seq pacbio -c 8 --primary --no-qc

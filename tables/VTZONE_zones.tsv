@@ -1,0 +1,12 @@
+class	proximal_1-3	proximal_4-17	central	distal_1-10	max_log2_ratio	max_abs_diff	max_null_z	farthest_zone
+1 bp deletion	0.02773	0.00753	0.02242	0.13475	2.5874	+0.11233	+43.40	distal 1-10
+repeat-block deletion	0.62169	0.42408	0.41605	0.71479	0.7807	+0.29873	+29.66	distal 1-10
+oxidation C>A or G>T	0.63463	0.50845	0.42830	0.40388	0.5673	+0.20633	+12.16	proximal 1-3
+deamination non-CpG	0.92914	1.20359	1.18500	1.02754	-0.3509	-0.25586	-13.51	distal 1-10
+deamination CpG	0.58903	0.52680	0.58416	0.61774	-0.1491	-0.05736	-7.02	proximal 4-17
+other transitions T>C or A>G	1.02403	1.08556	1.08033	1.07856	-0.0772	-0.05630	-3.35	proximal 1-3
+other transversions	2.23290	2.17283	2.16408	2.16081	0.0452	+0.06882	+2.53	proximal 1-3
+long deletion	0.02896	0.01201	0.02415	0.00943	-1.3570	-0.01472	+6.85	central
+1 bp insertion	0.24276	0.31648	0.24884	0.22828	0.3469	+0.06764	+21.06	proximal 4-17
+long insertion	0.00555	0.00343	0.00274	0.00185	1.0165	+0.00280	+1.87	proximal 1-3
+repeat-block insertion	0.71041	0.63969	0.61610	0.57930	0.2055	+0.09431	+8.12	proximal 1-3

@@ -1,0 +1,22 @@
+# 코드	budget	목표최대폭	최대높이
+FIG_SUP3.py	52	+0.0%	+2.5%
+explain_circularity.py	46	+0.4%	-0.1%
+FIG_T6.py	52	+0.0%	+1.7%
+FIG_O2b.py	75	-4.2%	-0.2%
+FIG_G6.py	52	-3.6%	+1.2%
+FIG_T3.py	52	+2.1%	+3.0%
+FIG_G1.py	40	-1.6%	-0.2%
+FIG_G4b.py	58	-0.0%	+1.1%
+P_make_paper_figures.py	95	+0.0%	+0.0%
+FIG_G3.py	30	+4.7%	+3.3%
+FIG_T2.py	30	+1.5%	-0.1%
+FIG_T1.py	46	+0.8%	+0.0%
+FIG_X12T.py	34	-	-
+FIG_ZBDIV.py	40	(2026-10-17 세로판)	
+CELL_F2a.py	52	(2026-10-17 본문 칸 a · 2026-10-31 46 → 52 : 범례 'indels outside repeat blocks and all substitutions' 50 자를 한 줄로)	
+CELL_F2e.py	62	(2026-10-17 본문 칸 e)	
+CELL_F2f.py	44	(2026-10-17 본문 칸 f)	
+CELL_F2ijl.py	30	(2026-10-17 본문 칸 i·j·l)	
+CELL_F2qr.py	30	(2026-10-17 본문 칸 q·r)	
+CELL_F2s.py	30	(2026-10-17 본문 칸 s)	
+CELL_F2p.py	26	(2026-10-17 본문 칸 p)	

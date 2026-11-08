@@ -1,0 +1,123 @@
+chain	step	file	file_md5	role
+U1a_5S_read_extraction	2	upstream/fig02_figS2_chain/U1a_5S_read_extraction/local_scripts_v5/campaign_run_ont_v5.sh	d78599ee3651	per sample : s5cmd stream of the submitted BAM -> samtools fastq -T MM,ML -> upstream/fig02_figS2_chain/U1a_5S_read_extraction/local_scripts_v5/campaign_extract_v5.py -> minimap2 map-ont to tandem40.fa -> upstream/fig02_figS2_chain/U1a_5S_read_extraction/local_scripts_v5/summarize4.py
+U1a_5S_read_extraction	3	upstream/fig02_figS2_chain/U1a_5S_read_extraction/local_scripts_v5/campaign_extract_v5.py	79f98ae8928e	BBDuk k=25 hdist=2 mkh=2 rcomp=t on the discriminating 5S segment ; writes <S>.hits.fastq.gz (MM/ML kept)
+U1a_5S_read_extraction	4	upstream/fig02_figS2_chain/U1a_5S_read_extraction/local_scripts_v5/summarize4.py	6f667164eecc	array (TUC) call per sample from the tandem alignment
+U1a_5S_read_extraction	5	upstream/fig02_figS2_chain/U1a_5S_read_extraction/local_scripts_v5/giab_seq_extract.sh	671b5ec5083e	same extraction for GIAB ONT (s3://ont-open-data/giab_2023.05) with --k 25 --hdist 2
+U1a_5S_read_extraction	6	upstream/fig02_figS2_chain/U1a_5S_read_extraction/kgp_ont/kgp_region.sh	05512a631d97	1kGP-ONT : array region (chr1:227644873-228124958) cut from the CHM13-aligned R10 BAMs -> out/<S>.array.fastq.gz (read source of our hifiasm for 1kGP and of the trio parents)
+U1a_5S_read_extraction	7	upstream/fig02_figS2_chain/U1a_5S_read_extraction/kgp_ont/manifest.tsv	109048953469	record : per-sample s3://1000g-ont BAM paths read by upstream/fig02_figS2_chain/U1a_5S_read_extraction/kgp_ont/kgp_region.sh (data list, not code)
+U1b_HPRC_array_cut	1	upstream/fig02_figS2_chain/U1b_HPRC_array_cut/asm_units4.py	3d5673bfc054	HPRC release 2 assemblies (index assemblies_release2_v1.0.index.csv) : CHM13 proximal/distal 50 kb probes placed with minimap2 -x asm20, array = between the inner ends ; 400 references
+U1c_our_hifiasm	1	upstream/fig02_figS2_chain/U1c_our_hifiasm/local_scripts_v6_hifiasm/hifi_queue.sh	7fafe46e7966	hifiasm --ont per sample on the 5S/array reads (kgp_ont, s5s_ont hits, giab_hits) then upstream/fig02_figS2_chain/U1c_our_hifiasm/local_scripts_v6_hifiasm/hiarr.py
+U1c_our_hifiasm	2	upstream/fig02_figS2_chain/U1c_our_hifiasm/local_scripts_v6_hifiasm/hiarr.py	2da905b9e2a2	array cut from the assembly with the CHM13 50 kb probes (minimap2 -x asm20 -N 20 -p 0.1), arrays < 4,000 bp dropped
+U1c_our_hifiasm	3	upstream/fig02_figS2_chain/U1c_our_hifiasm/local_scripts_v6_hifiasm/asm_arr_all.py	4d43684df7f2	array cut over all assemblies (step 1 of the reference build)
+U1c_our_hifiasm	4	upstream/fig02_figS2_chain/U1c_our_hifiasm/06_code/fill60.sh	3ceef33fd1ff	hifiasm for the 60 samples without a candidate (full reads, then read fraction sweep) -> fill60 references
+U1c_our_hifiasm	5	upstream/fig02_figS2_chain/U1c_our_hifiasm/06_code/fill60v2.sh	08e72ec6a1d5	second fill60 pass (55/60)
+U1c_our_hifiasm	6	upstream/fig02_figS2_chain/U1c_our_hifiasm/06_code/sweep31v2.sh	e698aaf7d1a2	read fraction sweep -> sweep31 references
+U1c_our_hifiasm	7	upstream/fig02_figS2_chain/U1c_our_hifiasm/06_code/refix.sh	4a115079c373	re-assembly of flagged samples -> refix references
+U1c_our_hifiasm	8	upstream/fig02_figS2_chain/U1c_our_hifiasm/local_scripts_v6_hifiasm/tier1ref.py	3613d526b06c	single spanning ONT read used as reference (tier1ref, 12 references)
+U1d_reference_repair	1	upstream/fig02_figS2_chain/U1d_reference_repair/v11/gap_seg.py	2f876a825c32	read fragments for the reference repair windows
+U1d_reference_repair	2	upstream/fig02_figS2_chain/U1d_reference_repair/v11/gap_polish_fix.py	83876a1dd28b	backbone polishing consensus (racon principle, in-house : minimap2 map-ont, per-position majority, 2 rounds)
+U1d_reference_repair	3	upstream/fig02_figS2_chain/U1d_reference_repair/v11/splice_mid2.py	ecae0371b563	anchors from the assembly, middle from the read consensus
+U1d_reference_repair	4	upstream/fig02_figS2_chain/U1d_reference_repair/v11/patch_canon_v10b.py	afa72372753c	writes the repaired references ~/cmp4d_v10 (617)
+U1d_reference_repair	5	upstream/fig02_figS2_chain/U1d_reference_repair/v11-fix1/seg_dp.py	b4e901bc8361	positions of read fragments for the two repaired haplotypes (calls upstream/fig02_figS2_chain/U1d_reference_repair/v11-fix1/uindel2.py functions)
+U1d_reference_repair	6	upstream/fig02_figS2_chain/U1d_reference_repair/v11-fix1/uindel2.py	e8788a4efe19	unit-level DP functions used by upstream/fig02_figS2_chain/U1d_reference_repair/v11-fix1/seg_dp.py
+U1d_reference_repair	7	upstream/fig02_figS2_chain/U1d_reference_repair/v11-fix1/gap_polish_fix1.py	8c2ecea4605c	backbone polishing (fix1 paths)
+U1d_reference_repair	8	upstream/fig02_figS2_chain/U1d_reference_repair/v11-fix1/splice_mid2_fix1.py	35c9ad797651	anchors at the first/last HSP
+U1d_reference_repair	9	upstream/fig02_figS2_chain/U1d_reference_repair/v11-fix1/patch_canon_fix1.py	4e7262b05425	writes ~/cmp4d_v11_fix1 (two haplotypes replaced)
+U1d_reference_repair	10	upstream/fig02_figS2_chain/U1d_reference_repair/readmap_repo/pilot_c2seq.py	a57db84af381	read-consensus references (cons2seq, 6) — from the earlier pipeline repository ; that the v11 cons2seq files were made with this exact copy is not recorded
+U1d_reference_repair	11	upstream/fig02_figS2_chain/U1d_reference_repair/readmap_repo/mkmap_c2seq.py	2525e524f5fb	map rows of the cons2seq references (same caveat)
+U2_unit_map_variant_calling	1	upstream/fig02_figS2_chain/U2_unit_map_variant_calling/consmapG8v4_fixdedup.py	1c20633f75f9	Fig 2a calling : blastn 5S gene HSPs -> unit = gene end+1 .. next gene end (+100 bp) -> minimap2 -x asm20 -c --cs=long to the canonical unit with 200 bp context -> cs string to tokens (1096G, 437D1, 1493I4)
+U2_unit_map_variant_calling	2	upstream/fig02_figS2_chain/U2_unit_map_variant_calling/v11/rung8v10.sh	49db6945a6f4	runner for g8canonv10 (map 91816b9ca9d3 : read-level chain U7)
+U2_unit_map_variant_calling	3	upstream/fig02_figS2_chain/U2_unit_map_variant_calling/v11-fix1/run_map_fix1.sh	859a73bcbbca	runner for g8canonv11f1 (map 573e4e80f334 : every v11_io panel) : asm20 LO 2100 HI 2400 FRAG 5 PAD 100 CTX 200, 4 parts
+U3_read_placement_units	1	upstream/fig02_figS2_chain/U3_read_placement_units/v11/aoplace_v3fix.py	fc30882dd6cc	ARRAY_ONLY placement (K=12 DMIN=10)
+U3_read_placement_units	2	upstream/fig02_figS2_chain/U3_read_placement_units/v11/aoplace_v5fix.py	6e9427ebd4d5	ARRAY_ONLY placement, AOJV5 and GIAB (minimap2 -a -x map-ont -K 100M)
+U3_read_placement_units	3	upstream/fig02_figS2_chain/U3_read_placement_units/v11/aoplace_v8fix.py	ed62b07b4587	ARRAY_ONLY placement with map/sequence overrides
+U3_read_placement_units	4	upstream/fig02_figS2_chain/U3_read_placement_units/v11/extract_ao_reads_env.py	b9e5a0ec4d0a	original reads of the accepted placements
+U3_read_placement_units	5	upstream/fig02_figS2_chain/U3_read_placement_units/v11/ao_g8cut.py	7e2e67bc0121	ARRAY_ONLY unit cut (minimap2 -a -x map-ont -y, ±250 bp windows ; variants by minimap2 asm20 --cs=long)
+U3_read_placement_units	6	upstream/fig02_figS2_chain/U3_read_placement_units/v11/ao_blastcut.py	4545df49a780	blast cut (supplement)
+U3_read_placement_units	7	upstream/fig02_figS2_chain/U3_read_placement_units/v11/build_ao_final_g.py	f0d7a24ea6a0	merge of the two cuts + relabel undo (must not be skipped)
+U3_read_placement_units	8	upstream/fig02_figS2_chain/U3_read_placement_units/v11/mkjxmap_v10.py	9ca10ecdc8de	junction coordinate frame
+U3_read_placement_units	9	upstream/fig02_figS2_chain/U3_read_placement_units/v11/jx_g8cut_v10b.py	1a3936bc8a4c	junction unit cut
+U3_read_placement_units	10	upstream/fig02_figS2_chain/U3_read_placement_units/v11/recall_edge_v10.py	dbecd5ba5490	variant re-call, AO
+U3_read_placement_units	11	upstream/fig02_figS2_chain/U3_read_placement_units/v11/recall_mid_v10.py	1b332a1b06d0	variant re-call, AO
+U3_read_placement_units	12	upstream/fig02_figS2_chain/U3_read_placement_units/v11/recall_pad2_v10.py	b4a56f7eb48b	variant re-call, AO (PAD 100 CTX 200)
+U3_read_placement_units	13	upstream/fig02_figS2_chain/U3_read_placement_units/v11/recall_edge.py	5aa4e4d7fb89	variant re-call, junction (original code)
+U3_read_placement_units	14	upstream/fig02_figS2_chain/U3_read_placement_units/v11/recall_mid.py	33251b5b5723	variant re-call, junction
+U3_read_placement_units	15	upstream/fig02_figS2_chain/U3_read_placement_units/v11/recall_pad2.py	277be58fca79	variant re-call, junction
+U3_read_placement_units	16	upstream/fig02_figS2_chain/U3_read_placement_units/v11/mkdual_v10.py	7bc38707705a	dual-source tables for the merge
+U3_read_placement_units	17	upstream/fig02_figS2_chain/U3_read_placement_units/v11/merge_g8v3.py	2381fc81b2c6	merge by data source -> READMAP_V11*_BYSOURCE.tsv (md5 cc8de3e4)
+U3_read_placement_units	18	upstream/fig02_figS2_chain/U3_read_placement_units/v11_ref_G8v4/srcmap.py	4f2be31fa156	data-source labels (HPRC_ONT_submissions, 1kGP_ONT, GIAB_ONT …)
+U3_read_placement_units	19	upstream/fig02_figS2_chain/U3_read_placement_units/v11_ref_G8v4/rjf_repro.py	a7921da821c1	exact as-ran copy not confirmed
+U3_read_placement_units	20	upstream/fig02_figS2_chain/U3_read_placement_units/v11_ref_G8v4/stage_all4.py	e97d3958ffe1	assembly-stage rule (copied rule by rule into tables/stage_v11.py)
+U3_read_placement_units	21	upstream/fig02_figS2_chain/U3_read_placement_units/v11-fix1/run_fix1_units.sh	51a6486ae6d8	fix1 unit runner (junction + AO)
+U3_read_placement_units	22	upstream/fig02_figS2_chain/U3_read_placement_units/v11-fix1/run_fix1_ao.sh	15969629ba65	fix1 AO runner
+U3_read_placement_units	23	upstream/fig02_figS2_chain/U3_read_placement_units/v11-fix1/run_fix1_ao_b.sh	349e07b4b919	fix1 AO runner, corrected G6 map
+U3_read_placement_units	24	upstream/fig02_figS2_chain/U3_read_placement_units/v11-fix1/mkg6map_fix1b.py	e60be5fd2cb1	G6 map rule : drop only units that really disappeared (fix1 first version discarded)
+U3_read_placement_units	25	upstream/fig02_figS2_chain/U3_read_placement_units/v11-fix1/jx_g8cut_f1.py	968dd403beba	junction cut, fix1
+U3_read_placement_units	26	upstream/fig02_figS2_chain/U3_read_placement_units/v11-fix1/recall_edge_f1.py	6e4da1ee4605	re-call, fix1
+U3_read_placement_units	27	upstream/fig02_figS2_chain/U3_read_placement_units/v11-fix1/recall_mid_f1.py	c62da241e538	re-call, fix1
+U3_read_placement_units	28	upstream/fig02_figS2_chain/U3_read_placement_units/v11-fix1/recall_pad2_f1.py	6a020beac41e	re-call, fix1
+U3_read_placement_units	29	upstream/fig02_figS2_chain/U3_read_placement_units/v11-fix1/recall_edge_f1b.py	8f47faf962a4	re-call, fix1 b
+U3_read_placement_units	30	upstream/fig02_figS2_chain/U3_read_placement_units/v11-fix1/recall_mid_f1b.py	4cd2922bf032	re-call, fix1 b
+U3_read_placement_units	31	upstream/fig02_figS2_chain/U3_read_placement_units/v11-fix1/recall_pad2_f1b.py	2856acd42c4c	re-call, fix1 b
+U3_read_placement_units	32	upstream/fig02_figS2_chain/U3_read_placement_units/v11-fix1/build_units_f1.py	f966914db8a6	fix1 unit tables (06_units_final)
+U3_read_placement_units	33	upstream/fig02_figS2_chain/U3_read_placement_units/v11-fix2/run_fix2_ao.sh	60de1b3b7e8b	fix2 AO run for 9 individuals : ao_g8cut -> ao_blastcut -> build_ao_final_g -> recall_*_f2 ; then mkbam_ao_f2 -> meth_units_ao_f2
+U3_read_placement_units	34	upstream/fig02_figS2_chain/U3_read_placement_units/v11-fix2/recall_edge_f2.py	8080e505450c	re-call, fix2
+U3_read_placement_units	35	upstream/fig02_figS2_chain/U3_read_placement_units/v11-fix2/recall_mid_f2.py	a1be429d67d9	re-call, fix2
+U3_read_placement_units	36	upstream/fig02_figS2_chain/U3_read_placement_units/v11-fix2/recall_pad2_f2.py	aabf09dbd1de	re-call, fix2
+U3_read_placement_units	37	upstream/fig02_figS2_chain/U3_read_placement_units/v11-fix2/build_f2.py	1c88aa2410b0	units mode : replaces the 9 individuals' ARRAY_ONLY rows ; meth mode : replaces the _ao raw tables
+U4_unit_methylation	1	upstream/fig02_figS2_chain/U4_unit_methylation/v11/mkbam_ao_v11.py	d014131ae822	AO BAM (samtools sort/index)
+U4_unit_methylation	2	upstream/fig02_figS2_chain/U4_unit_methylation/v11/mkbam.sh	656f4f4b89fc	junction BAM from ~/rjrepro placed SAM
+U4_unit_methylation	3	upstream/fig02_figS2_chain/U4_unit_methylation/v11/qualfill.py	f809bdb2216e	fills QUAL of AO reads for BAM
+U4_unit_methylation	4	upstream/fig02_figS2_chain/U4_unit_methylation/v11/meth_units_ao_v11.py	c76fff4bc3b3	per read x unit methylation from MM/ML (own parser, ML >= 128), AO
+U4_unit_methylation	5	upstream/fig02_figS2_chain/U4_unit_methylation/v11/meth_units_jx_v11.py	4954469605b8	same, junction
+U4_unit_methylation	6	upstream/fig02_figS2_chain/U4_unit_methylation/v11/merge_meth.py	aa2c201a4ca5	merge -> READMAP_METH (beta_call = sum meth / sum calls ; file order _a_jx, _b_ao)
+U4_unit_methylation	7	upstream/fig02_figS2_chain/U4_unit_methylation/v11-fix1/run_fix1_meth.sh	5480c1aaa1aa	fix1 methylation runner
+U4_unit_methylation	8	upstream/fig02_figS2_chain/U4_unit_methylation/v11-fix1/mkbam_ao_f1.py	282c9ec60767	fix1 AO BAM
+U4_unit_methylation	9	upstream/fig02_figS2_chain/U4_unit_methylation/v11-fix1/meth_units_ao_f1.py	6a5f43df56ff	fix1 methylation, AO
+U4_unit_methylation	10	upstream/fig02_figS2_chain/U4_unit_methylation/v11-fix1/meth_units_jx_f1.py	0a56010dc8b3	fix1 methylation, junction
+U4_unit_methylation	11	upstream/fig02_figS2_chain/U4_unit_methylation/v11-fix1/build_meth_f1.py	889cd62ec13e	fix1 methylation tables
+U4_unit_methylation	12	upstream/fig02_figS2_chain/U4_unit_methylation/v11-fix2/mkbam_ao_f2.py	9a20bedb8859	fix2 AO BAM (paths only changed from v11)
+U4_unit_methylation	13	upstream/fig02_figS2_chain/U4_unit_methylation/v11-fix2/meth_units_ao_f2.py	cf638e2ecd3e	fix2 methylation, AO
+U4_unit_methylation	14	upstream/fig02_figS2_chain/U4_unit_methylation/v11-fix4/run_all.sh	8b9495b738e0	fix4 runner (CPGONLY=1 for HG008-T)
+U4_unit_methylation	15	upstream/fig02_figS2_chain/U4_unit_methylation/v11-fix4/meth_units_ao_v11_CPGONLY.py	0d8851fa3a2d	CpG-only patch, AO
+U4_unit_methylation	16	upstream/fig02_figS2_chain/U4_unit_methylation/v11-fix4/meth_units_jx_v11_CPGONLY.py	42467f58e4ca	CpG-only patch, junction
+U4_unit_methylation	17	upstream/fig02_figS2_chain/U4_unit_methylation/v11-fix4/merge_meth.py	1a72c3765340	merge for the HG008-T block
+U4_unit_methylation	18	upstream/fig02_figS2_chain/U4_unit_methylation/v11-fix4/build_f4.py	27081399b995	READMAP_METH_V11F4 = V11F2 with the HG008-T block replaced
+U7_read_level_tables	1	upstream/fig02_figS2_chain/U7_read_level_tables/v1_build.py	49c3a55e648a	read x unit table ru_v11 (METH_READUNIT cells moved to the reference frame with the map varlist, MLCUT 128)
+U7_read_level_tables	2	upstream/fig02_figS2_chain/U7_read_level_tables/v3_core.py	f91a8848dc0b	HAP_LENGTH_BOUNDARY read by v14
+U7_read_level_tables	3	upstream/fig02_figS2_chain/U7_read_level_tables/v13_L1_read_unit.py	b415716d2e6c	L1_READ_UNIT : HPRC only, gate frac_canon >= 0.9 and n_canon >= 150 ; varlist from map g8canonv10
+U7_read_level_tables	4	upstream/fig02_figS2_chain/U7_read_level_tables/v14_L2_hap_unit.py	2a8cb3bf4bcd	L2_HAP_UNIT (n_read = gated read-units)
+U7_read_level_tables	5	upstream/fig02_figS2_chain/U7_read_level_tables/v20_nxn_scan.py	759d89295e23	HAPFEAT : top 40 variable tokens after n_read >= 5
+U7_read_level_tables	6	upstream/fig02_figS2_chain/U7_read_level_tables/majref_build.py	51039537fb40	L2_MAJREF : majority-allele flip of 11 positions
+U7_read_level_tables	7	upstream/fig02_figS2_chain/U7_read_level_tables/v109_pop_cohort_cn_meth.py	479b67fedcf3	POP_COHORT : labels from pop.panel, filled from the 3,202 pedigree
+U7_read_level_tables	8	upstream/fig02_figS2_chain/U7_read_level_tables/v110_pop_variants.py	88b15b51f9a6	POP_VAR_TOKEN : Fisher, Kruskal-Wallis, BH
+U7_read_level_tables	9	upstream/fig02_figS2_chain/U7_read_level_tables/v144_fasta_slot_fix.py	9507fb18ce80	FASTA_REF_MAP base table (flank tar ↔ slot by length) read by P04 (Fig 2 B-D)
+U8_flank	1	upstream/fig02_figS2_chain/U8_flank/flank_hprc.py	59712be20cdf	flank from HPRC release 2 contigs (exact reference match, 50 kb each side)
+U8_flank	2	upstream/fig02_figS2_chain/U8_flank/flank_hprc2.py	aa8c2cb6fa8c	retry with 5 kb end anchors
+U8_flank	3	upstream/fig02_figS2_chain/U8_flank/flank_reads.py	5f63c83382c5	flank pieces from junction reads (soft clips included)
+U8_flank	4	upstream/fig02_figS2_chain/U8_flank/flank_cons.py	52cf7f0f4f93	backbone polishing consensus of the flank pieces
+U8_flank	5	upstream/fig02_figS2_chain/U8_flank/attach_flank2.py	f30765441a2f	attach with the FLIP rule
+U8_flank	6	upstream/fig02_figS2_chain/U8_flank/reasm_v12.sh	43bcd85e2b56	hifiasm --ont re-assembly (same command as the original)
+U8_flank	7	upstream/fig02_figS2_chain/U8_flank/flank_reasm.py	3c90c987776c	20 kb anchors -> outer 50 kb from the re-assembly
+U8_flank	8	upstream/fig02_figS2_chain/U8_flank/merge_flank_final2.py	79d7d84224f1	final merge -> ~/flank_final2 (flank_final2.tar dce836851560)
+U9_trio_references	1	upstream/fig02_figS2_chain/U9_trio_references/asm_arr_any.py	c8b12467e667	array cut from public assemblies chosen for hg002 s1 (HPRC year1) and hg003 s1 (1kGP-ONT GIAB assembly)
+U9_trio_references	2	upstream/fig02_figS2_chain/U9_trio_references/prep_canon_trio.sh	501a40c8dce2	reference list and folder for the trio (parents = hifiasm --ont arrays)
+U9_trio_references	3	upstream/fig02_figS2_chain/U9_trio_references/run_rjf_trio.sh	ced4e4341895	G8MAP_trio.tsv = v11-fix1 map minus hg002/hg003/HG01785 s1 + g8trio + g8trio2 maps
+U10_cell_line_arrays	1	upstream/fig02_figS2_chain/U10_cell_line_arrays/p11_k562_pdl.sh	01bc8b24595a	download of K562 HiFi Fiber-seq ERR17608832
+U10_cell_line_arrays	2	upstream/fig02_figS2_chain/U10_cell_line_arrays/p11_k562_region.sh	fa979b2b5c4a	K562 5S region reads (BBDuk)
+U10_cell_line_arrays	3	upstream/fig02_figS2_chain/U10_cell_line_arrays/gm_hifi_region.sh	7fb9552c145a	GM12878 array-region HiFi reads from the GIAB HG001 CHM13 BAM
+U10_cell_line_arrays	4	upstream/fig02_figS2_chain/U10_cell_line_arrays/p11_gm_units.py	e4847e8b56ff	GM12878 arrays from the hifiasm contigs
+U10_cell_line_arrays	5	upstream/fig02_figS2_chain/U10_cell_line_arrays/distal20_extract.py	8a2e3d52b976	distal 20 units (minimap2 flank placement, cut at 5S gene ends)
+U0_reference_sequences	recovered 2026-10-24	upstream/fig02_figS2_chain/U0_reference_sequences/mkref_aws.sh	a20712e9bb77	writes ~/s5s_tuc/ref/unit_canon.fa (revcomp CHM13 chr1:227,887,698-227,889,937, 2,240 bp), 5S_gene_query.fa (unit 2122-2240), 5S_unit_discseg.fa, tandem40.fa, FLANK_proximal/distal_50000.fa from CHM13 v2.0 only
+U1e_reference_slot_list	recovered 2026-10-24	upstream/fig02_figS2_chain/U1e_reference_slot_list/hap_seq_node_v8_chain.sh	a5183ffa6ac8	hap_seq.tsv col 7 -> hap_seq_node.tsv; v7 = six slots to cons2seq references; v8 = v7 with hg002 slot 2 -> hg002asm__58__pat_array.fa
+U5_cohort_tiers	recovered 2026-10-24	upstream/fig02_figS2_chain/U5_cohort_tiers/tiers_H0H3_build.sh	822a2784e701	cohort tier list H0-H3 used by every panel through the tier hook
+U7_read_level_tables	recovered 2026-10-24	upstream/fig02_figS2_chain/U7_read_level_tables/slot_qc_eligibility.py	f7e9878b07d5	haplotype eligibility table SLOT_QC.tsv (= H2 510)
+U8_flank	recovered 2026-10-24	upstream/fig02_figS2_chain/U8_flank/refmap/refmap_fill_plan_v2.py	ec37a66a0d65	fill plan for the read-source map
+U8_flank	recovered 2026-10-24	upstream/fig02_figS2_chain/U8_flank/refmap/refmap_fill_apply_v2.py	e60e8c292d6f	step 2: writes FASTA_REF_MAP_2026-10-07b.tsv from the plan (22 rows, method length_match_2026-10-07b)
+U9_trio_references	recovered 2026-10-24	upstream/fig02_figS2_chain/U9_trio_references/trio_cut_maps_19slots.sh	dd2f2c8501d3	trio unit maps CONSENSUS_MAP_G8_trio.tsv / _trio2.tsv (Supplementary Fig 2A)
+U10_cell_line_arrays	recovered 2026-10-24	upstream/fig02_figS2_chain/U10_cell_line_arrays/ul2_run.sh	23841136d181	K562 UL2 assembly
+U10_cell_line_arrays	recovered 2026-10-24	upstream/fig02_figS2_chain/U10_cell_line_arrays/k562_ont3_RECORDED_NOT_FINAL.sh	4cefa7bc34c8	collects K562 ONT 5S reads (21 runs) for the UL2 assembly
+U10_cell_line_arrays	recovered 2026-10-24	upstream/fig02_figS2_chain/U10_cell_line_arrays/patch_ont3.py	48cfe00e6d02	node patch to k562_ont3.sh
+U1c_our_hifiasm	recovered 2026-10-25	upstream/fig02_figS2_chain/U1c_our_hifiasm/node_scripts_recovered/resub.sh	1e18b4450d2b	reduced-coverage re-assembly (one 250 Mb draw by read order) for samples whose array split across contigs -> resub references (1 in H0)
+U1c_our_hifiasm	recovered 2026-10-25	upstream/fig02_figS2_chain/U1c_our_hifiasm/node_scripts_recovered/resub2.sh	7c8637c19109	read-fraction sweep 1/2..1/6 by read order, union of arrays -> resub2 references (10 in H0)
+U1c_our_hifiasm	recovered 2026-10-25	upstream/fig02_figS2_chain/U1c_our_hifiasm/node_scripts_recovered/nopurge.sh	8acb142569ab	hifiasm --ont -l 0 (purge off) re-assembly to recover the shorter haplotype -> nopurge references (5 in H0)

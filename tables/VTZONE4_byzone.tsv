@@ -1,0 +1,265 @@
+layer	zone	group	per_unit	null_z	rank_in_zone	log2_ratio_vs_central	ratio_rank
+all	proximal 1-3	C>T|CpG	0.36722	+7.05	10	0.3599	10
+all	proximal 1-3	C>T|non-CpG	0.46888	-19.39	2	-0.7538	4
+all	proximal 1-3	G>A|CpG	0.22181	-5.97	11	-0.4260	9
+all	proximal 1-3	G>A|non-CpG	0.46026	+4.72	12	0.2229	16
+all	proximal 1-3	C>A	0.54529	+17.05	3	0.7118	5
+all	proximal 1-3	G>T	0.08934	-1.04	20	-0.0942	20
+all	proximal 1-3	C>G	0.73075	-10.10	6	-0.3106	13
+all	proximal 1-3	G>C	0.64880	+7.20	9	0.3136	12
+all	proximal 1-3	T>C	0.52927	+2.81	15	0.1222	19
+all	proximal 1-3	A>G	0.49476	-10.98	4	-0.2638	15
+all	proximal 1-3	T>G	0.41651	+32.56	1	1.5311	2
+all	proximal 1-3	A>C	0.00555	-0.78	21	-0.4732	8
+all	proximal 1-3	T>A	0.37215	-10.49	5	-0.5277	7
+all	proximal 1-3	A>T	0.05915	+1.32	18	0.3189	11
+all	proximal 1-3	deletion 1 bp	0.02773	-1.08	19	0.3065	14
+all	proximal 1-3	deletion 2-9 bp	0.01417	+0.23	22	-0.1993	18
+all	proximal 1-3	deletion >=10 bp	0.01479	+3.52	14	0.9086	3
+all	proximal 1-3	insertion 1 bp	0.24276	-2.37	16	-0.0357	21
+all	proximal 1-3	insertion 2-9 bp	0.00555	+4.44	13	2.7641	1
+all	proximal 1-3	insertion >=10 bp	0.00000	-1.51	17		22
+all	proximal 1-3	repeat-block deletion	0.62169	+8.12	7	0.5794	6
+all	proximal 1-3	repeat-block insertion	0.71041	+8.12	8	0.2055	17
+all	proximal 4-17	C>T|CpG	0.26076	-3.50	19	-0.1341	17
+all	proximal 4-17	C>T|non-CpG	0.68194	-11.48	9	-0.2134	14
+all	proximal 4-17	G>A|CpG	0.26604	-6.91	13	-0.1637	15
+all	proximal 4-17	G>A|non-CpG	0.52165	+21.33	2	0.4036	11
+all	proximal 4-17	C>A	0.36137	+3.02	21	0.1183	19
+all	proximal 4-17	G>T	0.14708	+15.28	6	0.6250	8
+all	proximal 4-17	C>G	0.84328	-10.29	11	-0.1040	20
+all	proximal 4-17	G>C	0.65091	+18.03	5	0.3183	13
+all	proximal 4-17	T>C	0.53948	+9.70	12	0.1498	16
+all	proximal 4-17	A>G	0.54608	-10.78	10	-0.1215	18
+all	proximal 4-17	T>G	0.22815	+19.50	4	0.6627	7
+all	proximal 4-17	A>C	0.00370	-4.20	17	-1.0582	5
+all	proximal 4-17	T>A	0.36480	-28.96	1	-0.5564	9
+all	proximal 4-17	A>T	0.08199	+13.58	7	0.7900	6
+all	proximal 4-17	deletion 1 bp	0.00753	-13.16	8	-1.5749	3
+all	proximal 4-17	deletion 2-9 bp	0.00621	-5.32	14	-1.3907	4
+all	proximal 4-17	deletion >=10 bp	0.00581	-1.87	22	-0.4393	10
+all	proximal 4-17	insertion 1 bp	0.31648	+21.06	3	0.3469	12
+all	proximal 4-17	insertion 2-9 bp	0.00330	+4.46	16	2.0156	2
+all	proximal 4-17	insertion >=10 bp	0.00013	-3.47	20	-3.8658	1
+all	proximal 4-17	repeat-block deletion	0.42408	-4.50	15	0.0276	22
+all	proximal 4-17	repeat-block insertion	0.63969	+3.96	18	0.0542	21
+all	central	C>T|CpG	0.28615	+3.91	16	0.0000	1
+all	central	C>T|non-CpG	0.79064	+18.17	2	0.0000	2
+all	central	G>A|CpG	0.29801	-2.62	18	0.0000	3
+all	central	G>A|non-CpG	0.39436	-7.31	8	0.0000	4
+all	central	C>A	0.33293	-6.44	10	0.0000	5
+all	central	G>T	0.09537	-2.32	19	0.0000	6
+all	central	C>G	0.90631	-5.42	13	0.0000	7
+all	central	G>C	0.52205	-1.25	22	0.0000	8
+all	central	T>C	0.48628	-6.24	11	0.0000	9
+all	central	A>G	0.59405	+14.46	6	0.0000	10
+all	central	T>G	0.14412	-14.89	5	0.0000	11
+all	central	A>C	0.00770	+1.39	21	0.0000	12
+all	central	T>A	0.53649	+20.14	1	0.0000	13
+all	central	A>T	0.04742	-6.21	12	0.0000	14
+all	central	deletion 1 bp	0.02242	-15.68	4	0.0000	15
+all	central	deletion 2-9 bp	0.01627	+7.11	9	0.0000	16
+all	central	deletion >=10 bp	0.00788	+1.75	20	0.0000	17
+all	central	insertion 1 bp	0.24884	-10.13	7	0.0000	18
+all	central	insertion 2-9 bp	0.00082	-4.62	14	0.0000	19
+all	central	insertion >=10 bp	0.00192	+4.39	15	0.0000	20
+all	central	repeat-block deletion	0.41605	-15.81	3	0.0000	21
+all	central	repeat-block insertion	0.61610	-2.76	17	0.0000	22
+all	distal 1-10	C>T|CpG	0.22403	-8.02	11	-0.3531	13
+all	distal 1-10	C>T|non-CpG	0.72495	-3.48	15	-0.1251	16
+all	distal 1-10	G>A|CpG	0.39372	+14.01	7	0.4018	10
+all	distal 1-10	G>A|non-CpG	0.30259	-16.25	6	-0.3822	11
+all	distal 1-10	C>A	0.34713	+0.50	22	0.0603	19
+all	distal 1-10	G>T	0.05675	-10.72	8	-0.7490	7
+all	distal 1-10	C>G	1.16969	+28.63	3	0.3680	12
+all	distal 1-10	G>C	0.30684	-24.28	4	-0.7667	6
+all	distal 1-10	T>C	0.50111	+0.91	20	0.0433	21
+all	distal 1-10	A>G	0.57745	-0.70	21	-0.0409	22
+all	distal 1-10	T>G	0.08946	-17.70	5	-0.6879	8
+all	distal 1-10	A>C	0.00850	+1.08	19	0.1435	15
+all	distal 1-10	T>A	0.55287	+8.44	10	0.0434	20
+all	distal 1-10	A>T	0.03346	-6.38	13	-0.5032	9
+all	distal 1-10	deletion 1 bp	0.13475	+43.40	1	2.5874	1
+all	distal 1-10	deletion 2-9 bp	0.00499	-5.13	14	-1.7049	2
+all	distal 1-10	deletion >=10 bp	0.00444	-3.09	16	-0.8283	4
+all	distal 1-10	insertion 1 bp	0.22828	-8.44	9	-0.1244	17
+all	distal 1-10	insertion 2-9 bp	0.00092	-1.13	17	0.1791	14
+all	distal 1-10	insertion >=10 bp	0.00092	-1.10	18	-1.0584	3
+all	distal 1-10	repeat-block deletion	0.71479	+29.66	2	0.7807	5
+all	distal 1-10	repeat-block insertion	0.57930	-7.20	12	-0.0889	18
+shared removed	proximal 1-3	C>T|CpG	0.07948	-3.02	12	-0.5750	13
+shared removed	proximal 1-3	C>T|non-CpG	0.08749	-0.19	22	-0.2282	17
+shared removed	proximal 1-3	G>A|CpG	0.06285	-3.23	11	-0.6123	12
+shared removed	proximal 1-3	G>A|non-CpG	0.11768	-2.52	15	-0.1739	18
+shared removed	proximal 1-3	C>A	0.12138	+3.33	9	0.2685	16
+shared removed	proximal 1-3	G>T	0.05052	+0.87	18	0.1277	19
+shared removed	proximal 1-3	C>G	0.08195	-1.38	17	-0.3065	15
+shared removed	proximal 1-3	G>C	0.13925	+0.81	19	-0.0019	21
+shared removed	proximal 1-3	T>C	0.09057	+0.52	21	0.1019	20
+shared removed	proximal 1-3	A>G	0.05114	+5.21	5	0.8284	8
+shared removed	proximal 1-3	T>G	0.05176	+5.26	4	0.7182	11
+shared removed	proximal 1-3	A>C	0.00555	-0.78	20	-0.4732	14
+shared removed	proximal 1-3	T>A	0.01540	-2.66	14	-0.7206	10
+shared removed	proximal 1-3	A>T	0.03266	+5.71	3	1.3432	5
+shared removed	proximal 1-3	deletion 1 bp	0.02773	+5.82	2	1.6073	3
+shared removed	proximal 1-3	deletion 2-9 bp	0.01356	+4.71	6	1.9433	2
+shared removed	proximal 1-3	deletion >=10 bp	0.01479	+3.52	8	0.9086	7
+shared removed	proximal 1-3	insertion 1 bp	0.01171	+2.73	13	1.4992	4
+shared removed	proximal 1-3	insertion 2-9 bp	0.00555	+4.44	7	2.7641	1
+shared removed	proximal 1-3	insertion >=10 bp	0.00000	-1.51	16		22
+shared removed	proximal 1-3	repeat-block deletion	0.09365	+6.06	1	0.7933	9
+shared removed	proximal 1-3	repeat-block insertion	0.01725	+3.26	10	1.2203	6
+shared removed	proximal 4-17	C>T|CpG	0.10127	-0.97	20	-0.2256	16
+shared removed	proximal 4-17	C>T|non-CpG	0.05598	-10.90	1	-0.8724	6
+shared removed	proximal 4-17	G>A|CpG	0.10457	+4.78	9	0.1222	20
+shared removed	proximal 4-17	G>A|non-CpG	0.15170	+5.66	8	0.1924	17
+shared removed	proximal 4-17	C>A	0.10048	+0.96	21	-0.0042	22
+shared removed	proximal 4-17	G>T	0.06377	+8.03	4	0.4637	11
+shared removed	proximal 4-17	C>G	0.06800	-7.33	6	-0.5758	9
+shared removed	proximal 4-17	G>C	0.10325	-8.24	3	-0.4335	13
+shared removed	proximal 4-17	T>C	0.08648	+0.08	22	0.0352	21
+shared removed	proximal 4-17	A>G	0.03604	+3.75	12	0.3237	15
+shared removed	proximal 4-17	T>G	0.03591	+2.44	14	0.1909	18
+shared removed	proximal 4-17	A>C	0.00370	-4.20	11	-1.0582	4
+shared removed	proximal 4-17	T>A	0.02812	+1.19	19	0.1479	19
+shared removed	proximal 4-17	A>T	0.02482	+7.93	5	0.9475	5
+shared removed	proximal 4-17	deletion 1 bp	0.00700	-1.71	17	-0.3790	14
+shared removed	proximal 4-17	deletion 2-9 bp	0.00224	-1.78	16	-0.6511	7
+shared removed	proximal 4-17	deletion >=10 bp	0.00581	-1.87	15	-0.4393	12
+shared removed	proximal 4-17	insertion 1 bp	0.01228	+7.30	7	1.5681	3
+shared removed	proximal 4-17	insertion 2-9 bp	0.00330	+4.46	10	2.0156	2
+shared removed	proximal 4-17	insertion >=10 bp	0.00013	-3.47	13	-3.8658	1
+shared removed	proximal 4-17	repeat-block deletion	0.08331	+9.97	2	0.6245	8
+shared removed	proximal 4-17	repeat-block insertion	0.01096	+1.45	18	0.5655	10
+shared removed	central	C>T|CpG	0.11841	+11.39	2	0.0000	1
+shared removed	central	C>T|non-CpG	0.10248	+13.58	1	0.0000	2
+shared removed	central	G>A|CpG	0.09607	+7.31	4	0.0000	3
+shared removed	central	G>A|non-CpG	0.13276	-2.11	14	0.0000	4
+shared removed	central	C>A	0.10077	+3.70	12	0.0000	5
+shared removed	central	G>T	0.04624	+1.00	18	0.0000	6
+shared removed	central	C>G	0.10135	+7.76	3	0.0000	7
+shared removed	central	G>C	0.13943	+6.94	6	0.0000	8
+shared removed	central	T>C	0.08440	-2.44	13	0.0000	9
+shared removed	central	A>G	0.02880	-0.56	21	0.0000	10
+shared removed	central	T>G	0.03146	-0.90	19	0.0000	11
+shared removed	central	A>C	0.00770	+1.39	17	0.0000	12
+shared removed	central	T>A	0.02538	-1.68	16	0.0000	13
+shared removed	central	A>T	0.01287	-3.91	11	0.0000	14
+shared removed	central	deletion 1 bp	0.00910	-0.24	22	0.0000	15
+shared removed	central	deletion 2-9 bp	0.00352	-0.87	20	0.0000	16
+shared removed	central	deletion >=10 bp	0.00788	+1.75	15	0.0000	17
+shared removed	central	insertion 1 bp	0.00414	-5.86	8	0.0000	18
+shared removed	central	insertion 2-9 bp	0.00082	-4.62	9	0.0000	19
+shared removed	central	insertion >=10 bp	0.00192	+4.39	10	0.0000	20
+shared removed	central	repeat-block deletion	0.05404	-6.95	5	0.0000	21
+shared removed	central	repeat-block insertion	0.00740	-6.15	7	0.0000	22
+shared removed	distal 1-10	C>T|CpG	0.03826	-14.73	1	-1.6297	2
+shared removed	distal 1-10	C>T|non-CpG	0.06118	-7.19	6	-0.7442	9
+shared removed	distal 1-10	G>A|CpG	0.03272	-14.13	2	-1.5541	3
+shared removed	distal 1-10	G>A|non-CpG	0.11534	-5.30	9	-0.2029	17
+shared removed	distal 1-10	C>A	0.06433	-9.00	4	-0.6476	11
+shared removed	distal 1-10	G>T	0.01349	-11.78	3	-1.7770	1
+shared removed	distal 1-10	C>G	0.07726	-4.05	10	-0.3914	13
+shared removed	distal 1-10	G>C	0.13031	-0.33	21	-0.0976	21
+shared removed	distal 1-10	T>C	0.09519	+2.77	13	0.1737	19
+shared removed	distal 1-10	A>G	0.01349	-8.08	5	-1.0938	5
+shared removed	distal 1-10	T>G	0.01885	-6.43	8	-0.7387	10
+shared removed	distal 1-10	A>C	0.00850	+1.08	19	0.1435	20
+shared removed	distal 1-10	T>A	0.02957	+1.71	15	0.2205	16
+shared removed	distal 1-10	A>T	0.00444	-6.72	7	-1.5367	4
+shared removed	distal 1-10	deletion 1 bp	0.00721	-1.38	16	-0.3361	15
+shared removed	distal 1-10	deletion 2-9 bp	0.00462	+0.95	20	0.3907	14
+shared removed	distal 1-10	deletion >=10 bp	0.00444	-3.09	12	-0.8283	8
+shared removed	distal 1-10	insertion 1 bp	0.00591	+0.04	22	0.5143	12
+shared removed	distal 1-10	insertion 2-9 bp	0.00092	-1.13	17	0.1791	18
+shared removed	distal 1-10	insertion >=10 bp	0.00092	-1.10	18	-1.0584	6
+shared removed	distal 1-10	repeat-block deletion	0.05213	-2.26	14	-0.0520	22
+shared removed	distal 1-10	repeat-block insertion	0.01368	+3.60	11	0.8854	7
+single-unit only	proximal 1-3	C>T|CpG	0.02465	-2.91	12	-0.8132	11
+single-unit only	proximal 1-3	C>T|non-CpG	0.03204	+2.47	15	0.5728	18
+single-unit only	proximal 1-3	G>A|CpG	0.02588	-2.77	13	-0.7576	12
+single-unit only	proximal 1-3	G>A|non-CpG	0.02957	+2.20	16	0.5969	16
+single-unit only	proximal 1-3	C>A	0.01417	-2.02	17	-0.7229	14
+single-unit only	proximal 1-3	G>T	0.03512	+5.53	4	1.1271	9
+single-unit only	proximal 1-3	C>G	0.02588	+2.53	14	0.5895	17
+single-unit only	proximal 1-3	G>C	0.03142	+3.06	11	0.6505	15
+single-unit only	proximal 1-3	T>C	0.02095	+3.90	8	1.2362	8
+single-unit only	proximal 1-3	A>G	0.00739	+1.56	18	0.7382	13
+single-unit only	proximal 1-3	T>G	0.01356	+5.88	3	2.2750	6
+single-unit only	proximal 1-3	A>C	0.00308	+0.42	21	0.1544	20
+single-unit only	proximal 1-3	T>A	0.00616	-0.37	22	-0.1398	21
+single-unit only	proximal 1-3	A>T	0.00493	+0.53	20	0.3925	19
+single-unit only	proximal 1-3	deletion 1 bp	0.02157	+6.51	1	2.6108	4
+single-unit only	proximal 1-3	deletion 2-9 bp	0.01109	+4.91	6	3.0078	2
+single-unit only	proximal 1-3	deletion >=10 bp	0.00863	+6.00	2	2.5241	5
+single-unit only	proximal 1-3	insertion 1 bp	0.01047	+5.34	5	2.6694	3
+single-unit only	proximal 1-3	insertion 2-9 bp	0.00431	+4.72	7	3.2451	1
+single-unit only	proximal 1-3	insertion >=10 bp	0.00000	-0.85	19		22
+single-unit only	proximal 1-3	repeat-block deletion	0.01848	+3.61	9	1.0971	10
+single-unit only	proximal 1-3	repeat-block insertion	0.00986	+3.23	10	1.7731	7
+single-unit only	proximal 4-17	C>T|CpG	0.03710	-0.58	15	-0.2231	12
+single-unit only	proximal 4-17	C>T|non-CpG	0.01967	-1.44	7	-0.1309	16
+single-unit only	proximal 4-17	G>A|CpG	0.04225	+0.92	12	-0.0504	18
+single-unit only	proximal 4-17	G>A|non-CpG	0.02020	-1.13	11	0.0469	19
+single-unit only	proximal 4-17	C>A	0.02390	+0.91	13	0.0310	22
+single-unit only	proximal 4-17	G>T	0.02020	+3.27	1	0.3292	11
+single-unit only	proximal 4-17	C>G	0.01769	+0.39	17	0.0408	20
+single-unit only	proximal 4-17	G>C	0.02297	+1.52	5	0.1986	14
+single-unit only	proximal 4-17	T>C	0.01017	+0.21	20	0.1931	15
+single-unit only	proximal 4-17	A>G	0.00568	+1.52	6	0.3571	9
+single-unit only	proximal 4-17	T>G	0.00356	+0.14	21	0.3481	10
+single-unit only	proximal 4-17	A>C	0.00132	-2.20	3	-1.0680	3
+single-unit only	proximal 4-17	T>A	0.00713	+0.30	18	0.0707	17
+single-unit only	proximal 4-17	A>T	0.00634	+3.25	2	0.7551	6
+single-unit only	proximal 4-17	deletion 1 bp	0.00343	-0.55	16	-0.0405	21
+single-unit only	proximal 4-17	deletion 2-9 bp	0.00158	-0.25	19	0.2004	13
+single-unit only	proximal 4-17	deletion >=10 bp	0.00198	-0.06	22	0.4012	7
+single-unit only	proximal 4-17	insertion 1 bp	0.00290	+0.73	14	0.8190	4
+single-unit only	proximal 4-17	insertion 2-9 bp	0.00119	+1.29	8	1.3852	2
+single-unit only	proximal 4-17	insertion >=10 bp	0.00013	-1.20	9	-1.9028	1
+single-unit only	proximal 4-17	repeat-block deletion	0.01122	+1.64	4	0.3772	8
+single-unit only	proximal 4-17	repeat-block insertion	0.00489	+1.20	10	0.7601	5
+single-unit only	central	C>T|CpG	0.04330	+7.69	1	0.0000	1
+single-unit only	central	C>T|non-CpG	0.02154	-0.66	18	0.0000	2
+single-unit only	central	G>A|CpG	0.04375	+5.29	2	0.0000	3
+single-unit only	central	G>A|non-CpG	0.01955	-4.60	4	0.0000	4
+single-unit only	central	C>A	0.02339	+2.21	10	0.0000	5
+single-unit only	central	G>T	0.01608	-0.31	20	0.0000	6
+single-unit only	central	C>G	0.01720	+0.01	22	0.0000	7
+single-unit only	central	G>C	0.02002	-1.45	16	0.0000	8
+single-unit only	central	T>C	0.00889	-2.53	8	0.0000	9
+single-unit only	central	A>G	0.00443	-0.53	19	0.0000	10
+single-unit only	central	T>G	0.00280	-3.28	6	0.0000	11
+single-unit only	central	A>C	0.00277	+1.12	17	0.0000	12
+single-unit only	central	T>A	0.00679	-0.12	21	0.0000	13
+single-unit only	central	A>T	0.00375	-1.87	14	0.0000	14
+single-unit only	central	deletion 1 bp	0.00353	-1.89	13	0.0000	15
+single-unit only	central	deletion 2-9 bp	0.00138	-2.11	11	0.0000	16
+single-unit only	central	deletion >=10 bp	0.00150	-2.37	9	0.0000	17
+single-unit only	central	insertion 1 bp	0.00165	-3.67	5	0.0000	18
+single-unit only	central	insertion 2-9 bp	0.00045	-3.21	7	0.0000	19
+single-unit only	central	insertion >=10 bp	0.00049	+1.53	15	0.0000	20
+single-unit only	central	repeat-block deletion	0.00864	-2.02	12	0.0000	21
+single-unit only	central	repeat-block insertion	0.00288	-5.20	3	0.0000	22
+single-unit only	distal 1-10	C>T|CpG	0.00924	-11.37	1	-2.2282	1
+single-unit only	distal 1-10	C>T|non-CpG	0.02791	+3.05	6	0.3738	14
+single-unit only	distal 1-10	G>A|CpG	0.01571	-8.88	2	-1.4775	3
+single-unit only	distal 1-10	G>A|non-CpG	0.03383	+5.53	4	0.7907	10
+single-unit only	distal 1-10	C>A	0.01460	-3.86	5	-0.6797	12
+single-unit only	distal 1-10	G>T	0.00444	-7.21	3	-1.8578	2
+single-unit only	distal 1-10	C>G	0.01497	-1.14	15	-0.2000	19
+single-unit only	distal 1-10	G>C	0.01738	-1.93	10	-0.2043	18
+single-unit only	distal 1-10	T>C	0.01109	+1.00	16	0.3187	15
+single-unit only	distal 1-10	A>G	0.00296	-1.90	11	-0.5838	13
+single-unit only	distal 1-10	T>G	0.00462	+1.40	14	0.7225	11
+single-unit only	distal 1-10	A>C	0.00333	+1.41	13	0.2654	16
+single-unit only	distal 1-10	T>A	0.00721	+0.41	22	0.0867	21
+single-unit only	distal 1-10	A>T	0.00166	-3.03	7	-1.1745	5
+single-unit only	distal 1-10	deletion 1 bp	0.00333	-0.56	20	-0.0856	22
+single-unit only	distal 1-10	deletion 2-9 bp	0.00240	+0.81	17	0.8013	9
+single-unit only	distal 1-10	deletion >=10 bp	0.00296	+1.76	12	0.9797	8
+single-unit only	distal 1-10	insertion 1 bp	0.00407	+2.01	9	1.3044	4
+single-unit only	distal 1-10	insertion 2-9 bp	0.00092	+0.45	21	1.0227	7
+single-unit only	distal 1-10	insertion >=10 bp	0.00055	+0.69	18	0.1676	20
+single-unit only	distal 1-10	repeat-block deletion	0.01017	+0.63	19	0.2346	17
+single-unit only	distal 1-10	repeat-block insertion	0.00610	+2.37	8	1.0805	6

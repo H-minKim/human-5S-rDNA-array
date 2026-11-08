@@ -1,0 +1,71 @@
+zone	variant	pos	alt	element	n_units	units
+proximal	1091C	1091	C	NTS1	2	2:93;2:98
+proximal	2054G	2054	G	5'-flank	2	2:92;2:97
+proximal	2091C	2091	C	5'-flank	2	2:100;2:103
+proximal	684T	684	T	NTS1	1	1:139
+proximal	802T	802	T	NTS1	1	1:139
+proximal	2015A	2015	A	NTS2	1	1:135
+proximal	2081A	2081	A	5'-flank	1	2:99
+interior	1083A	1083	A	NTS1	20	2:23;2:24;2:25;2:26;2:27;2:29;2:30;2:32;2:33;2:35;2:37;2:38;2:39;2:41;2:42;2:43;2:44;2:45;2:46;2:79
+interior	435T	435	T	NTS1	7	1:67;1:74;1:76;1:93;1:106;1:121;1:123
+interior	2056C	2056	C	5'-flank	6	2:58;2:63;2:68;2:73;2:74;2:76
+interior	910T	910	T	NTS1	5	1:80;2:47;2:49;2:54;2:80
+interior	927T	927	T	NTS1	5	1:46;1:48;1:58;1:63;1:91
+interior	948T	948	T	NTS1	5	1:67;1:79;1:81;1:121;1:123
+interior	998T	998	T	NTS1	5	2:51;2:53;2:58;2:68;2:76
+interior	1128A	1128	A	NTS1	5	2:59;2:60;2:69;2:70;2:77
+interior	1140C	1140	C	NTS1	5	2:59;2:60;2:69;2:70;2:77
+interior	2210T	2210	T	5S gene	5	2:46;2:48;2:51;2:53;2:79
+interior	603T	603	T	NTS1	4	2:59;2:60;2:69;2:70
+interior	2020T	2020	T	NTS2	4	1:42;1:54;1:59;1:88
+interior	2226T	2226	T	5S gene	4	1:78;1:103;1:105;1:120
+interior	434G	434	G	NTS1	3	1:43;1:55;1:60
+interior	447C	447	C	NTS1	3	1:43;1:55;1:60
+interior	1700T	1700	T	NTS2	3	2:46;2:48;2:79
+interior	506A	506	A	NTS1	2	2:59;2:69
+interior	601A	601	A	NTS1	2	2:60;2:70
+interior	952A	952	A	NTS1	2	1:107;1:110
+interior	1099A	1099	A	NTS1	2	2:72;2:74
+interior	1159T	1159	T	NTS1	2	1:114;1:116
+interior	2151T	2151	T	5S gene	2	2:57;2:67
+interior	360T	360	T	NTS1	1	2:57
+interior	373A	373	A	NTS1	1	1:124
+interior	462A	462	A	NTS1	1	1:103
+interior	466A	466	A	NTS1	1	1:79
+interior	467A	467	A	NTS1	1	1:79
+interior	483T	483	T	NTS1	1	1:87
+interior	535A	535	A	NTS1	1	1:124
+interior	566A	566	A	NTS1	1	1:88
+interior	607T	607	T	NTS1	1	1:103
+interior	657C	657	C	NTS1	1	2:35
+interior	728T	728	T	NTS1	1	2:29
+interior	763T	763	T	NTS1	1	2:58
+interior	778T	778	T	NTS1	1	1:77
+interior	783G	783	G	NTS1	1	1:67
+interior	793T	793	T	NTS1	1	1:43
+interior	830G	830	G	NTS1	1	1:67
+interior	891T	891	T	NTS1	1	1:45
+interior	895T	895	T	NTS1	1	1:103
+interior	951A	951	A	NTS1	1	1:81
+interior	1072A	1072	A	NTS1	1	1:85
+interior	1153T	1153	T	NTS1	1	2:61
+interior	1155C	1155	C	NTS1	1	2:81
+interior	1680T	1680	T	NTS2	1	1:125
+interior	1688G	1688	G	NTS2	1	2:35
+interior	1717T	1717	T	NTS2	1	2:39
+interior	1778A	1778	A	NTS2	1	1:103
+interior	1922T	1922	T	NTS2	1	1:42
+interior	1960A	1960	A	NTS2	1	1:103
+interior	1984T	1984	T	NTS2	1	2:61
+interior	2006A	2006	A	NTS2	1	1:122
+interior	2017T	2017	T	NTS2	1	2:75
+interior	2089T	2089	T	5'-flank	1	2:51
+interior	2098C	2098	C	5'-flank	1	1:104
+interior	2110A	2110	A	5'-flank	1	2:76
+interior	2128A	2128	A	5S gene	1	1:70
+interior	2206A	2206	A	5S gene	1	2:15
+interior	2227A	2227	A	5S gene	1	1:73
+distal	365T	365	T	NTS1	8	1:1;1:2;1:3;1:4;1:5;1:6;1:7;1:8
+distal	629A	629	A	NTS1	4	1:4;1:5;1:6;1:7
+distal	661C	661	C	NTS1	4	1:4;1:5;1:6;1:7
+distal	767C	767	C	NTS1	1	1:1

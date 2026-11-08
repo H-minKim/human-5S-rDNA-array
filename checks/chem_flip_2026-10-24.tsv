@@ -1,0 +1,12 @@
+# WHAT THIS TABLE IS
+# How much the hard call would move if the cut were placed anywhere between the R10 valley
+# (0.4470) and the published cut (0.508). A deep valley means few read-units sit in that
+# band, so the call is insensitive to where exactly the cut falls.
+# RESULT: the band holds 1.208% of read-units overall and 1.246% / 1.179% / 1.160% in R9 /
+# R10 / unknown - the same share in every stratum. The low-methylation fraction changes by
+# at most 1.25 percentage points. The chemistry split does not drive the hard call.
+stratum	read_units	in_band_0.4470_0.508	pct_in_band	pct_below_0.508	pct_below_0.4470
+all	778798	9404	1.208	28.108	26.9
+R941	405338	5051	1.246	28.934	27.688
+R1041	112310	1324	1.179	27.311	26.132
+unknown (outside the index)	261150	3029	1.16	27.169	26.009

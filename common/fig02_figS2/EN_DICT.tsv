@@ -1,0 +1,309 @@
+# Korean-to-English label dictionary for the Figure 2 and Supplementary Figure S2 renders (ko<TAB>en, one label per line, a line break written as the two characters 
+).
+A  전달에서 배치 변화 관측 안 됨 — 생식계열 6 건\n   95% 상한 0.393 (보류 2 건 빼면 4 건 · 0.527) · '없음→없음' 12 건은 분모에서 뺌	A  no change of arrangement observed in transmission — 6 germline cases\n   95% upper bound 0.393 (4 cases excluding the 2 withheld · 0.527) · the 12 "absent→absent" cases were removed from the denominator
+A  경계를 가르는 것은 거의 전부 다개체 공유형\n빗금 = 같은 하플로타입의 '경계가 아닌' 무작위 자리 (귀무)	A  almost all boundary-resolving variants are multi-individual shared\nhatched = random "non-boundary" positions from the same haplotype (null)
+D  거의 항상 깊이 2 에서 시작하고 2–3 칸 간격 (HPRC 557 하플로타입)	D  it almost always starts at depth 2, with 2–3 slot spacing (HPRC 557 haplotypes)
+그림 P1  원위 말단형 유닛의 배치 — v11-수정2 · H1 557 하플로타입	Figure P1  Arrangement of distal terminal-type units — v11-rev2 · H1 557 haplotypes
+그림 P4  말단형 유닛의 성격 — 진단 변이 12 개 · 길이 2,208 bp	Figure P4  Character of terminal-type units — 12 diagnostic variants · length 2,208 bp
+말단형 보유율은 네 부류에서 0–37%%로\n패턴이 말단형만으로 정해지지 않는다	terminal-type carrier rate is 0–37%% across the four classes\nthe pattern is not set by the terminal type alone
+B  5′-flanking·5S gene 에 변이가 3 배 (온전하지 않다)	B  3× more variants in the 5′-flanking region and the 5S gene (they are not intact)
+A  원위 말단형은 이웃하지 않는다 (간격 1 = 귀무의 0.05 배)	A  distal terminal-type units are not adjacent (gap 1 = 0.05× the null)
+C   말단형만의 성질이다 — 다른 소수형은 간격 1 이 오히려 많다	C   this is specific to the terminal type — other minor types have more gap 1, not less
+B  세포주에서도 같은 규칙 (붉은 점 = 말단형 · 간격 1 없음)	B  the same rule holds in cell lines (red points = terminal type · no gap 1)
+조립 출처를 나눠도 집단 차이가 그대로다\n= 조립 방법 탓이 아니다	the population difference persists when split by assembly source\n= it is not an artefact of the assembly method
+B  유닛 1,500 개로 맞춰도 : 원위는 사건 많고 자리는 적다	B  even matched to 1,500 units : the distal side has more events but fewer positions
+C  말단형끼리는 거리와 무관하게 거의 같은 사본 (HOR 아님)	C  terminal-type units are near-identical copies regardless of distance (not HOR)
+C  원위 1-10 은 상위 2 자리가 절반 (가운데는 0.22)	C  for distal 1-10 the top 2 positions make up half (0.22 in the middle)
+B  몰림은 깊이 3–8 (최소 구간 3 이라 1–2 는 불가)	B  the clustering is at depths 3–8 (depths 1–2 are impossible given a minimum segment of 3)
+D   하플로타입마다의 배치 패턴 (원위 유닛 변이만으로 분류)	D   arrangement pattern per haplotype (classified from distal-unit variants only)
+A  변화점은 한 칸 옆도 거의 같다 (88% 가 문턱 통과)	A  a changepoint one slot over is nearly as good (88% pass the threshold)
+유닛끼리의 자카드 닮음 (평균 · 막대 = 2.5–97.5%)	Jaccard similarity between units (mean · bars = 2.5–97.5%)
+C  메틸은 깊이가 정한다 (말단형이라 특별히 다르지 않다)	C  methylation is set by depth (terminal-type units are not special)
+B   하위집단 — 같은 AFR 안에서도 보유가 거의 없다	B   subpopulations — carriers are almost absent even within AFR
+log₂(C>T|CpG / C>T|비CpG) · 공유형 뺌	log₂(C>T|CpG / C>T|non-CpG) · shared type removed
+A   집단마다 크게 다르다 — AFR 이 가장 낮다	A   differs greatly between populations — AFR is lowest
+그림 P3  배치의 안정성 : 세대 · 종양 · 세포주	Figure P3  Stability of the arrangement: generations · tumour · cell lines
+대집단  (아래 숫자 = 하플로타입 수 / 개체 수)	large groups  (numbers below = haplotypes / individuals)
+B  CN 이 커지면 구성만 바뀐다 (총량은 불변)	B  as CN grows only the composition changes (the total is invariant)
+C   교란 배제 — 조립 출처로 나눠도 같다	C   confounder ruled out — the same when split by assembly source
+내부 대비 log2 (네 방식 모두 같은 방향)	log2 vs interior (all four approaches agree in direction)
+A   이웃하지 않고 2–3 칸 띄어 놓인다	A   they are not adjacent but placed 2–3 slots apart
+A  위치별 변이 종류 취약성 (튼튼한 칸만)	A  variant-type vulnerability by position (robust bins only)
+C  세포주 간격 분포 — 간격 1 은 0 건	C  cell-line gap distribution — gap 1 has 0 cases
+SNV - 두 자리(2235TG·2206GA)	SNV − two positions (2235TG·2206GA)
+그 깊이에 말단형 유닛이 있는 하플로타입의 몫	fraction of haplotypes with a terminal-type unit at that depth
+그림 P5  코딩부 변이 — 원위 초과의 정체	Figure P5  Coding-region variants — what the distal excess is
+구성비 vs N · β·깊이 통제 (rho)	composition vs N · controlling for β and depth (rho)
+A  말단형을 정의하는 변이 (상위 14)	A  variants that define the terminal type (top 14)
+B  근위 표지는 반대로 '붙어서' 나온다	B  proximal markers instead appear "adjacent"
+C  끝은 크기가 고정 · 내부만 늘어난다	C  the ends are fixed in size · only the interior grows
+그림 P6  구역별 변이 종류와 CN 효과	Figure P6  Variant types by zone and the CN effect
+한끼움\n그룹 3.85 · 이웃 0.7563	isolated inserts\ngroups 3.85 · neighbour 0.7563
+C  드문 변이만으로는 경계를 못 정한다	C  rare variants alone cannot set the boundary
+균일\n그룹 1.00 · 이웃 0.7596	uniform\ngroups 1.00 · neighbour 0.7596
+그림 P7  변화점의 해상도와 구역 정의	Figure P7  Changepoint resolution and the definition of zones
+블록\n그룹 4.40 · 이웃 0.7584	block\ngroups 4.40 · neighbour 0.7584
+잡다\n그룹 9.59 · 이웃 0.3881	fragmented\ngroups 9.59 · neighbour 0.3881
+A   말단형을 정의하는 변이 13 개	A   13 variants that define the terminal type
+배열 하나에서 찾은 변화점 수 (평균)	number of changepoints found per array (mean)
+다수 그룹과의 거리 (1 - 자카드)	distance from the major group (1 − Jaccard)
+최적 경계 깊이 (부트스트랩 95%)	optimal boundary depth (bootstrap 95%)
+경계 하나를 가르는 변이 수 (개)	number of variants that resolve one boundary
+유닛 1 개당 변이 수 (kb 당)	variants per unit (per kb)
+유닛당 변이 수 비 (말단형/보통)	ratio of variants per unit (terminal-type / ordinary)
+전체(indel 포함) - 두 자리	all (including indels) − two positions
+한 칸 옮길 때 잃는 이득 ÷ 벌점	gain lost per slot moved ÷ penalty
+소수 변이가 두 계통에 걸친 비율	fraction of minor variants spanning both lineages
+B   차이는 스페이서에 몰린다	B   the difference concentrates in the spacer
+근11-20\n결실_단일_≥2bp	P11-20\ndeletion_single_≥2bp
+말단형 유닛 사이 간격 (유닛)	gap between terminal-type units (units)
+말단형 유닛끼리의 간격 (유닛)	gap between terminal-type units (units)
+10 개\n1.8%\n말단형 0%	10\n1.8%\nterminal-type 0%
+34 개\n6.1%\n말단형 3%	34\n6.1%\nterminal-type 3%
+C   사람이 달라도 닮는다	C   they resemble each other even across people
+다개체 공유형 (무작위 자리)	multi-individual shared (random positions)
+원위 접합에서의 깊이 (유닛)	depth from the distal junction (units)
+코딩/스페이서 비 (bp 당)	coding / spacer ratio (per bp)
+1 개\n0.2%\n말단형 0%	1\n0.2%\nterminal-type 0%
+근1-3\n결실_단일_≥2bp	P1-3\ndeletion_single_≥2bp
+근4-5\n결실_단일_≥2bp	P4-5\ndeletion_single_≥2bp
+상위 2 자리가 차지하는 몫	fraction taken by the top 2 positions
+판정 보류 (조립기 불일치)	call withheld (assembler disagreement)
+간격 1(바로 이웃) 비율	proportion of gap 1 (immediate neighbour)
+그 변이를 가진 유닛의 몫	fraction of units carrying that variant
+근1-3\n결실_단일_1bp	P1-3\ndeletion_single_1bp
+말단형 사이 간격 (유닛)	gap between terminal-type units (units)
+원21-30\nCpG_C>T	D21-30\nCpG_C>T
+원21-30\n삽입_반복블록	D21-30\ninsertion_repeat-block
+원8-20\n비CpG_C>T	D8-20\nnon-CpG_C>T
+종양/정상\n(체세포·별도)	tumour/normal\n(somatic · separate)
+가계\n(배치 보유 자식)	pedigree\n(children with arrangement)
+관측 수 (배치 보유만)	observations (with arrangement only)
+근6-10\n삽입_반복블록	P6-10\ninsertion_repeat-block
+원8-20\nCpG_C>T	D8-20\nCpG_C>T
+원8-20\n삽입_반복블록	D8-20\ninsertion_repeat-block
+그 간격이 차지하는 몫	fraction taken by that gap
+근1-3\nCpG_C>T	P1-3\nCpG_C>T
+근1-3\n결실_반복블록	P1-3\ndeletion_repeat-block
+근1-3\n삽입_반복블록	P1-3\ninsertion_repeat-block
+근11-20\n삽입_단일	P11-20\ninsertion_single
+근4-5\n결실_반복블록	P4-5\ndeletion_repeat-block
+다개체 공유형 (실제)	multi-individual shared (actual)
+말단형 계통 보유 비율	carrier proportion of the terminal-type lineage
+배열내 다중형 (실제)	within-array multi-copy (actual)
+원1-3\nCpG_C>T	D1-3\nCpG_C>T
+원4-7\nCpG_C>T	D4-7\nCpG_C>T
+511 개\n91.9%	511\n91.9%
+ESN 는 0/41	ESN is 0/41
+가까운 끝에서의 깊이	depth from the nearer end
+근6-10\n삽입_단일	P6-10\ninsertion_single
+유닛 변이집합 자카드	Jaccard of unit variant sets
+이웃(간격 1) 비율	proportion of neighbours (gap 1)
+하플로타입 보유 비율	haplotype carrier proportion
+array 길이 층	array length stratum
+구역 평균 유닛 수	mean units per zone
+그 밖의 소수 그룹	other minor groups
+근11-20\nT>A	P11-20\nT>A
+근11-20\nT>G	P11-20\nT>G
+근21-30\nC>A	P21-30\nC>A
+근위 DB45:20	proximal DB45:20
+단일유닛형 (실제)	single-unit (actual)
+말단형\n진단 제외	terminal-type\ndiagnostic excluded
+서로 다른 자리 수	number of distinct positions
+원21-30\nT>C	D21-30\nT>C
+원21-30\nT>G	D21-30\nT>G
+원위 D1096:1	distal D1096:1
+원위 깊이 (유닛)	distal depth (units)
+귀무(딱지 섞기)	null (label shuffle)
+그중 말단형 보유	of which carry terminal-type
+근위 2205TC	proximal 2205TC
+근위 IB24:1	proximal IB24:1
+말단형 보유 비율	terminal-type carrier proportion
+말단형\n진단 포함	terminal-type\ndiagnostic included
+무작위 배치 귀무	random-placement null
+보통\n진단 제외	ordinary\ndiagnostic excluded
+원8-20\nC>A	D8-20\nC>A
+원8-20\nC>G	D8-20\nC>G
+원8-20\nT>A	D8-20\nT>A
+원8-20\nT>G	D8-20\nT>G
+C>T|비CpG	C>T|non-CpG
+G>A|비CpG	G>A|non-CpG
+HPRC 트리오	HPRC trios
+개체(하나라도)	individuals (any)
+귀무 대비 배수	fold vs null
+근4-5\nT>A	P4-5\nT>A
+근위 837TG	proximal 837TG
+보통\n진단 포함	ordinary\ndiagnostic included
+비CpG_C>T	non-CpG_C>T
+순서 섞기 귀무	order-shuffle null
+원1-3\nC>A	D1-3\nC>A
+원4-7\nC>A	D4-7\nC>A
+원4-7\nT>G	D4-7\nT>G
+유닛당 변이 수	variants per unit
+중앙 0.222	median 0.222
+출처 cons2	source cons2
+간격 (유닛)	gap (units)
+같은 사람 안	within the same person
+결실_반복블록	deletion_repeat-block
+근위 4-17	proximal 4-17
+근위11-30	proximal 11-30
+다개체 공유형	multi-individual shared
+다른 사람끼리	between different people
+말단형 37%	terminal-type 37%
+말단형–말단형	terminal-type–terminal-type
+배열내 다중형	within-array multi-copy
+삽입_반복블록	insertion_repeat-block
+원위 1-10	distal 1-10
+원위11-30	distal 11-30
+출처 hifi	source hifi
+하플로타입 몫	haplotype fraction
+0.89 배	0.89×
+2.61 배	2.61×
+3.45 배	3.45×
+SNV 전부	all SNVs
+가운데 대조	middle (control)
+관측 간격1	observed gap 1
+귀무 = 1	null = 1
+근11-20	P11-20
+근21-30	P21-30
+근위 1-3	proximal 1-3
+근위1-10	proximal 1-10
+단일유닛형만	single-unit only
+말단형 그룹	terminal-type group
+말단형 유닛	terminal-type unit
+변화점 비율	changepoint proportion
+생식계열 합	germline total
+원21-30	D21-30
+원위1-10	distal 1-10
+출처 pub	source pub
+0.05배	0.05×
+0.49배	0.49×
+결실_단일	deletion_single
+구간 평균	binned mean
+근6-10	P6-10
+단일유닛형	single-unit
+드문 근위	rare proximal
+드문 원위	rare distal
+배치 같음	same arrangement
+변화점 수	changepoint count
+보유 비율	carrier proportion
+보통 유닛	ordinary unit
+보통–보통	ordinary–ordinary
+블록 결실	block deletion
+블록 삽입	block insertion
+삽입_단일	insertion_single
+원8-20	D8-20
+원위 깊이	distal depth
+전체 근위	all proximal
+전체 원위	all distal
+하플로타입	haplotype
+간격 1	gap 1
+간격 2	gap 2
+간격 3	gap 3
+근1-3	P1-3
+근4-5	P4-5
+근위 1	proximal 1
+근위 쪽	proximal side
+기준 A	criterion A
+기준 B	criterion B
+메틸 β	methylation β
+사건 수	event count
+사례 수	case count
+원1-3	D1-3
+원4-7	D4-7
+원위 1	distal 1
+원위 쪽	distal side
+가운데	middle
+대집단	large group
+말단형	terminal-type
+관측	observed
+귀무	null
+내부	interior
+보통	ordinary
+비율	proportion
+섞임	mixing
+실제	actual
+전부	all
+전체	all
+차	difference
+A  다수 그룹과의 거리에 따른 이웃 비율	A  Adjacency fraction versus distance from the major group
+그림 P8  배치와 섞임	Figure P8  Arrangement and mixing
+전체 평균 6.82 개	overall mean 6.82
+말단형 계통 보유의 집단 분포	Population distribution of terminal-type lineage carriers
+말단형 유닛의 진단 변이와 닮음	Diagnostic variants and similarity of terminal-type units
+말단형 유닛의 간격과 시작 깊이	Gap and starting depth of terminal-type units
+경계 변이의 기원 부류	Origin class of boundary variants
+B   부류별 변이만으로 다시 분할	B   re-segmentation using each origin class alone
+A  코딩/스페이서 비 (상위 두 자리를 뺀 것)	A  coding/spacer ratio (top two positions removed)
+하플로타입 (짧은 배열부터)	Haplotype (shortest array first)
+근위에서 첫 경계	First boundary from the proximal end
+원위에서 첫 경계	First boundary from the distal end
+경계가 하나 (양쪽 겸함)	Single boundary (counts for both ends)
+그 사이의 경계	Boundaries in between
+기타 (12 종)	other (12 classes)
+그림 G2b   구역 나눔 — 개별 배열의 경계와 그래서 나온 구역	Figure G2b   Zoning — boundaries of individual arrays and the zones they give
+코호트 구역 경계 (근위 3|4 · 17|18)	cohort zone boundary (proximal 3|4 · 17|18)
+원위 접합 (배열 끝)	distal junction (end of the array)
+그림 G2c   왜 거기에 경계를 두었나 — 분할 이득과 벌점 문턱	Figure G2c   Why the boundaries sit where they do — split gain and the penalty threshold
+분할 이득  g = SSE(통째) - SSE(왼쪽) - SSE(오른쪽)	split gain  g = SSE(whole) - SSE(left) - SSE(right)
+자르는 자리 — 이 깊이 뒤에서 자른다	cut position — the cut is made after this depth
+벌점 문턱 73.8	penalty threshold 73.8
+1 단계	step 1
+5' 측면	5' flanking
+90 bp	5' flanking
+5S rDNA 유전자	5S rDNA gene
+119 bp	5S rDNA gene
+A   영역마다 거리에 따라	A   Each region, by distance
+B   이웃이 얼마나 더 닮았나	B   How much more alike are neighbours
+거리 1	distance 1
+거리 2	distance 2
+거리 15 보다 불일치가 적은 몫 (%)	reduction in mismatch relative to distance 15 (%)
+그 영역이 통째로 같을 확률	probability that the whole region is identical
+그림 G6e   영역별로 본 이웃 유닛과의 닮음	Figure G6e   Similarity to neighbouring units, by region
+유닛 사이 거리 (copy)	distance between units (copies)
+말단형이 들어앉은 깊이 집합의 크기 (자리 수)	size of the set of depths occupied by terminal-type units (number of positions)
+B   깊이 2 에서 시작한다 — 변이 봉우리도 같은 깊이에 있다	B   It starts at depth 2 - the variant peaks sit at the same depths
+유닛당 변이 수 (선)	variants per unit (line)
+집단 못 찾음	no population label
+집단 구성	population make-up
+그 집단 전체 하플로타입 중 비율	fraction of all haplotypes in that population
+array 유형이란 무엇인가 : 몇 개의 변이 토큰을 array 전체에 깔고 있는 하플로타입 묶음	What an array type is : a group of haplotypes carrying a few variant tokens across the whole array
+array 안 퍼진 정도	spread across the array
+무리	cluster
+말단형과 이웃 보통 유닛은 약 2% 다르다	Terminal-type units differ from neighbouring ordinary units by about 2%
+자리별로 변이가 완전히 같은 유닛의 비율	Fraction of units with identical variants at the aligned position
+자리별 변이 자카드 (유닛 평균)	Position-wise variant Jaccard (mean over units)
+삼자 전달, 유닛 자리까지 맞춘 비교	Trio transmission, compared unit by unit at aligned positions
+A   자리까지 같은 유닛	A   Units identical at the aligned position
+B   자리별 닮음	B   Position-wise similarity
+비전달	Non-transmitted
+전달	Transmitted
+무관	Unrelated
+코호트 구역 경계 (원위 10|11)	cohort zone boundary (distal 10|11)
+깊이 10 뒤 · 209	after depth 10 · 209
+말단형\n↔ 이웃\n보통	Terminal\n↔\nneighbour\nordinary
+보통\n↔ 보통\n(원위)	Ordinary\n↔\nordinary\n(distal)
+보통\n↔ 보통\n(가운데)	Ordinary\n↔\nordinary\n(middle)
+보통\n↔ 보통\n(근위)	Ordinary\n↔\nordinary\n(proximal)
+바로 이웃한 두 유닛의 서열 차이 (%)	Sequence difference between adjacent units (%)
+총 변이 수	total variant count
+근위다움	proximal-ness
+원위다움	distal-ness
+가운데 >30	middle >30
+가운데 >10	middle >10
+가운데 >5	middle >5
+array 유형 무리	array-type cluster
+변이 토큰	variant token
+반복 블록 밖 결실과 삽입, 그리고 모든 치환	indels outside repeat blocks and all substitutions
+반복 블록 안 결실과 삽입	indels within repeat blocks
+0.869\n짝 200	0.869\npairs 200
+0.530\n짝 8,945	0.530\npairs 8,945
+0.020\n짝 1,784	0.020\npairs 1,784
+원위 말단형 (그룹 163)	distal terminal-type (groups 163)
+원위 그 밖의 소수형 (그룹 1442)	other distal minor types (groups 1442)
+근위 소수형 (그룹 1331)	proximal minor type (groups 1331)
+AFR  전체 167 · 말단형 보유 9	AFR  all 167, terminal-type 9
+SAS  전체 110 · 말단형 보유 45	SAS  all 110, terminal-type 45
+AMR  전체 86 · 말단형 보유 38	AMR  all 86, terminal-type 38
+EAS  전체 103 · 말단형 보유 53	EAS  all 103, terminal-type 53
+EUR  전체 67 · 말단형 보유 37	EUR  all 67, terminal-type 37

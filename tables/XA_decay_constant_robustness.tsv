@@ -1,0 +1,13 @@
+# P08 XA, sensitivity of the decay constant a, seed 20261010, B 2000, 2026-10-10
+curve	start	end	free_nugget	a	lo	hi	frac_at_bound
+gamma	1	15	True	19.1694	10.8894	72.9482	0.0080
+gamma	2	15	True	3.8940	2.9490	5.3569	0.0000
+gamma	3	15	True	7.3445	4.5262	15.5230	0.0000
+gamma	4	15	True	8.1265	4.3830	26.5803	0.0020
+gamma	5	15	True	6.3298	3.3974	16.9558	0.0000
+gamma	3	10	True	6.1744	3.0239	76.7003	0.0195
+gamma	3	12	True	6.9888	3.8430	34.4225	0.0080
+mean	1	15	True	9.8170	8.0332	12.1476	0.0000
+mean	3	15	True	5.9370	4.7005	7.7185	0.0000
+mean	5	15	True	5.9554	4.1882	9.3322	0.0000
+gamma	3	15	False	499.9995

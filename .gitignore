@@ -1,0 +1,55 @@
+# Code that is not part of this deposit is listed in
+# checks/NOT_DEPOSITED.tsv rather than kept here.
+
+# Previous versions. Kept on disk on purpose; not published.
+_old_versions/
+
+# Data. This repository holds code and result tables only.
+*.bam
+*.bai
+*.cram
+*.fastq
+*.fastq.gz
+*.fq
+*.fq.gz
+*.fa
+*.fa.gz
+*.fasta
+*.sam
+*.vcf
+*.vcf.gz
+*.bed.gz
+*.parquet
+
+# Figure files.
+*.png
+*.pdf
+*.svg
+*.eps
+*.tif
+*.tiff
+*.xlsx
+
+# Python.
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+.venv/
+venv/
+
+# Editors and operating systems.
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+
+# The deposited result tables. The data patterns above would otherwise
+# exclude the .parquet and .gz files in this folder.
+!tables/
+!tables/**
+
+# Previous versions kept on disk under their Korean names. The English
+# name is excluded above; these two cannot come through the Korean tree
+# because the name map rewrites them, so they are added here.
+_옛본/
+_옛판/

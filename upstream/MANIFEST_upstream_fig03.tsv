@@ -1,0 +1,27 @@
+# `used_by` gives the Figure 3 panels that consume each upstream table, traced through the chain (only the producers named in fig03/MANIFEST_Fig3.tsv count). Panel letters are post the 2026-11-04 swap: the figure has panels A to H and there are no panels I or J.
+file	file_md5	bytes	writes	used_by
+upstream/v11_node/meth_units_jx_v11.py	a16854f7269f	7555	METH_READUNIT_<node>.tsv.gz and METH_SITE_<node>.tsv.gz, from the junction placed BAMs	Figure 3D (through analysis/v13b_zone_10_21_2026-10-29.py)
+upstream/v11_node/meth_units_ao_v11.py	08d9ed84dc99	7558	the same two tables from the array-only placed BAMs	Figure 3D (through analysis/v13b_zone_10_21_2026-10-29.py)
+upstream/v11_local/merge_meth.py	0ad651bd8314	4416	READMAP_METH_G8V4.tsv and METH_SITE_G8V4.tsv.gz, merging the per-node tables	Figure 3D (lineage)
+upstream/v1_build.py	1c85227863ed	11794	ru_v11.parquet, one row per read x unit	Supplementary Figure S3B, C (through figx25_shape_prep.py)
+upstream/v13_L1_read_unit.py	7990aff34dc8	11886	L1_READ_UNIT.parquet, one row per read x unit after the completeness gate	Figure 3E; Supplementary Figure S3D
+upstream/v14_L2_hap_unit.py	8b61c1316eec	10677	L2_HAP_UNIT.parquet, one row per haplotype x unit	Figure 3F
+upstream/v143_junction_seq_annot.py	6f534ec1af8a	5220	JUNCTION_SEQ_ANNOT.tsv, CpG and Alu-like counts per window	Supplementary Figure S3A (through analysis/fig3_supp_seq1k_prep.py)
+upstream/fig8_prep.py	0b97910e8f9f	4976	FIG8_PAIRS.tsv, the paired samples and their per-sample beta	Supplementary Figure S3E, F, G, H
+upstream/v11_node/mkbam.sh	f982792b1848	1833	~/placed_bam/<sample>.<job>.<source>.bam, the junction placed BAMs, by sorting and indexing the .placed.sam of the reproduction run with samtools	Figure 3D (through meth_units_jx_v11.py); the whole figure through ru_v11 -> L1 -> L2
+upstream/v11_node/mkbam_ao_v11.py	62195fb04b58	4369	~/placed_bam_g8_v11, the array-only placed BAMs, from the SAM of ~/aog8v10 with samtools	Figure 3D (through meth_units_ao_v11.py); the whole figure through ru_v11 -> L1 -> L2
+upstream/v12_fiberseq_node/recall_edge_v10.py (and recall_mid_v10.py, recall_pad2_v10.py)	a262d3abf3b7 / 6a953d5858d1 / 812279689e6f	0	the placed SAM that everything above rests on: ~/rjrepro/<sample>.placed.sam for the junction side and ~/aog8v10/sam/<sample>.<job>.sam for the array-only side. These are the scripts that call minimap2	every panel of Fig 3 and Supplementary Fig. S3, through the placed BAMs
+upstream/zone_state_seg.py	fde2f5d32028	7980	ZSS_SAMPLE.tsv, the per-sample zone states that the normal-against-cancer comparison reads	Supplementary Figure S3G, H (through analysis/norm_vs_cancer.py)
+upstream/cancer_recompute.py	be465c6dbe55	10777	CR_READUNIT.parquet, the per-read, per-unit table for the cancer samples	Supplementary Figure S3G, H (through analysis/norm_vs_cancer.py)
+upstream/cell_recompute.py	4cb65c4539a3	7901	CELL_READUNIT.parquet, the per-read, per-unit table for the cell lines	Supplementary Figure S3G, H (through analysis/norm_vs_cancer.py)
+upstream/tissue_recompute.py	a04923bbb841	6565	TISSUE_READUNIT.parquet, the per-read, per-unit table for the tissue samples	Supplementary Figure S3G, H (through analysis/norm_vs_cancer.py)
+upstream/build_all_meth2.py	4b0da8961914	4137	READMAP_METH_ALL_v2_2026-09-27.tsv, the merged read-to-methylation map	Figure 3H (through analysis/fig5v2b_prep_z1021_2026-10-29.py)
+upstream/v94_trio_source_definition.py	bf253238717a	8137	TRIO_SRCDEF_PAIRZONE.tsv, the trio pairings, which haplotype of each parent was transmitted	Figure 3H (through analysis/fig5v2b_prep_z1021_2026-10-29.py)
+upstream/v128_rebuild_a0_clean.py	c931ba6a3ed2	7679	FLANK_METH_HAP_A0_CLEAN.tsv, the cleaned per-haplotype flank methylation table	Figure 3H (through analysis/fig5v2b_prep_z1021_2026-10-29.py)
+fig02_figS2_chain/U2_unit_map_variant_calling/consmapG8v4_fixdedup.py	1c20633f75f9	15565	CONSENSUS_MAP_G8_full_p0..p3.tsv and CONSENSUS_SUM_G8_full_p0..p3.tsv, merged header-plus-sorted-body into CONSENSUS_MAP_G8_full.tsv (58,459 rows; verify OK 57,215 / SKIP 1,231 / NO_FULL 13) and CONSENSUS_SUM_G8_full.tsv	Figure 3D, E; Supplementary Figure S3D (through CONSENSUS_MAP_G8_full.tsv)
+upstream/fig02_figS2_chain/U2_unit_map_variant_calling/consmapG8v4_fixdedup.py	1c20633f75f9	15565	CONSENSUS_MAP_G8_full.tsv	Figure 3D, E; Supplementary Figure S3D (through CONSENSUS_MAP_G8_full.tsv)
+upstream/fig02_figS2_chain/U7_read_level_tables/slot_qc_eligibility.py	f7e9878b07d5	2918	SLOT_QC.tsv	Figure 3E; Supplementary Figure S3D (through SLOT_QC.tsv into v13_L1_read_unit.py)
+upstream/fig02_figS2_chain/U5_cohort_tiers/tiers_H0H3_build.sh	822a2784e701	3974	TIERS_H0H3_SLOTS_2026-10-05.tsv	Figure 3G; Supplementary Figure S3B, C
+upstream/v34_integrated_zoning.py	33ef0f28d65b	5154	ZONE_INTEGRATED.tsv	Figure 3C, 3D
+upstream/figx18_prep.py	7865ead31030	6056	FIGX18_PAIRS.tsv	Supplementary Figure S3E, F, G, H (through upstream/fig8_prep.py)
+common/fig02_figS2/tables/EXPORT_variant_groups.py	84521d94b1a3	5625	V11_VARIANT_GROUPS.tsv	Figure 3E; Supplementary Figure S3D (through V11_VARIANT_GROUPS.tsv into v13_L1_read_unit.py)

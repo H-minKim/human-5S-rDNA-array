@@ -1,0 +1,9 @@
+category	name	definition	slots	individuals	pairs	member_md5	parent	fraction_of_parent
+tier	H0	cohort == HPRC	604	306	298	dfb0731f6ec8	provenance_full_table	-
+tier	H1	variant reference set	557	301	256	fcc0b4acfee1	H0	0.9222
+tier	H2	methylation reference set (qc_eligible==1)	510	280	230	a5498876e4c5	H0	0.8444
+tier	H3	H1 intersect H2, analyses that measure both	490	274	216	36f1be21ab39	H0	0.8113
+venn_cell	H1_only	variant only, not in the methylation reference set	67	49	18	8fde811b9dbc	H0	0.1109
+venn_cell	H2_only	methylation only, not in the variant reference set	20	20	0	baeeb76f922d	H0	0.0331
+venn_cell	H1_and_H2	both, equals H3	490	274	216	36f1be21ab39	H0	0.8113
+venn_cell	neither	in H0 only	27	26	1	84faa46698bf	H0	0.0447

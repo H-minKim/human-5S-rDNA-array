@@ -1,0 +1,10 @@
+kind	n_groups	n_pairs	gap	frac_obs	frac_null	enrich	p
+distal terminal-type	163	354	1	0.0056	0.2649	0.021	0.000999
+distal terminal-type	163	354	2	0.4972	0.2003	2.482	0.000999
+distal terminal-type	163	354	3	0.3814	0.1480	2.576	0.000999
+other distal minority types	1442	2401	1	0.3070	0.2232	1.375	0.000999
+other distal minority types	1442	2401	2	0.2520	0.1764	1.429	0.000999
+other distal minority types	1442	2401	3	0.1687	0.1390	1.213	0.001998
+proximal minority type	1331	1934	1	0.2647	0.2028	1.305	0.000999
+proximal minority type	1331	1934	2	0.2358	0.1637	1.441	0.000999
+proximal minority type	1331	1934	3	0.1505	0.1331	1.130	0.02597

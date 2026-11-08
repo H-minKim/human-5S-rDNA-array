@@ -1,0 +1,19 @@
+side	pen	n_zone	zone	depth_from	depth_to	top_features
+prox	0.5	4	1	1	3	del_ge10+3.3, del_repeat+3.1, tv_T>G+2.9, C>T_nonCpG-2.9
+prox	0.5	4	2	4	8	coding_indel+1.5, NTS1-1.5, tv_C>G-1.4, ins_unique+1.1
+prox	0.5	4	3	9	17	ins_unique+1.1, del_unique-1.1, deamination_CpG-1.0, coding_snv_xU84C+0.9
+prox	0.5	4	4	18	40	tv_T>A+0.6, oxidation_C>A_G>T-0.6, ins_unique-0.5, tv_T>G-0.5
+prox	1.0	3	1	1	3	del_ge10+3.3, del_repeat+3.1, tv_T>G+2.9, C>T_nonCpG-2.9
+prox	1.0	3	2	4	17	ins_unique+1.1, NTS1-1.0, deamination_CpG-0.9, coding_snv_xU84C+0.9
+prox	1.0	3	3	18	40	tv_T>A+0.6, oxidation_C>A_G>T-0.6, ins_unique-0.5, tv_T>G-0.5
+prox	2.0	2	1	1	3	del_ge10+3.3, del_repeat+3.1, tv_T>G+2.9, C>T_nonCpG-2.9
+prox	2.0	2	2	4	40	del_ge10-0.3, del_repeat-0.2, tv_T>G-0.2, C>T_nonCpG+0.2
+dist	0.5	5	1	1	2	coding_snv_xU84C+2.9, NTS2+2.9, n_var+2.8, tv_C>G+2.4
+dist	0.5	5	2	3	4	NTS2+2.1, coding_snv_xU84C+2.0, AluY+2.0, NTS1-1.8
+dist	0.5	5	3	5	10	C>T_nonCpG-1.6, GArich-1.3, AluY+1.2, U84C-1.1
+dist	0.5	5	4	11	28	NTS2-0.5, deamination_CpG-0.4, n_var-0.4, tv_C>G-0.4
+dist	0.5	5	5	29	40	U84C+1.0, coding_indel-0.9, GArich+0.9, tv_T>G+0.9
+dist	1.0	2	1	1	10	GArich-1.4, NTS2+1.4, AluY+1.3, U84C-1.2
+dist	1.0	2	2	11	40	GArich+0.5, NTS2-0.5, AluY-0.4, U84C+0.4
+dist	2.0	2	1	1	10	GArich-1.4, NTS2+1.4, AluY+1.3, U84C-1.2
+dist	2.0	2	2	11	40	GArich+0.5, NTS2-0.5, AluY-0.4, U84C+0.4

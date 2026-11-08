@@ -1,0 +1,15 @@
+source	class	sample	slot	event	ap_lo	ap_hi	our_n_reads	our_n_spanning	hub_event_reads	hub_canon_reads	hub_canon_identity	decision	axisB_min_local_best	hap_median_local_best	n_positions_no_depth	axisB_recovered
+v2 DP	True deletion / insertion	HG00133	2	D4	119	129	18	22	18	0	-	repaired in v11-fix1	0.000	1.000	4	Y
+anchor scan	True deletion / insertion	HG01081	2	D9	9	29	4	4	4	4	0.9578	not repaired (09-22)	0.250	0.889	0	Y
+anchor scan	True deletion / insertion	HG01106	1	D8	19	48	3	3	14	6	0.9567	not repaired (09-22)	0.000	0.900	4	Y
+anchor scan	True deletion / insertion	HG02559	2	D6	2	21	6	6	6	0	-	not repaired (09-22)	0.067	0.900	3	Y
+anchor scan	True deletion / insertion	HG03270	1	D1	39	45	7	9	7	2	0.9850	repaired in v11-fix1	0.545	0.933	0	N
+anchor scan	True deletion / insertion	NA20850	1	D6	157	168	10	10	12	5	0.9364	not repaired (09-22)	0.000	1.000	1	Y
+anchor scan	Mosaic	HG00609	2	I1	51	59	4	4	9	8	0.9919	not repaired (09-22, mosaic)	0.278	0.923	2	Y
+anchor scan	Mosaic	HG01150	1	I2	51	66	4	4	3	5	0.9932	not repaired (09-22, mosaic)	0.200	0.875	1	Y
+anchor scan	Mosaic	HG01258	1	D1	61	63	10	14	10	6	0.9865	not repaired (09-22, mosaic)	0.700	1.000	0	N
+anchor scan	Mosaic	HG03516	2	D4	31	40	9	9	17	5	0.9950	not repaired (09-22, mosaic)	0.100	0.941	0	Y
+anchor scan	Mosaic	HG04115	2	D2	8	15	11	12	13	10	0.9897	not repaired (09-22, mosaic)	0.133	0.933	0	Y
+anchor scan	Contradicted, counted as Mosaic in the summary	HG00609	2	I13	11	20	6	8	10	10	0.9948	not repaired (09-22, mosaic)	0.190	0.923	0	Y
+anchor scan	Contradicted, counted as Mosaic in the summary	NA20827	2	I8	69	77	6	7	9	15	0.9850	not repaired (09-22, mosaic)	0.000	0.727	0	Y
+anchor scan	Not reproduced	NA21133	2	D22	65	89	4	4	None	None	-	not repaired (not reproduced)	0.286	0.571	0	Y

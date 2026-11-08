@@ -1,0 +1,9 @@
+unit_class	diagnostic	pair	n_pairs	mean_jaccard	p2.5	p97.5
+terminal-type	included	same person	2831	0.8696	0.6875	1.0000
+terminal-type	included	different person	20000	0.8607	0.6875	1.0000
+terminal-type	excluded	same person	2838	0.3374	0.0000	1.0000
+terminal-type	excluded	different person	20000	0.3276	0.0000	1.0000
+ordinary	included	same person	1392	0.3100	0.0000	1.0000
+ordinary	included	different person	20000	0.1139	0.0000	0.6667
+ordinary	excluded	same person	1353	0.2906	0.0000	1.0000
+ordinary	excluded	different person	20000	0.1139	0.0000	0.7000

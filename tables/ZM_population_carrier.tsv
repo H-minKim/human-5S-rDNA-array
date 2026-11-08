@@ -1,0 +1,20 @@
+level	group	n_individuals	n_haplotypes	n_carrier_hap	frac_hap	n_indiv_with_any	frac_indiv
+super	AFR	91	167	9	0.0539	9	0.0989
+super	AMR	47	86	38	0.4419	32	0.6809
+super	EAS	56	103	53	0.5146	40	0.7143
+super	EUR	40	67	37	0.5522	31	0.7750
+super	SAS	61	110	45	0.4091	38	0.6230
+#chi2_hap	94.4702	p	1.47711e-19	dof	4
+#perm_indiv	range_obs	0.5005	p	0.00049975	nperm	2000
+sub	ESN	21	41	0	0.0000
+sub	GWD	20	38	3	0.0789
+sub	PUR	18	33	17	0.5152
+sub	GBR	17	29	16	0.5517
+sub	CHS	15	28	17	0.6071
+sub	PEL	15	28	13	0.4643
+sub	MSL	16	28	2	0.0714
+sub	BEB	14	25	15	0.6000
+sub	KHV	13	24	10	0.4167
+sub	PJL	13	24	10	0.4167
+sub	ACB	12	22	3	0.1364
+sub	JPT	11	22	13	0.5909

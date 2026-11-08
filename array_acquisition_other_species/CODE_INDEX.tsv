@@ -1,0 +1,111 @@
+file	mtime	status	description
+adult_stats.py	2026-09-21	current	Methylation by sample, locus branch and class (coding part, spacer, flankL, flankR), with a bootstrap over read groups (independent, the difference before any alignment)
+ape_align.sh	2026-09-12	current	Apes: SAM records picked out by 5S k-mer with MM and ML kept as they are, then fastq, alignment to the species assembly, array read BAM, modkit, and a read by unit matrix
+ape_arrays.sh	2026-09-12	current	Apes and other additional species: download the T2T assembly, run Rfam RF00001 cmsearch, and list the 5S arrays by the same rule as the other species
+ape_finish.sh	2026-09-12	current	Driver for the ape finishing steps (run locally in the background)
+ape_prep.sh	2026-09-12	current	Prepares the ape alignment on the node: downloads and indexes the assembly. The cmsearch table, the structure table and modkit are carried over by the driver script
+ape_screen.sh	2026-09-12	current	Apes: from the GenomeArk ONT BAM (recalled with the guppy 6.3.8 methylation model, MM and ML present), keeps only the reads that carry a 5S k-mer
+ape_to_d.sh	2026-09-12	current	Brings the ape outputs onto disk D in one common layout (03_reads, 04_bam, 05_bedmethyl, 06_aux)
+arabidopsis_ColCC_5S_arrays.bed	2026-09-12	current	
+array_catalog.py	2026-09-11	current	The list of 5S arrays (section 3 of the transfer), read from cmsearch --tblout
+array_struct.py	2026-09-12	current	Measures the 5S array structure of each species: whether it is flank, array, flank, and what the inside of a unit is made of
+array_vs_flank.py	2026-09-14	current	Measures the methylation of the array and of the 100 kb of flank on either side of it from the same BAM
+ath_claim.sh	2026-09-12	current	Arabidopsis (node1): claims as one batch the pod5 pieces that have finished filtering and are not yet claimed, with flock so that only one is taken at a time
+ath_convert.sh	2026-09-12	current	Arabidopsis: converts a piece written with pod5 0.3.47 back to the form that dorado 2.1.2 reads
+ath_dorado.sh	2026-09-12	current	Arabidopsis: pod5 pieces holding only array reads, then CPU dorado (hac@v5.0.0, 5mC_5hmC, that is every context CG, CHG and CHH), then realignment to Col-CC keeping primary alignments only
+ath_finalize.sh	2026-09-12	current	Arabidopsis finishing (node1): per node recalled BAM, merged, modkit (CG, CHG and CHH), read by unit matrix, and a position by position comparison with the original SUP alignment
+ath_member.sh	2026-09-12	current	Called by tar --to-command once per member (standard input is the member content and TAR_FILENAME is the member name)
+ath_sched.sh	2026-09-12	current	Scheduler for the Arabidopsis recalling (run locally in the background), which uses every idle core
+ath_select.sh	2026-09-12	current	Arabidopsis ATRun3 (PromethION R10.4.1, SUP v5.0.0 basecall, no methylation tags): aligns the reads to Col-CC (PAF) and keeps the ids of the reads that touch a 5S array
+ath_stream.sh	2026-09-12	current	Streams the Arabidopsis ATRun3 pod5 tar (EBI ERR17795792, 164 GB) rather than holding it on disk, keeping only the array reads as pod5
+bismark_parts_meth.py	2026-09-15	current	Splits the array into coding part, spacer and outside (flank) and reports CpG methylation for each
+bismark_read_meth.py	2026-09-15	current	Methylation per read, because the CpGs inside one read are not independent
+bismark_region_meth.py	2026-09-15	reference only (CpG level; the conclusion came from the read-level script)	Reports CpG methylation by region from a bismark BAM, for comparing the array with its flank
+build_handoff_index.py	2026-10-29	current (builds the code ledger)	Builds the ledger of the newest files and the code index of the transfer folder (HANDOFF) by measurement
+build_zf_parts.py	2026-09-15	current	Builds the region table that splits the chr18 (somatic type) and chr4 (maternal type) arrays into coding part, spacer and outside the array
+canon_units.py	2026-09-14	current	Cuts the canonical array (flank, array, flank) into units
+cmd01_apply.py	2026-09-27	current	Applies the corrections without overwriting the old files (it writes new *_2026-09-21 versions)
+cmd01_bonobo_basecaller.py	2026-09-21	current (bonobo by basecaller version)	Re-measures the bonobo 5S array methylation per caller version (, to settle the default)
+cmd01_measure.py	2026-09-21	current	measurements: array minus flank (ONT, AVF.tsv) by species and array, the array count per definition for each species, and a check of the default definition
+cmd02_extract.py	2026-09-21	current (extraction on the compute nodes)	from the ONT batch BAM (MM and ML) to a table of CpG calls by read, array and class (coding part or spacer)
+cmd02_regions.py	2026-09-21	current	the array interval and the gene (coding part) interval tables, for zebra finch and zebrafish, restricted to the arrays used in the ONT batch
+cmd02_reprod.py	2026-09-21	current (between-individual reproducibility)	whether the per array values reproduce across individuals (6 zebrafish ONT individuals, 30 chr4 arrays)
+cmd02_seqident.py	2026-09-21	current	support: pairwise identity of the gene part and of the spacer part of the reference units (8 zebra finch arrays, zebrafish chr18 against chr4)
+cmd02_stats.py	2026-09-21	current	differential methylation per array, the table and the test, within one individual and one library only
+cmd02_wgbs.py	2026-09-21	current	zebrafish short-read methylation, chr18 (one somatic type array) against chr4 (the maternal type array group), by sample (tissue and stage)
+cmd03_ape_unit_tables.py	2026-09-24	current	the per unit variant table of the ape 5S arrays, as an outgroup comparison
+cmd03_flank_ortho.py	2026-09-24	current (flank homology and orientation call)	which human flank the flank on the array_pos 1 side is orthologous to, decided from shared k-mers
+cms_all.sh	2026-09-11	current	Other species: Rfam RF00001 (5S rRNA) cmsearch --cut_ga on each assembly
+consensus_summary.py	2026-09-14	current	Summary of the 07 merge plus a diagnosis of systematic disagreement
+count5S.py	2026-09-21	reference only (counts 5S RNA types, not methylation)	Streams only the first part of public RNA-seq reads and counts the maternal type (chr4) and somatic type (chr18) 5S
+fig3.py	2026-09-13	current	Figure 3: every spacer type of each species, the inside of a unit for each type, and the comparison with the literature
+final_units.py	2026-09-13	current	The final call for each array: the directly measured period, the number of genes k in one unit, and whether the current G8 unit is right
+finch_dorado.sh	2026-09-12	current	Zebra finch: CPU dorado recalling of the 5S array reads only (5 kHz flowcells only, because dorado 2.1.2 has no model for 4 kHz)
+finch_famcheck.sh	2026-09-12	current	Zebra finch: whether a recalled read lands on the same array as in the original fastq alignment (array assignment first, before the unit number)
+finch_finalize.sh	2026-09-12	current	Zebra finch finishing (node3): per flowcell recalled BAM, merged per library, modkit, read by unit matrix, and a position by position comparison with the original alignment
+finch_pilot.sh	2026-09-12	current	Zebra finch pilot: the whole chain (recall, align, modkit, unit matrix) on one flowcell and N array reads, with a position by position comparison against the original fastq alignment
+finch_screen.sh	2026-09-12	current	Keeps only the zebra finch ONT fastq reads that carry a 5S gene k-mer, as a pre-alignment screen
+finch_select.sh	2026-09-12	current	Zebra finch: candidate reads from the 5S k-mer screen, aligned to the v0.3 diploid (mat plus pat) reference (PAF), keeping the ids of reads that touch a 5S array at least once, per flowcell
+find5S_danrer7.py	2026-09-21	current	Finds the maternal type (chr4) and somatic type (chr18) 5S genes on the danRer7 chromosomes by sequence search rather than by lifting coordinates
+g8fix.py	2026-09-13	current	Builds the G8v4 rule unit map from the canonical fasta alone, with no genome file needed, and supports units holding k genes
+g8map_multiref.py	2026-09-14	withdrawn (multi-reference map; zero coordinate change, not used)	Other species 5S: the G8 unit map of an array that has several reference units, using for each unit the reference that fits it best
+group_holdout.py	2026-09-13	decision record	An independent check of the several types call, splitting the block variants into two groups of events, odd and even
+gsc_align.sh	2026-09-21	current	GSE122695 and PRJNA506038: alignment of the low depth PBAT WGBS of vasa:eGFP germ cells (GSC) and of the somatic control
+gsc_group.sh	2026-09-21	current	Pools the samples by group and measures the 5S region methylation, because one sample alone carries too few reads
+gsc_perread.py	2026-09-21	current (flanks pooled; left and right flanks are in gsc_perread_lr.py)	For each group BAM, reports per read the locus branch, the class, the CpG count and the methylated count. The bootstrap and the between-group test are done locally
+gsc_perread_lr.py	2026-09-21	current	For each group BAM, reports per read the locus branch, the class, the CpG count and the methylated count. The bootstrap and the between-group test are done locally
+gsc_stats.py	2026-09-21	current	Bootstrap interval over read groups plus the between-group difference (bootstrap), for the group of 6 chr4 arrays
+gsc_trim.py	2026-09-21	current	Preprocessing of single end PBAT reads, in place of cutadapt, which is not on the node
+hap_assign.py	2026-09-14	current	Whether reads can be assigned where an array is duplicated between haplotypes
+judge_period.py	2026-09-13	current	Calls the basic period and the higher order repeat (HOR) period separately from the offset histogram
+ladder_all.py	2026-09-13	current	All 77 arrays: calls the repeat period directly from the offset ladder of the self dot plot
+lit_cmp.py	2026-09-13	current	Compares the 5S repeat unit of the literature and of GenBank with the representative unit measured here
+make_kmers.py	2026-09-12	current	Builds, for each species, four 22-mers of the 5S gene plus their reverse complements, eight k-mer lines in all, for screening
+make_slices.py	2026-09-13	current	Cuts a slice of up to 150 kb from the middle of an array, as the input for checking the direct repeat on the node with a gap tolerant alignment
+make_status.py	2026-09-13	current	00_catalog/5S_unit_status.tsv: the representative unit status of the 77 arrays in one table, with the hand check of 2026-09-13 folded in
+meth_noplace.py	2026-09-14	current	Measures methylation without placement, that is, finds the 5S methylation state without placing reads on an array
+multiref_map.py	2026-09-14	withdrawn (multi-reference)	Arrays with several group references: picks for each unit the reference that fits best and calls the variants again
+nmer_check.py	2026-09-13	current	How many 5S genes one unit holds (the n-mer call), read from the order of the gaps between the cmsearch gene ends
+offhist.py	2026-09-13	current	Saves the self alignment offset histogram of an array slice as it is, with the call made separately
+pdl.py	2026-09-12	current	Parallel, order preserving HTTP range download, used because EBI gives about 0.7 MB/s per connection
+period_direct2.py	2026-09-13	current	Measures the repeat period directly from the array sequence itself, second version
+placement_meth_report.py	2026-09-14	current	Read placement result and methylation summary for all species, for the other species work only
+placement_quality.py	2026-09-14	current	Measures for each array the soundness of the placement, the depth and the reads that span it
+qc_strand.py	2026-09-21	current	Conversion check on both strands, for single end data: calls each read as the C to T strand (few C) or the G to A strand (few G)
+read_units.py	2026-09-14	current	Splits the reads aligned to an array into units, on the same boundaries as the canonical unit split
+refunit_build.py	2026-09-13	current	Other species 5S: builds a reference (representative) unit for each array, converting the human G8v4 method to each species
+region_meth.py	2026-09-14	current	Reports the CpG methylation fraction of one region of a BAM, read from MM and ML directly and with no mapq filter
+ruler.py	2026-09-13	current	Measures the units found here against the published full length repeat unit used as a ruler
+selfdot.py	2026-09-13	current	Reads the period directly from a self dot plot, using neither a ruler, nor an annotation, nor the units found here
+spacer_types.py	2026-09-13	current	Groups array types by comparing the spacers only, because the 119 bp gene is shared by every species and must not be used for grouping
+species_g8map.py	2026-09-13	current	Other species 5S: the unit map in the G8v4 way, using for each array its own reference unit
+species_map.py	2026-09-12	superseded (pre-G6 map -> species_g8map.py)	Other species 5S: the canonical sequence (flank, array, flank representative) plus the consensus map (per unit variant table), in the same form as the human work
+species_map2.py	2026-09-12	superseded (G6 map -> species_g8map.py)	Other species 5S: the canonical sequence (flank, array, flank) plus the consensus map (per unit variant table), in the same form as the human work, second version
+stem_5S.py	2026-09-21	current	Measures the 5S region methylation from the processed STEM-seq CpG table (danRer7) of GSE175951 Stage III (GV) oocytes
+tile_check.py	2026-09-13	current	Checks the direct repeat in each array with a gap tolerant alignment
+unify_d.py	2026-09-12	current	Brings the other species 5S outputs into one format (the rearrangement of disk D)
+unit_consensus.py	2026-09-14	current	The 07 merge: gathers the reads by unit and calls a consensus variant per site, for the other species work only
+unit_group_call.py	2026-09-14	decision record (unit grouping; conclusion: grouping not used)	When an array is split into units, settles the group of each unit first, as a one row per unit call table
+unit_group_verify.py	2026-09-14	decision record (two-stage gate; writes UNIT_TYPE_FINAL2)	The second gate: whether the two groups really separate in each single unit
+unit_ref_table.py	2026-09-14	current	For each array: how many unit types there are, and for each type the length of the reference unit, with the period and the unit count
+unit_types.py	2026-09-14	decision record	Whether the units inside an array are of one type or of several, final version (unit_types)
+unit_types_gate.py	2026-09-14	decision record	Keeps a unit group only where the difference is firm (the gate)
+unit_types_merge.py	2026-09-13	decision record	Merges the per species UNIT_TYPES_*.tsv into one table and records whether the event that separates the groups is in the gene part or in the spacer part
+unit_windows.sh	2026-09-12	current	The inside of a unit: cuts the unit into 300 bp windows and counts how often each window occurs in the whole genome of that species
+units_matrix.py	2026-09-12	superseded (G6 frame -> units_matrix_g8.py)	5S array: read by unit methylation matrix, the version common to all species (a generalisation of zf_units.py, 2026-09-11)
+units_matrix_g8.py	2026-09-13	current	Read by unit methylation matrix on the G8 frame, taking the unit boundaries from the G8 map as they are
+xsp_setup.sh	2026-09-11	current	Other species 5S arrays and methylation: prepares the work node (node1)
+zf_all_arrays.py	2026-09-14	current	Zebrafish 5S arrays, the complete table: chromosome, size, units, methylation, and the comparison with the flank
+zf_deepen.sh	2026-09-15	current	Raises the chr18 read count, which is the one weak point of the present conclusion
+zf_egg_chunks.sh	2026-09-15	current	Raises the depth of the egg samples by cutting them into pieces of 8 M, aligning the pieces one after another and merging them
+zf_extract.sh	2026-09-11	current	Zebrafish 5S array reads and methylation (ENA PRJEB53713, 6 control individuals, adult brain, R10.4.1 Guppy 6.4.2 5mC_CG hac)
+zf_parts_sum.py	2026-09-15	superseded (ZFPARTS tidy-up -> adult_stats.py)	Builds the per class table (coding part, spacer, outside) and writes the result to a file, to avoid the console encoding
+zf_potok.sh	2026-09-15	current	The biological replicate of the egg: aligns the Potok 2013 (PRJNA193544) series
+zf_qc_eggs2.sh	2026-09-15	superseded (single-strand conversion check -> zf_qc_strand.sh)	Candidate biological replicates of the egg: a conversion check on 200,000 spots
+zf_qc_runs.sh	2026-09-15	superseded (single-strand conversion check -> zf_qc_strand.sh)	A screening check of the bisulfite data, looking only at whether conversion happened, on a small amount before the main work
+zf_qc_strand.sh	2026-09-15	current	Conversion check version 2, which looks at the signature of both strands
+zf_run_w3.sh	2026-09-11	current	Zebrafish 5S read and methylation extraction on node3, a node with spare CPU
+zf_units.py	2026-09-11	superseded (early zebrafish units)	Zebrafish 5S array: read by unit CpG methylation matrix, in the same format as the human HPRC analysis
+zfinch_meth.py	2026-09-11	current	PacBio CpG methylation of the zebra finch 5S arrays (submitted v0.3 bigwig, coordinates of GCA_048771995.1 and GCA_048772025.1)
+zfinch_v03.sh	2026-09-11	current	Zebra finch: fetches the GenBank version whose coordinates match the submitted v0.3 PacBio methylation bigwig and finds the 5S arrays in it
+zfinch_v03_5S_arrays.bed	2026-09-12	current	

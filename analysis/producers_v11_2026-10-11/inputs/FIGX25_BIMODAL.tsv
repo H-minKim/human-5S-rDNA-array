@@ -1,0 +1,4 @@
+source	haplotypes	individuals	units	mean_beta	n_peaks	low_peak	high_peak	valley	valley_to_peak_ratio	fraction_at_ends	fraction_in_middle	splithalf_valley_difference_median	splithalf_valley_difference_p90
+1kGP	18	10	1265	0.717	16	0.039	0.883	0.186	0.0153	0.7067	0.2933	0.113	0.3089
+GIAB	4	3	228	0.7149	10	0.01	0.906	0.4366	0.0037	0.7675	0.2325	0.1786	0.4158
+HPRC	510	280	47483	0.6635	3	0.038	0.838	0.5068	0.027	0.655	0.345	0.0033	0.0079

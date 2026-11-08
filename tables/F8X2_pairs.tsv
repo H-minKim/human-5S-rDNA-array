@@ -1,0 +1,9 @@
+class	gap	n_pairs	n_haplotypes	jaccard_mean	ci_lo	ci_hi	shared_sites_mean	union_mean
+terminal-terminal	0	200	125	0.8686	0.8535	0.8839	6.8350	7.9300
+terminal-terminal	2	197	124	0.8685	0.8518	0.8846	6.8376	7.9340
+nonterminal-nonterminal	0	8945	465	0.5300	0.5076	0.5513	0.7996	1.7405
+nonterminal-nonterminal	1	4503	465	0.4987	0.4749	0.5207	0.7686	1.7806
+nonterminal-nonterminal	2	4442	465	0.5619	0.5377	0.5834	0.8309	1.6999
+terminal-nonterminal	0	1784	184	0.0200	0.0162	0.0246	0.1743	8.5605
+terminal-nonterminal	1	1179	184	0.0099	0.0066	0.0139	0.0857	8.5352
+terminal-nonterminal	2	605	184	0.0397	0.0325	0.0472	0.3471	8.6099

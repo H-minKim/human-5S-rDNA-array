@@ -1,0 +1,4 @@
+target	nc_interaction_OR	nc_lo	nc_hi	proximal_markers	interior_markers
+TBP	1.04	0.18	3.26	3	62
+POLR3G				3	61
+ATAC	2.18	0.37	5.55	3	62

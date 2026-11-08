@@ -1,0 +1,10 @@
+array_our	feature	grade	cons_start	cons_end	cons_strand	our_win_start	our_win_end	our_strand	score	coverage	canon_start	canon_end	wraps	note	canon_segments	canon_len
+5S	5S_rRNA_mature	1	276	395	+	1357	1476	-	1.000	1.000	1	2122		mature 120 nt (X12811 271-390). Primary transcript ends 1-3 nt later inside the T5 run that is the Pol III terminator; paint only the mature 120 nt	2122-2240;1-1	120
+RNU2	U2_snRNA	1	4903	5090	+	1	183	+	0.960	0.973	1	183		188 nt; RefSeq NR_002716 + GM12878 GRO-cap TSS exact	1-183	183
+D4Z4_4q	DUX4_ORF	2	1792	3066	+	2965	941	+	0.997	1.000	2	1276	yes	ORF exact (NM_001306068 100%); stable mRNA only from last unit + pLAM (4qA). Almost no expression in non-FSHD LCL	2-1276	1275
+D4Z4_10q	DUX4_homolog_ORF	2	1812	3080	+	2504	448	+	0.943	0.978	2	1276	yes	intact ORF on 10q consensus (1269 nt, 423 aa, no internal stop); missing from CHM13 gene tracks = annotation gap; no expression in LCL	2-250;252-675;677-774;776-823;826-1017;1024-1276	1264
+DXZ4	minus_strand_RNA	5	417	2032	-	2916	1559	+	0.982	1.000	2916	1559	yes	LCL: TSS 2032 (GRO-cap; alternative TSS 2410) -> polyA 417-429 (5 direct-RNA reads); unspliced ~1.6 kb	2916-2972;1-1559	1616
+DXZ4	plus_strand_RNA_part1	5	2437	2972	+	1964	2499	+	0.991	1.000	1964	2499		TSS 2437 (GRO-cap) to unit end; continues into next unit	1964-2499	536
+DXZ4	plus_strand_RNA_part2_next_unit	5*	1	793	+	2500	320	+	0.960	1.000	2500	320	yes	3' end 729-793 from 8 ESTs (non-LCL tissues). Not seen as poly(A) RNA in LCL -> draw dashed	2500-2972;1-320	793
+SST1	SNHG27_like_exon1	4	1175	1424	+	1844	2093	+	1.000	1.000	1844	2093		chr19-type exon1; LCL long-read donor ~+/-10 nt, 5' spread 1130-1320	1844-2093	250
+SST1	antisense_exon1	5	1022	1117	-	1691	1786	-	1.000	1.000	1691	1786		GENCODE AC016590.4 exon1 + GRO-cap TSS; no long-read support	1691-1786	96

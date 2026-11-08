@@ -1,0 +1,8 @@
+# P08 X9, no-exchange floor of the patch length, same settings as X4 (interior, 4000 pairs), seed 20261010
+kind	label	n_pair	n_event	T_exp	lo	hi	T_gamma2	censored
+homolog	homologous (same individual)	4000	18688	208.8767	205.3574	212.4732	208.1635	0.214148
+unrelated_same_pop	unrelated, same subpopulation	4000	18546	209.0630	205.5408	212.6624	208.1077	0.207376
+unrelated_diff_pop	unrelated, different subpopulation	4000	19397	188.3774	185.2521	191.5695	188.5212	0.202196
+unrelated_all	unrelated, all	4000	19415	191.8837	188.7014	195.1342	191.7861	0.207108
+#
+array_lag1_T	519.1400	floor_T	191.8837	ratio	2.7055

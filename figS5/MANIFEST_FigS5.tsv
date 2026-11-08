@@ -1,0 +1,5 @@
+Figure	Panels	Role	Script	Script md5	Input tables	Seeds (upstream)
+Supplementary Figure S5	A	NOT IN THIS DEPOSIT	-	-	see $DISPERSED_ROOT/05_paper_package_2026-10-09/	unknown to this deposit
+Supplementary Figure S5	B	NOT IN THIS DEPOSIT	-	-	see $DISPERSED_ROOT/05_paper_package_2026-10-09/	unknown to this deposit
+Supplementary Figure S5	A, B	re-render only (drawing, no analysis)	common/fig04_figS4/s42_panel_rebuild.py	7a497bdf8b66	inputs in this deposit: figS5/inputs_panels/ -> FIG_D1_CODING32__panel_a.pdf (f56ee867238b); FIG_D1_CODING32__panel_a.svg (0334db304354); FIG_D5_a4_persite_tone_hardcall32.pdf (b8d4d7fc2522); FIG_D5_a4_persite_tone_hardcall32.svg (485037369a7a) the script edits these rendered files and recomputes nothing	no randomness in this file
+Supplementary Figure S5	all panels	source data	common/fig04_figS4/make_sourcedata_2026-11-07.py	72cddbda0f8a	tables/SourceData_FigS5.xlsx (eab4cc596813), which this script writes. Every value in it is read from the file named in the workbook Panels sheet	none. The workbook copies values, it does not sample

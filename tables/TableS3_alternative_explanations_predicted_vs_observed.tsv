@@ -1,0 +1,19 @@
+# Table S3 - alternative explanations, what each one predicts against what was measured
+# Each row is one explanation of the form the footprint is not a protein but something else.
+# If that explanation held, some number would have to move a certain way. The prediction is
+# written first and the measured value sits beside it.
+# The unit differs from row to row, so a comparison is only valid within a row.
+#
+# Row 2 (nucleosome absorption) is measured on the two way methylation split - m6A/A of
+# molecules with no nucleosome over the interval centred on -35..+27, inside the TFIIIB zone
+# window -28..-10. Low 11,727 A positions over 2,933 molecules, high 10,225 A positions over
+# 2,555 molecules. Baseline to compare against - molecules that DO carry a nucleosome in the
+# same window, low 0.1254 and high 0.1078, so the measured values are 3.5 times (low) and
+# 4.3 times (high) higher. The alternative is excluded. Produced by s3row2.py.
+row_id	alternative_explanation	quantity_measured	left_name	left_value	right_name	right_value	prediction	baseline	verdict
+1	Intrinsic under-labelling	m6A/A at that position	called	0.0220	not called	0.5500	right side should be as low as left	0.55	excluded
+2	Nucleosome absorption	m6A/A in nucleosome-free molecules	low	0.4385	high	0.4594	both should be much lower	0.549	excluded
+3	Nucleosome occlusion	low/high after removing nucleosomes (centre -28..-10, size 30-59)	predicted	1.0000	measured	12.3000	should be close to 1	1.0	partly, insufficient
+4	Labelling-efficiency difference	m6A/A inside MSP	low	0.5490	high	0.6940	left should be higher	0.0	opposite direction
+5	A/T sparsity	A/T of DNA under footprints (vs background)	TFIIIB	0.0220	ICR	0.0590	should be negative	0.0	excluded
+6	Caller sequence context	untreated-control m6A / global	TFIIIB	1.9540	ICR	0.7670	should be below 1	1.0	TFIIIB excluded, ICR partly

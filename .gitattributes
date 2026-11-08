@@ -1,0 +1,8 @@
+# Git must not change line endings anywhere in this archive.
+#
+# Every md5 recorded in a MANIFEST_*.tsv was measured on the file exactly as it is
+# committed, with LF endings. On a machine where core.autocrlf is on, a checkout
+# would rewrite those files with CRLF, and then every script md5 in every manifest
+# would disagree with the file beside it - for a reason that has nothing to do with
+# the analysis. Declaring the whole tree as not-text keeps the bytes as committed.
+* -text

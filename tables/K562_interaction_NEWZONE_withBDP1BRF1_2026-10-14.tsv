@@ -1,0 +1,8 @@
+target	nc_interaction_OR	nc_lo	nc_hi	proximal_markers	interior_markers	call
+POLR3A	20.88	4.61	112.73	7	55	target-specific
+TBP	12.14	3.62	45.46	7	55	target-specific
+GTF3C2	13.87	2.56	65.14	7	55	target-specific
+ATAC	7.41	2.08	29.5	7	55	target-specific
+SNAPC5	1.19	0.14	3.93	7	55	negative control
+BDP1	3.52	0.79	21.53	7	55	inconclusive (CI includes 1)
+BRF1	1.59	0.0	10.92	7	55	inconclusive (CI includes 1)

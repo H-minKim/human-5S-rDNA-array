@@ -1,0 +1,8 @@
+Figure	Panels	Role	Script	Script md5	Input tables (measured: every file the script actually opened)	Upstream script that made them (in this deposit)
+Supplementary Figure S9	C-F	draw	figS9/figS9_C-F_cell_lines_onerow.py	48612d08138b	cells\sig_GM12878all.json (785e81f3cc2c); cells\sig_GM12878all.npz (91dd00c0a7ba); cells\sig_HepG2.json (e2b80f6900e5); cells\sig_HepG2.npz (110f3f9a710c); cells\sig_K562all.json (44e1a70e4c02); cells\sig_K562all.npz (e0b42e9b4d59); cells\strata_GM12878all_gene.json (8cd1c97e007f); cells\strata_GM12878all_gene.npz (bf448a695782); cells\strata_K562all_gene.json (cbf3567bf030); cells\strata_K562all_gene.npz (66fe0dfedad6)	analysis/cell_fhmm_units.py -> analysis/cell_units2.py -> analysis/cell_strata_all.py (seed 20261013), analysis/cell_sig_run_all.py with analysis/cell_sig_lib.py (seed 20261012), analysis/cell_nucfree.py (seed 20261014); *these start from the FiberHMM calls.bam of the cell-line Fiber-seq, which was produced by another run
+Supplementary Figure S9	C-F	compute	analysis/cell_fhmm_units.py	a4a39b57f855
+Supplementary Figure S9	C-F	compute	analysis/cell_units2.py	9640d38f5ce9
+Supplementary Figure S9	C-F	compute	analysis/cell_strata_all.py	a2c47e221441
+Supplementary Figure S9	C-F	compute	analysis/cell_sig_run_all.py	697eab12b953
+Supplementary Figure S9	C-F	compute	analysis/cell_sig_lib.py	dd77c1383206
+Supplementary Figure S9	C-F	compute	analysis/cell_nucfree.py	36a6a8251398
