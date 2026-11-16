@@ -1,12 +1,12 @@
 #!/bin/bash
-# 알의 생물학적 반복 후보 — 20만 spot 변환 검사
-#   PRJNA193544 = Potok 2013(Cell). 우리가 쓴 PRJNA188516(Jiang 2013)과
-#   같은 호에 나란히 실린 자매 논문이고, 알·정자·2~16세포·64·256·sphere·근육 계열이 통째로 있다.
-#   알 BioSample 이 SAMN01991170 로 우리 것(SAMN02117044)과 다르다 → 진짜 생물학적 반복 후보.
-#   함께 ERR10788130(PRJEB59047 Egg_rep2·다른 BioSample)과
-#   SRR19364710(PRJNA841653 control eggs 1)도 마지막으로 확인한다.
+# Candidate biological replicates for the eggs: a conversion check on 200,000 spots.
+#   PRJNA193544 is Potok 2013 (Cell), the companion paper to PRJNA188516 (Jiang 2013)
+#   published alongside it in the same issue, and it holds the whole series: egg, sperm, 2-16 cell, 64, 256, sphere and muscle.
+#   Its egg BioSample is SAMN01991170, different from SAMN02117044, so it is a candidate genuine biological replicate.
+#   ERR10788130 (PRJEB59047 Egg_rep2, a different BioSample) and
+#   SRR19364710 (PRJNA841653 control eggs 1) are checked as well.
 #
-#   판정 : 제대로 변환된 read 는 C 2~5%(대부분 T 로 바뀜) / 안 된 read 는 C 20% 안팎.
+#   The criterion: a properly converted read carries 2-5% C, most having become T, while an unconverted read carries about 20% C.
 set -u
 cd ~/zfwgbs || exit 1
 mkdir -p qc logs

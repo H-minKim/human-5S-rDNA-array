@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# . GM12878: the target, input and WGS denominator counts are recounted on the same ruler as the K562 panel G, that is, base quality Q >= 20.
+# GM12878: the target, input and WGS denominator counts are counted on the same ruler as the K562 panel G, that is, base quality Q >= 20.
 #   The gate, the reference and the counting are a copy of run() in mixgm_run.py with only the quality column (f2[10]) added. Output goes to new files, so READLEVEL_GM_MIX.tsv is not overwritten.
 #   Encoding: TBP, POLR3G and INPUT are Phred+64 (Q = ord - 64), WGS is Phred+33 (Q = ord - 33). The quality characters of every file are counted in full and written to the log.
 #   Two versions: A = the current alignment (aligned with --phred33, the same reads as the published gate) with the true Q used only in the counting.

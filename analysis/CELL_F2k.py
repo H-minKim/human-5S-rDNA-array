@@ -3,7 +3,7 @@ r"""Main Fig 2 panel k - only version B of FIG_G3.py, at cell size (80.2 × 82 p
    Data and computation are the same lines as version B of FIG_G3.py (S14_length.tsv)
    Only the appearance changed: figure size, font size (common to main text cells), line width, line breaks of axis labels and notes, no panel title (the assembly removes it anyway)
    Content check: CMPART.py (old fig_G3_length_invariance axis 1 <-> this figure)
-Output: $FIGOUT\cellF2_k_length.png/svg, CELL_F2k_source_values.tsv
+Output: $FIGOUT/cellF2_k_length.png/svg, CELL_F2k_source_values.tsv
 """
 import io, os, sys
 import numpy as np
@@ -55,18 +55,18 @@ for bi, b in enumerate(BAS):
     ax.bar(xs, ys, width=W * 0.9, color=["#aab7b8", "#17202a"][bi], label="기준 %s" % b, zorder=3)
     ax.errorbar(xs, ys, yerr=[el, eh], fmt="none", ecolor="#566573", elinewidth=0.5, capsize=1.2, zorder=4)
     for xx, yy in zip(xs, ys):
-        ax.text(xx, yy + 0.035, "%.3f" % yy, ha="center", va="bottom", rotation=90, fontsize=CS.FS_ANN - 0.6,   # vertical (the two bars are adjacent so horizontal text overlaps, positions are the same as the original)
+        ax.text(xx, yy + 0.035, "%.3f" % yy, ha="center", va="bottom", rotation=90, fontsize=CS.FS_ANN - 0.6,   # vertical (the two bars are adjacent so horizontal text overlaps)
                 weight="bold", color=["#566573", "#17202a"][bi])
 ax.axhline(0, color="#2c3e50", lw=0.4)
-# 'remove the right and top borders of j, m and n (mostly keep only left and bottom)'
+# no right and top borders
 for _s in ("top", "right"):
     ax.spines[_s].set_visible(False)
 _EN = bool(os.environ.get("EN_DICT"))
-_ENG = {"근위구획": "Proximal", "가운데구획": "Middle", "원위구획": "Distal"}   # the English tick labels overlapped, so they are shortened (the meaning 'compartment' goes in the Legend)
+_ENG = {"근위구획": "Proximal", "가운데구획": "Middle", "원위구획": "Distal"}   # short English tick labels so they do not overlap (the meaning 'compartment' is in the Legend)
 ax.set_xticks(range(len(GRP))); ax.set_xticklabels([CS.L(g.replace("구획", "\n구획"), _ENG[g]) for g in GRP], linespacing=1.1, ha="center")   # two lines because the cell is narrow (same text)
-ax.set_yticks([-0.2, 0.0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2])      # original ticks as is (range from the original formula below)
-ax.set_ylim(min(0, min(float(r[H["slope_lo"]]) for r in R)) - 0.06, 1.30)   # the vertical 0.979 text touches the top of the frame -> top margin (old 1.14)
-ax.set_ylabel(CS.L("길이 +1 당 늘어난 유닛", "Units per +1 length"))   # axis label on one line and shortened (old: number of units that compartment gains when array length grows by 1 unit)
+ax.set_yticks([-0.2, 0.0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2])      # fixed ticks (the range is set below)
+ax.set_ylim(min(0, min(float(r[H["slope_lo"]]) for r in R)) - 0.06, 1.30)   # top margin so the vertical 0.979 text does not touch the top of the frame
+ax.set_ylabel(CS.L("길이 +1 당 늘어난 유닛", "Units per +1 length"))   # axis label on one line
 ax.legend(loc="lower left", bbox_to_anchor=(0.0, 1.02), borderaxespad=0.0, ncol=2, frameon=False, handlelength=1.0,   # legend left = left line of the graph
           borderpad=0.1, columnspacing=0.8)   # one line in the cell margin above the axis (inside the axis it hides the middle bar)
 # The note 'only the middle grows, both ends stay near 0' is not drawn on the figure; it is in the legend (it hides bars in an 80 pt cell)

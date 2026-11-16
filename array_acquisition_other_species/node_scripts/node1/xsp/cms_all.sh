@@ -1,6 +1,6 @@
 #!/bin/bash
-# 타 생물종 : 어셈블리마다 Rfam RF00001(5S rRNA) cmsearch --cut_ga
-#   어셈블리가 받아지는 대로 차례로 (작은 것부터). 이미 한 것은 건너뛴다.
+# Other species: cmsearch --cut_ga with Rfam RF00001 (5S rRNA) against each assembly.
+#   Assemblies are processed as they arrive, smallest first, and anything already done is skipped.
 set -u
 X=$HOME/xsp
 mkdir -p $X/cms

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copy of asm_arr_all.py with only input and output changed (2026-09-18, extraction of trio canonical candidates)
+# Copy of asm_arr_all.py with only input and output changed (extraction of trio canonical candidates)
 #   original: ~/asm_arr_all.py (HPRC release2 index CSV, faidx with remote .fai/.gzi)
 #   changed (unavoidable): the public assemblies (1kGP-ONT hifiasm asm_1/2.fa, HPRC year1 genbank .fa.gz) have
 #     no remote .fai/.gzi, and the node disk (64 GB) cannot hold 3 GB x 20
@@ -10,7 +10,7 @@
 #     , output format (arr_<tag>.fa header, units_<tag>.txt, asmarr_<TAG>.tsv 9 columns)
 #   input: list TSV (sample, hap, name, url), env vars W (output folder) TAG TH
 import io, os, sys, subprocess, collections, time
-W = os.path.expanduser(os.environ.get("W", "~/asmarr_trio"))
+W = os.path.expanduser(os.environ["W"])
 os.makedirs(W, exist_ok=True)
 GENE = os.path.expanduser("~/s5s_tuc/ref/5S_gene_query.fa")
 PP = os.path.expanduser("~/asmunits3/probe.fa")

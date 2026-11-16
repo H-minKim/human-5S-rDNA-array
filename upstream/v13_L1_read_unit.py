@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
-# L1 = read x 유닛 통합표.  요청 1-10 + 추가 (A) read 수준 통제 변수.
+# L1, the combined read x unit table, with (A) the read-level control variables.
 #
-#  경로는 전부 forward slash (heredoc 백슬래시 뭉개짐 함정 회피)
-#  beta 두 정의를 모두 들고 간다 : b_call(문턱 ML>=128) · b_prob(확률 평균, 옛 판/논문 정의)
-#  문턱은 실측 골짜기 0.508 (b_prob 기준)
-#  극성 : array_pos 1 = 게놈 원위(DJ).  ap = 근위 순번(ap_pj) · ad = 원위 순번(ap_dj)
+#  Every path uses forward slashes.
+#  Both definitions of beta are carried through: b_call, thresholded at ML >= 128, and b_prob, the probability mean used in the paper.
+#  The threshold is the measured trough at 0.508, on the b_prob scale.
+#  Polarity: array_pos 1 is the genomic distal end (DJ). ap is the proximal index (ap_pj) and ad the distal index (ap_dj).
 import io, os
 import numpy as np
 import pandas as pd
@@ -12,8 +12,8 @@ from collections import Counter
 
 def _need(_v):
     """No defaults are set: the script stops if a variable is missing.
-    이 글이 읽는 자료의 뿌리는 README.md 의
-    "Running this code" 절에 적혀 있다."""
+    The roots of the data this script reads are listed in the
+    "Running this code" section of README.md."""
     import os as _o, sys as _s
     _x = _o.environ.get(_v)
     if not _x:
@@ -56,7 +56,7 @@ P("L1 = read x 유닛 통합표")
 P("=" * 100)
 P()
 
-# ---------------------------------------------------------------- 0. 적격 슬롯
+# ---------------------------------------------------------------- 0. the eligible slots
 Q = pd.read_csv(os.path.join(T, "SLOT_QC.tsv"), sep="\t")
 Q["slot"] = Q.slotS.astype(str)
 E = Q[Q.eligible == 1][["sample", "slot", "N", "nread", "gate", "cov_frac",
@@ -66,7 +66,7 @@ P("  적격 슬롯 %d / %d · 개체 %d" % (len(E), len(Q), E["sample"].nunique(
 P("  두 슬롯 다 적격인 개체 %d" % int((E.groupby("sample").size() == 2).sum()))
 P()
 
-# ---------------------------------------------------------------- 1. read x 유닛
+# ---------------------------------------------------------------- 1. read x unit
 A = pd.read_parquet(os.path.join(T, "ru_v11.parquet"))
 P("  ru_v11 전체 %s 행" % format(len(A), ","))
 A = A[A.data_source.astype(str) == "HPRC_ONT_submissions"].copy()
@@ -78,12 +78,12 @@ assert (A.ap_pj == A.N - A.ap_dj + 1).all(), "극성 축 불일치"
 P("  극성 검산 ap_pj == N-ap_dj+1 : 전건 일치")
 P()
 
-A["array_pos"] = A.ap.astype("int32")        # 지도 조인 키 (원본 array_pos)
-A["ad"] = A.ap_dj.astype("int32")            # 원위 순번
-A["ap"] = A.ap_pj.astype("int32")            # 근위 순번
+A["array_pos"] = A.ap.astype("int32")        # the map join key, the original array_pos
+A["ad"] = A.ap_dj.astype("int32")            # the distal index
+A["ap"] = A.ap_pj.astype("int32")            # the proximal index
 A = A[(A.ap >= 1) & (A.ad >= 1)].copy()
 
-# --- 요청 2·3 : 자리
+# --- the position
 A["side"] = np.where(A.ap.values <= A.ad.values, "prox", "dist")
 A["ord_near"] = np.minimum(A.ap.values, A.ad.values).astype("int32")
 A["pos_label"] = np.where(A.side.values == "prox",
@@ -91,16 +91,16 @@ A["pos_label"] = np.where(A.side.values == "prox",
                           ["원위%d" % v for v in A.ord_near.values])
 A["rel"] = ((A.ap - 1) / np.maximum(A.N - 1, 1)).astype("float32")
 
-# --- 요청 6-9 : 메틸
+# --- the methylation
 A = A.rename(columns={"b": "b_call"})
-A["st"] = (A.b_call > THR).astype("int8")          # 하드콜 (문턱 THR 그대로)
-A["st3"] = np.where(A.b_call < LO, "L", np.where(A.b_call > HI, "H", "M"))  # 하드콜
+A["st"] = (A.b_call > THR).astype("int8")          # the hard call, at the threshold THR as given
+A["st3"] = np.where(A.b_call < LO, "L", np.where(A.b_call > HI, "H", "M"))  # hard call
 A["r_gene_sp"] = np.where(A.b_sp.values > 0,
                           A.b_gene.values / np.maximum(A.b_sp.values, 1e-9), np.nan)
 A["d_gene_sp"] = (A.b_gene - A.b_sp).astype("float32")
 A["gate"] = ((A.frac_canon >= 0.9) & (A.n_canon >= 150)).astype("int8")
 
-# --- (A) read 안 자리 : 말단 품질 통제
+# --- (A) the position within the read, to control for terminal quality
 A = A.sort_values(["read_id", "array_pos"], kind="mergesort").reset_index(drop=True)
 g = A.groupby("read_id", sort=False)
 A["n_unit_read"] = g["array_pos"].transform("size").astype("int32")
@@ -108,7 +108,7 @@ A["unit_in_read"] = (g.cumcount() + 1).astype("int32")
 A["dist_to_read_end"] = (A.n_unit_read - A.unit_in_read + 1).astype("int32")
 A["dist_to_read_edge"] = np.minimum(A.unit_in_read, A.dist_to_read_end).astype("int32")
 
-# --- (A) 블록 : 같은 read 안 연속 자리에서 같은 상태가 이어지는 덩어리
+# --- (A) blocks: runs in which the same state continues across consecutive positions within one read
 rid = A.read_id.values
 apv = A.array_pos.values
 stv = A.st.values
@@ -125,7 +125,7 @@ lo_read = bg["unit_in_read"].transform("min") == 1
 hi_read = bg["dist_to_read_end"].transform("min") == 1
 A["blk_trunc"] = ((lo_read & (blk_a0 != 1)) | (hi_read & (blk_a1 != A.N))).astype("int8")
 
-# --- 요청 10 : 양옆 (자리 번호가 연속일 때만 이웃)
+# --- the two neighbours, which count as neighbours only where the position indices are consecutive
 key = A[["read_id", "array_pos", "b_prob", "b_call", "st", "b_gene", "b_sp"]].copy()
 for shift, tag in ((1, "prev"), (-1, "next")):
     k = key.copy()
@@ -140,7 +140,7 @@ P("  양옆 관측된 비율 : 이전 %.3f · 다음 %.3f"
   % (A.st_prev.notna().mean(), A.st_next.notna().mean()))
 P()
 
-# ---------------------------------------------------------------- 2. 지도 : 변이
+# ---------------------------------------------------------------- 2. the map: the variants
 MP = pd.read_csv(MAP, sep="\t", dtype={"sample": str, "slot": str})
 P("  지도 전체 %s 행 · seg_type %s"
   % (format(len(MP), ","), MP.seg_type.astype(str).value_counts().to_dict()))
@@ -153,7 +153,7 @@ A = A.merge(MP, on=["sample", "slot", "array_pos"], how="left")
 P("  지도가 붙은 read-유닛 %.4f" % A.varlist.notna().mean())
 P()
 
-# ---------------------------------------------------------------- 3. 변이 그룹
+# ---------------------------------------------------------------- 3. the variant groups
 VG = pd.read_csv(os.path.join(REF, "V11_VARIANT_GROUPS.tsv"), sep="\t")
 VG["tok"] = VG.g8_token_example.astype(str)
 VG = VG.drop_duplicates("tok")
@@ -244,7 +244,7 @@ P("  CpG 관련 변이 있는 유닛 %.3f · 코딩부 변이 있는 유닛 %.3f
   % ((U.n_var_cpg > 0).mean(), (U.n_var_coding > 0).mean()))
 P()
 
-# ---------------------------------------------------------------- 4. 집단
+# ---------------------------------------------------------------- 4. the populations
 PP = pd.read_csv(POP, sep="\t")[["sample", "pop", "super_pop"]].dropna(subset=["sample"])
 PP = PP.drop_duplicates("sample")
 A = A.merge(PP, on="sample", how="left")
@@ -252,7 +252,7 @@ P("  집단 라벨이 붙은 개체 %d / %d"
   % (A.dropna(subset=["super_pop"])["sample"].nunique(), A["sample"].nunique()))
 P()
 
-# ---------------------------------------------------------------- 5. 저장
+# ---------------------------------------------------------------- 5. write
 COLS = (["sample", "slot", "read_id", "data_source", "cfg", "kind", "strand",
          "array_pos", "ap", "ad", "side", "ord_near", "pos_label", "rel", "N",
          "b_call", "b_prob", "st", "st3",

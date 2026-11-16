@@ -1,27 +1,27 @@
 # -*- coding: utf-8 -*-
-# PacBio Fiber-seq read 배치 — pbontplace.py(ONT 판) 를 그대로 옮긴 판 (2026-09-12)
+# PacBio Fiber-seq read placement: the ONT version, pbontplace.py, carried across unchanged.
 #
-#  pbontplace.py 에서 바꾼 곳은 플랫폼에 따른 것뿐이다
-#    ① 프리셋   minimap2 -x map-hifi   (ONT 는 map-ont)
-#    ② 게이트   K=4 · Δ>=5 · MINARR=8,960 (4 유닛)
-#               = HiFi 검정값 (hifitest/hifigate 2026-09-11, 211개체 read 3,824:
-#                 정답 99.08% · 남의지도우위 0.00% · K=4 vs K=6/8/10 판정 갈림 0)
-#               ONT 게이트(K=12 · MINARR 26,880)를 PacBio 에 쓰면 read 대부분이 빠진다
-#                 (PacBio Fiber-seq read 중앙 ~17kb ≈ 7 유닛)
-#    ③ read 이름  전체 이름을 적는다 (PacBio 는 movie/zmw/ccs 라 앞 16자가 서로 같다)
-#    ④ 출력     ~/pbfsplace/pfjx_<TAG>.tsv · pfjv_<TAG>.tsv
-#               pbu_<TAG>.tsv  = 재호출용 AO 17 열 표 (유닛의 read 좌표 f0·f1 포함)
-#               <SAMD>/<sample>.<PBJOB>.sam = 그 read 들 (flag 0 · SEQ 는 참조 방향)
-#               → recall_pad2.py AO pbu_*.tsv 출력.tsv  로 PAD=100 CTX=200 재호출한다.
-#                 pfjv 의 변이 토큰은 배치용 지문일 뿐이다(문맥 없이 맨 정본유닛에 asm5).
-#                 합본에 넣을 변이는 반드시 재호출본을 쓸 것.
-#    ⑤ 지도 경로를 환경변수로 받는다 (기본값은 정본 그대로 — 안 주면 동작 동일)
-#         MAPF  CONSENSUS_MAP   (hg002 는 슬롯2 를 T2T 부계로 고친 지도를 줘야 한다)
-#         SUMF  CONSENSUS_SUM   (revcomp 는 열 이름으로 찾는다 — G6 는 6번째,
-#                                G8v4 는 seq_file 열이 없어 5번째다. 2026-09-12 고침)
-#         HSNF  hap_seq_node    · CMPD  array .fa 폴더
-#  입력 ~/pbfs/out/<label>.hit.fq · <label>.bound.tsv   (label = <지도 개체>__<자료원>)
-#  그 밖(유닛 자르기 = 정렬 좌표 · 변이 부르기 asm5 · 점수 |S∩V|−|S−V| · 귀무 실시간 · 유닛 전량 기록 scored)은 같다.
+#  What differs from pbontplace.py is only what the platform requires:
+#    1) the preset is minimap2 -x map-hifi, against map-ont for ONT;
+#    2) the gates are K = 4, a margin of at least 5, and MINARR = 8,960, that is 4 units,
+#               the values validated on HiFi data (hifitest and hifigate over 211 individuals and 3,824 reads:
+#                 99.08% correct, 0.00% where another individual's map scored higher, and no call differing between K = 4 and K = 6, 8 or 10).
+#               Applying the ONT gates, K = 12 and MINARR 26,880, to PacBio would drop most of the reads
+#                 (a PacBio Fiber-seq read has a median length of about 17 kb, roughly 7 units).
+#    3) the whole read name is recorded, PacBio names being movie/zmw/ccs so that the first 16 characters coincide;
+#    4) the outputs are pbfsplace/pfjx_<TAG>.tsv and pfjv_<TAG>.tsv,
+#               pbu_<TAG>.tsv, the 17-column AO table for the recall, including the read coordinates f0 and f1 of each unit,
+#               and <SAMD>/<sample>.<PBJOB>.sam, holding those reads with flag 0 and the SEQ in the reference orientation.
+#               They are then recalled by recall_pad2.py AO pbu_*.tsv out.tsv at PAD = 100 and CTX = 200.
+#                 The variant tokens of pfjv are only a fingerprint for the placement, taken against the bare canonical unit with asm5 and no context.
+#                 The variants entering the merge must always come from the recall.
+#    5) the map paths come from environment variables, defaulting to the canonical ones, so that omitting them leaves the behaviour unchanged:
+#         MAPF  CONSENSUS_MAP (for hg002, slot 2 must be given the map corrected to the T2T paternal assembly)
+#         SUMF  CONSENSUS_SUM (revcomp is located by column name: the 6th in G6, and
+#                                the 5th in G8v4, which has no seq_file column)
+#         HSNF  hap_seq_node, and CMPD the folder of array .fa files
+#  Inputs: pbfs/out/<label>.hit.fq and <label>.bound.tsv, where the label is <map individual>__<data source>.
+#  Everything else is the same: the units are cut on the alignment coordinates, the variants called with asm5, the score is |S intersect V| - |S - V|, the null runs at placement time, and every unit is recorded with its scored flag.
 import io
 import os
 import re
@@ -30,10 +30,10 @@ import random
 import subprocess
 import collections
 
-W = os.path.expanduser(os.environ.get("W", "~/pbfsplace"))
+W = os.path.expanduser(os.environ["W"])
 os.makedirs(W, exist_ok=True)
 R = os.path.expanduser("~/s5s_tuc/ref")
-D = os.path.expanduser(os.environ.get("READD", "~/pbfs/out"))
+D = os.path.expanduser(os.environ["READD"])
 NL = "\n"
 TH = os.environ.get("TH", "6")
 TAG = os.environ.get("TAG", "x")
@@ -43,10 +43,10 @@ DMIN = int(os.environ.get("DMIN", "5"))
 MINARR = int(os.environ.get("MINARR", "8960"))
 MAXFL = int(os.environ.get("MAXFL", "999999999"))
 PRESET = "map-hifi"
-MAPF = os.path.expanduser(os.environ.get("MAPF", "~/CONSENSUS_MAP_G6.tsv"))
-SUMF = os.path.expanduser(os.environ.get("SUMF", "~/CONSENSUS_SUM_G6.tsv"))
-HSNF = os.path.expanduser(os.environ.get("HSNF", "~/hap_seq_node.tsv"))
-CMPD = os.path.expanduser(os.environ.get("CMPD", "~/cmp4d"))
+MAPF = os.path.expanduser(os.environ["MAPF"])
+SUMF = os.path.expanduser(os.environ["SUMF"])
+HSNF = os.path.expanduser(os.environ["HSNF"])
+CMPD = os.path.expanduser(os.environ["CMPD"])
 CANON = os.path.join(R, "unit_canon.fa")
 C = str.maketrans("ACGTacgtNn", "TGCAtgcaNn")
 random.seed(20260909)
@@ -72,9 +72,9 @@ RCI = None
 for i, x in enumerate(io.open(SUMF, encoding="utf8")):
     f = x.rstrip(NL).split("\t")
     if i == 0:
-        # revcomp 는 열 이름으로 찾는다. G6 SUM 은 6번째지만 G8v4 SUM 은
-        #   seq_file 열이 없어 5번째다. 번호로 읽으면 off_prox 를 revcomp 로
-        #   읽어 모든 array 가 조용히 정방향 처리된다.
+        # revcomp is located by column name: it is the 6th column of the G6 SUM but in the G8v4 SUM
+        #   it is the 5th, having no seq_file column. Reading it by index would read off_prox as revcomp
+        #   and silently treat every array as forward.
         if "revcomp" not in f:
             raise SystemExit("SUMF 에 revcomp 열이 없다: %s" % SUMF)
         RCI = f.index("revcomp")
@@ -184,14 +184,14 @@ if os.path.exists(_dp):
     DONE = set(x.strip() for x in io.open(_dp, encoding="utf8") if x.strip())
 OUT = io.open(os.path.join(W, "pfjx_%s.tsv" % TAG), "a", encoding="utf8", newline=NL)
 VOU = io.open(os.path.join(W, "pfjv_%s.tsv" % TAG), "a", encoding="utf8", newline=NL)
-# 재호출(recall_pad2.py)용 산출 — 유닛의 read 좌표 표 + 그 read 의 SAM
+# the output for the recall (recall_pad2.py): the table of read coordinates per unit, plus the SAM of those reads
 UOU = io.open(os.path.join(W, "pbu_%s.tsv" % TAG), "a", encoding="utf8", newline=NL)
 PBJOB = os.environ.get("PBJOB", "PBFS")
 DSRC = os.environ.get("DSRC", "PacBio_FiberSeq")
-SAMD = os.path.expanduser(os.environ.get("SAMD", "~/aog8/sam"))
+SAMD = os.path.expanduser(os.environ["SAMD"])
 os.makedirs(SAMD, exist_ok=True)
 SAMR = collections.defaultdict(list)
-# others 는 개체마다 새로 만든다(아래 루프 안) — 모듈 수준 캐시는 결함이었다.
+# "others" is rebuilt for each individual inside the loop below; a module-level cache would be wrong here.
 for lab in [x.strip() for x in io.open(sys.argv[1], encoding="utf8") if x.strip()]:
     if lab in DONE:
         continue
@@ -280,9 +280,9 @@ for lab in [x.strip() for x in io.open(sys.argv[1], encoding="utf8") if x.strip(
         for u, s0, e0, N in UB[(smp, ctg)]:
             A, B = s0 + FL, e0 + FL - 1
             if A in m2 and B in m2:
-                # f0·f1 은 SAM SEQ(참조 방향) 좌표 · f1 은 배타적(다음 유닛의 f0 과 같다).
-                #   recall_pad2.py 에 이 좌표를 그대로 넘기고 SAM 은 flag 0 으로 적으므로
-                #   그쪽 rev 분기를 타지 않는다 = 방향 뒤집기 사고가 원천적으로 없다.
+                # f0 and f1 are in SAM SEQ coordinates, that is the reference orientation, and f1 is exclusive, equal to the f0 of the next unit.
+                #   These coordinates are passed to recall_pad2.py unchanged and the SAM is written with flag 0,
+                #   so its reverse branch is never taken and an orientation flip cannot arise in the first place.
                 seg.append((u, seq[m2[A]:m2[B] + 1], m2[A], m2[B] + 1))
         if len(seg) >= K:
             REC.append((f[0], ctg, seg, int(f[4]), seq))
@@ -296,11 +296,11 @@ for lab in [x.strip() for x in io.open(sys.argv[1], encoding="utf8") if x.strip(
     if not REC:
         io.open(_dp, "a", encoding="utf8", newline=NL).write(lab + NL)
         continue
-    # 경쟁자 후보는 개체마다 새로 만든다 (2026-09-12 고침).
-    #   옛 코드는 모듈 수준 others 를 한 번만 채우고 재사용해, 한 프로세스가 여러 개체를
-    #   처리하면 두 번째부터는 후보에서 첫 개체가 빠지고 자기 자신이 들어갔다.
-    #   자기 자신이 뽑히면 자기 지도끼리 비교해 Δ=0 이 되어 그 read 는 무조건 탈락한다.
-    #   실행 분할에 따라 후보 목록이 달라져 결과가 재현되지 않던 원인이기도 하다.
+    # The competitor candidates are rebuilt for every individual.
+    #   With a module-level list filled once and reused, when one process handles several individuals
+    #   the first individual drops out of the candidate list from the second onwards and the individual itself enters it.
+    #   Drawing itself as its own competitor compares its own map against itself, giving a margin of 0, and that read is rejected outright.
+    #   The candidate list, and so the result, would also depend on how the run is divided.
     others = sorted(set(a for (a, s) in UB if a != smp))
     flat = [s for _r, _c, seg, _q, _sq in REC for _u, s, _a, _b in seg]
     V = varof(flat, "%s_%s" % (TAG, lab))
@@ -318,10 +318,10 @@ for lab in [x.strip() for x in io.open(sys.argv[1], encoding="utf8") if x.strip(
         if not r0:
             continue
         # competitors are selected deterministically by read name.
-        #   전역 random 을 쓰면 그 프로세스가 앞서 처리한 read 수에 따라 뽑히는 개체가
-        #   달라져, 같은 입력이라도 실행 분할이 다르면 채택 목록이 바뀐다(실측 채택 집합
-        #   일치율 86.6-90.8%). 어디에 놓이는지는 원래 결정적이었다(슬롯·유닛 불일치 0).
-        #   검정 의미(경쟁자 하나와 비교)는 그대로라 K=4·Δ>=5 눈금을 다시 잡을 필요가 없다.
+        #   Using the global random state makes the individual drawn depend on how many reads that process has already handled,
+        #   so that the same input gives a different accepted list under a different division of the run (measured: the accepted sets agree
+        #   at 86.6-90.8%). Where a read is placed is deterministic either way, with no mismatch of slot or unit.
+        #   The test is still a comparison against one competitor, so the K = 4 and margin >= 5 calibration holds.
         o = random.Random(rid).choice(others)
         os_ = sorted(s for (a, s) in UB if a == o)
         nm = 0
@@ -340,10 +340,10 @@ for lab in [x.strip() for x in io.open(sys.argv[1], encoding="utf8") if x.strip(
         SAMR[smp].append((rid, rseq))
         for t, (u, _s, f0_, f1_) in enumerate(seg):
             sc_ = 1 if t < K else 0
-            # 재호출용 AO 17 열 표 (recall_pad2.py 입력과 같은 모양)
-            #   1 개체 2 read전체 3 read짧은 4 슬롯 5 job 6 출처 7 - 8 array_pos
+            # the 17-column AO table for the recall, in the same shape as the input to recall_pad2.py
+            #   1 individual, 2 full read name, 3 short read name, 4 slot, 5 job, 6 source, 7 unused, 8 array_pos
             #   9 array_pos 10 f0 11 f1 12 - 13 - 14 verify 15 varlist 16 - 17 Y
-            #   verify·varlist 는 재호출이 덮어쓴다(여기서는 자리만 잡는다).
+            #   verify and varlist are overwritten by the recall; only the positions are set here.
             UOU.write("\t".join([
                 smp, rid, rid[:16], ctg, PBJOB, DSRC, "-",
                 str(r0[0] + t), str(r0[0] + t), str(f0_), str(f1_),
@@ -357,8 +357,8 @@ for lab in [x.strip() for x in io.open(sys.argv[1], encoding="utf8") if x.strip(
     OUT.flush()
     VOU.flush()
     UOU.flush()
-    # recall_pad2.py 가 읽을 SAM : flag 0 · SEQ 는 배치에 쓴 것 그대로(참조 방향).
-    #   f0·f1 도 같은 좌표계라 그쪽에서 되돌릴 일이 없다.
+    # the SAM for recall_pad2.py to read: flag 0, with the SEQ exactly as used for the placement, in the reference orientation.
+    #   f0 and f1 are in the same coordinate frame, so nothing needs reversing at the other end.
     if SAMR[smp]:
         with io.open(os.path.join(SAMD, "%s.%s.sam" % (smp, PBJOB)),
                      "w", encoding="utf8", newline=NL) as sg:

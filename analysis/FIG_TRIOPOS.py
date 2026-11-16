@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
-r"""FIG TRIOPOS - trio transmission compared down to the unit position (new on 2026-10-13: replaces supplementary a)
+r"""FIG TRIOPOS - trio transmission compared down to the unit position
   Data: <trio_current>/T1_pair_summary.tsv (H1 557, position-wise comparison after unit alignment, best alignment direction and shift per pair)
-  transmitted     = not unrelated + pairs with position-wise mean Jaccard >= 0.95 (user approved 2026-11-05. The next value is 0.838, and the pairs are the same 5 as at 0.99) (hg002|2 <- hg003|2, whose relation carries the 'excluded' tag, is dropped)
+  transmitted     = not unrelated + pairs with position-wise mean Jaccard >= 0.95 (the next value is 0.838, and the pairs are the same 5 as at 0.99) (hg002|2 <- hg003|2, whose relation carries the 'excluded' tag, is dropped)
   non-transmitted = the other haplotype of the same parent of each transmitted pair (best alignment only)
   unrelated       = the 150 unrelated pairs (best alignment only)
   A  fraction of units whose variant set is exactly identical at each position (frac_exact)
   B  mean position-wise Jaccard (mean_jaccard)
-Output: $FIGOUT\fig_trio_unitmatch.png/svg, FIG_TRIOPOS_source_values.tsv
+Output: $FIGOUT/fig_trio_unitmatch.png/svg, FIG_TRIOPOS_source_values.tsv
 """
 import io, os
 import numpy as np

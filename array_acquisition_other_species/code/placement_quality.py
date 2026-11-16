@@ -1,16 +1,16 @@
 # -*- coding: utf-8 -*-
-# array 마다 배치 건전성 · 깊이 · 관통 read 를 잰다
+# Measure the soundness of the placement, the depth, and the array-spanning reads, per array.
 #
-#   깊이      = array 구간에 정렬된 염기 합 / array 길이 (읽은 깊이)
-#   관통 read = 한 분자가 array 전체(시작~끝)를 덮은 것. 양쪽 flank 까지 물면 flank-to-flank.
-#   junction  = array 경계를 물고 바깥 flank 를 >= JFLANK bp 가진 read (한쪽 경계)
-#   배치 건전성 축
-#     · mapq0 비율        — 탠덤이라 높은 게 정상이지만, 얼마나 높은지는 적어 둔다
+#   Depth is the total aligned bases over the array interval divided by the array length, that is the read depth.
+#   An array-spanning read is one molecule covering the array from start to end; reaching both flanks as well makes it flank-to-flank.
+#   A junction read crosses the array boundary and carries at least JFLANK bp of outside flank, on one side.
+#   The axes of placement soundness:
+#     · the mapq 0 fraction, which is normally high in a tandem array, but how high is recorded;
 # - clip fraction: if many reads are heavily clipped at both ends, the placement is doubtful
-#     · 정렬 일치도 중앙값  — NM 태그로 낸 read-참조 일치도
-#   mapq 로 read 를 거르지 않는다.
+#     · the median alignment identity, the read-to-reference identity computed from the NM tag.
+#   Reads are not filtered by mapq.
 #
-#   인자 : 종키 샘플 bam chrom array시작 array끝 [JFLANK=1000]
+#   Arguments: species key, sample, bam, chrom, array start, array end, [JFLANK = 1000].
 # MIT License · Copyright (c) 2026 Hungmin Kim
 import sys
 import pysam

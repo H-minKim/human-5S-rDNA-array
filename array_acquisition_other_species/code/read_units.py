@@ -1,16 +1,16 @@
 # -*- coding: utf-8 -*-
-# array 에 정렬된 read 를 유닛 단위로 나눈다 (정본 유닛 분할과 같은 경계)
+# Divide the reads aligned to an array into units, on the same boundaries as the canonical unit division.
 #
-#   경계는 G8 지도의 유닛 좌표(조립본 좌표)를 그대로 쓴다 — 정본을 자른 것과 같은 경계다.
-#   read 마다 CIGAR 를 한 번 훑어 정렬 블록을 만들고, 유닛 구간과 겹치는 부분을 잘라낸다.
+#   The boundaries are the unit coordinates of the G8 map, in assembly coordinates, used unchanged, which are the boundaries the canonical sequence was cut on.
+#   The CIGAR of each read is traversed once to build the alignment blocks, and the parts overlapping a unit interval are cut out.
 #
-#   변이는 잘라낸 조각을 참조 유닛의 문맥판 `[끝 CTX][참조][앞 CTX]` 에 다시 정렬해 부른다
-#     (G8 과 같은 프레임 · 채움 금지). 조립본 좌표로 부르면 프레임이 달라져 지도와 못 합친다.
-#   보조/이차 정렬 제외(-F 0x900). mapq 는 적기만 하고 거르지 않는다(탠덤은 mapq0).
-#   서열은 저장하지 않는다(용량) — 좌표·덮음·변이만 표로 낸다.
+#   The variants are called by realigning the cut fragment to the context version of the reference unit, [end CTX][reference][start CTX]
+#     (the same frame as G8, with no filling). Calling them in assembly coordinates would put them in a different frame and they could not be joined to the map.
+#   Supplementary and secondary alignments are excluded with -F 0x900. The mapq is recorded but never filtered on, a tandem array giving mapq 0.
+#   The sequences are not stored, for size: only the coordinates, the coverage and the variants go into the table.
 #
-#   산출 : <out>/<species>__<sample>.read_unit_seq.tsv
-#   인자 : 종키 샘플명 bam 지도폴더 참조유닛폴더 파라미터.tsv 출력폴더 [PAD기본=100]
+#   Output: <out>/<species>__<sample>.read_unit_seq.tsv
+#   Arguments: species key, sample name, bam, map folder, reference unit folder, parameters .tsv, output folder, [PAD default 100].
 # MIT License · Copyright (c) 2026 Hungmin Kim
 import io
 import os
@@ -126,8 +126,8 @@ for fn in sorted(os.listdir(MAPD)):
         continue
     chrom = units[0][3]
     astrand = units[0][4]
-    # array 가 '-' 가닥이면 array_pos 순서와 조립본 좌표 순서가 반대다.
-    #   구간 찾기는 좌표 오름차순으로 정렬한 목록에서 한다(bisect 전제).
+    # Where the array is on the minus strand the array_pos order runs opposite to the assembly coordinate order.
+    #   The interval search is therefore made on a list sorted in increasing coordinate, which bisect requires.
     units.sort(key=lambda u: u[0])
     ustarts = [u[0] for u in units]
     maxlen = max(u[1] - u[0] + 1 for u in units)
@@ -143,7 +143,7 @@ for fn in sorted(os.listdir(MAPD)):
         q = rd.query_sequence
         if not q:
             continue
-        # 정렬 블록 (ref 구간 -> query 구간)
+        # the alignment blocks, as reference interval -> query interval
         blocks = []
         rpos, qpos = rd.reference_start + 1, 0
         for op, ln in rd.cigartuples:

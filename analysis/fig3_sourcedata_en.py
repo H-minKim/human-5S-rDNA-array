@@ -1,27 +1,25 @@
 # -*- coding: utf-8 -*-
-# Figure 3 · Supplementary Figure 3 — Source Data (영문) 를 만든다 2026-10-20
+# Builds the English Source Data for Figure 3 and Supplementary Figure 3.
 #
-#   왜 다시 만드나
-#     전 판(`2026-10-16`)은 패널 구성이 바뀌기 전 의 것이고 시트 글이 한글이었다.
-#     논문과 함께 내는 원자료 표 는 ⑴ 지금 그림이 그리는 값이어야 하고 ⑵ 영문이어야 한다.
+#   The Source Data submitted with the paper must hold the values the current figure draws, and must be in English.
 #
-#   원칙
-#     · 새로 계산하지 않는다 — 그림이 읽는 표를 그대로 옮긴다.
-#       두 패널만은 그림이 그 자리에서 만들어 쓰는 값 이라(본문 E · F) 같은 코드로 다시 만들고,
-#       그 결과가 legend 에 적힌 수와 맞는지 스스로 검산한다 (아래 CHECK).
-#     · 열 이름은 영문 으로 바꾼다. 뜻이 바뀌지 않도록 대조표를 README 시트에 싣는다.
-#     · 시트 하나가 패널 하나 — 어느 시트가 어느 패널인지 README 에 적는다.
+#   Principles:
+#     · Nothing is recomputed; the table the figure reads is copied across.
+#       Two panels (main E and F) hold values the figure builds on the spot, so those are rebuilt with the same code
+#       and checked here against the numbers printed in the legend.
+#     · The column names are translated, with a correspondence table on the README sheet so that no meaning shifts.
+#     · One sheet per panel, and the README records which sheet is which panel.
 import io, os, sys, hashlib, datetime
 import numpy as np, pandas as pd
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
-# 자료 뿌리는 환경변수 하나로 (2026-10-21 · 저장소 공개 준비)
-#   안 주면 지금까지 쓰던 자리를 그대로 쓴다 — 돌아가는 것이 달라지지 않는다.
+# The data roots come from environment variables.
+#   They have no default: the script stops with a message if one is not set.
 DATA_ROOT = os.environ["DATA_ROOT"]
 
-# 표를 읽고 쓰는 자리 — 저장소에서는 표가 코드 옆에 없으므로 환경변수로 받는다 (2026-10-21)
-# 예치표의 열 이름과 값을 영문으로 바꿨다 — 읽은 뒤 이 글의 내부 이름으로 되돌린다
-#   코드 전체를 낱말로 치환하지 않는다 — `구역`·`자리`·`축`·`층` 은 이 글이 읽는 다른 표 의
-#   열 이름이기도 해서(실측) 치환하면 그 자리에서 깨진다. 그래서 읽는 경계 한 자리 에서만 되돌린다.
+# Where the tables are read and written. The tables are not deposited next to the code, so these paths come from the environment.
+# The deposited table's column names and values are in English, so they are mapped back to this script's internal names after reading.
+#   The script is not word-substituted throughout: several of these names are also column names in other tables
+#   this script reads, so substituting everywhere would break those. The mapping happens at the single point of reading.
 _EN2KO_COL = {
     "FIG3_A_UNITPROFILE_ZONE.tsv": {"zone": "구역", "pos_in_unit": "유닛안자리",
                                     "pos_gene_ref": "유전자기준", "n_call": "호출수",
@@ -85,9 +83,8 @@ def chk(name, got, want, tol=0.0005):
 ZEN = {"근위": "proximal", "원위": "distal", "내부": "interior", "가운데": "middle", "전체": "all",
        "근위 1-3": "proximal 1-3", "근위 4-17": "proximal 4-17",
        "원위 11-22": "distal 11-22", "원위 1-10": "distal 1-10",
-       # 위 두 이름(`근위 4-17`·`원위 11-22`)은 10-29 경계 변경 전 이다.
-       #   지금 이름을 다해 둔다 — 안 더하면 `TRZ.zone` 이 한글로 xlsx 에 실린다(살제 16 셀).
-       #   옛 이름은 지우지 않는다 — 옛 표를 읽는 자리가 있을 수 있다.
+       # The two names above are those of the boundaries 4-17 and 11-22, the two below those of 4-10 and 11-21.
+       #   Both pairs are listed; without the second TRZ.zone would reach the xlsx untranslated (16 cells).
        "근위 4-10": "proximal 4-10", "원위 11-21": "distal 11-21"}
 SIDE = {"근위": "proximal", "원위": "distal"}
 
@@ -137,7 +134,7 @@ def write(path, sheets, title, panels):
           % (os.path.basename(path), len(sheets) + 2, os.path.getsize(path) / 1024.0, md5(path)))
 
 
-# ================================================================= 본 figure
+# ================================================================= main figure
 A1 = rd("FIG1_V5_A_bp_HC.tsv")[["side", "u", "beta_hc", "q1_hc", "q3_hc", "n_call", "n_hap"]].copy()
 A1["side"] = A1.side.map(SIDE)
 A1.columns = ["side", "distance_from_nearest_unit_end_bp", "beta_hard_call", "q1", "q3",
@@ -164,7 +161,7 @@ C.columns = ["array_length_stratum", "axis", "unit_number_from_that_end", "x_in_
 
 D = rd("FIG3_C_LOWCOUNT.tsv").copy()
 D = D[D.컷.astype(str).str.startswith("0.508")]
-# 제출본은 한글 0 자여야 한다 — `컷` 값을 영문으로
+# The submitted file must contain no Korean, so the cut values are translated.
 D["컷"] = D.컷.map({"0.508(여기서 잴 골)": "0.508 (trough measured here)",
                    "0.508 (trough measured here)": "0.508 (trough measured here)"}).fillna(D.컷)
 D["층"] = D.층.replace({"N40-80": "40-80 units", "N81-110": "81-110 units",
@@ -175,7 +172,7 @@ D.columns = ["low_methylation_cut", "array_length_stratum", "n_haplotypes", "med
 chk("panel D, mean low-methylation units, 40-80 stratum", D.mean_low_methylation_units.iloc[0], 22.889, 0.01)
 chk("panel D, expected if proportional, 141+ stratum", D.expected_if_proportional_to_length.iloc[-1], 52.1, 0.1)
 
-# ---- (E) 그림이 그 자리에서 만드는 값 : 한 하플로타입의 분자 x 유닛 ----
+# ---- (E) values the figure builds on the spot: molecule x unit for one haplotype ----
 L1 = pd.read_parquet(S + "02_tables/L1_READ_UNIT.parquet",
                      columns=["sample", "slot", "read_id", "ap", "N", "gate", "b_call"])
 L1 = L1[(L1.gate == 1) & (L1["sample"].astype(str) == "NA19338") & (L1.slot.astype(int) == 2)]
@@ -193,11 +190,9 @@ E2 = rd("SUPP3_2_POSSD.tsv").copy()
 E2.columns = ["unit_position_from_proximal_end", "unit_position_from_distal_end", "n_molecules",
               "mean_unit_beta", "sd_between_molecules"]
 
-# ---- (F) 그림이 그 자리에서 내는 표를 그대로 읽는다 ----
-#   고침 : 여기 있던 블록은 옛 경계(proximal 4-17 · distal 11-22) 와
-#   옛 양(구역 평균 β) 으로 만들고 옛 발행값(0.398 · 0.724 …) 과 맞대고 있었다.
-#   (F) 는 2026-10-29 에 read 사이 sd 로 바뀌었고 경계도 4-10 · 11-21 이 되었다.
-#   ⇒ 그림이 쓰는 표를 읽어, 시트 이름과 담긴 양이 같아지게 한다.
+# ---- (F) the table the figure writes on the spot is read as it is ----
+#   Panel F reports the standard deviation between reads, and the boundaries are 4-10 and 11-21.
+#   The table the figure uses is read directly, which keeps the sheet name and the quantity in it in step.
 F = rd("FIG3_F_HAPZONE.tsv").rename(columns={
     "구역": "zone", "순서": "zone_order", "하플로타입": "haplotype",
     "read사이_sd": "read_to_read_sd"})
@@ -227,7 +222,7 @@ NC = rd("NORM_VS_CANCER_SAMPLE.tsv").set_index("sample")
 P8["a_all"] = P8.a_이름.map(NC.전체b)
 P8["b_all"] = P8.b_이름.map(NC.전체b)
 IJ = P8[["짝이름", "자료원", "호출방식", "a_이름", "b_이름", "a_gene", "b_gene", "a_all", "b_all"]].copy()
-# `호출방식` 값을 영문으로 (표는 남의 그림 10 개가 읽어 못 건드린다)
+# The call-mode values are translated here; the table itself cannot be changed because ten other figures read it.
 IJ["호출방식"] = IJ.호출방식.map({"같음": "same", "다름": "different"}).fillna(IJ.호출방식)
 IJ["panel"] = np.where(IJ.자료원 == "HPRC_Y7", "E (tissue: PBMC vs LCL)",
                        np.where(IJ.자료원.isin(["CASTLE_ONT_R10", "COLO829_ONT_2024", "GIAB_HG008_ONT"]),
@@ -237,12 +232,12 @@ IJ.columns = ["pair_name", "data_source", "basecalling", "sample_a", "sample_b",
 chk("supplementary panels E and F, number of pairs drawn",
     (IJ.panel != "not drawn").sum(), 17)
 
-# 전달 칸이 보충에서 본문 (H) 로 왔다 — 그 표를 여기서 읽는다
+# The transmission panel is main panel H, so its table is read here.
 TRZ = rd("FIG5V2_PAIRZONE5.tsv").copy()
 TRZ["zone"] = TRZ.zone.map(lambda v: ZEN.get(v, v))
-# `call` 을 `basecalling` 이라 적던 것을 바로잡았다 —
-#   그 열의 값은 `전달(확정)`·`전달(약함)` 으로 전달 판정 이고 염기호출 방식이 아니다
-#   (뿌리 : `TRIO_SRCDEF_PAIRZONE.tsv` 의 `call` · `fig5v2b_prep_z1021_2026-10-29.py:97`)
+# This column is a transmission call, not a basecalling mode:
+#   its values are "transmitted (firm)" and "transmitted (weak)".
+#   (Source: the call column of TRIO_SRCDEF_PAIRZONE.tsv, written at fig5v2b_prep_z1021_2026-10-29.py:97.)
 TRZ["call"] = TRZ.call.map({"전달(확정)": "transmission confirmed",
                            "전달(약함)": "transmission weak"}).fillna(TRZ.call)
 TRZ.columns = ["child", "child_slot", "parent", "role", "transmission_call", "zone",
@@ -310,7 +305,7 @@ PAN_M = {"A1_window_axis": "A", "A2_unit_axis": "A", "A3_middle": "A", "D_within
 write(os.path.join(HERE, "Fig3_main_SourceData.xlsx"), MAIN,
       "Figure 3. Methylation of the 5S rDNA array is set by position and differs between molecules", PAN_M)
 
-# ================================================================= 보충
+# ================================================================= supplement
 CHECK = []
 SA = rd("FIG3_SUPP_A_SEQ1K.tsv")[["side", "u", "bp", "n_cpg", "cpg_per_kb"]].copy()
 SA["side"] = SA.side.map(SIDE)
@@ -332,7 +327,7 @@ for fam, side, dist, want in (("1kGP", "proximal", 9, 0.799), ("GIAB", "proximal
     v = SCD[(SCD.data_source == fam) & (SCD.side == side) & (SCD.unit_number_from_that_end == dist)].mean_unit_beta
     chk("supplementary C/D, %s reaches 90%% of its middle at unit %d" % (fam, dist), v.iloc[0], want, 0.001)
 
-# 같은 짝 표를 두 번 쓴다 — (E)(F) 는 유전자부 β, (G)(H) 는 array 전체 유닛 β
+# The same pair table is used twice: panels E and F take the gene-region beta, G and H the whole-unit beta.
 SEF = IJ.copy()
 SEFA = IJ.copy()
 SEFA["panel"] = SEFA.panel.replace({"E (tissue: PBMC vs LCL)": "G (tissue: PBMC vs LCL)",

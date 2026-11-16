@@ -1,30 +1,30 @@
 # -*- coding: utf-8 -*-
-# Fig 1 A — 유전체 방향 유닛(색만) → X 교차 → 우리가 쓰는 유닛(이름·눈금)
-#            + 세 곳 모두 전사 방향(TSS 꺾인 화살표) + chr1 왼쪽 = 1
+# Figure 1A: the unit in genome orientation (colour only), an X crossover, then the unit in the frame used here (with labels and ticks),
+#            with the direction of transcription marked in all three (a bent arrow at the TSS) and position 1 at the left of chr1.
 #
-# (마지막 판 · 손그림)
-#     *"우선은 뒤집힌 상태의 그림을 그리되(영역 표시 없이 색깔로만 영역 표시),
-#       그 아래에 우리가 쓰는 유닛형태 두기. 모든 경우에 transcription 방향 표시하기"*
-#     ⇒ 층 셋 : 배열 → (확대) 유전체 방향 유닛 → X → 우리 틀 유닛
-#     ⇒ X 가 크게 보인다 — 위아래 두 상자의 폭이 같기 때문이다
-#        (앞 판에서 X 가 안 보였던 까닭은 위 꼭지가 6.4 pt 뿐이었기 때문)
+# (the final, hand-drawn version)
+#     The upper row shows the flipped orientation with the segments marked by colour alone,
+#       the row beneath shows the unit in the frame used here, and the direction of transcription is marked in every case.
+#     Three layers: the array, then the magnified unit in genome orientation, the X, and the unit in this frame.
+#     The X reads clearly because the boxes above and below it are the same width.
+#        (Earlier the upper vertex was only 6.4 pt wide and the X was invisible.)
 #
-#   왜 둘의 방향이 반대인가 (실측 2026-10-26)
-#     · CHM13 `chr1:227,740,000-228,030,000` blastn : 5S 유전자 127 중 126 이 minus 가닥
-#       (이웃 유전자 간격 2,237-2,240 bp ⇒ 우리 2,240 bp 틀과 맞는다)
-#     · flank 창 : proximal `chr1:227,704,289-227,744,288`(낮음) ·
-#                 distal  `chr1:228,026,263-228,066,262`(높음)
-#       ⇒ 전사 = chr1 좌표 감소 = distal -> proximal = 그림에서 오른쪽 -> 왼쪽
-#     · 우리 틀 : AluY 1-318 … 5'-flanking 2032-2121 · 5S gene 2122-2240 (TSS 2122)
-#       ⇒ 틀 증가 = 전사 방향 ⇒ 틀을 1->2240 왼->오른쪽으로 그리면 유전체와 반대가 된다
-#     · 원고 : 379 행 *"Right to left is the direction of transcription"* ·
-#             422-423 행 *"the proximal end of the array is drawn on the left"*
-#     ⇒ 유전체 방향 유닛은 gene 왼쪽 · AluY 오른쪽 · 전사 왼쪽
-#        우리 틀 유닛은   AluY 왼쪽 · gene 오른쪽 · 전사 오른쪽
+#   Why the two orientations are opposite, measured:
+#     · blastn over CHM13 chr1:227,740,000-228,030,000: 126 of the 127 5S genes lie on the minus strand
+#       (neighbouring genes are 2,237-2,240 bp apart, matching the 2,240 bp frame used here).
+#     · Flank windows: proximal chr1:227,704,289-227,744,288 (low)
+#                 and distal chr1:228,026,263-228,066,262 (high).
+#       So transcription runs towards decreasing chr1 coordinates, distal to proximal, right to left in the figure.
+#     · This frame: AluY 1-318 ... 5'-flanking 2032-2121, 5S gene 2122-2240 (TSS at 2122).
+#       Increasing frame coordinate is the direction of transcription, so drawing the frame 1 to 2240 left to right opposes the genome.
+#     · The manuscript states that right to left is the direction of transcription, and
+#             that the proximal end of the array is drawn on the left.
+#     So in genome orientation the gene is on the left, AluY on the right, and transcription runs leftwards;
+#        in the frame used here AluY is on the left, the gene on the right, and transcription runs rightwards.
 #
-#   입력이 현행 산출물이다 — 일러스트레이터 원본 `fig1.pdf`(md5 150ddf302139)가
-#     `$RDNA_DATA_ROOT`·`$WORK_ROOT`·`$REPO_ROOT_MIRROR` 깊이 6 에서 0 건이라 본 글을 다시 돌릴 수 없다.
-#     ⇒ 이 글은 덧칠이다. 원본이 돌아오면 본 글에 합쳐야 한다.
+#   The input is the current output, not the Illustrator original: fig1.pdf (md5 150ddf302139)
+#     is absent from the data and work roots to a depth of 6, so the main script cannot be re-run.
+#     This script therefore patches the output; once the original is available it should be folded into the main script.
 import os
 import sys
 import fitz
@@ -34,28 +34,28 @@ sys.stdout.reconfigure(encoding="utf-8")
 SRC = os.environ["FIG1_CURRENT_PDF"]
 OUT = os.environ["FIG1_MARKED_PDF"]
 
-# ── 실측 자리 (현행 PDF crop 좌표 · page 423.5 x 559.84) ────────────────────
+# -- measured positions, in the crop coordinates of the current PDF, page 423.5 x 559.84 --
 CHR_X0 = 37.00
-BAR_Y0, BAR_Y1 = 43.74, 52.00        # 배열 막대
-SRC_X0, SRC_X1 = 228.52, 234.92      # 확대되는 칸
-BOX_X0, BOX_X1 = 138.33, 346.09      # 유닛 블록 좌우 (두 층 공통)
+BAR_Y0, BAR_Y1 = 43.74, 52.00        # the array bar
+SRC_X0, SRC_X1 = 228.52, 234.92      # the cell being magnified
+BOX_X0, BOX_X1 = 138.33, 346.09      # left and right edges of the unit block, shared by both layers
 ZFILL = (0.949, 0.961, 0.976)
 EDGE = (0.29, 0.478, 0.69)
 INK = (0.102, 0.102, 0.102)
 GREY = (0.361, 0.380, 0.412)
 LEAD = (0.690, 0.416, 0.416)
-XLINE = (0.302, 0.349, 0.447)         # X 교차선 — 더 진하게 (전 0.55/0.60/0.68)
+XLINE = (0.302, 0.349, 0.447)         # the X crossover lines, darkened from 0.55 / 0.60 / 0.68
 FS_EL, FS_TICK, FS_RU = 4.70, 4.70, 5.10
 UTOT = 2240.0
 MIR = BOX_X0 + BOX_X1
 
-# 새 세로 배치 (배열 아래 52.0 ~ 패널 B 의 "B" 91.69 사이를 나눈다)
-FAN_Y0, FAN_Y1 = 56.60, 62.00        # 확대선 (배열 아래 화살표 자리를 비운다)
-GEN_Y0, GEN_Y1 = 62.00, 68.30        # 유전체 방향 유닛 (색만 · 6.30 pt)
-XB_Y0, XB_Y1 = 72.30, 77.70          # X 교차 띠 — 유전체유닛 화살표(68.3->70.9) 아래에서 시작
-XB_IN = 8.0                           # X 선 양 끝을 모서리에서 들인다 (왼쪽 화살표와 겹치지 않게)
-OUR_Y0, OUR_Y1 = 77.70, 84.00        # 우리 틀 유닛 (이름 들어감 · 6.30 pt = 위 층과 같게)
-TICK_BASE = 91.50                    # 눈금 바닥선 (패널 B 잉크는 y 95.4 부터 — 실측)
+# the vertical layout, dividing the space between the array at 52.0 and the "B" of panel B at 91.69
+FAN_Y0, FAN_Y1 = 56.60, 62.00        # the zoom lines, leaving room for the arrow below the array
+GEN_Y0, GEN_Y1 = 62.00, 68.30        # the unit in genome orientation, colour only, 6.30 pt
+XB_Y0, XB_Y1 = 72.30, 77.70          # the X band, starting below the arrow of the genome-orientation unit (68.3 -> 70.9)
+XB_IN = 8.0                           # the ends of the X are inset from the corners so they do not overlap the left arrow
+OUR_Y0, OUR_Y1 = 77.70, 84.00        # the unit in this frame, with labels, 6.30 pt to match the layer above
+TICK_BASE = 91.50                    # the tick baseline; panel B's ink begins at y 95.4 (measured)
 
 ELEM = [("AluY", 1, 318, (0.725, 0.804, 0.894)),
         ("spacer-1", 319, 1178, (0.890, 0.925, 0.965)),
@@ -68,12 +68,12 @@ TICKS = [1, 319, 1179, 1552, 2240]
 
 
 def xf(bp):
-    """틀 좌표 -> 우리 틀 유닛의 x (1 이 왼쪽)"""
+    """Frame coordinate -> x in the unit of our frame (1 is at the left)"""
     return BOX_X0 + (BOX_X1 - BOX_X0) * (bp - 1) / UTOT
 
 
 def xm(bp):
-    """틀 좌표 -> 유전체 방향 유닛의 x (거울)"""
+    """Frame coordinate -> x in the genome-orientation unit (mirrored)"""
     return MIR - xf(bp)
 
 
@@ -82,12 +82,12 @@ def tlen(t, sz, bold=False):
 
 
 def bent(page, x_tss, y_base, rise, run, w=0.85, head=2.30, hw=1.10, color=INK):
-    """TSS 꺾인 화살표 — 세로로 섰다가 전사 방향으로 (run<0 이면 왼쪽).
-    머리는 채운 삼각형 (선 두 개짜리 V 는 작은 크기에서 깨진다)."""
+    """The bent TSS arrow, vertical first and then along transcription (to the left when run<0).
+    The head is a filled triangle, because a V of two strokes breaks up at this size."""
     yt = y_base - rise
     s = 1.0 if run > 0 else -1.0
-    xe = x_tss + run                 # 화살촉 끝
-    xs = xe - s * head               # 샤프트가 끝나고 머리가 시작하는 자리
+    xe = x_tss + run                 # the tip of the arrowhead
+    xs = xe - s * head               # where the shaft ends and the head begins
     sh = page.new_shape()
     sh.draw_polyline([fitz.Point(x_tss, y_base), fitz.Point(x_tss, yt), fitz.Point(xs, yt)])
     sh.finish(color=color, width=w, closePath=False, lineJoin=1)
@@ -100,7 +100,7 @@ def bent(page, x_tss, y_base, rise, run, w=0.85, head=2.30, hw=1.10, color=INK):
 
 
 def unit_row(page, y0, y1, xpos, labels, outside_left):
-    """유닛 한 줄 — xpos(bp)->x · labels=True 면 이름을 넣는다"""
+    """One row of units. xpos(bp)->x, and labels=True writes the element names."""
     page.draw_rect(fitz.Rect(BOX_X0 - 1.0, y0 - 1.0, BOX_X1 + 1.0, y1 + 1.0),
                    color=None, fill=(1, 1, 1))
     for nm, a, b, col in ELEM:
@@ -118,7 +118,7 @@ def unit_row(page, y0, y1, xpos, labels, outside_left):
         cx = (xpos(a) + xpos(b + 1)) / 2.0
         page.insert_text((cx - tlen(nm, FS_EL) / 2.0, base), nm,
                          fontname="helv", fontsize=FS_EL, color=INK)
-    # 좁은 둘은 바깥에 이음선으로
+    # the two narrow segments are labelled outside with a leader
     for (bp_in, txt, dy) in ((2045, "5'-flanking", -1.9), (2190, "5S rDNA gene", +2.6)):
         bx = xpos(bp_in)
         ex = (BOX_X1 + 7.0) if not outside_left else (BOX_X0 - 7.0)
@@ -132,14 +132,14 @@ def unit_row(page, y0, y1, xpos, labels, outside_left):
 
 doc = fitz.open(SRC)
 page = doc[0]
-print("입력 %s (%.1f x %.1f pt)" % (os.path.basename(SRC), page.rect.width, page.rect.height))
+print("input %s (%.1f x %.1f pt)" % (os.path.basename(SRC), page.rect.width, page.rect.height))
 
-# ── ① 옛 패널 A 아래 절반(확대선·유닛·눈금·바깥라벨·repeat unit)을 지운다 ──────
+# -- 1) delete the lower half of the old panel A: the zoom lines, unit, ticks, outside labels and "repeat unit" --
 for r in (fitz.Rect(60.0, 52.30, 410.0, 90.0),
           fitz.Rect(64.0, 69.5, 120.0, 78.5)):
     page.draw_rect(r, color=None, fill=(1, 1, 1))
 
-# ── ② 확대선 (배열의 한 칸 -> 유전체 방향 유닛) ────────────────────────────
+# -- 2) the zoom lines, from one cell of the array to the unit in genome orientation --
 fan = page.new_shape()
 fan.draw_polyline([fitz.Point(SRC_X0, FAN_Y0), fitz.Point(SRC_X1, FAN_Y0),
                    fitz.Point(BOX_X1, FAN_Y1), fitz.Point(BOX_X0, FAN_Y1),
@@ -147,15 +147,15 @@ fan.draw_polyline([fitz.Point(SRC_X0, FAN_Y0), fitz.Point(SRC_X1, FAN_Y0),
 fan.finish(color=None, fill=ZFILL)
 fan.commit()
 
-# ── ③ 유전체 방향 유닛 — 색만 (이름·눈금 없음) ──────────────────────────
+# -- 3) the unit in genome orientation, colour only, with no labels or ticks --
 unit_row(page, GEN_Y0, GEN_Y1, xm, labels=False, outside_left=True)
 
-# ── ④ X 교차 — 위아래 상자의 폭이 같아 교차가 크게 보인다 ──────────────
+# -- 4) the X crossover; the boxes above and below are the same width, so the crossing reads clearly --
 for (xa, xb) in ((BOX_X0 + XB_IN, BOX_X1 - XB_IN), (BOX_X1 - XB_IN, BOX_X0 + XB_IN)):
     page.draw_line(fitz.Point(xa, XB_Y0), fitz.Point(xb, XB_Y1),
-                   color=XLINE, width=0.55, dashes="[1.8 1.5] 0")   # 점선 · 더 얇게
+                   color=XLINE, width=0.55, dashes="[1.8 1.5] 0")   # dashed, and thinner
 
-# ── ⑤ 우리 틀 유닛 — 이름·눈금 ──────────────────────────────────────
+# -- 5) the unit in this frame, with labels and ticks --
 unit_row(page, OUR_Y0, OUR_Y1, xf, labels=True, outside_left=False)
 for v in TICKS:
     cx = xf(v)
@@ -168,18 +168,18 @@ page.insert_text((BOX_X0 - 7.5 - tlen("repeat unit, 2,240 bp", FS_RU, True),
                   TICK_BASE), "repeat unit, 2,240 bp",
                  fontname="hebo", fontsize=FS_RU, color=INK)
 
-# ── ⑥ 전사 방향 — 세 곳 모두 ─────────────────────────────────────────
-#   배열 : 한 칸 안에서 틀 1 은 오른쪽 끝 (전사가 proximal=왼쪽 쪽이므로)
+# -- 6) the direction of transcription, in all three places --
+#   In the array, frame position 1 is at the right edge of a cell, because transcription runs towards the proximal end on the left.
 TSS_BAR = SRC_X1 - (2121.0 / UTOT) * (SRC_X1 - SRC_X0)
-bent(page, TSS_BAR, BAR_Y1, -2.30, -(SRC_X1 - SRC_X0))  # 막대 아래 · 가로 6.40 pt
+bent(page, TSS_BAR, BAR_Y1, -2.30, -(SRC_X1 - SRC_X0))  # below the bar, 6.40 pt wide
 page.insert_text((TSS_BAR + 2.2, 56.00), "transcription",
                  fontname="helv", fontsize=FS_EL, color=INK)
-#   유전체 방향 유닛 : TSS = xm(2122) · 왼쪽
-bent(page, xm(2122), GEN_Y1, -2.60, -7.0)   # 상자 아래
-#   우리 틀 유닛 : TSS = xf(2122) · 오른쪽 (틀이 유전체와 반대이므로)
-bent(page, xf(2122), OUR_Y1, -2.25, 7.0)    # 상자 아래
+#   In genome orientation the TSS (2122) is on the left.
+bent(page, xm(2122), GEN_Y1, -2.60, -7.0)   # below the box
+#   In this frame the TSS (2122) is on the right, because the frame opposes the genome.
+bent(page, xf(2122), OUR_Y1, -2.25, 7.0)    # below the box
 
-# ── ⑦ chr1 왼쪽 끝이 1 번 자리 ───────────────────────────────────────
+# -- 7) position 1 is at the left end of chr1 --
 page.draw_line(fitz.Point(CHR_X0, 22.4), fitz.Point(CHR_X0, 24.6), color=INK, width=0.7)
 page.insert_text((CHR_X0 - tlen("1", 6.0) / 2.0, 30.2), "1",
                  fontname="helv", fontsize=6.0, color=INK)
@@ -188,6 +188,6 @@ tmp = OUT + ".tmp"
 doc.save(tmp, garbage=3, deflate=True)
 doc.close()
 os.replace(tmp, OUT)
-print("저장 :", OUT)
-print("유전체유닛 y %.1f-%.1f · X 띠 %.1f-%.1f · 우리유닛 %.1f-%.1f · 눈금 %.1f"
+print("saved :", OUT)
+print("genome-orientation unit y %.1f-%.1f, X band %.1f-%.1f, our unit %.1f-%.1f, ticks %.1f"
       % (GEN_Y0, GEN_Y1, XB_Y0, XB_Y1, OUR_Y0, OUR_Y1, TICK_BASE))

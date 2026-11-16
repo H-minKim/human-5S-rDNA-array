@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Attach read-consensus flanks to the canonical sequence (final orientation rule), 2026-09-15
+# Attach read-consensus flanks to the canonical sequence
 #
 #   invariant: the array canonical sequence is not changed by a single character. It is only attached to.
 #

@@ -1,23 +1,23 @@
 # -*- coding: utf-8 -*-
-"""HPRC 를 세포주의 층 라벨로 갈라 보면 (2026-10-14 · 2 판).
+"""HPRC split by the stratum label used for the cell lines.
 
-1 판(`zzak_hprc_cellmethod.py`)에서 두 가지를 배웠다
-  ① '전체 풀' 축은 HPRC 에서 안 된다.
-     배치 최종이 아닌 유닛(in_final=N)은 FiberHMM 에 3,632 개 있지만
-     창을 관통하는 것이 3 개뿐이다 - 짧아서 여과된 것이라 애초에 못 쓴다.
-     ⇒ 이 축은 빼고, 그 수를 그림·표에 적는다.
-  ② 자를 공개판에 맞춘다. `fhmm_peaks_bin10_both.npz`(표3 의 10 bp 줄)는
-     분절에서 msp 만 뺀다(nuc+tf). tf 만 쓰면 49.85, 공개판 규칙이면 52.77 이다.
-     ⇒ 공개판 규칙을 따른다.
+Two points
+  (1) The 'whole pool' axis is not available in HPRC.
+     Units that are not final in the placement (in_final=N) number 3,632 in FiberHMM,
+     but only 3 of them span the window: they were filtered for being short.
+     This axis is left out, and that count is written in the figure and the table.
+  (2) The ruler follows the published version. `fhmm_peaks_bin10_both.npz` (the 10 bp row of table 3)
+     removes only msp from the segments (nuc+tf). With tf alone the value is 49.85, with the published rule 52.77.
+     The published rule is followed.
 
-그래서 이 판이 보는 것은 층 라벨 하나다
-    유닛 전체 β 0.508 (본표)  ↔  유전자부(끝 119 bp · CpG>=5) β 0.5 (세포주 방식)
+What is compared is therefore the stratum label alone
+    whole-unit β 0.508 (main table)  against  gene body (last 119 bp, CpG>=5) β 0.5 (the cell-line way)
 
-내는 것 : hprc_genebeta.npz
-  R   (라벨 2 · 자리 2 · 층 2)  그 자리의 귀무 대비 배수
-  N   (라벨 2 · 층 2)           분자 수
-  CF  (2 x 2)                   두 라벨의 혼동표
-  GC                            유전자부 CpG 수 분포
+Written : hprc_genebeta.npz
+  R   (label 2, site 2, stratum 2)  fold over the null at that site
+  N   (label 2, stratum 2)          number of molecules
+  CF  (2 x 2)                       confusion table of the two labels
+  GC                                distribution of the gene-body CpG count
 """
 import io
 import os
@@ -37,7 +37,7 @@ def _need(k):
         raise SystemExit(
             "environment variable %s is not set; it is required by %s." % (k, _SELF)
             + chr(10)
-            + "The deposited copy has no default; see README.md section 2")
+            + "The deposited copy has no default; see README.md, section 'Environment variables'")
     return v
 
 
@@ -56,11 +56,11 @@ CUT_UNIT, CUT_GENE = 0.508, 0.5
 BINS = [("TFIIIB", 30, 39, -16), ("ICR", 40, 49, 63)]
 NC = len(BINS)
 
-# ── 유닛 전체 β : 공개판과 똑같이 load_beta
+# -- whole-unit beta: load_beta, exactly as in the published version
 UB = {(s, r, sl, a): v for (s, sr, r, sl, a), v in
       L.load_beta(min_cpg=10).items() if sr == SRC}
 
-# ── 유전자부 β : calls 에서 끝 119 bp 만 · 가닥 두 줄은 합친다
+# -- gene-region beta: from the calls, the last 119 bp only, with the two strand rows merged
 raw = collections.defaultdict(lambda: [0, 0])
 for node in ("w3", "iB", "iA"):
     p = os.path.join(L.R, "08_methylation_s5", node, L.METH[SRC],
@@ -90,7 +90,7 @@ print("유닛 전체 β %s · 유전자부 β %s (CpG>=%d 관문에서 %s 개 �
       % (format(len(UB), ","), format(len(GB), ","), MIN_GENE_CPG,
          format(len(raw) - len(GB), ",")))
 
-# ── FiberHMM 분절 : 공개판 규칙 (msp 만 뺀다)
+# -- FiberHMM segments: the published rule, removing only the MSPs
 SEG = collections.defaultdict(list)
 for p in sorted(glob.glob(os.path.join(FD, "FHMM_UNITS_*.tsv"))):
     with io.open(p, encoding="utf8") as f:
@@ -106,7 +106,7 @@ OBS = np.zeros((2, 2, NC, PER))
 NUL = np.zeros((2, 2, NC, PER))
 NMO = np.zeros((2, 2))
 CF = np.zeros((2, 2))
-rng = np.random.default_rng(20261012)   # 공개판(zzac)과 같은 씨앗 - 자를 맞춘다
+rng = np.random.default_rng(20261012)   # the same seed as the published version (zzac), to match the ruler
 for p in sorted(glob.glob(os.path.join(FD, "FHMM_READCOV_*.tsv"))):
     with io.open(p, encoding="utf8") as f:
         f.readline()

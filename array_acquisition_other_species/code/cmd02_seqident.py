@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-# 참조유닛 유전자부 · 스페이서부 쌍별 일치도 (금화조 8 array · 제브라 chr18 vs chr4)
-#   입력 : 02_reference_units/REFERENCE_UNITS_ALL.fa (헤더 gene=a-b, 유닛 틀 [스페이서][유전자])
-#   일치도 = 전역 정렬(Biopython PairwiseAligner, 일치 +1 · 불일치 −1 · 틈 열기 −2 · 늘이기 −0.5)에서
-#            일치 열 수 / 정렬 열 수(틈 포함)
-#   CpG 수 : 각 부분의 CG 이핵산 수(메틸 측정 가능 자리 수 참고)
+# Pairwise identity of the gene part and the spacer part of the reference units, for the 8 zebra finch arrays and zebrafish chr18 against chr4.
+#   Input: 02_reference_units/REFERENCE_UNITS_ALL.fa, whose header gives gene=a-b, in the unit frame [spacer][gene].
+#   Identity is measured by global alignment (Biopython PairwiseAligner, match +1, mismatch -1, gap open -2, extend -0.5) as
+#            the number of matching columns over the number of aligned columns, gaps included.
+#   CpG count: the number of CG dinucleotides in each part, which indicates how many positions can carry a methylation measurement.
 # MIT License · Copyright (c) 2026 Hungmin Kim
 import io
 import itertools
@@ -65,11 +65,11 @@ for L in io.open(R + "02_reference_units/REFERENCE_UNITS_INDEX.tsv", encoding="u
     f = L.rstrip("\n").split(T)
     if f[0] == "zebrafish_GRCz12tu" and f[17] == "CONFIRMED" and f[18] == "한 종류":
         OKZ.add(f[1])
-z4 = [k for k in zk if "CM111182.1" in k and k in OKZ]   # 한 종류 판정 통과 chr4 array 만(유닛 틀 확실)
+z4 = [k for k in zk if "CM111182.1" in k and k in OKZ]   # only the chr4 arrays that passed the single-type call, where the unit frame is certain
 for a in z18:
     for b in z4:
         (sa, ga), (sb, gb) = parts(a), parts(b)
-        # 스페이서 길이가 크게 다르면(짧은 쪽/긴 쪽 < 0.8) 일치도 대신 '길이다름'
+        # where the spacer lengths differ substantially, the shorter over the longer below 0.8, the entry reads as a length difference instead of an identity
         sid = "%.3f" % ident(sa, sb) if min(len(sa), len(sb)) / max(len(sa), len(sb)) >= 0.8 else "길이다름"
         o.write(T.join(["zebrafish", "chr18:" + a.split("__")[1], "chr4:" + b.split("__")[1], "chr18 vs chr4",
                         sid, "%.3f" % ident(ga, gb), str(len(sa)), str(len(sb)),

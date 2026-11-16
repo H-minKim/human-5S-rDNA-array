@@ -1,15 +1,14 @@
 # -*- coding: utf-8 -*-
 # HG00133 h2 (N 153→149 · 347,971→337,083 bp) · HG03270 h1 (N 78→77 · 178,074→175,843 bp)
-#   단계 : ③b 정본 수리 (수정1 · 2 자리)
-# Reason: no machine-specific path is left in the code. A default would leave such a path on this line, so none is set.
+#   Step 3b: canonical-unit repair (revision 1, 2 sites).
+# NODE_HOME has no default.
 #       to run : export NODE_HOME=/home/<user>
 
 # -*- coding: utf-8 -*-
-# [v11-수정1 사본 2026-09-16 : 원본 cmp4d_v11 · 출력 cmp4d_v11_fix1 실제 복사(심볼릭 링크 금지) · 지도 g8canonv10 · 앵커 직접 지정. 그 밖 불변]
-# 정본 v10 — 수술식 교체 (2026-09-13)
-#   v8(원조립본) 을 바탕으로, 끊긴 7 자리만 [조립본 앞앵커][read 합의 가운데][조립본 뒤앵커] 로 잇는다.
-#   되돌림 없음 : v9 의 '앵커까지 합의로 교체' 가 문제였지 수리가 문제가 아니었다(SPLICE_MID2.tsv).
-#   저장 방향 : cmp4d 의 .fa 는 뒤집기 전 서열. 지도 방향에서 만든 창은 되돌려(rc) 적는다.
+# Revision 1: source cmp4d_v11, output cmp4d_v11_fix1 as a real copy and never a symbolic link, map g8canonv10, anchors given explicitly. Everything else unchanged.
+# Canonical unit v10: a surgical replacement.
+#   Starting from v8 (the original assembly), only the 7 broken sites are spliced as [assembly left anchor][read consensus middle][assembly right anchor].
+#   Stored orientation: the .fa from cmp4d holds the sequence before flipping, so a window built in map orientation is reverse-complemented before it is written.
 import io
 import os
 import glob
@@ -59,7 +58,7 @@ n = 0
 for p in glob.glob(os.path.join(H, "cmp4d_v11", "*.fa")):
     b = os.path.basename(p)
     t = os.path.join(V10, b)
-    shutil.copyfile(os.path.realpath(p), t)          # 실제 복사
+    shutil.copyfile(os.path.realpath(p), t)          # a real copy
     n += 1
 print("v11 에서 실제 복사한 파일 %d" % n)
 
@@ -75,7 +74,7 @@ for (smp, sl, ap, apR) in SITES:
     iR = [j for j, x in enumerate(v) if x[0] == apR][0]
     a0, a1 = v[i][1], v[iR][2]
     spl = rdfa(os.path.join(H, "fix1", "splice", "spl_%s_%s_%d.fa" % (smp, sl, ap)))
-    # 앵커 서열이 조립본과 글자 그대로 같은지 확인 (수술식의 전제)
+    # Confirm the anchor sequence matches the assembly character for character; the surgical replacement depends on it.
     assert spl.startswith(A[v[i][1] - 1:v[i][2]]), "앞 앵커 불일치 %s %s" % (smp, sl)
     assert spl.endswith(A[v[iR][1] - 1:v[iR][2]]), "뒤 앵커 불일치 %s %s" % (smp, sl)
     B = A[:a0 - 1] + spl + A[a1:]

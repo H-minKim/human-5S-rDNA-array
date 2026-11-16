@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
-# read 유닛 가장자리 결실 규칙(B) — NO_FULL 유닛만 다시 부른다 (노드에서 실행 · 다시 자르거나 정렬하지 않는다)
-#   read 유닛이 정본 1-2240 을 다 못 덮은 원인은 read 가장자리 1~3bp 결실 오류가 대부분 (실측)
-#   규칙 B : 시작·끝 모자람이 각각 10bp 이하면 모자란 만큼 결실 토큰으로 적고 OK_EDGE 로 살린다
-#             시작 모자람 s -> "1Ds" · 끝 모자람 e -> "(2241-e)De" (G8 의 끝 채움 규칙이 이미 이 토큰을 적는다)
-#             10bp 를 넘으면 그대로 NO_FULL (버림)
-#   유닛 서열 = 저장된 정렬 기록(SAM)의 SEQ 에서 저장된 read 좌표로 꺼낸다 (원 read 좌표 · 방향 반영)
-#   검산 : 개체마다 OK 유닛 20 개를 같은 방법으로 다시 불러 저장된 변이목록과 같은지 대조 (서열 꺼내기가 맞는지)
-#   인자 : JX|AO · 유닛표 · 출력표
+# Rule B for deletions at the edge of a read unit: only NO_FULL units are re-called. Run on the compute node; nothing is re-cut or re-aligned.
+#   Measured: when a read unit fails to cover canonical positions 1-2240, the cause is almost always a 1-3 bp deletion error at the read edge.
+#   Rule B: if the shortfall at each of the start and end is 10 bp or less, record it as a deletion token of that length and keep the unit as OK_EDGE.
+#             A start shortfall s becomes "1Ds" and an end shortfall e becomes "(2241-e)De"; the G8 end-fill rule already writes these tokens.
+#             Beyond 10 bp the unit stays NO_FULL and is discarded.
+#   The unit sequence is taken from the SEQ of the stored alignment record using the stored read coordinates, in the original read coordinates and orientation.
+#   Check: for each individual, 20 OK units are re-called the same way and compared against the stored variant list, to confirm the sequence extraction is correct.
+#   Arguments: JX|AO, unit table, output table.
 import io
 import os
 import re
@@ -100,7 +100,7 @@ def judge(seq, res, edge):
     return "NO_FULL", None
 
 
-# 표 열 위치
+# table column positions
 if KIND == "JX":
     C_SMP, C_RID, C_JOB, C_STR, C_F0, C_F1, C_VD, C_VL = 0, 1, 3, 5, 7, 8, 11, 12
 else:

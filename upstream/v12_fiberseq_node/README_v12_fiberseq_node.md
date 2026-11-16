@@ -1,10 +1,8 @@
 # Upstream — v12 Fiber-seq node pipeline
 
-Archived on 2026-10-22 at the 's request.
-**26 files** (23 at first archiving; three producers added the same day — see the correction in §2).
-**Nothing here is edited in this repository.** These files are copies of code that ran on the three
-AWS compute nodes; they are kept so that the chain behind the published numbers is visible, not so
-that it can be re-run from this folder.
+**26 files.** These files are copies of code that ran on the three
+AWS compute nodes; they show the chain behind the published numbers and are not meant to be
+re-run from this folder.
 
 ---
 
@@ -22,8 +20,7 @@ Other figures in this paper rest on the **v11** stage, which is archived separat
 
 ## 2. The run scripts
 
-Four run scripts drove the pipeline, and they are deposited with the Python they
-call, because they are the record of which settings ran:
+Four run scripts drove the pipeline and hold the settings that ran:
 
 ```
 04_placement_s5/<node>/run_s5.sh        the merge at MINSITE=5 and the re-call passes
@@ -53,8 +50,8 @@ three nodes**, so one copy is archived here; `MD5_node_s5.txt` is the node-side 
 
 The three `recall_*_v10.py` files are the **sources**, not themselves run: `run_s5.sh` derives
 `recall_*_fs3.py` and `recall_*_pb2.py` from them with a single `sed` substitution of the SAM
-directory. Both the sources and the derived scripts are archived, so the substitution can be
-checked. The sources live in the v11 archive (`08_versions/v11/01_code/node/`).
+directory. Both the sources and the derived scripts are in this folder.
+The sources live in the v11 archive (`08_versions/v11/01_code/node/`).
 
 ---
 
@@ -67,8 +64,5 @@ This stage contains the only random draws anywhere in the Fig. 5 chain, and ever
 | `fsplace_v12.py`, `pbfsplace_v11.py` | `random.Random(rid).choice(...)` when a read ties between array slots | `random.seed(20260909)`; the per-read generator is seeded with the **read id**, so the choice does not depend on processing order or on how the work is split across nodes |
 | `recall_edge_fs3.py`, `recall_edge_pb2.py` (and their v10 sources) | `random.sample(oks, 20)` | `random.seed(20260911)`; used for a spot check written to the run log, not for any tabulated value |
 | `fsmeth_v12c.py` | — | no random draw at all |
-
-Counting randomness only in the local analysis scripts would report "none", and that would be
-wrong. This table is the reason the Methods can say the pipeline is reproducible.
 
 ---

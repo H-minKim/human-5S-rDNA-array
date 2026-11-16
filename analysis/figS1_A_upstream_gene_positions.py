@@ -1,16 +1,16 @@
 # -*- coding: utf-8 -*-
 # makeblastdb + blastn → genepos.tsv
-#   단계 : S1 A 상류
+#   Step: S1 A upstream.
 #   Method document : analysis/METHOD_CONSENSUS_MAP_G8_REBUILD.md
 
 # -*- coding: utf-8 -*-
-# 유전자 시작 위치를 그대로 기록한다 — 유닛 수 차이가 진짜인지 경계 못 그은 것인지 가른다
-#   왜 : fasta 전체 길이 비교는 flank 를 얼마나 물었나가 섞여 들어간다.
-#        array 안쪽만 보려면 첫 유전자 ~ 마지막 유전자 거리를 써야 한다.
-#   내는 것 : 파일, 유전자시작 개수, K[0], K[-1], 안쪽거리(K[-1]-K[0]), 전체길이,
-#             앞 flank(K[0]), 뒤 flank(len-K[-1]),
-#             간격 분포 : 정상(2100-2400) · 큰간격(>2400, 놓친 경계) · 작은간격(<2100)
-#             그리고 큰 간격들을 유닛 환산으로 적는다 (4480 ≈ 2 유닛 = 하나 놓침)
+# The gene start positions are recorded as they are, which separates a real difference in unit count from a boundary that was never drawn.
+#   Comparing whole fasta lengths mixes in how much flank each sequence happens to carry.
+#        To see the array alone, the distance from the first gene to the last must be used.
+#   Reported: the file, the number of gene starts, K[0], K[-1], the interior distance K[-1] - K[0], the total length,
+#             the leading flank K[0], the trailing flank len - K[-1],
+#             and the gap distribution: normal (2100-2400), large (over 2400, a missed boundary) and small (under 2100).
+#             The large gaps are also expressed in units: 4480 is about 2 units, so one boundary was missed.
 import io, os, sys, glob, subprocess
 W = os.path.expanduser("~/psw3"); os.makedirs(W, exist_ok=True)
 D = os.path.expanduser("~/cmp4d")

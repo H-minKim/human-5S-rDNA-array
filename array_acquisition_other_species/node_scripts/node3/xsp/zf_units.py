@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
-# 제브라피시 5S array : read x 유닛 CpG 메틸 행렬 (사람 HPRC 분석과 같은 형식)
-#   유닛 경계 = GRCz12tu cmsearch 5S hit 시작점 (array 안에서 이웃 hit 시작 사이 = 유닛 하나) — bp/주기 환산 금지
-#   입력 : modkit extract full (read · ref_position · mod_qual) · 개체 BAM(MAPQ) · array BED · hit 표
-#   호출 : mod_qual >= 0.5 -> 메틸, < 0.5 -> 비메틸 (modkit 0.6.4 · C+m? 이라 m 확률만 있다)
-#   MAPQ 로 거르지 않는다 (탠덤 array 는 mapq0 이 정상) — mapq 열로 남겨 나중에 고른다
-#   산출 : <개체>.read_unit.tsv · 5S_unit_summary.tsv (개체 x array x 유닛) · 5S_array_summary.tsv
-#   인자 : zf 폴더 · 개체 목록(쉼표)
+# Zebrafish 5S array: the read x unit CpG methylation matrix, in the same format as the human HPRC analysis.
+#   Unit boundary = the start of a GRCz12tu cmsearch 5S hit; one unit spans two neighbouring hit starts within the array. Never convert bp / period.
+#   Inputs: modkit extract full (read, ref_position, mod_qual), the per-individual BAM for MAPQ, the array BED and the hit table.
+#   Calls: mod_qual >= 0.5 is methylated, below that unmethylated. modkit 0.6.4 with C+m? gives the m probability only.
+#   No MAPQ filter (mapq 0 is normal in a tandem array); mapq is kept as a column so it can be used later.
+#   Outputs: <individual>.read_unit.tsv, 5S_unit_summary.tsv (individual x array x unit), 5S_array_summary.tsv.
+#   Arguments: the zf folder, and a comma-separated list of individuals.
 import io
 import os
 import sys

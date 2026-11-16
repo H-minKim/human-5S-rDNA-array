@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # Compares three zonings and builds and checks a combined grid.
-#   (A)  메틸 6구간 : P1 근1-3 · P2 근4-10 · P3 근11-25(무름) · INT · D2 원11-22 · D1 원1-10
-#   (B)  서열 구역 : 근1-3 · 근4-17 · 내부(근18+,원9+) · 원1-8
+#   (A)  the six methylation zones: P1 proximal 1-3, P2 proximal 4-10, P3 proximal 11-25 (soft), INT, D2 distal 11-22, D1 distal 1-10
+#   (B)  the sequence zones: proximal 1-3, proximal 4-17, the interior (proximal 18+ and distal 9+), and distal 1-8
 # (C) here : methylation proximal 9-11, distal 10-11 / sequence proximal 4-5, distal 7-8, distal 2 alone
 import io,os,warnings
 import numpy as np, pandas as pd
@@ -20,7 +20,7 @@ ap=D.ap.values.astype(int); ad=D.ad.values.astype(int)
 near_p=ap<=ad
 P("="*104); P("boundary comparison of the three zonings and the combined grid check"); P("="*104); P()
 
-# ---- 근위 제3경계 : 25 인가 17 인가 ( 이 '무름' 이라 한 그것)
+# ---- the third proximal boundary: 25 or 17, the one described as soft
 P("[1] the third proximal boundary : 25.5 (soft), 17, and 17|18 from methylation here")
 P()
 P("   길이층      근위 f_hi :  근14   근16   근18   근20   근25   근30   내부")
@@ -41,7 +41,7 @@ for lo,hi in ((30,59),(60,99),(100,139),(140,300)):
     P("   N %3d-%3d : 근위 %s 에서 내부값 도달 (내부 %.3f)"%(lo,hi,hit,it))
 P()
 
-# ---- 종합 격자
+# ---- the combined grid
 def mzone(a,d,np_):
     if np_:
         if a<=3: return "M1 근1-3"

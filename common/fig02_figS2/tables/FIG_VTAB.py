@@ -5,8 +5,8 @@ r"""Variant composition from proximal 1 -> middle (compressed) -> distal 1, pane
   A2  absolute, only the groups that change most between zones (|null z| >= ZCUT)
   B1  relative, all 23 groups (variant count at that position set to 1)
   B2  relative, selected groups renormalized among themselves (their sum = 1, the denominator is not the total variant count)
-  Ca  ratio to the middle for the unfiltered 11 types      <- left unchanged
-  Cb  only the groups that change most across zones        <- left unchanged
+  Ca  ratio to the middle for the unfiltered 11 types
+  Cb  only the groups that change most across zones
 
 Cohort v11 primary 564, two-stage mean, zone boundaries = S24 (proximal 3|4, 17|18, distal 10|11)
 """
@@ -187,7 +187,7 @@ ax.text(0.5, -0.135,
         % (len(PICK), (PKS / TOT).min(), (PKS / TOT).max()),
         transform=ax.transAxes, ha="center", va="top", fontsize=8.4, color="#566573")
 
-# ---------- Ca and Cb: unchanged ----------
+# ---------- Ca and Cb ----------
 midc = MC[RI["MID"]]
 for ci, (which, ttl) in enumerate(
         [("all", "Ca  거르지 않고 — 변이 유형 전부 (11 종, 거친 분류). 가운데 대비 비"),

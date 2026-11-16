@@ -1,18 +1,17 @@
 # -*- coding: utf-8 -*-
-# 같은 대상, 서열과 좌표 전부
-#   단계 : ① array 잘라내기
+# the same targets, keeping both the sequence and the coordinates
+#   Step 1: cut out the arrays.
 #   Method document : analysis/METHOD_CONSENSUS_MAP_G8_REBUILD.md
 
 # -*- coding: utf-8 -*-
-# 과제 1-A: 조립본이 있는 모든 하플로타입에서 5S array 서열을 뽑아 보관한다
-#   (asm_units3.py 와 같은 방법 · 다만 서열과 좌표를 전부 저장한다)
+# Extract and store the 5S array sequence for every haplotype that has an assembly.
+#   The method is the same as the unit-counting script, except that the sequence and the coordinates are all kept.
 #
-#   이것이 조립본 좌표계 consensus map 의 원자료가 된다.
-#   좌표를 남겨야 나중에 bigwig 메틸을 같은 자리에 붙일 수 있다
-#   (asm_units3.py 는 a2-a1 만 남기고 좌표를 버려서 다시 구해야 했다).
+#   This is the raw material for the consensus map in assembly coordinates.
+#   The coordinates are kept so that bigwig methylation can later be attached at the same positions.
 #
-# URL 은 반드시 색인 CSV 에서 읽는다. 지어내지 않는다.
-# 유닛 계수는 Python sorted(). awk asorti 는 문자열 정렬이라 좌표를 뒤섞는다.
+# The URLs are always read from the index CSV and never constructed by hand.
+# The units are counted using Python's sorted(); awk's asorti sorts as strings and scrambles the coordinates.
 import io
 import os
 import sys
@@ -53,7 +52,7 @@ for i, L in enumerate(io.open(IDX, encoding="utf8")):
 
 
 def units_of(seq, tag):
-    """유닛 시작좌표 사슬을 돌려준다 (array 안 0-based)"""
+    """return the chain of unit start coordinates (0-based inside the array)"""
     fa = os.path.join(W, "a_%s.fa" % tag)
     io.open(fa, "w", newline=NL).write(">arr" + NL + seq + NL)
     db = os.path.join(W, "d_%s" % tag)
@@ -154,7 +153,7 @@ for smp in sys.argv[1:]:
                 a = sorted([d["PROX50k"][0], d["PROX50k"][1],
                             d["DIST50k"][0], d["DIST50k"][1]])
                 seq = "".join(io.open(reg, encoding="utf8").read().split(NL)[1:])
-                # 근위 탐침이 array 앞쪽인지 뒤쪽인지 기록한다 (참조 창 방향 함정)
+                # Whether the proximal probe lies before or after the array is recorded, because the orientation of the reference window is easy to get wrong.
                 pmid = (d["PROX50k"][0] + d["PROX50k"][1]) // 2
                 side = "PROX_FIRST" if pmid < a[1] else "DIST_FIRST"
                 found = (c, a[1], a[2], seq[a[1]:a[2]], side)

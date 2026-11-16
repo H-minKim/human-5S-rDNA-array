@@ -1,14 +1,13 @@
 # -*- coding: utf-8 -*-
-# 위 창을 정본에 끼워 cmp4d_v10 을 만든다
-#   단계 : ③b 정본 수리 (v11 · 7 자리)
-# Reason: no machine-specific path is left in the code. A default would leave such a path on this line, so none is set.
+# the window above is spliced into the canonical sequence to produce cmp4d_v10
+#   Step 3b: canonical-unit repair (v11, 7 sites).
+# NODE_HOME has no default.
 #       to run : export NODE_HOME=/home/<user>
 
 # -*- coding: utf-8 -*-
-# 정본 v10 — 수술식 교체 (2026-09-13)
-#   v8(원조립본) 을 바탕으로, 끊긴 7 자리만 [조립본 앞앵커][read 합의 가운데][조립본 뒤앵커] 로 잇는다.
-#   되돌림 없음 : v9 의 '앵커까지 합의로 교체' 가 문제였지 수리가 문제가 아니었다(SPLICE_MID2.tsv).
-#   저장 방향 : cmp4d 의 .fa 는 뒤집기 전 서열. 지도 방향에서 만든 창은 되돌려(rc) 적는다.
+# Canonical unit v10: a surgical replacement.
+#   Starting from v8 (the original assembly), only the 7 broken sites are spliced as [assembly left anchor][read consensus middle][assembly right anchor].
+#   Stored orientation: the .fa from cmp4d holds the sequence before flipping, so a window built in map orientation is reverse-complemented before it is written.
 import io
 import os
 import glob
@@ -75,7 +74,7 @@ for (smp, sl, ap) in SITES:
     i = [j for j, x in enumerate(v) if x[0] == ap][0]
     a0, a1 = v[i][1], v[i + 1][2]
     spl = rdfa(os.path.join(H, "splice2", "spl_%s_%s_%d.fa" % (smp, sl, ap)))
-    # 앵커 서열이 조립본과 글자 그대로 같은지 확인 (수술식의 전제)
+    # Confirm the anchor sequence matches the assembly character for character; the surgical replacement depends on it.
     assert spl.startswith(A[v[i][1] - 1:v[i][2]]), "앞 앵커 불일치 %s %s" % (smp, sl)
     assert spl.endswith(A[v[i + 1][1] - 1:v[i + 1][2]]), "뒤 앵커 불일치 %s %s" % (smp, sl)
     B = A[:a0 - 1] + spl + A[a1:]

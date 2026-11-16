@@ -3,7 +3,7 @@ r"""Main Fig 2 cell n: only panel A of FIG_X12T.py, at cell size (93.1 x 82 pt)
    Data and computation are the same lines as panel A of FIG_X12T.py (X12_TYPE_GROUPS.tsv, reference 'majority', 5 or more haplotypes)
    Only the appearance changed: figure size, font size (common to main-text cells), legend position (inside the cell below the axes), no panel title (the composite removes it anyway)
    Content check: CMPART.py (old fig_X12t_type_groups axes 0 vs this figure)
-Output: $FIGOUT\cellF2_n_typepop.png/svg, CELL_F2n_source_values.tsv
+Output: $FIGOUT/cellF2_n_typepop.png/svg, CELL_F2n_source_values.tsv
 """
 import io, os, sys
 import numpy as np
@@ -38,7 +38,7 @@ PC["미표기"] = "#b3b6b7"
 
 # ===== A: population composition (including unlabelled), the same lines as FIG_X12T.py =====
 fig, ax = CS.cell_at("n")   # margins and size from the single cellstyle.ROWS table (plot frame alignment)
-# 'remove the right and top borders of j, m and n (mostly only left and bottom)'
+# no right and top borders
 for _s in ("top", "right"):
     ax.spines[_s].set_visible(False)
 x = np.arange(len(G))
@@ -59,9 +59,9 @@ for i, r in enumerate(G):
         + " · 미표기 %d" % UN[i], "X12_TYPE_GROUPS.tsv")
 rec("A", "미표기 합", "%d / %d" % (UN.sum(), NH.sum()), "X12_TYPE_GROUPS.tsv")
 ax.set_xticks(x); ax.set_xticklabels([r[H["무리"]] for r in G])   # tick number size = common to the figure
-ax.set_xlabel("array 유형 무리")   # the bracket '(numbers above are haplotype counts)' goes to the Legend text
+ax.set_xlabel("array 유형 무리")   # the bracket '(numbers above are haplotype counts)' is in the Legend text
 ax.set_ylabel("집단 구성")
-# vertical ticks keep the original values, the original Korean version (0.2 step) and English version (0.25 step) differed (automatic ticks), each version follows its own
+# fixed vertical ticks, 0.2 step in the Korean version and 0.25 step in the English version
 ax.set_yticks([0.0, 0.25, 0.5, 0.75, 1.0, 1.25] if os.environ.get("EN_DICT") else [0.0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2])
 ax.set_ylim(0, 1.09)
 ax.legend(frameon=False, ncol=3, loc="upper left", bbox_to_anchor=(0.0, -0.24), borderaxespad=0.0,   # legend left = left line of the plot frame

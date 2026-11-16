@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
-# 조립기 v10 - 틀(축 사각형) 기준
+# The assembler, version 10, working from the frame, that is the axes rectangle.
 #
-# v9 까지는 칸(그림 전체 상자)으로 붙였다 ⇒ y 축 이름 길이가 다르면 그래프 선이 어긋났다.
-# v10 은 틀로 붙인다 :
-# , 같은 세로줄 : 틀 왼쪽 x, 오른쪽 x 가 같다 (맨 왼쪽 41.90, 맨 오른쪽 408.17)
-# , 같은 가로줄 : 틀 위 y 가 같고 틀 높이가 같다
-# , 패널 글자 : 그 틀에서 왼쪽 -22.48, 기준선 위 -1.53 (8.2 pt 대문자)
-# 틀 크기는 paper_spec_hook 이 이미 못박아 두었다(SPEC_FRAME) - 여기서는 안 늘이고 안 줄인다.
+# Joining the panels on their cells, the whole figure box, puts the plot lines out of line wherever the y-axis labels differ in length.
+# Version 10 joins them on the frame:
+# , within a column the left and right x of the frame are equal (41.90 at the far left, 408.17 at the far right);
+# , within a row the top y of the frame is equal and the frame heights are equal;
+# , the panel letter sits at -22.48 from the left of that frame and -1.53 above its baseline, as an 8.2 pt capital.
+# The frame sizes are fixed by paper_spec_hook, in SPEC_FRAME, and are neither grown nor shrunk here.
 import collections
 import io
 import json
@@ -30,8 +30,7 @@ def _need(k):
     return v
 
 
-# ㉧ : 출력 뿌리를 OUT_BASE 로 받는다 - 저장소만으로 돌릴 때
-# So that nothing is written outside the output folder. The default is unchanged.
+# The output root is taken from OUT_BASE, so that nothing is written outside the output folder.
 BASE = (os.environ.get("OUT_BASE")
         or os.path.join(_need("RDNA_ARRAY_METH_DIR"), "03_figures"))
 PREV = os.path.join(BASE, "00_final_set_2026-10-12")
@@ -43,23 +42,23 @@ os.makedirs(PD, exist_ok=True)
 NL = chr(10)
 W_TOTAL = float(os.environ.get("SPEC_W", "423.5"))
 LAB_DX, LAB_DY, FS_LAB = -22.48, -1.53, 8.2
-# 칸이 쪽(423.5)을 넘으면 오른쪽 틀 선을 그만큼 당긴다
+# where a cell exceeds the page width of 423.5, the right frame line is pulled in by that much
 XR_ADJ = [0.0]
-# 남의 패널이라 다시 못 그리는 그림은 통째로 줄인다.
-# 칸(그래프)만 줄이고 패널 글자는 8.2 pt 로 그대로 둔다.
-# 글자 하한 4.5 는 깨진다 - 그 사실을 찍고 기록에 남긴다.
-FIG_SCALE = {"S5": None}        # None 이면 쪽 폭에 맞춰 자동
-# 칸마다 더 왼쪽으로 (세로축 이름이 길어 글자와 붙는 칸) - (그림, 글자) : 더할 값
+# a figure holding someone else's panel, which cannot be redrawn, is scaled down whole
+# only the cell, the plot, is scaled; the panel letter stays at 8.2 pt
+# the 4.5 pt floor on type size is then broken, and that fact is printed and recorded
+FIG_SCALE = {"S5": None}        # None means it is fitted automatically to the page width
+# shifting individual cells further left, where a long y-axis label runs into the letter: (figure, letter) -> the amount to add
 LAB_DX_EXTRA = {("Fig4_main", "N"): -9.0,
-                # 칸 글자가 왼쪽 이웃의 세로축 이름에 닿았다
-                # (실측 E↔Low-methylation blocks, F↔High-…, J↔β)
+                # where the cell letter would touch the y-axis label of the cell to its left
+                # (E against "Low-methylation blocks", F against "High-...", J against beta)
                 ("S4", "E"): -5.0, ("S4", "F"): -5.0, ("S4", "J"): -2.5,
-                # 칸 글자가 제 틀 위의 범례,세로축 이름에 닿은 자리(크롭으로 눈 확인)
+                # where a cell letter would touch the legend or the y-axis label above its own frame
                 ("Fig4_main", "F"): -3.0,
                 ("S6", "C"): -3.0, ("S6", "G"): -6.5, ("S6", "H"): -3.0,
                 ("S6", "R"): -3.0, ("S6", "S"): -3.0}
-# 칸을 통째로 오른쪽으로 미는 값 - {(그림, 글자): pt}
-# 줄마다 위로 당기는 값 - {(그림, 줄번호 0부터): pt}
+# the amount by which a whole cell is pushed right: {(figure, letter): pt}
+# the amount by which each row is pulled up: {(figure, row index from 0): pt}
 ROW_DY = {("Fig4_main", 2): -10.0, ("Fig4_main", 3): -10.0,
           ("S4", 1): -10.0, ("S4", 2): -10.0,
           ("S6", 2): -10.0, ("S6", 5): -10.0}
@@ -67,7 +66,7 @@ CELL_DX = {("S6", "A"): 10.0, ("S6", "F"): 10.0, ("S6", "L"): 10.0,
            ("S6", "Q"): 10.0, ("Fig4_main", "G"): 10.0,
            ("Fig4_main", "H"): 6.0}
 
-# ── 배치표는 v9 에서 그대로 읽는다 (한 벌만 둔다)
+# -- the layout table is read from version 9 unchanged, so that only one copy exists
 _src = io.open(os.path.join(SP, "assemble_v9_2026-10-18.py"), encoding="utf8").read()
 _ns = {"__file__": os.path.join(SP, "assemble_v9_2026-10-18.py")}
 exec(compile(_src[:_src.index("def fetch(")], "head", "exec"), _ns)
@@ -111,8 +110,8 @@ def inner(p, pref):
 
 
 def columns_of(row):
-    """줄 -> [(letter, [세로로 쌓인 (파일, 가로칸번호) ...])] 을 가로칸 차례로"""
-    cols = []                      # [(letter, [[파일,...] (세로줄)], 가로칸 폭 몫)]
+    """row -> [(letter, [vertically stacked (file, column number) ...])] in column order"""
+    cols = []                      # [(letter, [[file, ...] per column], the share of the row width)]
     for f, lab in row:
         if f == "COL":
             sub = [(s_f, s_l) for s_f, s_l in lab]
@@ -161,10 +160,10 @@ def build(name, rows):
         n0 = len(place)
         for (_f, _r), _v in ROW_DY.items():
             if _f in name and _r == _ri:
-                y += _v          # 그 줄부터 위로 당긴다
+                y += _v          # pulled up from that row onwards
         cols = columns_of(row)
-        # ── 이 줄의 가로 칸 목록 (격자는 그 안에서 또 나뉜다)
-        flat = []            # [(파일, 칸idx)]
+        # -- the list of cells in this row; a grid divides further within them
+        flat = []            # [(file, cell index)]
         for ci, (kind, v) in enumerate(cols):
             if kind == "COL":
                 flat += [(f, ci) for f, _l in v]
@@ -175,10 +174,10 @@ def build(name, rows):
         FH = max(MG[f][5] for f, _ci in flat)
         topmax = max(MG[f][2] for f, _ci in flat)
         botmax = max(MG[f][3] for f, _ci in flat)
-        fy = y + topmax                      # 이 줄의 틀 위 y (모두 같다)
-        # 틈은 고정이 아니라 그 줄에서 계산한다 - 맨 오른쪽 틀이 X_R 에 닿아야 한다.
-        # (틀을 못박은 뒤 여백이 조금 달라지므로 계획 때의 틈으로는 안 맞는다)
-        seq = []                              # [(왼여백, 틀폭, 오른여백)]
+        fy = y + topmax                      # the top y of the frames in this row, which are all equal
+        # The gap is not fixed but computed for each row, so that the rightmost frame meets X_R.
+        # (With the frames fixed the margins differ slightly from the planning stage, so the planned gap does not fit.)
+        seq = []                              # [(left margin, frame width, right margin)]
         for ci, (kind, v) in enumerate(cols):
             if kind == "P":
                 f = v[0]
@@ -198,16 +197,16 @@ def build(name, rows):
         need_w = sum(w for _l, w, _r in seq) + sum(seq[j - 1][2] + seq[j][0]
                                                  for j in range(1, len(seq)))
         GAP = ((_XR - X_L) - need_w) / (len(seq) - 1) if len(seq) > 1 else 0.0
-        # 세로칸마다 틀 왼쪽 x 를 미리 잡는다 - 다음 칸의 왼쪽 여백까지 더해야
-        # 맨 오른쪽 틀이 X_R 에 닿는다(앞 판에서 이 항을 빠뜨려 36 pt 모자랐다).
+        # The left x of the frame is set in advance for each column, because the next cell's left margin must be added in
+        # for the rightmost frame to meet X_R.
         XS, cur = [], X_L
         for j, (L, w, R) in enumerate(seq):
             XS.append(cur)
             if j + 1 < len(seq):
                 cur = cur + w + R + GAP + seq[j + 1][0]
-        # 한 줄 안에서 세로로 쌓인 칸들(COL, 격자)의
-        # 같은 번째 줄은 틀 위 y 가 같아야 한다 - 그래야 아래 선도 맞는다
-        # (S4 의 C 와 B 아래쪽이 어긋나 있었다).
+        # of the cells stacked vertically within one row, as COL or a grid,
+        # the nth row must share the top y of its frame, so that the lines below align as well
+        # (as for the bottoms of C and B in S4).
         nsub = 1
         for kind, v in cols:
             if kind == "COL":
@@ -256,8 +255,8 @@ def build(name, rows):
                             labs.append((lab, xs_g[0] + LAB_DX + _extra(name, lab),
                                          SUBY[j] + LAB_DY))
                             first = False
-        # 다음 줄 y 를 어림식이 아니라 이 줄에서 실제로 놓인 상자들의
-        # 맨 아래로 잡는다 - 앞 판은 어림이 모자라 다음 줄이 올라타 겹쳤다.
+        # The y of the next row is taken from the actual bottom of the boxes placed in this row
+        # rather than from an estimate, so that the next row cannot ride up over it.
         bot = 0.0
         for f, px, py in place[n0:]:
             _w, _h = size_pt(os.path.join(PD, f + ".svg"))
@@ -265,19 +264,19 @@ def build(name, rows):
         y = bot + GAP_Y
     H = y - GAP_Y
 
-    # 쪽 폭을 무조건 423.5 로 쓰면 그보다 넓은 칸이 잘린다.
-    # S5(남의 패널, 1,116 pt)가 그렇게 잘려 나갔다.
-    # ⇒ 내용이 더 넓으면 그 폭을 쓴다 - 잘린 그림을 내보내느니 규격 밖이라고 적는다.
+    # Using 423.5 as the page width unconditionally clips any cell wider than that
+    # (S5 holds someone else's panel at 1,116 pt).
+    # So where the content is wider, that width is used: better to record it as out of specification than to ship a clipped figure.
     WNEED = 0.0
     for f, px, py in place:
         WNEED = max(WNEED, px + size_pt(os.path.join(PD, f + ".svg"))[0])
-    # (둘째 흠) : 틀맞춤은 칸을 왼쪽으로도 민다(px < 0).
-    # 통째 축소가 오른쪽 끝(WNEED) 만 보면 왼쪽으로 나간 몫은 그대로 잘린다 -
-    # S5 의 D1 칸이 -58.9 pt 에 놓여 spacer-1 + … 라벨 앞머리가 사라졌다.
-    # ⇒ 왼쪽,위로 나간 몫을 폭,배율에 함께 넣고 그만큼 밀어 넣는다.
+    # Frame fitting also pushes a cell to the left, giving px below 0.
+    # Scaling the whole figure by looking only at the right edge (WNEED) would leave whatever runs off the left clipped
+    # (cell D1 of S5 sits at -58.9 pt, where its "spacer-1 + ..." label begins).
+    # So whatever runs off the left and the top is included in the width and the scale, and the content shifted in by that much.
     XMIN = min([px for f, px, py in place] + [lx for l, lx, ly in labs] + [0.0])
     YMIN = min([py for f, px, py in place] + [0.0])
-    # 통째 축소가 걸린 그림은 여기서 줄인다
+    # a figure flagged for whole-figure scaling is scaled here
     _sc = None
     for k, v in FIG_SCALE.items():
         if k in name:
@@ -291,12 +290,12 @@ def build(name, rows):
         if XMIN < -0.05 or YMIN < -0.05:
             print("     왼쪽 %.1f · 위 %.1f pt 나가 있던 것을 안으로 밀어 넣었다"
                   % (-XMIN * _sc, -YMIN * _sc))
-        # 칸 글자(8.2 pt)는 축소를 안 받으므로 줄인 그림에서는 쪽 위로 삐져나간다
-        # (실측 S5 의 A 가 y0 = -4.9) ⇒ 그 먹물 높이만큼 아래로 민다.
+        # the cell letter at 8.2 pt is not scaled, so in a scaled-down figure it protrudes above the page
+        # (A of S5 at y0 = -4.9), so the content is pushed down by the height of that ink.
         _top = min([ly - FS_LAB * 1.05 for l, lx, ly in labs]
                    + [py for f, px, py in place] + [0.0])
         if _top < -0.05:
-            _d = -_top + 1.0        # +1 = 패널 자기 상자를 넘는 제목 몫
+            _d = -_top + 1.0        # +1 is the share of the title that extends beyond the panel's own box
             place = [(f, px, py + _d) for f, px, py in place]
             labs = [(l, lx, ly + _d) for l, lx, ly in labs]
             H += _d
@@ -305,7 +304,7 @@ def build(name, rows):
               % _sc)
     PAGEW = W_TOTAL
     if WNEED > W_TOTAL + 0.5 and not RETRY[0]:
-        return WNEED            # 부르는 쪽이 오른쪽 선을 당겨 다시 부른다
+        return WNEED            # the caller pulls in the right line and calls again
     if WNEED > W_TOTAL + 0.5:
         PAGEW = round(WNEED + 1.0, 2)
         print("     칸이 쪽보다 넓다 %.1f > %.1f ⇒ 쪽을 %.1f 로 (규격 밖 · 잘리지 않게)"
@@ -332,16 +331,16 @@ def build(name, rows):
            + NL + NL.join(out) + NL + "</svg>" + NL)
     io.open(os.path.join(OUTD, name + ".svg"), "w", encoding="utf8",
             newline=NL).write(txt)
-    # : 패널 svg 의 태그가 하나라도 안 맞으면
-    # 조립본이 XML 로 깨지고 렌더러는 첫 </svg> 에서 멈춘다(칸 글자가 사라진다).
-    # 겉보기 png 는 멀쩡해 보이므로 반드시 파싱해서 찍는다.
+    # A single mismatched tag in a panel's svg
+    # breaks the assembled XML, and the renderer stops at the first </svg>, which makes the cell letters disappear.
+    # The png can still look intact, so the file is always parsed and the result printed.
     import xml.etree.ElementTree as _ET
     try:
         _ET.fromstring(txt.encode("utf8"))
     except Exception as _e:
         print("     조립본 svg 가 XML 로 깨졌다 : %s ⇒ 패널 svg 의 <g> 짝을 보라" % _e)
     print("%-46s %7.2f x %7.2f pt · 칸 %2d" % (name, PAGEW, H, len(labs)))
-    # ── 보고용 실측
+    # -- measurements for the report
     if not all(haspdf[b] for b in need):
         print("     pdf 없는 패널 — png·pdf 는 건너뜀")
         return
@@ -360,7 +359,7 @@ def build(name, rows):
                          fontname="hebo", fontsize=FS_LAB, color=(0, 0, 0))
     doc.save(os.path.join(OUTD, name + ".pdf"))
     pg = pymupdf.open(os.path.join(OUTD, name + ".pdf"))[0]
-    # png 는 300 dpi - NAR 래스터 하한
+    # the png is 300 dpi, the NAR raster floor
     pg.get_pixmap(matrix=pymupdf.Matrix(300 / 72.0, 300 / 72.0)).save(
         os.path.join(OUTD, name + ".png"))
 
@@ -383,4 +382,4 @@ for nm, R in (("Fig4_main_2026-10-16", FIG4),
         XR_ADJ[0] += _d
         print("     오른쪽 틀 선을 %.1f pt 당긴다 (%d 차)" % (XR_ADJ[0], _try + 1))
         if _try == 2:
-            RETRY[0] = True      # 마지막엔 어쩔 수 없으면 쪽을 넓혀 잘리지 않게 낸다
+            RETRY[0] = True      # as a last resort the page is widened so that nothing is clipped

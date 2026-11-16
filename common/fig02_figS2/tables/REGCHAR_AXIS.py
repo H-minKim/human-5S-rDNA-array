@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 r"""Lay out the regional characters along the array axis (proximal 1 ... middle ... distal 1)
 
-User request
-  "for each position proximal 1,2,3... distal ...3,2,1 within each array, show how much proximal character
-   and how much distal character it has on average", by length stratum.
+What is shown
+  For each position proximal 1,2,3... distal ...3,2,1 within each array, how much proximal character
+   and how much distal character it has on average, by length stratum.
   The cut is placed where the transition to the middle type ends in every length stratum.
 
 What it does (the character vectors are rebuilt with the same method as REGCHAR.py)

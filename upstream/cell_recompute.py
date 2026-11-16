@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-# 세포주 read×유닛 만들기 — cancer_recompute.py 와 같은 코드 논리 (구획 정의·ML 문턱·varlist 좌표 옮김 동일)
-#   입력 : RU_{GM12878FS,GM12878,K562r}.tsv.gz  ($P11_DIR; as-ran value in ENV_RDNA.tsv)
+# Build the cell-line read x unit table, on the same code logic as cancer_recompute.py: the same segment definitions, ML threshold and variant-list coordinate shift.
+#   Inputs: RU_{GM12878FS,GM12878,K562r}.tsv.gz (P11_DIR; the as-run value is in ENV_RDNA.tsv)
 # MAP_G8_CELLLINES.tsv (the cell-line rows of ~/p11_v11/AOG8_*/MAP_G8.tsv)
-#   자체검정 : 내가 계산한 n_cpg / beta 가 RU 파일이 이미 적어 둔 n_cpg / beta 와 같은가
-#                 (RU 는 파이프라인이 같은 지도 로 만든 것이므로, 같으면 틀이 맞은 것이다)
+#   Self-check: do the n_cpg and beta computed here equal the n_cpg and beta the RU file already records?
+#                 (RU was built by the pipeline from the same map, so agreement means the frame is right.)
 import io, os, re, sys, gzip, glob, collections, hashlib
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 import numpy as np, pandas as pd
@@ -40,7 +40,7 @@ P("[입력 md5]")
 for k, v in list(RUS.items()) + [("MAP_G8_CELLLINES", MAPF)]:
     P("   %-18s %s  %s" % (k, md5(v), os.path.basename(v)))
 
-# ---------- 지도 ----------
+# ---------- map ----------
 IN = re.compile(r"^(\d+)I(\d+)$"); DE = re.compile(r"^(\d+)D(\d+)$")
 UNITN, UMAP = {}, {}
 nbad = 0
@@ -71,7 +71,7 @@ P()
 P("[지도] UNIT %s · 길이 불일치 %d · 슬롯 %d" % (format(len(UMAP), ","), nbad, len(UNITN)))
 P("   슬롯별 N : %s" % ", ".join("%s|%s=%d" % (k[0], k[1], v) for k, v in sorted(UNITN.items())))
 
-# ---------- read x 유닛 ----------
+# ---------- read x unit ----------
 rows = []; chk = []
 for smp_file, f in RUS.items():
     nmap0 = nrow = 0
@@ -111,7 +111,7 @@ for smp_file, f in RUS.items():
     P("   %-22s 행 %s · 지도에 없어 버림 %d" % (os.path.basename(f), format(nrow, ","), nmap0))
 D = pd.DataFrame(rows)
 
-# ---------- 자체검정 ----------
+# ---------- the self-check ----------
 P()
 P("[자체검정] 내가 센 CpG·메틸 수 ↔ RU 파일이 적어 둔 값")
 C = pd.DataFrame(chk, columns=["sample", "n_mine", "n_file", "m_mine", "m_file"])
@@ -133,7 +133,7 @@ for s, g in D.groupby("sample"):
          (g.b_sp * g.n_sp).sum() / g.n_sp.sum(),
          (g.b_gene * g.n_gene).sum() / g.n_gene.sum() - (g.b_sp * g.n_sp).sum() / g.n_sp.sum()))
 
-# ---------- ML 척도 ----------
+# ---------- the ML scale ----------
 P()
 P("[ML 척도] 호출 확률 분포 (0–255) — 판본·플랫폼이 다르면 β 가 생물학 없이 밀린다")
 ML = {}

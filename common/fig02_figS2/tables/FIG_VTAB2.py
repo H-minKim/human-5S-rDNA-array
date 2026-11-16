@@ -4,7 +4,7 @@ r"""Version without inherited variants (multi-individual shared type), same 6-pa
   A1 absolute, all 23 groups      A2 absolute, only the groups that change most in a zone
   B1 relative, all (sum = 1)      B2 relative, renormalized among the chosen groups (sum = 1)
   Ca ratio to middle, all 23 groups   Cb chosen groups only
-  In this version Ca and Cb are also drawn with 23 groups (Ca and Cb of the main figure use the old 11 types).
+  In this version Ca and Cb are also drawn with 23 groups (Ca and Cb of the main figure use the 11 types).
 
 Layer: ORIGIN_KEEP = notshared (default, multi-individual shared type removed) / single (single-unit type only)
 This layer is not 'newly arisen variants'. See the warning in origin_filter.py.
@@ -194,7 +194,6 @@ for ci, (which, ttl) in enumerate(
 h, lb = fig.axes[0].get_legend_handles_labels()
 fig.legend(h[::-1], lb[::-1], loc="upper left", bbox_to_anchor=(0.812, 0.950), fontsize=8.6,
            frameon=False, title="변이 무리 (한 변이는 한 무리에만)", title_fontsize=9.2)
-# The explanation box was removed on 2026-10-07. Its content moved to the Legend and Results (paper figure rule)
 # keep only the layer name: single and notshared are nearly the same figure, so an identifier is needed
 fig.suptitle("변이 기원 층 : %s" % KTXT, fontsize=13.0, y=0.985)
 

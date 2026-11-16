@@ -1,16 +1,16 @@
 # -*- coding: utf-8 -*-
-# 결손 자리 재검출
-#   단계 : S1 I 상류
+# re-detection of the missing sites
+#   Step: S1 I upstream.
 #   Method document : analysis/METHOD_CONSENSUS_MAP_G8_REBUILD.md
 
 # -*- coding: utf-8 -*-
-# 교차검증 : **새 방법(배치된 자리 국소 최고율)** 으로 기존에 찾은 삽입/결실을 다시 찾을 수 있나?
-#   대상 세 묶음
+# Cross-validation: can the local-best rate at the placed position recover the insertions and deletions already found?
+#   Three sets are tested:
 # (1) the 13 positions where the canonical sequence is suspected to be wrong (ANCHOR_SITES, read>=3, support>=0.7); this should be the strongest signal
-#     (2) 주 값에 쓰인 ONT 자리 73 (SITES_ONT.tsv)
+#     (2) the 73 ONT sites used for the main values (SITES_ONT.tsv)
 # (3) positions flagged by the v2 DP pass (UINDEL_SITES, class = canonical suspect)
-#   지표 : 그 자리(및 ±2)의 국소 최고율이 하플로 기준선보다 떨어지나 (<=0.5 / <=0.3)
-#   대조 : 같은 하플로에서 무작위로 고른 같은 수의 자리
+#   Measure: whether the local-best rate at that position, and within +-2, falls below the haplotype baseline (at 0.5 and at 0.3).
+#   Control: the same number of positions drawn at random from the same haplotype.
 import io, os, collections, statistics, random
 
 S = os.path.dirname(os.path.abspath(__file__))
@@ -38,7 +38,7 @@ def check(sets, nm, pad=2):
         m = min(RATE[(s, sl, ap)][0] for ap in aps); vals.append(m)
         if m <= 0.5: hit50 += 1
         if m <= 0.3: hit30 += 1
-    # 대조 : 같은 하플로에서 무작위 자리
+    # control: random positions from the same haplotype
     random.seed(13); c50 = c30 = cn = 0; cvals = []
     for (s, sl, lo, hi) in sets:
         pool = [ap for ap, _ in byhap.get((s, sl), [])]

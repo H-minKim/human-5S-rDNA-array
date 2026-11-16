@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-r"""English column names and values for the Figure 2 and Supplementary Figure S2 result tables (2026-11-06).
+r"""English column names and values for the Figure 2 and Supplementary Figure S2 result tables.
 
 The analysis code still works with its original (Korean) labels internally. This module is the single place
 that maps those labels to English at the file boundary:
@@ -98,7 +98,7 @@ T = {
 
 T["POP_VAR_DOWNSAMPLE.tsv"] = T["X12_POP_VAR_DOWNSAMPLE.tsv"]   # the producer writes this name, the figure reads the X12_ copy
 
-# eighteen more tables (the tables are written in English by the producing script,)
+# eighteen more tables (the tables are written in English by the producing script)
 _UNREL = {"상동 (같은 개인)": "homologous (same individual)", "무관 · 같은 세부집단": "unrelated, same subpopulation",
           "무관 · 다른 세부집단": "unrelated, different subpopulation", "무관 · 같은 대집단": "unrelated, same superpopulation",
           "무관 · 다른 대집단": "unrelated, different superpopulation", "무관 · 전체": "unrelated, all"}
@@ -144,7 +144,7 @@ def _maps(name, header):
 
 _NUM = re.compile(r"\d+(?:\.\d+)?")
 def _num_comment(ln, cm):
-    """2026-11-07 : a '#' line that differs from a mapped line only in its numbers (same numbers in the same order on both sides)"""
+    """A '#' line that differs from a mapped line only in its numbers (same numbers in the same order on both sides)"""
     for k, v in cm.items():
         nk, nv = _NUM.findall(k), _NUM.findall(v)
         if not nk or nk != nv: continue

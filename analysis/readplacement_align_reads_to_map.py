@@ -1,35 +1,32 @@
 # -*- coding: utf-8 -*-
-# consensus map 에 read 배치 → ra_*.tsv · fr_*.tsv
-#   단계 : 배치
+# Place reads onto the consensus map, producing ra_*.tsv and fr_*.tsv.
+#   Step: placement.
 
 # -*- coding: utf-8 -*-
-# B-2 v2. consensus map 에 read 배치 + flank read 직접 검출 (2026-09-05)
+# Place reads onto the consensus map and detect flank-bearing reads directly.
 #
-#  v1 대비 바뀐 것
+#  The design:
 #
-#  ① 참조에 flank 50 kb 두 개를 함께 넣는다.
-#     참조 = [하플로타입1][하플로타입2][PROX50k][DIST50k]
-#     - flank 를 가진 read 는 flank 참조에 붙으므로 정렬로 직접 분류된다.
-#       (옛 units_all.tsv 는 264 개체만 담고 있어 나머지가 통째로 빠졌다.
-#        사용자 지적: "모든 개체는 flank 가 있는 read 가 있어" — 맞다.
-#        표에 없는 것이지 read 가 없는 게 아니다.)
-#     - flank 부분이 붙을 곳이 생기므로 정렬 비율을 그대로 해석할 수 있다
-#       (v1 에서는 flank 가 clip 되어 정렬 비율이 31-89% 로 낮게 나왔다).
+#  1) Two 50 kb flanks are included in the reference.
+#     The reference is [haplotype 1][haplotype 2][proximal 50k][distal 50k].
+#     - A read carrying flank aligns to the flank reference, so the classification comes straight from the alignment.
+#     - Because the flank portion has somewhere to align, the aligned fraction can be read at face value
+#       (without the flank reference it is clipped, and the aligned fraction comes out low, 31-89%).
 #
-#  ② read 분류 (정렬 결과로만 판정)
-#       SPAN      : 근위·원위 flank 를 둘 다 건드림 + array 도 건드림
-#       SINGLE_P  : 근위 flank 만
-#       SINGLE_D  : 원위 flank 만
-#       ARRAY_ONLY: flank 없음
+#  2) Read classes, decided from the alignment alone:
+#       SPAN: touches both the proximal and the distal flank, and the array as well.
+#       SINGLE_P: the proximal flank only.
+#       SINGLE_D: the distal flank only.
+#       ARRAY_ONLY: no flank.
 #
-#  ③ 산출이 둘이다
-#       ra_*.tsv : 유닛별 read 수·메틸 (지도용)
-#       fr_*.tsv : read 별 배정·염기 (flank read 점검용)
+#  3) There are two outputs:
+#       ra_*.tsv, the read count and methylation per unit, for the map;
+#       fr_*.tsv, the assignment and bases per read, for checking the flank reads.
 #
-#  두 하플로타입을 반드시 함께 넣는다 (한쪽만 넣으면 반대쪽 read 까지 붙는다).
-#  방향은 CONSENSUS_SUM_G6.tsv 의 revcomp 플래그를 그대로 쓴다 (재계산 금지).
-#  minimap2 -y 로 MM/ML 을 옮긴다 (빼면 beta 가 전부 "-" 가 된다).
-#  MAPQ 를 함께 낸다 — 두 하플로타입이 ~99.6% 같아 못 가르면 MAPQ 0 이 된다.
+#  Both haplotypes must be included together; with only one, the other haplotype's reads align to it as well.
+#  The orientation is taken from the revcomp flag of CONSENSUS_SUM_G6.tsv and never recomputed.
+#  minimap2 -y carries MM/ML across; without it every beta comes out as "-".
+#  MAPQ is reported alongside: the two haplotypes are about 99.6% identical, so where they cannot be told apart MAPQ is 0.
 import io
 import os
 import re
@@ -50,24 +47,24 @@ TAG = os.environ.get("TAG", "x")
 CMP = str.maketrans("ACGTacgtNn", "TGCAtgcaNn")
 PROX = "PROX50k"
 DIST = "DIST50k"
-# flank 보유 판정 — 길이만으로 보면 안 된다.
-#   실측: 길이 300 bp 만 요구했더니 COLO829-BL 의 read 4,229 중 4,041(96%)이
-#   flank 보유로 잡혔다. flank 50 kb 안의 Alu·L1 같은 반복요소에 붙은 위양성이다.
-#   ⇒ junction 까지의 거리를 함께 본다.
-#     FLANK_proximal_50000 : junction 이 끝    (CHM13 227,694,885-227,744,884)
-#     FLANK_distal_50000   : junction 이 시작  (CHM13 228,025,900-228,075,899)
-#   진짜 flank read 는 array 와 이어져 있으므로 junction 쪽 끝에 붙어야 한다.
-#   거리 경계는 실측으로 정했다 (시범 13 개체 · 정본 units_all.tsv 와 대조).
-#     junction 거리 분포가 뚜렷한 이봉이다:
-#       근위 0 에 327 개 · 꼬리 44 까지  ||  그다음이 168 (9 개) · 23,641-33,533
-#       원위 0 에 307 개 · 꼬리 44 까지  ||  그다음이 5,652-7,503
-#     정본이 SPAN 이라 한 18 개는 전부 양쪽 jx <= 17 이다.
-#     168 짜리는 근위 flank 안 ~5,922 bp 반복블록에 붙은 것으로, 8 개가
-#     길이·거리까지 똑같았다 (5,916-5,924 bp · jx 정확히 168) — 명백한 위양성.
-#     ⇒ jx<=2000 이면 SPAN 을 27 개로 과대호출, jx<=50 이면 19 개이고
-#       정본 SPAN 회수는 18/18 로 같다.
-MINFL = 1000         # flank 참조에 붙은 최소 길이
-JXWIN = 50           # junction 에서 이 거리 안에 닿아야 한다 (실측 이봉 경계)
+# Deciding whether a read carries flank: length alone is not enough.
+#   Measured: requiring only 300 bp of alignment called 4,041 of COLO829-BL's 4,229 reads (96%)
+#   as carrying flank. These are false positives aligning to Alu and L1 elements inside the 50 kb flank.
+#   So the distance to the junction is examined as well.
+#     FLANK_proximal_50000: the junction is at its end (CHM13 227,694,885-227,744,884).
+#     FLANK_distal_50000: the junction is at its start (CHM13 228,025,900-228,075,899).
+#   A genuine flank read continues into the array, so it must align at the junction end.
+#   The distance threshold was set by measurement, over 13 pilot individuals against the canonical table.
+#     The distribution of junction distances is clearly bimodal:
+#       proximal: 327 reads at 0 with a tail to 44, then a gap, then 168 (9 reads) and 23,641-33,533.
+#       distal: 307 reads at 0 with a tail to 44, then a gap, then 5,652-7,503.
+#     All 18 reads the canonical table calls SPAN have a junction distance of 17 or less on both sides.
+#     The reads at 168 align to a repeat block of about 5,922 bp inside the proximal flank; eight of them
+#     match in length and distance as well (5,916-5,924 bp, junction distance exactly 168), which makes them plainly false positives.
+#     At a threshold of 2000 the SPAN count is overcalled at 27; at 50 it is 19,
+#       and the canonical SPAN reads are recovered 18 of 18 either way.
+MINFL = 1000         # the minimum alignment length against the flank reference
+JXWIN = 50           # the alignment must reach within this distance of the junction, the boundary measured in the bimodal distribution
 
 
 def rc(s):
@@ -84,18 +81,18 @@ FL_D = rdfa(os.path.join(R, "FLANK_distal_50000.fa"))
 
 
 def find_reads(s):
-    """read 자료원 — ONT fastq 를 먼저, 없으면 TUC 의 HiFi FASTA.
+    """Read source: the ONT fastq first, and if absent the HiFi FASTA of TUC.
 
-    둘은 같은 자료가 아니다. 반드시 구분해 기록한다:
+    The two are not the same data and are recorded separately:
       ONT   `*.hits.fastq.gz` / `*.array.fastq.gz`
-            - 길다(중앙 수십~수백 kb) -> flank-to-flank 관통이 가능
-            - 헤더에 MM/ML 이 있어 메틸을 낼 수 있다
-      HIFI  `~/s5s_tuc/cand/<sample>.fa`  (TUC 파이프라인 산출)
-            - PacBio HiFi, 중앙 18.5 kb (~8 유닛) -> 관통은 원리상 거의 불가
-            - FASTA 라 MM/ML 이 없다 -> beta 는 전부 "-" 가 된다
-            - 대신 염기 정확도가 높아 서열 대조에는 오히려 낫다
-    이걸 놓쳐서 "24 개체 재추출에 10 시간" 이라고 잘못 말한 적이 있다.
-      실제로 자료가 아예 없는 개체는 7 개뿐이다.
+            - long (median tens to hundreds of kb) -> flank-to-flank spanning is possible
+            - MM/ML in the header, so methylation can be reported
+      HIFI  `~/s5s_tuc/cand/<sample>.fa`  (output of the TUC pipeline)
+            - PacBio HiFi, median 18.5 kb (about 8 units) -> spanning is almost impossible in principle
+            - FASTA, so no MM/ML -> beta is "-" throughout
+            - higher base accuracy, which suits sequence comparison better
+    Only 7 individuals have no data at all in either source;
+      the others have at least one of the two.
     """
     for p in ("~/s5s_ont/hits/%s.hits.fastq.gz" % s,
               "~/s5s_new/hits/%s.hits.fastq.gz" % s,
@@ -112,12 +109,12 @@ def find_reads(s):
 
 
 def sniff_platform(path, guess):
-    """플랫폼은 디렉터리가 아니라 read 이름으로 판별한다.
+    """The platform is decided from the read name, not from the directory.
 
-    실측 사고: `~/cancer5s/hits/*.fastq.gz` 를 디렉터리만 보고 ONT 로 판정해
-    PacBio HiFi read(m84039_...)에 map-ont 를 썼다. COLO829 의 정렬 동일성이
-    69% 로 떨어졌다 (정상 개체는 97-99%).
-    PacBio 는 `m<숫자>_<날짜>_...` 또는 `/ccs` 를 이름에 갖는다.
+    A directory such as `~/cancer5s/hits/` can hold PacBio HiFi reads (m84039_...).
+    Aligning those with map-ont lowers the alignment identity:
+    measured 69% for COLO829, against 97-99% in the normal individuals.
+    PacBio names carry `m<digits>_<date>_...` or `/ccs`.
     """
     try:
         op = gzip.open if path.endswith(".gz") else io.open
@@ -173,7 +170,7 @@ for smp in smps:
         continue
     q, rsrc = find_reads(smp)
     if q:
-        rsrc = sniff_platform(q, rsrc)      # 디렉터리가 아니라 read 이름으로
+        rsrc = sniff_platform(q, rsrc)      # keyed on the read name rather than the directory
     slots = sorted(k[1] for k in SEQF if k[0] == smp)
     if not q or not slots:
         sys.stderr.write("  건너뜀 %s (read %s · 슬롯 %d)\n" % (smp, bool(q), len(slots)))
@@ -193,13 +190,13 @@ for smp in smps:
             names[nm] = sl
             reflen[nm] = len(sq)
             g.write(">" + nm + NL + sq + NL)
-        # flank 참조 — read 의 flank 보유를 정렬로 직접 판정하기 위해서다
+        # the flank reference, so that a read's flank content is decided directly by alignment
         g.write(">" + PROX + NL + FL_P + NL)
         g.write(">" + DIST + NL + FL_D + NL)
     if not names:
         continue
     bam = os.path.join(W, "%s.bam" % smp)
-    # 플랫폼에 맞는 프리셋 — HiFi 에 map-ont 를 쓰면 정확도를 버린다
+    # the preset matched to the platform; using map-ont on HiFi throws away its accuracy
     preset = "map-ont" if rsrc == "ONT" else "map-hifi"
     p1 = subprocess.Popen(["minimap2", "-ax", preset, "-y", "-t", TH,
                            "--secondary=no", ref, q],
@@ -211,10 +208,10 @@ for smp in smps:
     subprocess.run(["samtools", "index", bam], check=True, capture_output=True)
     bf = pysam.AlignmentFile(bam, "rb")
 
-    # ---- ① read 별 분류 : 어느 참조를 건드렸나 ----
-    HIT = collections.defaultdict(dict)      # rid -> refname -> 정렬길이 합
-    JX = collections.defaultdict(dict)       # rid -> refname -> junction 까지 최소거리
-    BEST = {}                                # rid -> 하플로타입 위 1차정렬
+    # ---- 1) per-read classification: which references it touched ----
+    HIT = collections.defaultdict(dict)      # read id -> reference name -> total aligned length
+    JX = collections.defaultdict(dict)       # read id -> reference name -> minimum distance to the junction
+    BEST = {}                                # read id -> its primary alignment on a haplotype
     NSUP = collections.Counter()
     LP, LD = len(FL_P), len(FL_D)
     for a in bf.fetch(until_eof=True):
@@ -223,9 +220,9 @@ for smp in smps:
         rid = a.query_name
         rn = a.reference_name
         HIT[rid][rn] = HIT[rid].get(rn, 0) + a.query_alignment_length
-        if rn == PROX:                       # junction 이 끝
+        if rn == PROX:                       # the junction is at the end
             d = LP - a.reference_end
-        elif rn == DIST:                     # junction 이 시작
+        elif rn == DIST:                     # the junction is at the start
             d = a.reference_start
         else:
             d = None
@@ -247,7 +244,7 @@ for smp in smps:
         al = a.query_alignment_length
         idt = 100.0 * (1.0 - nmt / float(al)) if (al and nmt >= 0) else -1
         rl = a.infer_read_length() or len(a.query_sequence or "")
-        # 정렬 비율은 보조정렬까지 합쳐서 본다 (flank 조각이 따로 붙는다)
+        # the aligned fraction is taken including supplementary alignments, because the flank portion aligns separately
         tot_al = sum(HIT[rid].values())
         sl = names[a.reference_name]
         rcv = 100.0 * (a.reference_end - a.reference_start) / reflen[a.reference_name]
@@ -257,13 +254,13 @@ for smp in smps:
                  "\t%d\t%d\t%d\t%d%s" %
                  (smp, rid[:12], rsrc, cl, sl, UNI.get((smp, sl), 0),
                   a.mapping_quality, idt,
-                  100.0 * al / rl if rl else 0,             # 1차정렬 비율
-                  100.0 * tot_al / rl if rl else 0,         # 보조 포함 정렬 비율
+                  100.0 * al / rl if rl else 0,             # the primary aligned fraction
+                  100.0 * tot_al / rl if rl else 0,         # the aligned fraction including supplementary alignments
                   rcv, NSUP[rid], rl,
-                  HIT[rid].get(PROX, 0), jp,                # 근위 flank 길이·junction거리
-                  HIT[rid].get(DIST, 0), jd, NL))           # 원위 flank 길이·junction거리
+                  HIT[rid].get(PROX, 0), jp,                # proximal flank length and junction distance
+                  HIT[rid].get(DIST, 0), jd, NL))           # distal flank length and junction distance
 
-    # ---- ② 유닛별 read·메틸 ----
+    # ---- 2) reads and methylation per unit ----
     for nm, sl in names.items():
         ub = UB.get((smp, sl), [])
         if not ub:
@@ -271,7 +268,7 @@ for smp in smps:
         span = collections.Counter()
         over = collections.Counter()
         spq = collections.Counter()
-        spf = collections.Counter()          # flank 보유 read 만
+        spf = collections.Counter()          # reads carrying flank only
         msum = collections.defaultdict(lambda: [0.0, 0])
         asum = collections.defaultdict(lambda: [0.0, 0])
         qsum = collections.defaultdict(lambda: [0.0, 0])
@@ -301,9 +298,9 @@ for smp in smps:
                         if rp is not None:
                             rmod.append((rp, 1.0 if ql >= 128 else 0.0))
                 rmod.sort()
-            # 유닛마다 rmod 를 전부 훑으면 O(유닛 x 메틸호출) 이라 개체당 5.3 분이 걸렸다
-            #   (유닛 154 x 호출 1만 x read 3천 = 46 억 회).
-            #   rmod 도 ub 도 좌표순이므로 이분 탐색으로 구간만 잘라 쓴다.
+            # Scanning the whole modification list for every unit is O(units x calls) and took 5.3 minutes per individual
+            #   (154 units x 10,000 calls x 3,000 reads = 4.6 billion operations).
+            #   Both lists are in coordinate order, so a binary search cuts out just the interval needed.
             RP = [x[0] for x in rmod]
             for pos, s0, e0 in ub:
                 if hi <= s0 or lo >= e0:

@@ -1,28 +1,28 @@
 # -*- coding: utf-8 -*-
-# 배치 없이 메틸을 잰다 — read 를 array 에 배치하지 않고 5S 메틸 상태를 구한다
+# Measure methylation without placement: the 5S methylation state is obtained without placing the reads onto the array.
 #
-#   왜 : array 는 탠덤이라 read 가 mapq 0 로 놓인다(금화조 배치 read 의 69~72%).
-#        "어느 유닛에 놓였나"가 못 미더우면 결론도 못 미덥다.
-#        그런데 메틸 호출은 read 자신에 실려 있다(MM/ML). 참조에 놓을 필요가 없다.
-#        필요한 것은 "read 의 이 구간이 5S 인가, 어느 종류의 5S 인가" 뿐이고,
-#        그것은 서열 대조로 바로 안다. array 좌표도 mapq 도 쓰지 않는다.
+#   Why: the array is tandem, so reads are placed at mapq 0 (69-72% of the placed zebra finch reads).
+#        If which unit a read was placed on cannot be trusted, neither can the conclusion.
+#        But the methylation calls are carried on the read itself, in MM/ML, and need no reference.
+#        All that is needed is whether this stretch of the read is 5S and which kind of 5S,
+#        and that follows directly from a sequence comparison. Neither array coordinates nor mapq are used.
 #
-#   방법
-#     1) read 를 WIN bp 창으로 쪼갠다 (정렬·좌표 일절 안 씀)
-#     2) 창을 참조 유닛 종류들에만 정렬해 최고 점수 종류로 딱지를 붙인다(문맥판 사용)
-#     3) 그 창 안의 C 변형에 대해 MM/ML 로 메틸 비율을 낸다 (mod_qual >= 0.5 를 메틸로)
-#        문맥은 read 서열에서 직접 판정한다 — 다음 염기가 G 면 CG, 그 다음이 G 면 CHG, 아니면 CHH.
-#        (식물은 세 문맥을 다 부르므로 섞으면 CG 0.84 가 0.5 로 희석된다. 실측으로 드러난 함정)
-#        단 호출 모델이 CpG 전용이면(유인원·금화조·제브라피시) MM 에 실린 C 는 전부 CpG 다.
-#          그때 read 서열로 문맥을 나누면 read 오류만 나누는 꼴이 된다(고릴라 실측 : CHH 로 18% 샘).
-#          그래서 MM 자리의 '다음 염기가 G' 비율로 모델 종류를 자료에서 판정하고,
-#          0.75 이상이면 전부 CG 로 둔다.
-#     4) 종류마다 · read 마다 비율을 모은다
-#   BAM 은 MM/ML 을 꺼내는 그릇으로만 쓴다 — 정렬 좌표·mapq·유닛 번호는 읽지 않는다.
+#   method
+#     1) The read is cut into windows of WIN bp, using no alignment and no coordinates.
+#     2) Each window is aligned only against the reference unit types and labelled with the highest-scoring type, using the context version.
+#     3) The methylation fraction over the C modifications in that window is computed from MM/ML, counting mod_qual >= 0.5 as methylated.
+#        The context is decided from the read sequence directly: the next base G gives CG, the one after that G gives CHG, otherwise CHH.
+#        (A plant calls all three contexts, so pooling them dilutes a CG value of 0.84 to 0.5.)
+#        Where the calling model is CpG-only, as for the great apes, the zebra finch and the zebrafish, every C in MM is a CpG.
+#          Splitting by context from the read sequence then splits only the read errors (measured in gorilla: 18% leaked into CHH).
+#          So the kind of model is decided from the data, by the fraction of MM positions whose next base is G,
+#          and above 0.75 everything is taken as CG.
+#     4) The fractions are collected per type and per read.
+#   The BAM is used only as a container for MM/ML; the alignment coordinates, the mapq and the unit index are never read.
 #
-#   산출 : <out>/<species>__<sample>.noplace_window.tsv  (창 한 줄)
-#          <out>/<species>__<sample>.noplace_read.tsv    (read 한 줄 · 종류별)
-#   인자 : 종키 샘플 bam 참조유닛종류.fa 출력폴더 [WIN=500] [MINID=0.70] [CTX=120]
+#   Outputs: <out>/<species>__<sample>.noplace_window.tsv, one row per window,
+#          and <out>/<species>__<sample>.noplace_read.tsv, one row per read and type.
+#   Arguments: species key, sample, bam, reference unit types .fa, output folder, [WIN = 500], [MINID = 0.70], [CTX = 120].
 # MIT License · Copyright (c) 2026 Hungmin Kim
 import io
 import os
@@ -38,15 +38,15 @@ SP, SAMPLE, BAM, REFT, OUT = sys.argv[1:6]
 WIN = int(sys.argv[6]) if len(sys.argv) > 6 else 500
 MINID = float(sys.argv[7]) if len(sys.argv) > 7 else 0.70
 CTX = int(sys.argv[8]) if len(sys.argv) > 8 else 120
-# 호출 문턱 : modkit 은 기본으로 하위 10% 신뢰도를 버리고 남은 것에 0.5 를 적용한다.
-#   여기서 0.5 를 그대로 쓰면 애매한 호출이 전부 '메틸' 로 들어가 저메틸 문맥(CHH)이 부풀려진다.
-#   같은 잣대로 맞추려면 문턱을 올린다(감도로 여러 값을 같이 본다).
+# The calling threshold: modkit discards the least confident 10% by default and applies 0.5 to what remains.
+#   Applying 0.5 here directly would put every borderline call into the methylated class and inflate a weakly methylated context such as CHH.
+#   To match the same ruler the threshold is raised, and several values are reported together as a sensitivity.
 MODTHR = float(sys.argv[9]) if len(sys.argv) > 9 else 0.5
 os.makedirs(OUT, exist_ok=True)
 TMP = os.path.join(OUT, "_t_%s_%s" % (SP, SAMPLE))
 os.makedirs(TMP, exist_ok=True)
 
-# 참조 유닛 종류 → 문맥판 (탠덤이라 창이 유닛 경계를 걸친다)
+# reference unit type -> its context version, the array being tandem so that a window straddles a unit boundary
 refs = collections.OrderedDict()
 name = None
 for L in io.open(REFT, encoding="utf8"):
@@ -60,7 +60,7 @@ refs = collections.OrderedDict((k, "".join(v).upper()) for k, v in refs.items())
 cp = os.path.join(TMP, "ctx.fa")
 with io.open(cp, "w", encoding="utf8", newline=NL) as fh:
     for k, s in refs.items():
-        r = (s * 4)[:max(len(s) * 2, WIN + 2 * CTX)]   # 탠덤으로 이어 붙인 문맥판
+        r = (s * 4)[:max(len(s) * 2, WIN + 2 * CTX)]   # the context version, concatenated tandem
         fh.write(">%s%s%s%s" % (k, NL, r, NL))
 
 bam = pysam.AlignmentFile(BAM, "rb", check_sq=False)
@@ -82,13 +82,13 @@ for rd in bam.fetch(until_eof=True):
     if not mb:
         continue
     nread += 1
-    # CpG 5mC : (canonical, strand, code) 키에서 C+m / C+h 를 모은다
+    # CpG 5mC: C+m and C+h are collected from the (canonical, strand, code) key
     call = {}
     for k, v in mb.items():
         code = k[2]
         if code not in ("m", "h", 27551):
             continue
-        st = k[1]          # 0 = read 가닥 · 1 = 반대 가닥(그 자리의 read 염기는 G 다)
+        st = k[1]          # 0 = the read strand; 1 = the opposite strand, where the read base at that position is G
         for pos, ql in v:
             p = call.get(pos, [0.0, 0.0, st])
             p[2] = st
@@ -127,7 +127,7 @@ for rid, call in MOD.items():
     sq = SEQ.get(rid, "")
     for p, v in call.items():
         NG[0] += 1
-        if v[2] == 1:      # 반대 가닥 : read 에서는 G 이고 앞 염기가 C 면 CpG
+        if v[2] == 1:      # on the opposite strand, a G in the read preceded by a C is a CpG
             if p - 1 >= 0 and sq[p - 1] == "C":
                 NG[1] += 1
         elif p + 1 < len(sq) and sq[p + 1] == "G":
@@ -141,7 +141,7 @@ COMP2 = {"A": "T", "C": "G", "G": "C", "T": "A"}
 def ctx_of(seq, p, st):
     if CPGONLY:
         return "CG"
-    # 배치 없이 문맥 판정 : read 서열만 본다. 반대 가닥이면 거꾸로 읽는다
+    # deciding the context without placement: only the read sequence is used, read backwards on the opposite strand
     if st == 1:
         a = COMP2.get(seq[p - 1], "N") if p - 1 >= 0 else "N"
         b = COMP2.get(seq[p - 2], "N") if p - 2 >= 0 else "N"
@@ -160,7 +160,7 @@ HW = ["species_key", "sample", "read_id", "win_offset", "ref_type", "context", "
 ow = io.open(os.path.join(OUT, "%s__%s.noplace_window.tsv" % (SP, SAMPLE)), "w",
              encoding="utf8", newline=NL)
 ow.write(TAB.join(HW) + NL)
-byread = collections.defaultdict(lambda: collections.defaultdict(lambda: [0, 0, 0]))  # read -> (종류,문맥)
+byread = collections.defaultdict(lambda: collections.defaultdict(lambda: [0, 0, 0]))  # read -> (type, context)
 tot = collections.Counter()
 for i, (rid, off) in enumerate(META):
     b = best.get("w%d" % i)
@@ -175,7 +175,7 @@ for i, (rid, off) in enumerate(META):
         if off <= p < off + WIN:
             c = acc[ctx_of(sq, p, st)]
             if max(pm, ph) < MODTHR and max(pm, ph) > 1.0 - MODTHR:
-                continue          # 애매한 호출은 버린다(modkit 의 저신뢰 제거에 해당)
+                continue          # borderline calls are discarded, which corresponds to modkit's removal of the least confident
             c[0] += 1
             if pm >= MODTHR:
                 c[1] += 1
@@ -184,7 +184,7 @@ for i, (rid, off) in enumerate(META):
     if not acc:
         continue
     for c, (n, m, h) in sorted(acc.items()):
-        if n == 0:          # 애매한 호출만 있던 문맥은 건너뛴다(문턱을 올리면 생긴다)
+        if n == 0:          # a context left with only borderline calls is skipped, which happens as the threshold is raised
             continue
         ow.write(TAB.join([SP, SAMPLE, rid, str(off), tgt, c, "%.3f" % idt,
                            "%.3f" % ((qe - qs) / float(WIN)), str(n), str(m),

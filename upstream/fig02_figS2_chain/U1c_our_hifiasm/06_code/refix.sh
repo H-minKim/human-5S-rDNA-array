@@ -1,16 +1,15 @@
 #!/bin/bash
-# Reassemble with HPRC ONT the individuals that were assembled from low-quality 1kGP reads (2026-09-04)
+# Reassemble with HPRC ONT the individuals that hifi_queue.sh assembles from low-quality 1kGP reads
 #
-#  cause (measured)
-#    the search order of find_reads() in hifi_queue.sh was
+#    find_reads() in hifi_queue.sh searches
 #      ~/kgp_ont/out/$s.array.fastq.gz   <- 1kGP (10-24 MB) first
 #      ~/s5s_ont/hits/$s.hits.fastq.gz   <- HPRC ONT (250-670 MB) later
-#    so individuals present in both cohorts were assembled from 1kGP data.
-#    1kGP is data already judged "not assemblable" (27x too little data, only 1 of 12 haplotypes with known truth was correct).
-#    impact: 17 of the 607 hifi_queue outputs (12 individuals). 6 of those individuals have no replacement candidate.
+#    so individuals present in both cohorts are assembled from 1kGP data there
+#    (27x too little data, only 1 of 12 haplotypes with known truth was correct).
+#    This affects 17 of the 607 hifi_queue outputs (12 individuals).
 #
 #  Here the order is reversed and HPRC ONT is used first. 1kGP is not used at all.
-#  Outputs go separately to ~/refix. They must not mix with the old 1kGP outputs.
+#  Outputs go separately to ~/refix. They must not mix with the 1kGP outputs.
 set -u
 D=~/refix
 mkdir -p "$D"

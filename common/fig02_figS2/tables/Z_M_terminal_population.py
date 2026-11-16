@@ -8,7 +8,7 @@ M1. Terminal-type unit similarity: within the same person vs between people, con
 M2. Population association: join the 1kGP population table (superpopulation) and compare terminal-type carrier rates.
     - Test at the individual level (the 2 haplotypes are not independent), Fisher/chi-square, 2,000 permutations
     - Besides carrier rate, also whether the depth-set pattern (2,5,7 etc.) is linked to population
-Output: $OUTDIR\ZM_*.tsv
+Output: $OUTDIR/ZM_*.tsv
 """
 import io, os, sys, collections
 import numpy as np
@@ -18,7 +18,7 @@ import v11_io as G
 import termdef as TD   # terminal-type definition (10 or more of the 12 diagnostic variants)
 
 OUT = (os.environ.get("OUTDIR") or os.environ["RDNA_OUT_DIR"])
-POPF = (__import__("os").environ["RDNA_DATA_ROOT"] + r"\v11_readvar\05_reference\1kGP_3202_ped_population_2026-09-23.txt")
+POPF = (__import__("os").environ["RDNA_DATA_ROOT"] + r"/v11_readvar/05_reference/1kGP_3202_ped_population_2026-09-23.txt")
 rng = np.random.default_rng(20260930)
 NPERM = 2000
 MARK = "D1096:1"

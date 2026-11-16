@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
-# array 와 그 양옆 flank 100 kb 의 메틸을 같은 BAM 에서 잰다
+# Measure the methylation of an array and of the 100 kb of flank on each side, from the same BAM.
 #
-#   묻는 것 : array 사이 메틸 차이가 그 자리 주변(국소 염색질) 탓인가, array 자체 성질인가.
-#     · 주변 탓이면 array 와 flank 가 같이 움직인다(저메틸 array 옆은 저메틸 flank)
-#     · array 자체면 flank 는 비슷한데 array 만 떨어진다
-#   같은 BAM·같은 조직·같은 호출기로 재므로 그 효과들은 지워진다.
-#   flank 는 array 경계에서 GAP 만큼 띄우고 WIN 만큼 잡는다(경계 효과 회피).
-#   mapq 로 거르지 않는다. 보조/이차 정렬만 뺀다.
+#   The question: is the difference in methylation between arrays due to the surrounding local chromatin, or is it a property of the array itself?
+#     · If it is the surroundings, the array and its flank move together, and a hypomethylated array has a hypomethylated flank.
+#     · If it is the array, the flanks are similar and only the array falls away.
+#   Measuring from the same BAM, the same tissue and the same basecaller removes those effects.
+#   The flank is taken at GAP bp clear of the array boundary and spans WIN bp, which avoids the boundary effect.
+#   No mapq filter; only supplementary and secondary alignments are removed.
 #
-#   인자 : 종키 샘플 bam array좌표.tsv 출력.tsv [WIN=100000] [GAP=5000]
+#   Arguments: species key, sample, bam, array coordinates .tsv, out.tsv, [WIN = 100000], [GAP = 5000].
 # MIT License · Copyright (c) 2026 Hungmin Kim
 import io
 import os

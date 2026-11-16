@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-# 보노보 read 마다 호출기 판본 표 — BAM MM 머리 "C+h?..." = guppy 6.3.7 · "C+m?..." 만 = guppy 6.3.8
-#   (x17 과 같은 규칙 · 그림 v2(x19–x21)가 6.3.7 read 를 빼는 데 쓴다)
-#   출력 : tables/BONOBO_READ_BASECALLER.tsv (read_id · basecaller · mm_head)
+# A table of the basecaller release per bonobo read: a BAM MM head of "C+h?..." means guppy 6.3.7, and "C+m?..." alone means guppy 6.3.8.
+#   (The same rule as x17; the v2 figures in x19 to x21 use it to exclude the 6.3.7 reads.)
+#   Output: tables/BONOBO_READ_BASECALLER.tsv, with the read id, the basecaller and the MM head.
 import io, struct, collections
 
 import os as _os_need, sys as _sys_need
@@ -12,7 +12,7 @@ def _need(k):
     v = _os_need.environ.get(k)
     if not v:
         _sys_need.exit("environment variable %s is not set (the deposited copy has no default; "
-                       "see README.md, section 'How to run it')" % k)
+                       "see README.md, section 'Environment variables')" % k)
     return v
 
 

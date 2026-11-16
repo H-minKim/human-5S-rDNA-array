@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # Can consensus2 be made into a sequence, a trial (the canonical files are not touched)
 #
-#  Procedure (the user-specified order, at the sequence level)
+#  Procedure (at the sequence level)
 #    reads = reads placed in this slot in round 3 (consensus2 map)
 #    ref0  = current representative sequence of the slot (spanning read array)
 #    it1   : reads -> align to ref0 -> samtools consensus -> seq1

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""세 세포주 — 두 자리가 귀무에 대해 유의한가 (블라인드 + 호출기 없음) · 그림용 곡선 (2026-10-12)
+"""Three cell lines: are the two sites significant against the null (blind and caller-free), with the curves for the figure
 
 usage: python cell_sig_run.py HepG2|K562|GM12878
 """
@@ -24,7 +24,7 @@ def _need(k):
         raise SystemExit(
             "environment variable %s is not set; it is required by %s." % (k, _SELF)
             + chr(10)
-            + "The deposited copy has no default; see README.md section 2")
+            + "The deposited copy has no default; see README.md, section 'Environment variables'")
     return v
 
 
@@ -42,7 +42,7 @@ CUT = 0.508
 HALF, PER, NP = S.HALF, S.PER, S.NP
 rng = np.random.default_rng(20261012)
 
-# ── 적재
+# -- load
 keys, beta = [], []
 with io.open(os.path.join(DIR, "UNIT_%s.tsv" % LAB), encoding="utf8") as f:
     f.readline()
@@ -86,7 +86,7 @@ print("%s : 유닛 %d · tf 사건 %d · β 있는 유닛 %d" % (NAME, N, len(ce
 
 R = {"name": NAME, "n_units": int(N), "n_tf": int(len(ce)), "n_beta": int(np.isfinite(beta).sum())}
 
-# ── β 이봉성
+# -- bimodality of beta
 b = beta[np.isfinite(beta)]
 hs, ed = np.histogram(b, bins=40, range=(0, 1))
 lo_i, hi_i = np.searchsorted(ed, 0.30), np.searchsorted(ed, 0.70)
@@ -100,7 +100,7 @@ print("  β 중앙 %.3f · 골 %.3f~%.3f (n=%d) · 0.45~0.55 %.2f%% · 컷 0.508
       % (R["beta"]["median"], ed[j], ed[j + 1], hs[j], 100 * R["beta"]["frac_045_055"],
          100 * R["beta"]["low_frac_at_cut"], "가능" if bimodal else "불가(단봉)"))
 
-# ── ① 블라인드 격자 스캔 (전체 분자)
+# -- (1) blind grid scan (all molecules)
 bl5 = S.blind(mi, ce, sz, N, NB_BLIND, rng, minev=30, sbin=5)
 bl = S.blind(mi, ce, sz, N, NB_BLIND, rng, minev=30, sbin=10)
 R["blind5"] = (None if bl5 is None else dict(
@@ -120,7 +120,7 @@ for nm, r in bl["sites"].items():
 print("    상위 봉우리 : " + " · ".join("%+d(%d~%d, %.0f×)" % (p[1], p[2][0], p[2][1], p[0])
                                       for p in bl["peaks"][:8]))
 
-# ── ② 호출기 없는 확인검정 (전체 분자)
+# -- (2) caller-free confirmation (all molecules)
 okm = A.sum(1) >= 20
 cf = S.confirm(A[okm], M[okm], NB_CONF, rng)
 R["confirm"] = cf
@@ -130,16 +130,16 @@ for nm, r in cf.items():
     print("    %-7s 관측 %.3f (자리 %+d · 폭 %d) · 귀무 중앙 %.3f · 95%% %.3f · p %.4f"
           % (nm, r["obs"], r["pos"], r["width"], r["null_med"], r["null95"], r["p"]))
 
-# ── 그림용 곡선
+# -- curves for the figure
 arr = {"rel": S.REL, "bl_ENR": bl["ENR"], "bl_bins": np.array(bl["bins"]), "bl_thr": bl["thr"]}
-# (c) 10 bp 크기 무리 전체 밀도·배수
+# (c) density and fold change over the whole 10 bp size group
 CL = [(20, 29), (30, 39), (40, 49), (50, 59)]
 for k, (a0, a1) in enumerate(CL):
     s = (sz >= a0) & (sz <= a1)
     o, bs = S.dens_fold(mi[s], ce[s], N, NB_CURVE, rng)
     arr["c%d_obs" % k] = o
     arr["c%d_base" % k] = bs
-# (d)(e)(f) 메틸 양분
+# (d)(e)(f) split by methylation
 LAYERS = []
 if bimodal:
     lay = np.full(N, -1)
@@ -147,7 +147,7 @@ if bimodal:
     lay[np.isfinite(beta) & (beta >= CUT)] = 1
     LAYERS = [("low", 0), ("high", 1)]
 else:
-    lay = np.where(np.isfinite(beta), 2, -1)   # 단봉 — 양분 불가, 전체 한 층
+    lay = np.where(np.isfinite(beta), 2, -1)   # Unimodal - cannot be split, so one stratum for everything
     LAYERS = [("all", 2)]
 R["layers"] = {}
 for nmL, li in LAYERS:

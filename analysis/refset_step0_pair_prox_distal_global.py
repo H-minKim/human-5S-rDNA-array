@@ -1,25 +1,25 @@
 # -*- coding: utf-8 -*-
-# 근위↔원위 짝 전역 배정
-#   단계 : ① 하플로타입 확정
+# Global assignment of the proximal to distal pairing.
+#   Step 1: fix the haplotypes.
 
 # -*- coding: utf-8 -*-
-# flank read 하플로타입 전역 배정 (2026-09-05)
+# Global haplotype assignment for the flank reads.
 #
-#  규칙은 consensus_v2.py 의 정본을 따른다:
-#    "근위<->원위 짝은 관통 read 가 있으면 그 분자가 정한다 (번호 가정 금지)"
+#  The rule follows the canonical one in consensus_v2.py:
+#    where an array-spanning read exists, that molecule fixes the proximal-to-distal pairing, and the labels must never be assumed to correspond.
 #
-#  근위/원위 hap 번호는 서로 독립이다.
-#    실측: 양쪽 다 가진 read 575 개 중 번호 일치 45.4% = 무작위.
-#    번호로 join 하면 절반이 틀린다. 반드시 분자(관통) 또는 부모로 이어야 한다.
+#  The proximal and distal haplotype labels are independent of each other.
+#    Measured: of 575 reads carrying both, the labels agree in 45.4%, which is chance.
+#    Joining on the label would be wrong half the time; the link must come from a molecule, that is a spanning read, or from a parent.
 #
-#  우선순위
-#    ① 부모 유래 (~/parent_hap_full.tsv) — 전역 일관 (양쪽 read 13/13 일치 실측)
-#    ② 관통(SPAN) read 가 정한 prox<->dist 짝
-#       소거법: 하플로타입은 2 개뿐이므로 한쪽 연결만 알아도 나머지가 결정된다
-#         (앞 판에서 이걸 빠뜨려 139 개체가 "일부만 확정" 으로 남았다)
-#    ③ 둘 다 없으면 미확정 -> 하플로타입 서열로 잇는다 (다음 단계)
+#  Priority:
+#    1) inheritance from a parent, which is globally consistent (measured: reads on both sides agree in 13 of 13);
+#    2) the pairing fixed by a spanning read,
+#       with elimination: there are only two haplotypes, so knowing one link determines the other
+#         (without this step 139 individuals were left only partly resolved);
+#    3) with neither, it is left unresolved and linked by the haplotype sequence at the next stage.
 #
-#  전역 라벨은 근위 번호를 기준으로 삼는다 (prox hap 1/2 를 그대로 전역 1/2 로).
+#  The global label is taken from the proximal numbering: proximal haplotypes 1 and 2 become global 1 and 2.
 import io
 import os
 import collections
@@ -53,7 +53,7 @@ for i, L in enumerate(io.open(os.path.join(S, "units_all.tsv"), encoding="utf8")
     if len(f) >= 3 and f[2] == "SPAN":
         SPAN.add((f[0], f[1]))
 
-# ---- 개체별 prox<->dist 연결 ----
+# ---- the proximal-to-distal link, per individual ----
 LINK = {}          # smp -> {prox_hap: dist_hap}
 CONF = set()
 raw = collections.defaultdict(collections.Counter)
@@ -74,7 +74,7 @@ for s, c in raw.items():
     if bad:
         CONF.add(s)
         continue
-    # 소거법 — 하플로타입은 2 개뿐이다
+    # elimination: there are only two haplotypes
     if len(d) == 1:
         ph, dh = list(d.items())[0]
         op = "2" if ph == "1" else "1"
@@ -82,8 +82,8 @@ for s, c in raw.items():
         d[op] = od
     LINK[s] = d
 
-# ---- 부모 라벨을 근위 기준으로 맞춘다 ----
-# 부모 라벨은 전역이지만 번호가 v5 와 다를 수 있다. 개체·side 별 대응을 다수결로 만든다.
+# ---- bring the parental labels onto the proximal numbering ----
+# The parental labels are global but their numbering may differ, so the correspondence is established per individual and side by a majority vote.
 PMAP = {}
 for side in ("prox", "dist"):
     m = collections.defaultdict(collections.Counter)
@@ -104,7 +104,7 @@ for side in ("prox", "dist"):
             pur.append(n / float(sum(d[a].values())))
         PMAP[(s, side)] = (mp, min(pur) if pur else 0.0, sum(c.values()))
 
-# 부모로 연결 : prox 라벨 -> 부모라벨 -> dist 라벨
+# linking through the parent: proximal label -> parental label -> distal label
 PLINK = {}
 for s in set(k[0] for k in PMAP):
     a = PMAP.get((s, "prox"))

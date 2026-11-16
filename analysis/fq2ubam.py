@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-"""hits fastq(헤더에 MM/ML 태그) -> 정렬 안 한 BAM (2026-10-14)
+"""hits fastq (MM/ML tags in the header) -> unaligned BAM
 usage: python fq2ubam.py <in.fastq.gz> <out.bam>
-SEQ 는 원본 read 방향(samtools fastq -T)이라 MM/ML 과 같은 틀이다."""
+SEQ is in the original read orientation (samtools fastq -T), the same frame as MM/ML."""
 import array
 import gzip, sys
 import pysam

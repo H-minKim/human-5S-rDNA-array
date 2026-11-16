@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # Builds a new contig from the reads of each marker and decides whether the marker position falls in the original interval (read-only)
-#   설계 :
-#     ① 표지 대립형을 가진 read 를 전부 모은다 (조립본에 붙든 안 붙든)
-#     ② 그 read 들끼리만 정렬해 contig 를 만든다 (조립본 안 씀) — 표지 유닛을 가운데로 한 창(±10 유닛)끼리, 표지 유닛끼리 같은 칸에 맞을 때만 잇는다
-#     ③ contig 안에서 read 들의 표지 유닛이 같은 칸 = 가운데 칸 (잇는 조건 자체가 이것)
-#     ④ contig 합의를 조립본과 비교
-#        (가) 이웃 유닛으로 : 합의 창을 지도에 가운데 정렬 → 가운데가 놓인 지도 유닛·구역
-#        (나) 배열 끝에서 잰 거리로 : contig 를 이루는 read 중 배열 끝(flank)까지 닿는 read 가 표지 유닛까지 센 유닛 수
-#        (다) 둘 다 안 되면 '위치 미정'
-#     ⑤ read 들이 표지 자리에 동의하는데 그 자리가 원래 구간이 아닌 contig 를 보고
-#   추가 : contig 와 무관하게, 배열 끝까지 닿는 read 하나하나가 직접 잰 '끝에서 표지까지 거리'도 표지별로 낸다(조립본 없는 직접 측정)
-#   방향 : 유닛 사슬은 정규 방향 차례 · 놓인 read 의 방향이 전부 +1 ⇒ 사슬 시작 = 원위 끝 · 사슬 끝 = 근위 끝 (실행 중 끝 닿는 놓인 read 로 다시 확인)
-#   용법 : python3 mkmarkerasm.py <CELL> <TAG> <fa>:<PB|ONT>:<자료이름> [...]
+#   The design:
+#     1) collect every read carrying the marker allele, whether or not it aligns to the assembly
+#     2) build contigs by aligning only those reads to each other, without the assembly: windows of +-10 units centred on the marker unit are joined only when the marker units fall in the same bin
+#     3) within a contig the reads' marker units share a bin, the central one, since that is the joining condition
+#     4) compare the contig consensus with the assembly
+#        a) by the neighbouring units: align the consensus window to the map about its centre, giving the map unit and zone the centre lands in
+#        b) by the distance from the end of the array: for a constituent read reaching the flank, the number of units counted to the marker unit
+#        c) if neither works, the position is undetermined
+#     5) report contigs where the reads agree on the marker position but that position is not the original interval
+#   Also, independently of the contigs, the distance from the end to the marker measured directly on each read that reaches the end of the array is reported per marker, a measurement that uses no assembly.
+#   Orientation: the unit chain runs in canonical order and every placed read has orientation +1, so the start of the chain is the distal end and the end of the chain the proximal end; this is re-checked at run time against placed reads that reach an end.
+#   Usage: python3 mkmarkerasm.py <CELL> <TAG> <fa>:<PB|ONT>:<dataset> [...]
 import sys, os, re, json, math, collections, time, random
 W = os.path.expanduser("~/p11_encode/mkcheck")
 CELL, TAG = sys.argv[1], sys.argv[2]; SPECS = sys.argv[3:]
@@ -20,11 +20,11 @@ CAN = "".join(l.strip() for l in open(os.path.expanduser("~/s5s_tuc/ref/unit_can
 EXCL = lambda p: p <= 318 or 1179 <= p <= 1551
 S1R = re.compile(r"^(\d+)([ACGT])$")
 SMIN, MMIN, GAP, HALF = 3.0, 1.0, -0.8, 10
-FLANK_MIN = 3000                     # 마지막 5S 조각 너머 5S 아닌 서열이 이만큼 있어야 '끝에 닿음'
+FLANK_MIN = 3000                     # this much non-5S sequence beyond the last 5S block is required to count as reaching the end
 t0 = time.time()
 def log(*a): print("[%5.0fs]" % (time.time() - t0), *a, flush=True)
 random.seed(20261014)
-# ---------------- 지도·표지·경계
+# ---------------- map, markers and boundaries
 FR = collections.defaultdict(list)
 for i, line in enumerate(open("%s/mk_frames_%s.tsv" % (W, CELL))):
     if i == 0: continue
@@ -42,7 +42,7 @@ for i, line in enumerate(open("%s/mk_markers_%s.tsv" % (W, CELL))):
     for t in units.split(";"):
         if t: sl, ap = t.split(":"); car[sl].add(int(ap))
     MK[(int(p), a)] = dict(variant=v, zone=z, car=car)
-FRSET = collections.defaultdict(set)                     # 지도에 그 변이가 있는 유닛(HOT 포함)
+FRSET = collections.defaultdict(set)                     # the units in which the map carries that variant, HOT included
 for s in FR:
     for ap, vs in FR[s]:
         for v in vs: FRSET[v].add((s, ap))
@@ -51,7 +51,7 @@ def zone(slot, ap):
     kp, kd, N = B["new"][slot]
     return "D" if ap <= kd else ("P" if N - ap + 1 <= kp else "M")
 KD = {s: B["new"][s][1] for s in B["new"]}; KP = {s: B["new"][s][0] for s in B["new"]}
-# ---------------- read → 유닛 사슬 (+ 끝 닿음)
+# ---------------- read -> unit chain, and whether it reaches an end
 COMP = str.maketrans("ACGTN", "TGCAN")
 def rc(s): return s.translate(COMP)[::-1]
 def load(fa, plat):
@@ -93,28 +93,28 @@ def load(fa, plat):
                 else: rp += n
             raw = {x for x in d if not EXCL(x[0])}
             ch.append(dict(lo=ts + 1, hi=te, raw=raw, f=({x for x in raw if x in ALLF} if plat == "ONT" else raw), qs=qs, qe=qe, plat=plat))
-        # 5S 조각 슬롯(느슨 · >=1000bp) 으로 끝까지 센다 · 사슬 방향(정규) 기준 시작=원위 끝
+        # Counted to the end by 5S block slots, loosely and at 1000 bp or more; in canonical chain order the start is the distal end.
         L = len(seqs[q]); iv = sorted(x for x in anyseg[q] if x[1] - x[0] >= 1000)
         slots = []
         for a, b in iv:
             if slots and a < slots[-1][1] - 0.5 * (b - a): slots[-1] = (slots[-1][0], max(slots[-1][1], b))
             else: slots.append((a, b))
-        if stm == "-": slots = [(L - b, L - a) for a, b in slots][::-1]     # 정규 방향 read 좌표로
+        if stm == "-": slots = [(L - b, L - a) for a, b in slots][::-1]     # in canonical-orientation read coordinates
         lo5 = min(a for a, b in anyseg[q]); hi5 = max(b for a, b in anyseg[q])
         if stm == "-": lo5, hi5 = L - hi5, L - lo5
-        sq = seqs[q] if stm == "+" else rc(seqs[q])          # 정규 방향 read 서열
+        sq = seqs[q] if stm == "+" else rc(seqs[q])          # the read sequence in canonical orientation
         tails = {}
         if lo5 >= FLANK_MIN: tails["시작"] = sq[max(0, lo5 - 20000):lo5]
         if L - hi5 >= FLANK_MIN: tails["끝"] = sq[hi5:hi5 + 20000]
-        start_flank = end_flank = False                       # flank 정렬로 나중에 정한다
-        for u in ch:                                   # 유닛의 슬롯 번호(정규 방향 · 0 부터)
+        start_flank = end_flank = False                       # decided later, from the flank alignment
+        for u in ch:                                   # the unit's slot index, in canonical orientation and from 0
             c = ((L - u["qe"] + L - u["qs"]) / 2) if stm == "-" else (u["qs"] + u["qe"]) / 2
             u["slot_i"] = min(range(len(slots)), key=lambda i: abs((slots[i][0] + slots[i][1]) / 2 - c)) if slots else None
         out["%s" % q] = dict(ch=ch, nslot=len(slots), sf=start_flank, ef=end_flank, plat=plat, tails=tails)
     return out
-# ---------------- 닮음 · 가운데 정렬 (mkcheck 와 같은 원리)
+# ---------------- similarity and centre alignment, on the same principle as mkcheck
 SFC = {}
-def sim_f(a, b):                                       # read 유닛끼리 (둘 중 ONT 가 있으면 지도 어휘만) · 캐시
+def sim_f(a, b):                                       # between read units, restricted to the map vocabulary if either is ONT; cached
     key = (id(a), id(b))
     if key not in SFC: SFC[key] = _sim_f(a, b)
     return SFC[key]
@@ -126,7 +126,7 @@ def _sim_f(a, b):
     U = A | Bs
     if not U: return 0.0
     return 2.0 * sum(wt(v) for v in A & Bs) / sum(wt(v) for v in U) - 1.0
-def sim_map(u, fs):                                    # 합의 유닛 ↔ 지도 유닛 (합의 특징 중 지도 어휘만 비교 · 새 변이는 따로 보고)
+def sim_map(u, fs):                                    # consensus unit against map unit: only the map vocabulary is compared, and novel variants are reported separately
     Fs = {v for v in fs if u["lo"] <= v[0] <= u["hi"]}; R = {v for v in u["f"] if v in ALLF}; U = R | Fs
     if not U: return 0.0
     return 2.0 * sum(wt(v) for v in R & Fs) / sum(wt(v) for v in U) - 1.0
@@ -157,7 +157,7 @@ def place_on_map(win, c):
     return best, second
 LAST_AMB = []
 def sw_path(X, F):
-    """X : 합의 칸들 · F : 지도 유닛 [(ap, fs)] → (점수, [(칸 i, 지도 j)], S)"""
+    """X : consensus cells, F : map units [(ap, fs)] -> (score, [(cell i, map j)], S)"""
     n, m = len(X), len(F)
     S = [[sim_map(X[i], F[j][1]) for j in range(m)] for i in range(n)]
     H = [[0.0] * (m + 1) for _ in range(n + 1)]; P = [[0] * (m + 1) for _ in range(n + 1)]; best = (0.0, 0, 0)
@@ -174,13 +174,13 @@ def sw_path(X, F):
     return sc, pairs[::-1], S
 def informative(u, fs):
     return bool({vv for vv in u["f"] if vv in ALLF}) or bool({vv for vv in fs if u["lo"] <= vv[0] <= u["hi"]})
-# ---------------- 실행
+# ---------------- run
 READS = {}
 for spec in SPECS:
     fa, plat, src = spec.split(":")
     for q, r in load(fa, plat).items(): r["src"] = src; READS[q] = r
     log(src, "사슬", sum(1 for r in READS.values() if r["src"] == src))
-# 끝 닿음 = 꼬리가 flank 서열에 정렬 (>=1000bp · 일치 >=0.8) · 사슬 쪽(시작/끝) ↔ flank 파일 대응을 센다
+# Reaching an end means the tail aligns to the flank sequence over at least 1000 bp at identity 0.8 or more; the correspondence between the chain end and the flank file is counted.
 FLK = os.path.expanduser("~/p11_encode/ref/_flank_both.fa")
 with open(FLK, "w") as o:
     for nm in ("FLANK_distal_50000", "FLANK_proximal_50000"):
@@ -215,12 +215,12 @@ for (p, a), mk in sorted(MK.items(), key=lambda kv: kv[1]["variant"]):
             if (p, a) in u["raw"]:
                 lo, hi = max(0, k - HALF), min(len(ch), k + HALF + 1)
                 items.append(dict(read=q, src=r["src"], plat=r["plat"], win=ch[lo:hi], c=k - lo, k=k, r=r))
-                # 직접 측정 : 끝에서 표지 유닛까지(슬롯 번호로 · 1 = 끝 유닛)
+                # direct measurement: from the end to the marker unit, by slot index, where 1 is the terminal unit
                 if u["slot_i"] is not None:
                     if r["sf"]: DIRECT.append(dict(variant=v, mzone=mk["zone"], src=r["src"], read=q, end="원위", dist=u["slot_i"] + 1))
                     if r["ef"]: DIRECT.append(dict(variant=v, mzone=mk["zone"], src=r["src"], read=q, end="근위", dist=r["nslot"] - u["slot_i"]))
     if not items: continue
-    # ② 표지 유닛끼리 같은 칸에 맞는 짝 → 탐욕 합치기(합칠 때 새로 겹치는 짝 검사)
+    # 2) pairs whose marker units fall in the same bin are merged greedily, with newly overlapping pairs re-checked at each merge
     n = len(items); E = []
     for i in range(n):
         for j in range(i + 1, n):
@@ -253,7 +253,7 @@ for (p, a), mk in sorted(MK.items(), key=lambda kv: kv[1]["variant"]):
     groups = list(mem.values()) + [[i] for i in range(n) if i not in comp]
     for g in groups:
         reads = sorted({items[x]["read"] for x in g})
-        # 합의 창 : 가운데 기준 칸 −10..+10 · 덮음>=2(홀로면 그 read 그대로) · 과반
+        # The consensus window spans bins -10 to +10 about the centre, requires coverage of at least 2 (a lone read is taken as it is), and takes a majority.
         cols = collections.defaultdict(list)
         for x in g:
             it = items[x]
@@ -266,7 +266,7 @@ for (p, a), mk in sorted(MK.items(), key=lambda kv: kv[1]["variant"]):
             cons.append(dict(lo=int(sorted(u["lo"] for u in us)[len(us) // 2]), hi=int(sorted(u["hi"] for u in us)[len(us) // 2]),
                              f={vv for vv, k in cnt.items() if k > len(us) / 2}, rel=c, n=len(us)))
         ci = rel.index(0)
-        # (가) 이웃으로
+        # a) by the neighbours
         (s1, sl, ap, dirn), (s2, sl2, ap2, _) = place_on_map(cons, ci)
         amb = list(LAST_AMB); amb_z = sorted({z for _, _, z in amb})
         placed = s1 >= SMIN and s1 - s2 >= MMIN
@@ -278,7 +278,7 @@ for (p, a), mk in sorted(MK.items(), key=lambda kv: kv[1]["variant"]):
             elif (sl, ap) in FRSET[(p, a)]: verdict = "지도엔 있음(HOT 등)·같은 구역" if zz == mk["zone"] else "지도엔 있음·다른 구역"
             elif zz == mk["zone"]: verdict = "같은 구역·다른 유닛"
             else: verdict = "다른 구역"
-        # (나) 끝에서 잰 거리
+        # b) by the distance from the end
         dd = [d for d in DIRECT if d["variant"] == v and d["read"] in reads]
         dist_d = sorted(d["dist"] for d in dd if d["end"] == "원위"); dist_p = sorted(d["dist"] for d in dd if d["end"] == "근위")
         def zone_from_dist():
@@ -296,7 +296,7 @@ for (p, a), mk in sorted(MK.items(), key=lambda kv: kv[1]["variant"]):
             else:
                 how = "다_미정"; verdict = "위치 미정"
         novel_center = sorted("%d%s" % vv for vv in cons[ci]["f"] if vv not in CNT)
-        # v4 : 칸 단위 정렬로 3 분류
+        # three classes, by bin-level alignment
         bestp = None
         for s_ in sorted(FR):
             for dirn_ in (1, -1):

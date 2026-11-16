@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-#  층별 골이 R10 에서 0.4470 · R9 에서 0.4950 으로 갈렸다. 그래서 묻는다 :
-#    하나의 컷(0.508)을 두 화학에 같이 쓰면 판정이 몇 개나 흔들리나.
-#  자 : 골이 깊으면 컷이 조금 움직여도 흔들리는 유닛이 적다 ⇒ 그 몫을 센다.
-#    구간 [min(골들), 0.508] 에 든 read-유닛의 몫 = 컷을 그 사이 어디로 옮겨도 뒤집힐 수 있는 것
+#  The per-stratum valley came out at 0.4470 on R10 and 0.4950 on R9. So the question is:
+#    how many calls move if one cut (0.508) is applied to both chemistries.
+#  Ruler: a deep valley means few units move when the cut shifts a little, so that fraction is counted.
+#    The fraction of read-units inside [min(valleys), 0.508] = those that could flip wherever in between the cut is placed
 # The HPRC release 2 ONT sequencing index this script reads is not part of this archive.
 # Set RDNA_HPRC_R2_ONT_INDEX to a local copy; without it the script falls back to a file of
 # that name beside itself. The README says where the index comes from and gives its md5.
@@ -63,7 +63,7 @@ for v in best.values():
     by[CH.get(v[2], "모름(색인밖)")].append(v[1])
     by["전체"].append(v[1])
 
-LOW, CUT = 0.4470, 0.508          # R10 의 골 · 발행 컷
+LOW, CUT = 0.4470, 0.508          # The R10 valley and the published cut
 print("## 컷을 0.4470(R10 골) ~ 0.508(발행 컷) 사이로 옮길 때 뒤집힐 수 있는 read-유닛의 몫")
 print()
 print("| 층 | read-유닛 | [0.4470, 0.508) 안 | 그 몫 | 0.508 아래 몫 | 0.4470 아래 몫 | 차 |")

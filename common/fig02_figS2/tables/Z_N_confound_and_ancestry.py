@@ -9,7 +9,7 @@ D1. Are the depth sets **nested**: 2 subset of 2,5 subset of 2,5,7 ...
 D2. Population distribution by set size (number of terminal types), are smaller sets older
 D3. Phylogenetic proximity between haplotypes carrying a set (similarity measured with ordinary unit variants)
 E1. Full table of population x placement pattern
-Output : $OUTDIR\ZN_*.tsv
+Output : $OUTDIR/ZN_*.tsv
 """
 import io, os, sys, collections
 import numpy as np
@@ -19,8 +19,8 @@ import v11_io as G
 import termdef as TD   # terminal-type definition (10 or more of the 12 diagnostic variants)
 
 OUT = (os.environ.get("OUTDIR") or os.environ["RDNA_OUT_DIR"])
-POPF = (__import__("os").environ["RDNA_DATA_ROOT"] + r"\v11_readvar\05_reference\1kGP_3202_ped_population_2026-09-23.txt")
-STAGEF = (__import__("os").environ["RDNA_DATA_ROOT"] + r"\5S_position_variant_work\2026-09-17_v11_fix2\STAGE_ALL_V11F2.tsv")
+POPF = (__import__("os").environ["RDNA_DATA_ROOT"] + r"/v11_readvar/05_reference/1kGP_3202_ped_population_2026-09-23.txt")
+STAGEF = (__import__("os").environ["RDNA_DATA_ROOT"] + r"/5S_position_variant_work/2026-09-17_v11_fix2/STAGE_ALL_V11F2.tsv")
 rng = np.random.default_rng(20261003)
 NPERM = 2000
 MARK = "D1096:1"

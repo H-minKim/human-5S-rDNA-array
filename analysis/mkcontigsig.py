@@ -1,28 +1,28 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# 표지 contig 가 유의한가(진짜 자리 유래) 아니면 우연히 만들어졌나 — contig 를 이루는 read 자체의 증거로만 판정
-#   다른 자료(PacBio↔ONT)의 '없음' 은 반증으로 쓰지 않는다 — 두 자료는 다른 연구 그룹 · 다른 세포 시료다
-#   contig = mkmarkerasm v5 의 무리(read 2 개 이상 · 표지 유닛이 같은 칸) · read 분류 = mkreadcls v4
-#   증거 (contig 마다)
-#     ① 독립 read 수        : 서로 다른 read(분자) 수
-#     ② 변이 염기 품질       : 각 read 에서 표지 대립형으로 읽힌 염기의 Phred Q (원 FASTQ) · Q>=20 인 read 수
-#                              + 같은 read 의 같은 정규 자리(다른 유닛) Q 중앙과의 차 — 그 read 의 평소 품질 대비 국소 저품질인가
-#     ③ read 끼리 맞음       : contig 구성 창끼리 표지 칸 고정 국소 정렬 점수(닮음 2J-1 · 틈 -0.8) · 쌍 중앙 · 음수 쌍 비율
-#   판정 : 유의 = ①>=2 & ②(Q>=20 read)>=2 & ③ 쌍 중앙>=3(SMIN) · 아니면 유의 아님 + 이유
-#   용법 : python3 mkcontigsig.py <CELL> <TAG> <fa>:<PB|ONT>:<자료> ... -- <자료>=<fastq.gz> ...
+# Is a marker contig significant, that is derived from a real locus, or did it arise by chance? The call is made from the evidence in the reads that make up the contig alone.
+#   Absence in the other dataset (PacBio against ONT) is not used as counter-evidence: they come from different groups and different cell samples.
+#   A contig is a cluster from mkmarkerasm: at least 2 reads with the marker unit in the same bin. Read classes come from mkreadcls.
+#   The evidence, per contig:
+#     1) independent reads: the number of distinct reads, that is molecules
+#     2) variant base quality: the Phred Q of the base read as the marker allele in each read, from the original FASTQ, and the number of reads at Q >= 20
+#                              plus the difference from the median Q at the same canonical position in that read's other units, which shows whether the quality is locally poor for that read
+#     3) agreement between reads: a local alignment score between the constituent windows with the marker bin held fixed (similarity 2J-1, gap -0.8), reported as the median over pairs and the fraction of negative pairs
+#   The call: significant when 1) is at least 2, 2) gives at least 2 reads at Q >= 20, and 3) has a pair median of at least SMIN = 3; otherwise not significant, with the reason recorded.
+#   Usage: python3 mkcontigsig.py <CELL> <TAG> <fa>:<PB|ONT>:<dataset> ... -- <dataset>=<fastq.gz> ...
 import sys, os, re, gzip, json, collections, statistics as st, random
 argv = sys.argv; cut = argv.index("--"); FQ = dict(x.split("=", 1) for x in argv[cut + 1:]); sys.argv = argv[:cut]
 exec(open(os.path.expanduser("~/p11_encode/mkcheck/mkmarkerasm.py")).read().split("RES = []; DIRECT = []")[0])
 random.seed(20261014)
 SPEC = {x.split(":")[2]: x.split(":")[0] for x in sys.argv[3:]}
-# ---- paf 색인 : (read, qs, qe) → (가닥, ts, cigar)
+# ---- paf index: (read, qs, qe) -> (strand, ts, cigar)
 PIDX = {}
 for src, fa in SPEC.items():
     for L in open(fa + ".paf"):
         f = L.rstrip("\n").split("\t")
         cg = [x for x in f[12:] if x.startswith("cg:Z:")]
         if cg: PIDX[(f[0], int(f[2]), int(f[3]))] = (f[4], int(f[7]), cg[0][5:])
-# ---- FASTQ 품질 (사슬 있는 read 만)
+# ---- FASTQ quality, for reads with a unit chain only
 need = collections.defaultdict(set)
 for q, r in READS.items(): need[r["src"]].add(q.split("|", 1)[1])
 QUAL = {}
@@ -36,7 +36,7 @@ for src, path in FQ.items():
             if nm in need[src]: QUAL[(src, nm)] = qq
 log("품질 읽음", {s: sum(1 for k in QUAL if k[0] == s) for s in FQ})
 def base_q(q, r, u, tpos):
-    """read q 의 유닛 u 에서 정규 좌표 tpos 염기의 Q (없으면 None)"""
+    """Q of the base at canonical coordinate tpos in unit u of read q (None if absent)"""
     rec = PIDX.get((q, u["qs"], u["qe"]))
     qq = QUAL.get((r["src"], q.split("|", 1)[1]))
     if not rec or qq is None: return None
@@ -53,7 +53,7 @@ def base_q(q, r, u, tpos):
             if tp < tpos <= tp + n: return None
             tp += n
     return None
-# ---- contig · read 분류
+# ---- contigs and read classes
 G5 = json.load(open("%s/%s_markerasm_v5.json" % (W, TAG)))["results"]
 RC = {(o["variant"], o["read"], o["k"]): o for o in json.load(open("%s/%s_readcls_v4.json" % (W, TAG)))}
 VK = {m["variant"]: (p, a) for (p, a), m in MK.items()}
@@ -72,13 +72,13 @@ for gi, g in enumerate(G5):
         lo, hi = max(0, k - HALF), min(len(r["ch"]), k + HALF + 1)
         items.append(dict(read=q, plat=r["plat"], k=k, q_alt=qa, q_ref_med=st.median(qref) if qref else None, cls=o.get("cls", ""), zone=o.get("zone", ""),
                           win=r["ch"][lo:hi], c=k - lo))
-    # ③ 쌍 정렬 (최대 60 쌍)
+    # 3) pairwise alignment, up to 60 pairs
     prs = [(i, j) for i in range(len(items)) for j in range(i + 1, len(items)) if items[i]["read"] != items[j]["read"]]
     random.shuffle(prs); sc = []
     for i, j in prs[:60]:
         A, Bw = items[i], items[j]
         sc.append(center_profile(A["win"], A["c"], Bw["win"], sim_f)[Bw["c"]])
-    # 분류 (contig) — 구성 read 중 원래 자리 있으면 A
+    # contig class: A if any constituent read carries the original locus
     cls = {it["cls"][:2].strip() for it in items}
     if "A" in cls: gcls = "A 원래 자리"
     else:
@@ -88,10 +88,10 @@ for gi, g in enumerate(G5):
                 for z in it["zone"].split("|"): zs.add({"notD": "M", "notP": "M"}.get(z, z) if mz == "M" else z)
         zs -= {"D?", "P?"}
         gcls = "같은 구역 · 다른 자리/조립본 밖/모호" if (not zs or zs <= {mz} or mz in zs) else "다른 구역"
-    # 독립 read (read 이름 · PacBio 는 ZMW 까지)
+    # independent reads, by read name, and for PacBio down to the ZMW
     mol = {re.sub(r"/ccs.*$", "", it["read"]) for it in items}
     qa = [it["q_alt"] for it in items if it["q_alt"] is not None]
-    # 같은 read 가 여러 유닛을 가지면 read 당 최고 Q 하나
+    # where one read carries several units, the highest Q per read is taken
     best = {}
     for it in items:
         if it["q_alt"] is not None: best[it["read"]] = max(best.get(it["read"], -1), it["q_alt"])

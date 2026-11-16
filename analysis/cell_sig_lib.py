@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
-"""세포주 / HPRC 공용 — 블라인드 격자 스캔 + 호출기 없는 확인검정 (2026-10-12)
+"""Shared by the cell lines and HPRC: blind grid scan and caller-free confirmation test
 
-통계는 HPRC 본표(zzt_gridwide_rank · zzx_site_confirm_callerfree)와 같은 식이다.
-  ① 블라인드(FiberHMM) : 5 bp 크기 칸 x 자리 · 치환 한 번에 이동량 한 벌을 모든 칸에 같이 쓴다 ·
-       p_grid = 귀무에서 격자 전체 최대 >= 관측 · p_win = 귀무의 그 창 안(칸 x 자리) 최대 >= 관측
-  ② 확인(호출기 없음) : 분자마다 (A, m6A) 자리표를 통째로 원형 이동 · 창 안 자리 x 폭 최대
-다른 점(적어 둔다)
-  - 칸 사용 문턱 : HPRC 150 사건 -> 여기는 minev (분자 수가 적어서). 사건 수는 이동에 불변이라 편향 없음.
-  - 귀무 평균 하한 : 사건 1 개에 해당하는 밀도(1000/(nmol*SM)). 기대 사건 <1 인 곳의 배수는 뜻이 없다.
+The statistics are those of the main HPRC tables (zzt_gridwide_rank, zzx_site_confirm_callerfree).
+  (1) blind (FiberHMM) : 5 bp size bins x positions; within one permutation one set of shifts is used for every bin;
+       p_grid = the grid-wide maximum under the null >= observed; p_win = the maximum inside that window (bins x positions) under the null >= observed
+  (2) confirmation (no caller) : the (A, m6A) position table of each molecule is circularly shifted as a whole; maximum over positions x widths inside the window
+Differences (recorded)
+  - threshold for using a bin : 150 events in HPRC, minev here (fewer molecules). The event count is invariant under the shift, so there is no bias.
+  - floor of the null mean : the density of one event (1000/(nmol*SM)). A fold where fewer than one event is expected has no meaning.
 """
 import numpy as np
 
@@ -37,7 +37,7 @@ def hist_rows(rb, ce, nk, nmol):
 
 
 def blind(mi, ce, sz, nmol, NB, rng, minev=30, sbin=5):
-    """블라인드 격자 스캔."""
+    """Blind grid scan."""
     ok = (sz >= SMIN) & (sz <= SMAX) & (ce >= 0) & (ce < PER)
     mi, ce, sz = mi[ok], ce[ok], sz[ok]
     bid = (sz - SMIN) // sbin
@@ -76,7 +76,7 @@ def blind(mi, ce, sz, nmol, NB, rng, minev=30, sbin=5):
             obs=obs, bin=bins[j[0]], pos=int(REL[j[1]]),
             p_win=(float((nullw >= obs).sum()) + 1) / (NB + 1),
             p_grid=(float((gmax >= obs).sum()) + 1) / (NB + 1))
-        # 사전 지정 크기칸(HPRC 가 정한 칸) 안만
+        # Only inside the pre-specified size bins (the bins HPRC defined)
         lo_s, hi_s = SITE_BINS[nm]
         kb = [i for i, bb in enumerate(bins) if bb[0] >= lo_s and bb[1] <= hi_s]
         if kb:
@@ -85,7 +85,7 @@ def blind(mi, ce, sz, nmol, NB, rng, minev=30, sbin=5):
             res[nm]["obs_bin"] = obsb
             res[nm]["p_win_bin"] = (float((nullb >= obsb).sum()) + 1) / (NB + 1)
     out["sites"] = res
-    # 격자 전체 순위 : 봉우리(15 bp 이상 떨어진) 목록
+    # Ranking over the whole grid: the list of peaks (at least 15 bp apart)
     flat = []
     for bi in range(nk):
         e = ENR[bi]
@@ -103,7 +103,7 @@ def blind(mi, ce, sz, nmol, NB, rng, minev=30, sbin=5):
 
 
 def dens_fold(mi, ce, nmol, NB, rng, nmol_total=None):
-    """한 사건 집합의 평활 밀도(1000 분자당)와 귀무 평균. mi 는 0..nmol-1."""
+    """Smoothed density (per 1000 molecules) of one event set and the null mean. mi runs 0..nmol-1."""
     ce = np.asarray(ce)
     mi = np.asarray(mi)
     ok = (ce >= 0) & (ce < PER)
@@ -117,7 +117,7 @@ def dens_fold(mi, ce, nmol, NB, rng, nmol_total=None):
     return obs, base
 
 
-# ── 호출기 없는 방법
+# -- the caller-free method
 def W(cs, c0, c1):
     o = np.full(NP, np.nan)
     i = np.arange(NP)
@@ -141,7 +141,7 @@ def dprof(sa, sm, w):
 
 
 def dub_paper(sa, sm, c):
-    """그림 Fig5F 의 기하 : core c-7..c+1 · flank c-35..c-27, c+22..c+27."""
+    """Geometry of Fig5F : core c-7..c+1, flank c-35..c-27 and c+22..c+27."""
     def seg(a, c0, c1):
         i0, i1 = c0 - LO, c1 - LO + 1
         if i0 < 0 or i1 > NP:
@@ -158,7 +158,7 @@ def dub_paper(sa, sm, c):
 
 
 def confirm(A, M, NB, rng):
-    """창 안 자리 x 폭 최대의 원형 이동 귀무 (분자마다 통째로)."""
+    """Circular-shift null (each molecule as a whole) of the maximum over positions x widths inside the window."""
     N = len(A)
     sA, sM = A.sum(0).astype(float), M.sum(0).astype(float)
     masks = {nm: (REL >= a) & (REL <= b) for nm, (a, b) in SITES.items()}

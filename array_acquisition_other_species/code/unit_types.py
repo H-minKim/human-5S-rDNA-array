@@ -1,33 +1,33 @@
 # -*- coding: utf-8 -*-
-# array 안 유닛이 한 종류인가 여러 종류인가 — 최종판 (unit_types)
+# Are the units within an array of one type or several (unit_types).
 #
-# 무엇을 판정하는가
-#   사용자 요구 : array 마다 참조 유닛을 두되, array 안이 같은 유닛의 반복인지 먼저 확인하고
-#   아니면 보고하고 유닛을 그룹으로 나눈다. 그룹마다 참조 유닛을 따로 만든다.
+# what is being decided
+#   Each array gets a reference unit, but only after confirming that the array really is a repeat of one unit;
+#   otherwise this is reported and the units are divided into groups, each with its own reference unit.
 #
-# 판정 축 : "서로 떨어진 변이 사건이 블록으로 같이 다니는가"
-#   · 한 종류   = 변이가 유닛마다 독립적으로 흩어진다 (연관 없음)
-#   · 여러 종류 = 떨어진 여러 사건이 같은 유닛들에 함께 나타난다 (강한 연관 = 하플로타입)
+# The axis of the decision: do variant events that lie far apart travel together as a block?
+#   · One type: the variants are scattered independently across units, with no association.
+#   · Several types: distant events appear together in the same units, a strong association, that is a haplotype.
 #
-# 이전 판에서 고친 것 (모두 실측으로 드러난 함정)
-#   1 판 : 변이 패턴이 다르기만 하면 나눠 사람 array 를 6 그룹으로 쪼갰다 → 연관(phi) 기준으로 교체
-#   2 판 : 좁은 구간에 몰린 변이(예 1397~1527 안 27 개)를 '변이 27 개'로 세어 단일 사건을 블록으로
-#          승격시켰다 → 연속 자리를 사건 하나로 접는다
-#   3 판 : 분할 열쇠가 변이 하나하나라 한 그룹이 잘게 쪼개졌다(수마트라오랑우탄 2·3·5 가 0.3~0.5% 차이)
-#          → 분할 열쇠를 사건 단위로
+# Three rules, and what each avoids:
+#   The criterion is association (phi): splitting whenever the variant patterns merely differ cuts a human array into 6 groups.
+#   Adjacent positions are collapsed into one event: counting variants clustered in a narrow interval (27 within 1397-1527)
+#          as 27 variants promotes a single event to a block.
+#   The partition is keyed on events: keying it on individual variants fragments one group
+#          (Sumatran orangutan groups 2, 3 and 5 differ by 0.3-0.5%).
 #
-# 절차
-#   0) 상태표에서 NON_5S / NO_UNIT 인 array 는 판정 대상에서 뺀다
-#   1) 다형성 변이 = 유닛의 10~90% 에 있는 변이 · 연속 자리(간격 <= EVGAP)는 사건 하나로 접는다
-#   2) 변이쌍 연관 |phi| >= 0.8 로 이어 연결 성분 · 사건 >= 3 인 성분만 '블록'
-#   3) 가장 큰 블록의 사건 보유 패턴으로 유닛을 나눈다 (유닛 >= 5 인 패턴만 그룹)
-#   4) 귀무 대조 : 변이마다 같은 빈도로 유닛을 무작위 재배치해 같은 절차 NPERM 회
-#   5) 홀/짝 교차검증 : 블록 사건을 홀·짝 두 묶음으로 갈라 각각 분할 → ARI 로 재현성
-#   6) 위치 응집 : 그룹이 array 위에서 이어져 있는가(구역 분화) vs 섞여 있는가(유닛 종류)
-#   7) 그룹마다 자리별 다수결로 그룹 참조 유닛 생성
-#   OK 유닛 20 개 미만이면 판정하지 않는다
+# procedure
+#   0) Arrays marked NON_5S or NO_UNIT in the status table are excluded.
+#   1) A polymorphic variant is one present in 10-90% of units; adjacent positions (gap <= EVGAP) collapse into one event.
+#   2) Variant pairs with |phi| >= 0.8 are linked into connected components, and only components of at least 3 events count as a block.
+#   3) Units are partitioned by their event pattern over the largest block; only patterns with at least 5 units form a group.
+#   4) Null control: units are reassigned at random at the same frequency per variant and the whole procedure repeated NPERM times.
+#   5) Odd/even cross-validation: the block events are split into an odd and an even half, each partitioning the units, and reproducibility measured by ARI.
+#   6) Positional clustering: are the groups contiguous along the array (zonation) or interleaved (unit types)?
+#   7) A group reference unit is built per group by a per-position majority.
+#   No call is made with fewer than 20 OK units.
 #
-# 인자 : 종키 fasta 지도폴더 출력폴더 상태표.tsv [NPERM=50] [EVGAP=20]
+# Arguments: species key, fasta, map folder, output folder, status table, [NPERM = 50], [EVGAP = 20].
 # MIT License · Copyright (c) 2026 Hungmin Kim
 import io
 import os
@@ -56,7 +56,7 @@ if os.path.exists(STF):
 
 
 def events(vs):
-    # 변이 자리를 정렬해 간격 <= EVGAP 이면 한 사건으로 접는다 → [[자리,...], ...]
+    # The variant positions are sorted and collapsed into one event where the gap is at most EVGAP, giving [[position, ...], ...].
     ps = sorted(set(pos_of(v) for v in vs if pos_of(v) >= 0))
     ev, cur = [], []
     for p in ps:
@@ -105,7 +105,7 @@ def blocks(cols, poly, n, minev=3):
 
 
 def ev_key(V, n, evlist):
-    # 유닛이 사건 j 를 가졌는가 = 그 사건의 변이 중 절반 이상을 가졌는가
+    # A unit carries event j if it carries at least half of that event's variants.
     return [tuple(1 if sum(1 for v in e if v in V[i]) * 2 >= len(e) else 0 for e in evlist) for i in range(n)]
 
 
@@ -142,12 +142,12 @@ def adj_same(lab, order):
 
 
 def group_ref(us, tmpdir, tag):
-    """그룹 참조 유닛 하나를 만든다.
-    자리별 다수결은 유닛 길이가 제각각이면 삽입/결실 뒤쪽을 뭉갠다(실측 : orang_bornean 그룹1
-      대표가 실제 유닛 어느 것과도 88% 밖에 안 맞았다). 그래서
-        · 최빈 길이 유닛이 그룹의 30% 이상이면 그 무리로 자리별 다수결(기존 방식)
-        · 아니면 medoid — 다른 유닛들과 가장 잘 맞는 실제 유닛 하나를 그대로 쓴다
-      어느 쪽이든 만든 뒤 그룹 전원을 대표에 정렬해 일치도 중앙값을 재고, 낮으면 표에 적는다."""
+    """Build one reference unit for a group.
+    Per-position majority vote blurs everything after an insertion or deletion when unit lengths vary (measured : the representative
+      of orang_bornean group 1 matched no real unit better than 88%). So
+        - if units of the modal length are 30% or more of the group, per-position majority vote over them
+        - otherwise the medoid: the one real unit that matches the others best is used as it is
+      Either way every member of the group is then aligned to the representative, the median identity is measured, and a low value is written in the table."""
     cnt = collections.Counter(len(u) for u in us)
     ml, mc = cnt.most_common(1)[0]
     if mc >= max(5, 0.30 * len(us)):
@@ -179,7 +179,7 @@ def group_ref(us, tmpdir, tag):
 
 
 def ref_quality(us, ref, tmpdir, tag):
-    """그룹 전원을 대표에 정렬해 일치도 중앙값(%) 을 낸다."""
+    """Align every member of the group to the representative and give the median identity (%)."""
     qp = os.path.join(tmpdir, tag + ".mq.fa")
     tp = os.path.join(tmpdir, tag + ".mt.fa")
     io.open(qp, "w", encoding="utf8", newline=NL).write(
@@ -267,7 +267,7 @@ for fn in sorted(os.listdir(MAPD)):
     base["block1_events"] = ";".join("%d-%d" % (e[0], e[-1]) if len(e) > 1 else str(e[0]) for e in ev)
     lab = partition(V, n, evv)
     ng = len(set(x for x in lab if x is not None))
-    # 홀/짝 교차검증
+    # odd/even cross-validation
     od, evn = evv[0::2], evv[1::2]
     base["holdout_ARI"] = "%.3f" % ari(partition(V, n, od), partition(V, n, evn)) if od and evn else "-"
     if ng <= 1:

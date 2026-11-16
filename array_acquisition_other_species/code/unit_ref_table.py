@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-# array 마다 : 유닛 종류 수 · 그 종류마다 참조 유닛의 길이(와 주기·유닛 수)
-#   한 종류면 array 참조 유닛 하나, 여러 종류면 그룹 참조 유닛들
-#   인자 : 00_catalog 폴더
+# Per array: the number of unit types, and for each type the length of its reference unit, with the period and the unit count.
+#   With one type there is a single array reference unit; with several there are group reference units.
+#   Argument: the 00_catalog folder.
 # MIT License · Copyright (c) 2026 Hungmin Kim
 import io
 import os
@@ -58,7 +58,7 @@ for r in sorted(rows, key=lambda x: (x["species_key"], x["array_id"])):
         base.update(unit_type_verdict="한 종류", n_unit_types="1")
     rl = r["refunit_len"]
     if rl in ("-", ""):
-        # 참조유닛 파라미터 표에 없는 array(예 제브라피시 .k2 하위 지도)는 fasta 에서 직접 잰다
+        # an array absent from the reference-unit parameter table, such as a zebrafish .k2 sub-map, is measured from the fasta directly
         fp = os.path.join(os.path.dirname(B), "01_canonical", r["species_key"],
                           r["array_id"] + ".unit.fa")
         if os.path.exists(fp):

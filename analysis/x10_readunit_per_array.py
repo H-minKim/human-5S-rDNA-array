@@ -1,20 +1,20 @@
 # -*- coding: utf-8 -*-
-# read 단위 : 각 read 의 각 유닛 메틸(β = 그 read 안 그 유닛의 n_5mC / n_calls) 분포를
-#   종 · array 마다 따로 그리고, 분포 자체에서 봉우리가 하나인지 둘인지 판정한다.
+# Per read: the distribution of each read's per-unit methylation, beta = n_5mC / n_calls for that unit within that read,
+#   is plotted separately per species and array, and whether it has one peak or two is judged from the distribution itself.
 #
-#   자료 : $ANALYSIS_ROOT/2026-09-11_5S_other_species/data_v2/03_reads/<species>/*.read_unit.tsv
-#          (한 행 = read 하나 x 유닛 하나 · CG · G8 틀)
-#          잘 덮인 유닛만 : n_calls >= 그 array 중앙값의 절반
-#   사람 참고 : v11 L1 (read x 유닛 · b_call = ML>=128 비율 · 관문 통과)
+#   Data: 2026-09-11_5S_other_species/data_v2/03_reads/<species>/*.read_unit.tsv under the analysis root,
+#          where one row is one read by one unit, CG context, in the G8 frame.
+#          Only well-covered units are used: n_calls at least half that array's median.
+#   For comparison with human: L1 (read x unit, b_call the fraction at ML >= 128, past the gate).
 #
-#   판정 (분포에서 직접 · 기준은 미리 고정)
-#     밀도 = read x 유닛 β 의 가우스 평활(경계 반사) · 폭 h = max(0.035, 0.5/CpG중앙)
-#            (CpG 가 8 개면 β 가 0.125 간격 계단이라 폭을 넓힌다)
-#     이봉 = 가장 큰 봉우리와 0.30 이상 떨어진 두 번째 봉우리가 있고
-#            골 높이 <= 두 번째 봉우리의 절반, 두 번째 봉우리 쪽 분자 >= 2%
-#     단봉 = 그 외 (두 번째 봉우리가 있어도 분자 2% 미만이면 '단봉 + 소수 꼬리')
-#   여러 개체 제브라피시는 array 마다 6 개체를 합쳤다 (개체 몫 0.8% · §5-D).
-#  matplotlib 글리프 함정: ASCII 만.
+#   The call is made directly from the distribution, with the criteria fixed in advance:
+#     the density is a Gaussian smoothing of the read x unit beta with reflection at the boundaries, of width h = max(0.035, 0.5 / median CpG count)
+#            (with 8 CpG sites beta steps in units of 0.125, so the width is widened);
+#     bimodal means a second peak at least 0.30 away from the largest, with
+#            the trough no higher than half that second peak and at least 2% of molecules on its side;
+#     unimodal is everything else, and a second peak holding under 2% of molecules is recorded as unimodal with a minor tail.
+#   For zebrafish, 6 individuals are pooled per array; the individual accounts for 0.8% of the variance.
+#  ASCII only in the figure text.
 import io, os, glob
 import numpy as np
 import pandas as pd
@@ -35,7 +35,7 @@ def _need(k):
     v = _os_need.environ.get(k)
     if not v:
         _sys_need.exit("environment variable %s is not set (the deposited copy has no default; "
-                       "see README.md, section 'How to run it')" % k)
+                       "see README.md, section 'Environment variables')" % k)
     return v
 
 
@@ -64,7 +64,7 @@ def density(x, h):
     G = 1001
     grid = np.linspace(0, 1, G)
     cnt = np.bincount(np.clip(np.round(x * (G - 1)).astype(int), 0, G - 1), minlength=G).astype(float)
-    pad = np.concatenate([cnt[::-1][:-1], cnt, cnt[::-1][1:]])       # 경계 반사
+    pad = np.concatenate([cnt[::-1][:-1], cnt, cnt[::-1][1:]])       # reflection at the boundaries
     sd = h * (G - 1)
     k = np.arange(-int(4 * sd) - 1, int(4 * sd) + 2)
     ker = np.exp(-0.5 * (k / sd) ** 2)
@@ -122,7 +122,7 @@ NU = dict(zip(ST.array_id, ST.n_unit))
 
 ROWS, PANEL = [], {}
 
-# ---------------------------------------------------------------- 사람 참고
+# ---------------------------------------------------------------- human, for comparison
 H = pd.read_parquet(HUM, columns=["gate", "b_call", "n_canon", "sample", "slot"])
 H = H[H.gate == 1]
 xh = H.b_call.values
@@ -142,7 +142,7 @@ P("  [보정] 사람 하플로타입 20 개를 하나씩 : " +
   " · ".join("%s %d" % (k, v) for k, v in pd.Series(hc).value_counts().items()))
 P()
 
-# ---------------------------------------------------------------- 타종
+# ---------------------------------------------------------------- the other species
 for (sp, aid), gdf in D.groupby(["종", "array_id"]):
     x = gdf.b.values
     cm = float(gdf.n_calls.median())
@@ -176,7 +176,7 @@ for grp, gg in T.groupby("group"):
     P("   %-10s array %2d : %s" % (grp, len(gg), " · ".join("%s %d" % (k, v) for k, v in gg.call.value_counts().items())))
 P()
 
-# ---------------------------------------------------------------- 그림 : 종마다 한 장 · array 마다 한 칸
+# ---------------------------------------------------------------- figure: one page per species, one panel per array
 COL = {"사람": "#c0392b", "유인원": "#1f5fa9", "금화조": "#e67e22", "애기장대": "#7e57c2", "제브라피시": "#2e7d32"}
 PAGES = [("유인원", ["사람", "유인원"]), ("금화조", ["금화조"]), ("애기장대", ["애기장대"]),
          ("제브라피시", ["제브라피시"])]

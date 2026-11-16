@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
-# array 서열 자체에서 반복 주기를 직접 잰다 — 2 판
-#   1 판의 결함 : 주기 하한이 40 이라 단순반복(44~86 bp)이 뽑혔다. 5S 유닛은 유전자 119 bp 를 포함하므로
-#                 어떤 진짜 유닛도 120 bp 미만일 수 없다 -> 하한 130
-#   방법 A : 한-핫 4채널 FFT 자기상관 -> lag 마다 글자 일치율 (참조·주석 안 씀)
-#            기본 주기 = 봉우리 중 배수(2p·3p)도 봉우리인 것들 가운데 가장 작은 lag
-#   방법 B : 3 회 이상 나오는 25-mer 의 연속 출현 간격 최빈값 (A 와 독립)
-#   방법 C : 고른 주기 p 로 실제 반복 비율 — 50 bp 창이 p 만큼 떨어진 자리와 45/50 이상 맞는 위치의 비율
-#            (진짜 탠덤이면 거의 1, 유전자만 흩어져 있으면 0 에 가깝다)
-#   산출 : PERIOD_DIRECT2.tsv
+# Measure the repeat period directly from the array sequence itself.
+#   The lower bound on the period is 130: a 5S unit contains the 119 bp gene, so no genuine unit can be shorter than 120 bp,
+#                 and a lower bound of 40 picks up simple repeats of 44-86 bp.
+#   Method A: a one-hot four-channel FFT autocorrelation, giving the character identity at each lag, using no reference and no annotation.
+#            The base period is the smallest lag among the peaks whose multiples, 2p and 3p, are peaks as well.
+#   Method B: the modal gap between successive occurrences of a 25-mer appearing at least three times, which is independent of A.
+#   Method C: at the chosen period p, the actual fraction of repeat, as the fraction of positions where a 50 bp window matches the window p away at 45 of 50 or better
+#            (close to 1 for a genuine tandem array, close to 0 where only the genes are dispersed).
+#   Output: PERIOD_DIRECT2.tsv
 # MIT License · Copyright (c) 2026 Hungmin Kim
 import io
 import os
@@ -22,7 +22,7 @@ CAN = "$RDNA_OTHERSP_DIR/data_v2/01_canonical"
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "lit")
 WIN = 150000
 MAXLAG = 20000
-MINLAG = 130       # 5S 유전자 119 bp -> 진짜 유닛은 이보다 크다
+MINLAG = 130       # the 5S gene is 119 bp, so a genuine unit is longer than that
 W50 = 50
 
 
@@ -51,7 +51,7 @@ def autocorr(s):
 
 
 def tandem_frac(s, p):
-    # p 만큼 떨어진 50 bp 창이 45 자리 이상 맞는 위치의 비율
+    # the fraction of positions where the 50 bp window p away matches at 45 positions or more
     a = np.frombuffer(s.encode("ascii"), dtype=np.uint8)
     if len(a) <= p + W50 + 1:
         return 0.0, 0
@@ -118,7 +118,7 @@ for p0 in files:
         v = seg[i]
         if v >= thr and v >= seg[i - 1] and v >= seg[i + 1] and v > seg[i - 2] and v > seg[i + 2]:
             pk.append((MINLAG + i, float(v)))
-    # 배수도 봉우리인 것 우선, 그 중 가장 작은 lag
+    # peaks whose multiples are also peaks come first, and among those the smallest lag
     def harmof(q):
         h = 0
         for k in (2, 3, 4):

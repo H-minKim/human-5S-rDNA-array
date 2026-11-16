@@ -2,9 +2,9 @@
 """
 S1 - Result 1-1 (coding part variants), 1-2 (all variants, SNV / indel separately), by unit position
 Reference build : v11 (canonical cmp4d_v10 + 03_maps/g8canonv10/CONSENSUS_MAP_G8_full.tsv, gate v11_io)
-Compartments    : proximal1 .. proximal30, middle (more than 30 units from both junctions), distal30 .. distal1   (user specified)
+Compartments    : proximal1 .. proximal30, middle (more than 30 units from both junctions), distal30 .. distal1
 
-Carried over identically from the old code (verified)
+Definitions (those of binvar.py and the related scripts, verified identical)
   metric definitions   binvar.py lines 8-30
       n_var  = number of unit tokens
       n_snv  = snv + snv_rep            n_del = del + del_rep        n_ins = ins + ins_rep
@@ -15,17 +15,17 @@ Carried over identically from the old code (verified)
                     min_hap = 150 (all) / 40 (length strata)
   length strata    binvar.py STR fixed bins N40-80 / N81-110 / N111+  (N<40 is dropped, the count is reported)
   significance     position-dependence statistic T=|mean(1-8)-mean(rest)| of binvar4.py / shiftdemo.py, exhaustive circular shifts
-                    (the segment-SSE version of binvar2.py failed the positive control and was discarded)
+                    (the segment-SSE statistic of binvar2.py fails the positive control and is not used)
                     30 positions -> exact p lower bound = 1/30
 
-Newly added (not in the old code, marked)
-  n_cod_snv, n_cod_indel     : coding part split into SNV / indel (requested to be shown separately, like 1-2)
+Additional quantities
+  n_cod_snv, n_cod_indel     : coding part split into SNV / indel (shown separately, like 1-2)
   single-position specific variants : the zone-specific call of P2 (paired haplotype difference + haplotype bootstrap 95% CI)
                                  narrowed from the 'terminal 1-8 bundle' to 'a single position'.
                                  d_h = 1[the unit at that position carries the variant] - (carrier fraction among the middle units of that haplotype)
                                  bootstrap uses multinomial weights (equivalent to row resampling with replacement), 2000 times, seed 20260830
                                  Because this is multiple testing of 60 positions x hundreds of variants, BH q is reported too.
-                                   Counting with only the old criterion (CI excludes 0) mixes in chance positives.
+                                   Counting with the CI criterion alone (CI excludes 0) mixes in chance positives.
 """
 import sys,io,os,re,collections
 import numpy as np

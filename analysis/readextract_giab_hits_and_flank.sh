@@ -1,15 +1,15 @@
 #!/bin/bash
-# 개체별 hits 합본 + CHM13 chr1 PROX/DIST 40 kb 창으로 junction 확정
-#   단계 : ① read 추출 (GIAB 합치기·flank)
-# GIAB + HG008 — HPRC ONT 정식 경로(ont_flank2.sh) 그대로. 입력만 다르다.
-#   ① ont_flank_extract.py  ② probe5k → 40kb 창+tandem 정렬  ③ ont_flank_keep.py(거리<=50·mapq>=20·strand·탠덤제외)
+# Merge the hits per individual and fix the junction using 40 kb proximal and distal windows on CHM13 chr1.
+#   Step 1: read extraction, merging GIAB and the flank.
+# GIAB and HG008, through the same path as HPRC ONT (ont_flank2.sh); only the input differs.
+#   1) ont_flank_extract.py 2) probe5k aligned to the 40 kb windows and the tandem 3) ont_flank_keep.py, keeping distance <= 50, mapq >= 20, the right strand, and excluding the tandem.
 set -u
 W=$HOME/giab_flank; rm -rf $W; mkdir -p $W/{junc,jd,verify,log}; cd $W || exit 9
 R=$HOME/ectopic_sp/chm13v2.0.fa
 TAN=$HOME/s5s_tuc/ref/tandem40.fa
 BD=$HOME/giab_tuc/out
 HD=$HOME/giab_hits; mkdir -p $HD
-# hits 를 개체별 단일 파일로 (HPRC 의 ~/s5s_ont/hits 형식과 동일하게)
+# the hits are merged into one file per individual, in the same format as the HPRC hits
 for s in hg001 hg002 hg003 hg004; do
   [ -s $HD/$s.hits.fastq.gz ] || cat $HOME/giab5s_seq/out/${s}_*.hits.fastq.gz > $HD/$s.hits.fastq.gz 2>/dev/null
 done
@@ -27,7 +27,7 @@ minimap2 -x map-ont -t 8 -c --secondary=no junc/ref3.fa junc/probe5k.fa > junc/p
 python3 $HOME/ont_flank_keep.py "$W" || exit 9
 echo "  확정 $(grep -c '>' jd/flank_confirmed_full.fa)"
 awk -F"\t" '{c[$2]++} END{for(x in c) printf "    %s: %d\n", x, c[x]}' jd/keep.tsv
-# 2단계
+# stage 2
 minimap2 -x map-ont -a -t 8 --secondary=no $HOME/allspan/ref3.fa jd/flank_confirmed_full.fa 2>mm.log | samtools sort -@2 -o all_flank.bam -
 samtools index all_flank.bam
 mkdir -p kids

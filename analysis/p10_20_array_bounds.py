@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
-#  p10_20 — P10 조각마다 array 의 양 끝이 flank(비반복 서열)에 닿았나 (2026-10-30)
-#    사용자 물음 「array 6 개는 flank 를 정확히 분리한거 맞아? … array 와 array 가 아닌것의 경계가 제대로 있어?」
-#    P10 조각(조립본에서 10 kb 창으로 찾아 ±30 kb 여유로 자른 것)마다 p10_08 과 같은 랜드마크 규칙으로
-#    유닛 구간을 다시 찾고, 첫 유닛 앞 · 마지막 유닛 뒤에 남은 비반복 길이(= flank)를 잰다.
-#    + P10_SEGMENT_POLARITY 의 CHM13 flank 31-mer 적중(head/tail × LEFT/RIGHT)을 붙인다.
-#    읽기만 한다 (ref.fa 81 폴더 · 표 셋). BAM 은 안 연다.
-#    첫 판 = `04_result_records\2026-10-30_P10_array_boundary_check\array_bounds16_2026-10-30.py` (출력 경로만 다르다)
-#    쓰는 곳 : per_array_panels_fig04_G-L_figS4_G-J_figS6_A-U.py — array 를 따라 그린 칸은
-#      `left_nonrepeat_bp_anyhit` · `right_nonrepeat_bp_anyhit` 둘 다 500 bp 이상인 조각만 쓴다.
+#  For each P10 block, does the array reach non-repetitive flank at both ends?
+#    The question: do the six arrays separate the flank correctly, and is the boundary between array and non-array really there?
+#    For each P10 block, found in the assembly through a 10 kb window and cut with +-30 kb of slack, the unit intervals are
+#    located again by the same landmark rule as p10_08, and the non-repetitive length remaining before the first unit and after the last, that is the flank, is measured.
+#    The CHM13 flank 31-mer hits from P10_SEGMENT_POLARITY are attached as well, as head or tail against LEFT or RIGHT.
+#    Read-only: 81 ref.fa folders and three tables. No BAM is opened.
+#    Used by per_array_panels_fig04_G-L_figS4_G-J_figS6_A-U.py: the panels drawn along the array use only blocks
+#      whose left_nonrepeat_bp_anyhit and right_nonrepeat_bp_anyhit are both at least 500 bp.
 import collections
 import glob
 import hashlib
@@ -19,7 +18,7 @@ def _need(_v):
     """The deposited copy has no default paths. Stop when a root variable is missing."""
     _x = os.environ.get(_v)
     if not _x:
-        sys.exit("environment variable %s is not set; see README.md section Figures after 30 October 2026" % _v)
+        sys.exit("environment variable %s is not set; see README.md, section 'Environment variables'" % _v)
     return _x
 
 
@@ -27,7 +26,7 @@ P = os.path.join(_need("RDNA_WORK_ROOT"), "P10")
 OUTD = os.path.join(_need("RDNA_WORK_ROOT"), "out", "P10")
 OUT = os.path.join(_need("ARRAYMETH_HANDOFF_ROOT"), "02_output_tables", "P10", "P10_ARRAY_BOUNDS.tsv")
 K = 31
-#  ↓ p10_08_extract_frame.py 와 같은 값
+#  the same values as p10_08_extract_frame.py
 FAM_UNIT = {"5S": "5S", "D4Z4_4q": "D4Z4_4q", "D4Z4_10q": "D4Z4_10q", "DXZ4": "DXZ4",
             "RNU2": "RNU2", "SST1": "SST1_a"}
 ULEN = {"5S": 2240, "D4Z4_4q": 3298, "D4Z4_10q": 3323, "DXZ4": 2972, "RNU2": 6171, "SST1": 2527}
@@ -65,7 +64,7 @@ for fam, un in FAM_UNIT.items():
 
 
 def landmarks(seq, fam):
-    """p10_08 의 landmarks 그대로 + 랜드마크 목록과 아무 적중이나 처음·끝 자리(유닛 조각 포함)도 돌려준다"""
+    """The landmarks of p10_08 as they are, and also returns the landmark list and the first and last positions of any hit (unit fragments included)"""
     d, L = KM[fam], ULEN[fam]
     est = {"+": [], "-": []}
     anyhit = []

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-# 조직 비교 자료 (HPRC Year7 같은 사람 10 명의 LCL ↔ PBMC) 를 같은 코드 논리로 read×유닛 으로
+# Build the tissue comparison data, the LCL against the PBMC of the same 10 HPRC Year 7 individuals, into read x unit on the same code logic.
 # Input : v11-add1_tissue_cancer 08_methylation/node3/FINAL/RU_{LCL,PBMC}.tsv.gz
-#          같은 판본의 AOG8_LCL / AOG8_PBMC MAP_G8.tsv
+#          the AOG8_LCL and AOG8_PBMC MAP_G8.tsv of the same release
 import io, os, re, sys, gzip, glob, collections, time
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 import numpy as np, pandas as pd
@@ -21,7 +21,7 @@ SEGOF = {p: nm for nm, a, b in SEG for p in CPG if a <= p <= b}
 UPSET = set(p for p in CPG if UPS[0] <= p <= UPS[1])
 SEGK = ["alu", "nts1", "ga", "nts2", "gene", "ups", "sp"]
 
-# ---------- 대상 시료 : RU 안에 있는 것 전부 ----------
+# ---------- the samples: everything present in RU ----------
 WANT = set()
 SRCOF = {}
 for f in (A1 + "08_methylation/node3/FINAL/RU_LCL.tsv.gz", A1 + "08_methylation/node3/FINAL/RU_PBMC.tsv.gz"):
@@ -32,7 +32,7 @@ for f in (A1 + "08_methylation/node3/FINAL/RU_LCL.tsv.gz", A1 + "08_methylation/
             WANT.add(p[ix["sample"]]); SRCOF[p[ix["sample"]]] = p[ix["data_source"]]
 P("대상 시료 %d : %s" % (len(WANT), sorted(WANT)))
 
-# ---------- 지도 ----------
+# ---------- map ----------
 IN = re.compile(r"^(\d+)I(\d+)$"); DE = re.compile(r"^(\d+)D(\d+)$")
 UNITN, UMAP = {}, {}
 for mp in (A1 + "03_maps/AOG8_inputs_merged/node3/AOG8_LCL/MAP_G8.tsv",
@@ -101,7 +101,7 @@ for f in (A1 + "08_methylation/node3/FINAL/RU_LCL.tsv.gz", A1 + "08_methylation/
             r = dict(sample=smp + ("_LCL" if "LCL" in p[ix["data_source"]] else "_PBMC"),
                      person=smp, tissue=("LCL" if "LCL" in p[ix["data_source"]] else "PBMC"),
                      src=p[ix["data_source"]], slot=sl, ap=ap, read_id=p[ix["read_id"]],
-                     N=N, n_cpg=tot, n_meth=met, b_call=met / tot, b_prob=sumv / (255.0 * tot))   # 자 대조 생산자 — 두 열을 함께 낸다(복원)
+                     N=N, n_cpg=tot, n_meth=met, b_call=met / tot, b_prob=sumv / (255.0 * tot))   # the ruler-comparison producer: both columns are reported together
             for k in SEGK:
                 r["n_" + k] = segn[k]
                 r["b_" + k] = (segm[k] / segn[k]) if segn[k] else np.nan

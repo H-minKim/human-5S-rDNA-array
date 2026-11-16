@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
-# 메틸 합본 (2026-09-12) — 노드 3 대의 read×유닛 메틸을 모아 자리별 표로 만든다
-#   입력 : METH_READUNIT_<노드>.tsv.gz (배치 BAM 의 MM/ML 을 정본 좌표로 옮긴 것)
-#   중복 규칙 : 같은 read 가 junction·ARRAY_ONLY 양쪽에 있으면(DUAL) junction 을 남긴다
-#                 (합본 지도와 같은 규칙 — ARRAY_ONLY 쪽 DUAL 을 뺀다)
-#   출처 분리 : 같은 개체라도 데이터 출처가 다르면 따로 적는다 (변이 합본과 같은 규칙)
-#   산출
-#     READMAP_METH_G8V4.tsv  : 개체·출처·슬롯·유닛번호 별 — read 수 · CpG 호출 수 · beta(호출 기준) ·
-#                              read beta 평균/중앙 · junction/ARRAY_ONLY read 수
-#     METH_SITE_G8V4.tsv.gz  : 위 + 유닛내 좌표(1-2240) 별 n · n_meth · beta
-#   인자 : 입력폴더 출력폴더
+# The methylation merge: the read x unit methylation from the three compute nodes is pooled into a per-position table.
+#   Input: METH_READUNIT_<node>.tsv.gz, the MM/ML of the batch BAMs carried into canonical coordinates.
+#   The duplicate rule: where the same read appears in both the junction and the ARRAY_ONLY placement, marked DUAL, the junction one is kept
+#                 (the same rule as the merged map, which drops the ARRAY_ONLY DUAL).
+#   Sources are kept apart: the same individual from a different data source is recorded separately, as in the variant merge.
+#   Outputs:
+#     READMAP_METH_G8V4.tsv: per individual, source, slot and unit index, with the read count, the CpG call count, beta on the call basis,
+#                              the mean and median read beta, and the junction and ARRAY_ONLY read counts.
+#     METH_SITE_G8V4.tsv.gz: the same plus the within-unit coordinate, 1 to 2240, with n, n_meth and beta.
+#   Arguments: the input folder and the output folder.
 import io
 import os
 import sys
@@ -39,13 +39,13 @@ for p in files:
         rid = r[ix["read_id"]]
         kind = r[ix["kind"]]
         if kind == "junction" and r[0] in ("HG00384", "HG01150"):
-            T["junction 제외 개체(HG00384·HG01150)"] += 1      # 변이 합본과 같은 규칙 (배정표 자기참조)
+            T["junction 제외 개체(HG00384·HG01150)"] += 1      # the same rule as the variant merge, the assignment table referring to itself
             continue
         kk = k + (rid,)
         if kk in seen:
             T["중복(DUAL 등) 버림"] += 1
             if seen[kk] == "array_only" and kind == "junction":
-                pass                     # junction 이 나중에 오면 아래에서 교체하지 않는다(이미 집계됨)
+                pass                     # where the junction record comes later it does not replace what is already aggregated
             continue
         seen[kk] = kind
         n = int(r[ix["n_cpg"]])

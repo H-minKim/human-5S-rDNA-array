@@ -1,22 +1,22 @@
 # -*- coding: utf-8 -*-
-# 경계 프로파일 다시 — H2 관문 + 컷 0.508  (2026-10-11)
+# Boundary profile - H2 gate and cut 0.508
 #
-#   왜 고치나 (실측 2026-10-11)
-#     ⒜ 디스크의 `RU.tsv.gz`·`CALLS.tsv.gz` 에 `data_source` 열이 없다
-#        (`load_readunit_v2.py` 는 넣지만 파일은 v1 판) ⇒ 자료원을 거르지 못한 채 썼다.
-#        되짚어 세니 샘플 303 중 HPRC 전용 289 · 1kGP+HPRC 이름충돌 9 ·
-#        GIAB_SOMATIC(암 HG008-T) 1 · GIAB_ONT 3 · 1kGP 전용 1.
-#        깨끗한 창 기준 : 대장 H2 안이 90.1% / 91.0% 뿐.
-#     ⒝ `boundary_profile_wide.py` 의 컷이 0.5 인데 프로젝트 상수는 0.508 이다.
+#   Why the H2 gate and the 0.508 cut
+#     (a) the `RU.tsv.gz` and `CALLS.tsv.gz` on disk have no `data_source` column
+#        (`load_readunit_v2.py` writes it, but the files are the v1 generation), so the data source cannot be filtered from them.
+#        Of 303 samples, 289 are HPRC only, 9 are 1kGP and HPRC name collisions,
+#        1 is GIAB_SOMATIC (the cancer sample HG008-T), 3 are GIAB_ONT and 1 is 1kGP only.
+#        On clean windows, only 90.1% / 91.0% fall inside H2 of the registry.
+#     (b) the cut in `boundary_profile_wide.py` is 0.5, while the project constant is 0.508.
 #
-#   한 패스에서 다 낸다 (무거운 IO 규칙) — 788 MB 를 한 번만 읽는다
-#     ① 새 자 (H2 · 0.508)  로 BOUNDARY_WIDE
-#     ② 옛 자 (관문없음 · 0.5) 로도 같이 내서 재현검정을 공짜로 만든다
-#     ③ 깨끗한 3+3 창 전수표 (새 자) — SuppFig S7 분자 다시 고르기용
-#     ④ 대비 통과분만의 평균 — 회색이 완만한 까닭이 ㉠겹침인지 ㉡약한 창인지 가른다
-#     ⑤ 창마다 전환 자리 — "AluY 4/4" 를 분포로 바꾼다
+#   Everything is produced in one pass - 788 MB is read only once
+#     (1) BOUNDARY_WIDE on the new ruler (H2 and 0.508)
+#     (2) the same on the old ruler (no gate, 0.5) as well, for the reproduction test
+#     (3) the full table of clean 3+3 windows (new ruler) - for reselecting the numerator of Supplementary Figure S7
+#     (4) the mean over the contrast-passing windows alone - to tell whether the grey curve is shallow because of (i) overlap or (ii) weak windows
+#     (5) the transition position of each window - turning "AluY 4/4" into a distribution
 #
-#   원본 `boundary_profile_wide.py` 와 그 산출물은 건드리지 않는다. 새 이름으로만 낸다.
+#   Everything is written under new names, so the outputs of `boundary_profile_wide.py` are not overwritten.
 import collections
 import csv
 import gzip
@@ -26,8 +26,8 @@ import sys
 
 def _need(_v):
     """No defaults are set: the script stops if a variable is missing.
-    이 글이 읽는 자료의 뿌리는 README.md 의
-    "Running this code" 절에 적혀 있다."""
+    The roots of the data this script reads are listed in the
+    "Running this code" section of README.md."""
     import os as _o, sys as _s
     _x = _o.environ.get(_v)
     if not _x:
@@ -55,11 +55,11 @@ UL, MLTHR, MINCPG = 2240, 128, 20
 NBEF, NAFT = 3, 3
 NU = NBEF + NAFT
 NL = chr(10)
-#  자 두 개를 나란히 : (이름, 유닛 하드콜 컷, H2 관문을 거나)
+#  Two rulers side by side: (name, unit hard-call cut, whether the H2 gate is applied)
 RULERS = [("H2_508", 0.508, True), ("old_500", 0.500, False)]
-#  대비 : 높은 쪽 3 유닛 최소 >= HI · 낮은 쪽 3 유닛 최대 <= LO
+#  Contrast: the minimum of the three high-side units >= HI and the maximum of the three low-side units <= LO
 LO, HI = 0.25, 0.70
-#  전환 자리 자 : 앞뒤 RW 개 CpG 중 RF 이상이 그 상태
+#  Transition-position ruler: at least RF of the RW CpG on either side are in that state
 RW, RF = 20, 0.90
 EL = [("AluY", 1, 318), ("spacer-1", 319, 1178), ("GA-rich", 1179, 1551),
       ("spacer-2", 1552, 2031), ("5'-flank", 2032, 2121), ("5S gene", 2122, 2240)]
@@ -84,7 +84,7 @@ for i, L in enumerate(io.open(SUM, encoding="utf8")):
     if len(f) >= 8 and int(f[7]) > 0:
         BRK.add((f[0], f[1]))
 
-#  유닛 하드콜 · beta — 자마다 따로
+#  Unit hard call and beta - separately for each ruler
 CLS = {k: {} for k, _, _ in RULERS}
 BETA = {}
 for i, L in enumerate(gzip.open(RU, "rt", encoding="utf8")):
@@ -105,19 +105,19 @@ for nm, _, _ in RULERS:
 
 WIN = {nm: {"H2L": collections.defaultdict(lambda: [0, 0]),
             "L2H": collections.defaultdict(lambda: [0, 0])} for nm, _, _ in RULERS}
-#  ④ 대비 통과분만 (새 자에서만)
+#  (4) contrast-passing windows only (new ruler only)
 WINC = {"H2L": collections.defaultdict(lambda: [0, 0]),
         "L2H": collections.defaultdict(lambda: [0, 0])}
 CTRL = {nm: {0: collections.defaultdict(lambda: [0, 0]),
              1: collections.defaultdict(lambda: [0, 0])} for nm, _, _ in RULERS}
 N = collections.Counter()
-ROWS = []        # ③ 깨끗한 창 전수 (새 자)
-STEPS = []       # ⑤ 전환 자리
+ROWS = []        # (3) the full set of clean windows (new ruler)
+STEPS = []       # (5) transition positions
 NEW = RULERS[0][0]
 
 
 def step_pos(seq_pos, seq_m, A):
-    """원시 CpG 로 전환 자리. seq_pos·seq_m 은 창 안 차례(원위→근위 걷는 차례) 그대로."""
+    """Transition positions from the raw CpGs. seq_pos and seq_m keep the order inside the window (walking distal to proximal)."""
     n = len(seq_m)
     if n < 2 * RW:
         return None
@@ -154,7 +154,7 @@ def process(read, key3):
         if len(idxs) < 3:
             continue
         c = [cl.get(key3 + (i,)) for i in idxs]
-        #  대조 : 양옆이 같은 class 인 블록 내부 유닛
+        #  Control: units inside a block whose two neighbours are of the same class
         for a in range(1, len(idxs) - 1):
             if idxs[a - 1] - idxs[a] != 1 or idxs[a] - idxs[a + 1] != 1:
                 continue
@@ -165,7 +165,7 @@ def process(read, key3):
                 v = d[p]
                 v[0] += 1
                 v[1] += m
-        #  전이 창
+        #  Transition windows
         for a in range(len(idxs) - 1):
             if c[a] is None or c[a + 1] is None or c[a] == c[a + 1]:
                 continue
@@ -190,7 +190,7 @@ def process(read, key3):
                     v[1] += m
             if nm != NEW:
                 continue
-            #  ---- 새 자에서만 : 창 표 · 대비 · 전환 자리
+            #  ---- new ruler only: window table, contrast, transition position
             ncs = [len(read[u]) for u in units]
             if None in bts:
                 continue
@@ -208,7 +208,7 @@ def process(read, key3):
                         v = WINC[kind][base + p]
                         v[0] += 1
                         v[1] += m
-            #  ⑤ 전환 자리 : 창을 CpG 수열로 펴고 원시 자로 가른다
+            #  (5) transition position: the window is unrolled into a CpG sequence and split on the raw ruler
             sp, sm, su = [], [], []
             for j, t in enumerate(range(lo, hi + 1)):
                 for p, m in sorted(read[idxs[t]]):

@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-# 옵셋 히스토그램에서 기본 주기와 고차반복(HOR) 주기를 따로 판정한다
-#   기본 주기 = 사다리(p·2p·3p…)를 이루는 가장 작은 옵셋
-#   HOR = 정렬량이 가장 큰 옵셋 (기본 주기의 배수면 그 배수를 적는다)
-#   그리고 내 대표 유닛 길이와 견준다
-#   산출 : PERIOD_FINAL.tsv
+# From the offset histogram, call the base period and the higher-order repeat period separately.
+#   The base period is the smallest offset forming a ladder at p, 2p, 3p and so on.
+#   The higher-order repeat is the offset with the greatest aligned length, recorded as a multiple of the base period where it is one.
+#   Both are then compared with our own representative unit length.
+#   Output: PERIOD_FINAL.tsv
 # MIT License · Copyright (c) 2026 Hungmin Kim
 import io
 import os
@@ -61,13 +61,13 @@ for LL in f:
     span = (int(ST[aid][ix["array_end"]]) - int(ST[aid][ix["array_start"]]) + 1) if aid in ST else 0
     fund, af, nr, hor, horm = 0, 0, 0, 0, 0
     if off:
-        # 20 bp 바구니 경계 때문에 대각선이 두 칸에 걸린다 -> 인접 칸을 합쳐서 본다
+        # a 20 bp bucket boundary splits the diagonal across two bins, so adjacent bins are merged before reading it
         def wsum(p):
             return off.get(p - 20, 0) + off.get(p, 0) + off.get(p + 20, 0)
         keys = sorted(off)
         mw = max(wsum(k) for k in keys)
         cand = [k for k in keys if k >= 130 and wsum(k) >= 0.35 * mw]
-        # 같은 봉우리의 옆칸 중복 제거 (더 큰 쪽만)
+        # neighbouring bins of the same peak are deduplicated, keeping the larger
         cand = [k for k in cand if wsum(k) >= wsum(k - 20) and wsum(k) >= wsum(k + 20)]
         for q in cand:
             tol = max(40, int(0.04 * q))
@@ -86,7 +86,7 @@ for LL in f:
         if not fund and cand:
             fund, af, nr = cand[0], wsum(cand[0]), 1
         if fund:
-            # 진짜 고차반복 = 기본 주기의 배수인데 합친 정렬량이 기본보다 확실히 큰 것
+            # a genuine higher-order repeat is a multiple of the base period whose total aligned length is clearly greater than the base period's
             for k in keys:
                 if k < fund * 1.8:
                     continue

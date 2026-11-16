@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-# FigX18 자료 — 자료원을 통제하면 무엇이 남나
-#   pooled(암 8 vs 정상 30) 은 자료원이 섞여 있다 → 같은 환자·같은 자료원 짝만으로 다시 센다
+# FigX18 data: what remains once the data source is controlled for.
+#   The pooled comparison, 8 cancer against 30 normal, mixes data sources, so it is recounted using only pairs from the same patient and the same source.
 import io, os, sys
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 import numpy as np, pandas as pd
@@ -22,7 +22,7 @@ for s in R["sample"]:
     elif s.endswith("_PBMC"): src[s] = "HPRC_Y7_PBMC"
 R["src"] = R["sample"].map(src)
 
-# ---------- A : 자료원 지도 ----------
+# ---------- A: the map of data sources ----------
 A = (R.pivot_table(index="src", columns="덩어리", values="sample", aggfunc="count")
      .fillna(0).astype(int).reset_index())
 for k in ("암", "정상"):
@@ -33,7 +33,7 @@ A = A.sort_values(["짝가능", "src"])
 P("[A] 자료원 %d 개" % len(A))
 P(A.to_string(index=False))
 
-# ---------- B·C : 짝 ----------
+# ---------- B and C: the pairs ----------
 PAIRS = [("COLO829-Tr", "COLO829-BLr", "COLO829_ONT_2024", "같음"),
          ("H1437-T", "H1437-N", "CASTLE_ONT_R10", "같음"),
          ("H2009-T", "H2009-N", "CASTLE_ONT_R10", "같음"),
@@ -55,7 +55,7 @@ P()
 P("[B·C] 짝 %d (HCC1395 는 종양 read 가 1 개뿐이라 짝이 안 된다)" % len(B))
 P(B[["짝", "자료원", "호출방식", "정상_gene_sp", "종양_gene_sp", "Δgene_sp", "Δgene", "Δsp"]].to_string(index=False))
 
-# ---------- D : pooled vs 짝 ----------
+# ---------- D: pooled against paired ----------
 def sgn(v): return stats.binomtest(int((np.array(v) < 0).sum()), len(v), 0.5).pvalue
 can = R[R.덩어리 == "암"]; nor = R[R.덩어리 == "정상"]
 cas = R[R.src == "CASTLE_ONT_R10"]
@@ -78,7 +78,7 @@ P()
 P("[D] 같은 지표(고메틸 유닛 안 gene-sp)를 판만 바꿔 센 것")
 P(D.to_string(index=False))
 
-# ---------- E : 암 짝 vs 불멸화 짝 ----------
+# ---------- E: the cancer pairs against the immortalisation pairs ----------
 IM = pd.read_csv(os.path.join(HERE, "FIGX17_IMM.tsv"), sep="\t")
 IM["Δ"] = IM.LCL - IM.PBMC
 P()
@@ -92,7 +92,7 @@ P("   불멸화 중앙 Δ %+.4f · 내려간 %d/%d · 윌콕슨 p %.4f · 부호
 P("   제약(불멸화)이 근거(암)보다 p 가 작다 = 더 단단하다")
 IM.to_csv(os.path.join(HERE, "FIGX18_IMM.tsv"), sep="\t", index=False, float_format="%.5f")
 
-# ---------- F : 짝 수가 정하는 천장 ----------
+# ---------- F: the ceiling set by the number of pairs ----------
 rows = []
 for n in range(3, 21):
     rows.append(dict(n=n, 부호검정_최소p=stats.binomtest(0, n, 0.5).pvalue,

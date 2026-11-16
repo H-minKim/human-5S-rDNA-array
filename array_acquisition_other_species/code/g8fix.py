@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
-# G8v4 규칙 유닛 지도를 정본 fasta 만으로 만든다 (게놈 파일 불필요) + 유전자 k 개짜리 유닛 지원
-#   species_g8map.py 의 규칙을 그대로 옮긴다 :
-#     · 유닛 경계 = 유전자 끝 +1 .. k 개 뒤 유전자 끝 (유전자 HSP 를 질의 좌표로 전체 길이까지 확장)
-#     · 자를 때 앞뒤 PAD 여유 · 정렬 대상은 [참조유닛 끝 CTX][참조유닛][참조유닛 앞 CTX]
-#     · 채움 금지 — 변이는 정렬(cs/BTOP)로만. 가운데 유닛을 다 못 덮으면 NO_FULL
-#     · 간격이 LO~HI 밖이면 유닛을 만들지 않고 끊김(n_break)
-#   달라진 것 : 참조 유닛을 최빈 길이가 아니라 중앙값 길이로 고른다 (퍼진 array 서 임의 선택 방지)
-#   인자 : 정본fa cms_tbl k 출력폴더
-#   산출 : <out>/<array_id>.g8map.tsv · .unit.fa · .gene.fa · PARAMS.tsv (덧붙임)
+# Build a G8v4-rule unit map from the canonical fasta alone, with no genome file needed, and support units holding k genes.
+#   The rules follow species_g8map.py:
+#     · the unit boundary runs from gene end + 1 to the end of the gene k positions later, with the gene HSP extended to its full length using the query coordinates;
+#     · cut with PAD bp of slack on each side; the alignment target is [last CTX bp of the reference unit][reference unit][first CTX bp of the reference unit]
+#     · no filling: variants come from the alignment, cs or BTOP, alone, and a middle unit not fully covered is NO_FULL.
+#     · if the gap falls outside LO..HI, no unit is made and a break is recorded (n_break)
+#   What differs: the reference unit is chosen by median length rather than modal length, which avoids an arbitrary choice in a dispersed array.
+#   Arguments: canonical fa, cms_tbl, k, output folder.
+#   Outputs: <out>/<array_id>.g8map.tsv, .unit.fa, .gene.fa and PARAMS.tsv, appended to.
 # MIT License · Copyright (c) 2026 Hungmin Kim
 import io
 import os
@@ -19,11 +19,11 @@ import collections
 NL = chr(10)
 TAB = chr(9)
 CANFA, TBL, K, OUT = sys.argv[1], sys.argv[2], int(sys.argv[3]), sys.argv[4]
-# 온전한 유전자만 경계로 쓴다 (5S 3' 조각이 섞인 array 에서 주기가 반토막 난다 — 애기장대 chr4 15.92 Mb 실측)
+# only a complete gene is used as a boundary: in an array carrying 5S 3' fragments the period comes out halved, as measured on Arabidopsis chr4 at 15.92 Mb
 MINCOV = float(sys.argv[5]) if len(sys.argv) > 5 else 0.80
-# 참조 유닛 고르는 법 : consensus(같은 길이 유닛 자리별 다수결 · 기본) / medoid(가장 중심에 있는 실제 유닛)
-#   균질하지 않은 array 에서는 consensus 가 한두 유닛만 모아 참조만 이질적인 사태가 난다
-#   (붉은털원숭이 20.4 Mb 실측 : 26 유닛 전부가 같은 353 자리에서 참조와 달랐다)
+# Choosing the reference unit: consensus, a per-position majority over the units of equal length, which is the default; or medoid, the most central actual unit.
+#   In an array that is not homogeneous, consensus pools only one or two units and leaves the reference itself the odd one out
+#   (measured on rhesus at 20.4 Mb: all 26 units differed from the reference at the same 353 positions).
 REFMODE = sys.argv[6] if len(sys.argv) > 6 else 'consensus'
 os.makedirs(OUT, exist_ok=True)
 COMP = {"A": "T", "C": "G", "G": "C", "T": "A", "N": "N"}
@@ -131,7 +131,7 @@ FL = (len(wseq) - span) // 2
 
 
 def to_chrom(p):
-    # 정본창 1-기반 p -> 염색체 좌표
+    # a 1-based position p in the canonical window -> a chromosome coordinate
     return (a1 + FL) - p + 1 if strand == "-" else (a0 - FL) + p - 1
 
 
@@ -139,7 +139,7 @@ def to_win(cpos):
     return (a1 + FL) - cpos + 1 if strand == "-" else cpos - (a0 - FL) + 1
 
 
-# 1) 그 array 의 유전자 합의 (cmsearch hit · 정본창 방향으로)
+# 1) the gene consensus of that array, from the cmsearch hits, in the orientation of the canonical window
 gs = []
 for L in io.open(TBL, encoding="utf8"):
     if L.startswith("#"):
@@ -161,7 +161,7 @@ same = [x for x in gs if len(x) == gl]
 gene = "".join(collections.Counter(x[i] for x in same).most_common(1)[0][0] for i in range(gl))
 gp = os.path.join(OUT, aid + ".gene.fa")
 io.open(gp, "w", encoding="utf8", newline=NL).write(">%s_gene len=%d%s%s%s" % (aid, gl, NL, gene, NL))
-# 2) 유전자 HSP -> 질의 좌표로 전체 길이 확장 (정본창 안, array ± 유닛 1 개까지만)
+# 2) the gene HSPs, extended to the full length using the query coordinates, within the canonical window and no more than one unit beyond the array
 rp = os.path.join(OUT, aid + ".region.fa")
 io.open(rp, "w", encoding="utf8", newline=NL).write(">region%s%s%s" % (NL, wseq, NL))
 rb = subprocess.run("blastn -task blastn -word_size 11 -dust no -evalue 1e-5 -query %s -subject %s "
@@ -190,16 +190,16 @@ print("   유전자 HSP %d 개 · 조각(덮힘<%.2f) %d 개 버림" % (len(G), 
 gg = sorted([(a, b) for (a, b, st) in keep if st == major])
 if len(gg) < 3:
     sys.exit("유전자 HSP 부족 : " + aid)
-# 3) k 개 단위 주기와 파라미터
+# 3) the period over k units, and the parameters
 per = sorted([gg[i + K][1] - gg[i][1] for i in range(len(gg) - K)])
 pm = per[len(per) // 2]
 LO = min(pm - 30, int(round(pm * 0.94)))
 HI = max(pm + 30, int(round(pm * 1.07)))
 PAD = max(20, int(round(pm * 0.05)))
 CTX = max(40, int(round(pm * 0.09)))
-# 위상 맞춤 걸음 : k 개 창이 범위 밖이면 k 칸이 아니라 1 칸만 나아간다
-#   (이중 유닛 array 는 곳곳에서 위상이 밀린다 — 붉은털원숭이 20.4 Mb 는 AB 교대 중 2 곳이 AA·BB.
-#    k 칸씩 건너뛰면 그 뒤가 전부 반대 위상으로 잡혀 절반이 NO_FULL 이 된다)
+# A phase-matching step: where a window of k does not fit, it advances by one position rather than by k
+#   (a dimeric array slips in phase here and there; rhesus at 20.4 Mb alternates AB but has two places of AA and BB.
+#    Stepping k at a time would then put everything after them in the opposite phase and leave half the units NO_FULL.)
 def walk():
     cuts, nbrk, i = [], 0, 0
     while i + K < len(gg):
@@ -227,7 +227,7 @@ if len(pool) < 3:
         tgt = collections.Counter(len(u) for u in band).most_common(1)[0][0]
         pool = [u for u in band if len(u) == tgt]
 if REFMODE == "medoid":
-    # 가장 중심에 있는 유닛 : 다른 유닛들과의 blastn 비트점수 합이 가장 큰 것
+    # the most central unit: the one with the greatest sum of blastn bit scores against the others
     cand = [u for u in raw if abs(len(u) - med) <= max(30, 0.01 * med)]
     if len(cand) < 2:
         cand = raw
@@ -265,7 +265,7 @@ io.open(up, "w", encoding="utf8", newline=NL).write(
     ">%s_refunit len=%d gene_len=%d genes_per_unit=%d source=%s%s%s%s" % (aid, U, gl, K, REFMODE, NL, ref, NL))
 ctxp = os.path.join(OUT, aid + ".ctx.fa")
 io.open(ctxp, "w", encoding="utf8", newline=NL).write(">ctx%s%s%s" % (NL, ref[-CTX:] + ref + ref[:CTX], NL))
-# 4) 유닛 자르기(PAD) + 끊김
+# 4) cutting the units with PAD, and the breaks
 meta, qs = [], []
 cuts, brk = walk()
 for pos, (a, b) in enumerate(cuts, 1):

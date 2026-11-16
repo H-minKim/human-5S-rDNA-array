@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
-# array 를 코딩부 / 스페이서 / 바깥(flank) 로 나눠 CpG 메틸을 낸다.
+# Report CpG methylation with the array split into coding, spacer and outside (flank).
 #
-#   구간이 잘게 쪼개져 있으므로(chr18 코딩부 65 조각) 구간마다 fetch 하지 않고
-#     array+flank 를 한 번만 훑으면서 CpG 자리마다 어느 부류인지 판정한다.
+#   The intervals are highly fragmented (65 coding blocks on chr18), so instead of fetching per interval
+#     the array plus flank is traversed once and each CpG site is assigned to a class.
 #
-#   구간은 read 묶음 부트스트랩으로 낸다 — 같은 read 안의 CpG 는 독립이 아니다.
-#     read 를 단위로 복원추출해 비율을 다시 계산하고 2.5/97.5 백분위를 쓴다.
-#     코딩부는 CpG 가 몇 개뿐일 수 있어 이항 구간을 쓰면 크게 과소평가된다.
+#   The interval comes from a read-level bootstrap: CpG sites on the same read are not independent.
+#     Reads are resampled with replacement, the ratio is recomputed, and the 2.5 / 97.5 percentiles are used.
+#     A coding block can hold only a handful of CpG sites, so a binomial interval would be far too narrow.
 #
-#   인자 : bam 라벨 구역조각.tsv 출력.tsv [부트스트랩 횟수(기본 2000)]
+#   Arguments: bam, label, regions.tsv, out.tsv, [bootstrap replicates (default 2000)].
 # MIT License · Copyright (c) 2026 Hungmin Kim
 import io
 import os
@@ -23,7 +23,7 @@ BAM, LAB, REG, OUT = sys.argv[1:5]
 NB = int(sys.argv[5]) if len(sys.argv) > 5 else 2000
 random.seed(0)
 
-# 구역 조각 → 부류별 구간 목록
+# region blocks -> the list of intervals per class
 parts = collections.defaultdict(list)          # (base, kind) -> [(chrom,s,e)]
 for L in io.open(REG, encoding="utf8"):
     f = L.rstrip(NL).split(TAB)
@@ -43,7 +43,7 @@ if new:
 
 MQ=int(__import__("os").environ.get("MQ","0"))
 def boot(per_read):
-    """read 를 단위로 복원추출 — 같은 read 안 CpG 는 같이 움직인다"""
+    """resample with replacement by read: the CpGs of one read move together"""
     n = len(per_read)
     if n < 2:
         return ("-", "-")
@@ -70,7 +70,7 @@ for (base, kind) in sorted(parts):
         continue
     iv_s = sorted((s, e) for _, s, e in iv)
     bp = sum(e - s + 1 for s, e in iv_s)
-    # 빠른 판정을 위해 자리 집합 대신 정렬된 구간에 이분 탐색
+    # For speed, a binary search over sorted intervals is used instead of a set of positions.
     import bisect
     starts = [s for s, e in iv_s]
     ends = [e for s, e in iv_s]

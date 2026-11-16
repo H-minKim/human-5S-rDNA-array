@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# flank restoration (HPRC assemblies): cut 50kb on each side of the canonical from the contig and attach it (2026-09-14)
+# flank restoration (HPRC assemblies): cut 50kb on each side of the canonical from the contig and attach it
 #
 #   Invariant: the canonical array sequence is not changed by a single character. Things are only attached before and after.
 #   The slot number and the assembly haplotype number are not the same, both haplotype contigs are searched and the one that

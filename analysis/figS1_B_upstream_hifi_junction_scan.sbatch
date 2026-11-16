@@ -1,6 +1,6 @@
 #!/bin/bash
-# 위 글을 돌린 SLURM 배치 (12 작업 배열)
-#   단계 : S1 B 상류
+# The SLURM batch that runs the scan script of the same name (an array of 12 tasks)
+#   Step : S1 B upstream
 #   Method document : analysis/METHOD_CONSENSUS_MAP_G8_REBUILD.md
 #SBATCH --job-name=s5s_jxhifi
 #SBATCH --partition=cpu-short
@@ -15,15 +15,15 @@
 # sure logs/ exists there, or the array job will not start. Log destination only; no result changes.
 #SBATCH --output=logs/jh_%A_%a.out
 #SBATCH --error=logs/jh_%A_%a.err
-# 검정 2 — HiFi junction 배치 (5S rDNA)
+# Test 2, the HiFi junction batch (5S rDNA)
 # %6 limits it to 6 at a time, because the cluster is shared
 set -u
 W="${RDNA_JX_WORK:?set RDNA_JX_WORK to the junction-scan working directory on the cluster}"
 source "$(conda info --base)/etc/profile.d/conda.sh"
 conda activate "${RDNA_CONDA_ENV:?set RDNA_CONDA_ENV to the conda environment holding minimap2 2.28-r1209, samtools 1.9 and BLAST+ 2.16.0}"
-command -v minimap2 >/dev/null || { echo "FATAL minimap2 없음"; exit 9; }
+command -v minimap2 >/dev/null || { echo "FATAL minimap2 not found"; exit 9; }
 echo "host=$(hostname) task=$SLURM_ARRAY_TASK_ID minimap2=$(command -v minimap2)"
 LIST=$W/src/part_${SLURM_ARRAY_TASK_ID}.txt
-[ -s "$LIST" ] || { echo "목록 없음 $LIST"; exit 0; }
+[ -s "$LIST" ] || { echo "no list $LIST"; exit 0; }
 TAG=a${SLURM_ARRAY_TASK_ID} TH=8 TMPD=$W/tmp/$SLURM_ARRAY_TASK_ID \
   python3 $W/src/jxhifi_snu.py "$LIST"

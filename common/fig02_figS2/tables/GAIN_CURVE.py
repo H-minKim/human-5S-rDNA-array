@@ -7,7 +7,7 @@ r"""Put "why cut there" into numbers, output the split gain curve and the penalt
      - after cutting, repeat the same within each piece (binary segmentation)
    => with this table the figure can show that "3|4 and 9|10 are the only positions whose gain exceeds the threshold".
 
-   beta is excluded (unified 2026-10-09), outputs go only to my folder."""
+   beta is excluded. Outputs go only to the working folder."""
 import io, os, sys, subprocess, time, shutil
 sys.stdout.reconfigure(encoding="utf-8")
 HERE = os.path.dirname(os.path.abspath(__file__))

@@ -1,18 +1,14 @@
 # -*- coding: utf-8 -*-
-# 참조서열 대장의 마지막 단 — `제외` · `제외사유` 두 열을 붙여 `_v2` 를 만든다
+# The last stage of the reference registry: two columns, an exclusion flag and its reason, are added to produce the _v2 table.
 #
-#   이 글은 2026-10-04 에 셸 heredoc 으로 돌았고 파일로 저장되지 않았다.
-#   셈은 바꾸지 않았다. 바꾼 것 : heredoc 껍데기를 벗기고 자리를 환경변수로 뺐다.
+#   The paths come from environment variables.
 #
-#   `EXCL` 에 대하여 — 여기에 판이 둘 있었다. 헷갈리지 않게 적는다.
-#     기록에서 꺼낸 판은 `EXCL` 에 `('NA18565','2')` 가 들어 있다
-#     (사유 : "관통 read 5 개가 전부 37~38 유닛(정본 35) — 조립본 유닛 접힘").
-#     그런데 기탁된 `_v2` 는 616 행이 전부 `제외=N` 이다.
-#     그 폴더 `README` §8 이 까닭을 적는다 :
-#     ⇒ 기탁본에 맞는 것은 **`EXCL` 가 빈 판**이다. 그래서 여기서는 비워 둔다.
-#        뺐던 항목은 지우지 않고 `_SUPERSEDED` 에 남긴다 — 있었던 일이다.
+#   The exclusion list is empty: the deposited _v2 table has the flag set to N in all 616 rows,
+#     and section 8 of that folder's README gives the reason.
+#     ('NA18565', '2') is listed under `_SUPERSEDED` and is not excluded
+#     (all five spanning reads give 37-38 units against 35 canonical, so the assembly has collapsed a unit).
 #
-#   검산 : 이 글이 내는 표는 기탁본과 바이트까지 같다 (md5 92cadda22dae · 2026-10-22 확인).
+#   Check: the table this writes is byte-identical to the deposited one (md5 92cadda22dae).
 import io, os, sys, collections
 sys.stdout.reconfigure(encoding="utf-8")
 
@@ -24,7 +20,7 @@ IN = os.path.join(REG_DIR, "V11F4_DATASET_hap_flags.tsv")
 OUT = os.environ.get("REGISTRY_V2_OUT",
                      os.path.join(REG_DIR, "V11F4_DATASET_hap_flags_v2.tsv"))
 
-# Items that are not excluded; kept here for the record only, and not put in `EXCL`
+# Items that are not excluded and are not put in `EXCL`
 _SUPERSEDED = {
     ("NA18565", "2"): "관통 read 5개가 전부 37~38 유닛(정본 35) — 조립본 유닛 접힘"
                       " · 2026-10-05 사용자 결정으로 되돌림(제외하지 않음)",
@@ -46,7 +42,7 @@ print("-> %s · 열 %d · 행 %d · 제외 %d"
       % (os.path.basename(OUT), len(h) + 2, len(out),
          sum(1 for r in out if r[-2] == "Y")))
 
-# ── 분모가 바뀌는지 — `제외` 를 넣은 뜻이 여기 있다 ──────────────────
+# -- whether the denominator changes, which is the point of the exclusion column --
 jx = {c: i for i, c in enumerate(h + ["excluded", "exclusion_reason"])}
 fl = lambda r: set(r[ix["flags"]].split(";")) if r[ix["flags"]] != "-" else set()
 

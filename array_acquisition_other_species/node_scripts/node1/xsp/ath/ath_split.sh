@@ -1,7 +1,7 @@
 #!/bin/bash
-# 애기장대 : array read 만 남긴 pod5 조각을 노드별로 나눈다 (크기 기준 · 코어 가중 A 16 · W 28 · B 16)
-#   남긴 read 가 1 개 이상인 조각만 (members.tsv 5 열 > 0)
-#   산출 : grp_A.txt · grp_W.txt · grp_B.txt (절대경로 목록 — 세 노드 모두 /home/ubuntu 라 경로가 같다)
+# Arabidopsis: distribute the pod5 slices holding only the array reads across the nodes, by size, weighted by cores at 16, 28 and 16.
+#   Only slices that kept at least one read, where column 5 of members.tsv is above 0.
+#   writes : grp_A.txt · grp_W.txt · grp_B.txt (lists of absolute paths; the three nodes share one home directory, so the paths are the same on all of them)
 set -u
 H=~/xsp/ath
 rm -f $H/grp_A.txt $H/grp_W.txt $H/grp_B.txt

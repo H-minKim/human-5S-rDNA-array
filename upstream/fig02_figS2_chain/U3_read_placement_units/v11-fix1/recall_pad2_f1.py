@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Recall read units: cut with a margin (±PAD) and align to the context-padded canonical unit (2026-09-12 user design)
+# Recall read units: cut with a margin (±PAD) and align to the context-padded canonical unit
 #   reference = [last CTX bp of the canonical unit][canonical unit 2,240bp][first CTX bp of the canonical unit]
 #     In a tandem array, what precedes and follows a unit is the end and start of the same canonical unit. Adding context puts the margin on both sides,
 #     and the central unit is free of alignment edge problems. Joining two canonical units would split which copy it attaches to, so that is not used.

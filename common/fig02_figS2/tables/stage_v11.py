@@ -19,10 +19,10 @@ stage_v11 - recompute the haplotype stage table on the v11 basis.
 """
 import io, os, sys, collections
 
-V = (__import__("os").environ["RDNA_DATA_ROOT"] + r"\for_paper\08_versions\v11-fix2")   # v11-fix2: the map is from fix1, the merged table from fix2
-V1 = (__import__("os").environ["RDNA_DATA_ROOT"] + r"\for_paper\08_versions\v11-fix1")
-V0 = (__import__("os").environ["RDNA_DATA_ROOT"] + r"\for_paper\08_versions\v11")
-OUT = (__import__("os").environ["RDNA_DATA_ROOT"] + r"\5S_position_variant_work\2026-09-17_v11_fix2")
+V = (__import__("os").environ["RDNA_DATA_ROOT"] + r"/for_paper/08_versions/v11-fix2")   # v11-fix2: the map is from fix1, the merged table from fix2
+V1 = (__import__("os").environ["RDNA_DATA_ROOT"] + r"/for_paper/08_versions/v11-fix1")
+V0 = (__import__("os").environ["RDNA_DATA_ROOT"] + r"/for_paper/08_versions/v11")
+OUT = (__import__("os").environ["RDNA_DATA_ROOT"] + r"/5S_position_variant_work/2026-09-17_v11_fix2")
 os.makedirs(OUT, exist_ok=True)
 MAPF = os.path.join(V1, "03_maps", "g8canonv11f1", "CONSENSUS_MAP_G8_full.tsv")
 RMF = os.path.join(V, "07_merged", "READMAP_V11F2_BYSOURCE.tsv")

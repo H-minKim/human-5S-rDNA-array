@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-"""순수 파이썬 BAM 읽기 (pysam 없음) — BGZF 는 연결된 gzip 멤버라 gzip 모듈로 풀린다.
-필요한 것만: 이름·flag·ref·pos·CIGAR·SEQ·MM·ML.
+"""Pure-Python BAM reader (no pysam): BGZF is a series of concatenated gzip members, so the gzip module reads it.
+Only what is needed: name, flag, ref, pos, CIGAR, SEQ, MM, ML.
 """
 import gzip, struct
 

@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
-# v9 (2026-10-18 밤) - 규격판 조립기
-# ⒜ 줄 배율을 쓰지 않는다 - 배율은 글자 크기를 줄마다 다르게 만든다(규격 ⒝ 위반).
-# 줄 길이는 칸 사이 틈에 남는 폭을 나눠 넣어 맞춘다(칸이 하나면 가운데).
-# ⒝ 패널 글자 = 8.2 pt 대문자, 자리는 칸 구석이 아니라 틀 선에서
-# 왼쪽 -22.5 pt, 기준선 틀 위 -1.5 pt.
-# ⒞ 글자는 패널을 다 그린 뒤에 얹는다(먼저 얹으면 뒤 패널이 덮는다).
-# ⒟ 폭은 환경변수 SPEC_W(기본 423.5 pt), 낼 곳은 OUT_SET.
-# 패널은 이미 그 크기로 그려져 있어야 한다 - 여기서 늘이거나 줄이지 않는다.
+# Version 9: the specification-conforming assembler.
+# a) No per-row scaling. Scaling makes the type size differ between rows, which violates specification b.
+# The row length is matched instead by distributing the leftover width into the gaps between cells, or by centring a single cell.
+# b) The panel letter is an 8.2 pt capital, positioned from the frame line rather than from the corner of the cell:
+# -22.5 pt to the left and a baseline 1.5 pt above the top of the frame.
+# c) The letters are placed after every panel has been drawn; placed first, a later panel covers them.
+# d) The width comes from the environment variable SPEC_W, default 423.5 pt, and the destination from OUT_SET.
+# The panels must already be drawn at that size; nothing is grown or shrunk here.
 import collections
 import io
 import os
@@ -35,9 +35,9 @@ PD = os.path.join(OUTD, "panels")
 os.makedirs(PD, exist_ok=True)
 NL = chr(10)
 PAD, GAP, LABW = 10.0, 15.0, 13.0
-TARGET_W = float(os.environ.get("SPEC_W", "423.5"))   # 발행 폭 (pt)
-FS_LAB = 8.2                                          # 패널 글자
-LAB_DX, LAB_DY = -22.5, -1.5                          # 틀 선에서
+TARGET_W = float(os.environ.get("SPEC_W", "423.5"))   # the publication width, in pt
+FS_LAB = 8.2                                          # the panel letter
+LAB_DX, LAB_DY = -22.5, -1.5                          # from the frame line
 NUMRX = r"[-+]?[\d.]+"
 INPAD = 6.0
 
@@ -45,9 +45,8 @@ FIG4 = [
     [("Fig4_a_a2_b_c2_c3_v3__a", "A"), ("Fig4_a_a2_b_c2_c3_v3__b", "B")],
     [("Fig4_a_a2_b_c2_c3_v3__a2", "C")],
     [("Fig4c_six_units_continuous__c", "D")],
-    # G 삭제, E 와 F 가 그 줄의 반반
+    # E and F take half the row each
     [("Fig4c2c3c4_block_anatomy__c2", "E"), ("Claim_G_outside_array__b", "F")],
-    # G 를 뺐으므로 뒤 글자를 한 칸씩 당긴다 (옛 H~P → 새 G~O)
     [("F39_5S_array__a", "G"), ("F39_5S_array__c", "H"), ("F39_5S_array__b", "I")],
     [("F39_D4Z4_4q_array__a", "J"), ("F39_D4Z4_4q_array__c", "K"),
      ("F39_D4Z4_4q_array__b", "L")],
@@ -56,7 +55,7 @@ FIG4 = [
      ("Claim_F2_show_hardcall_ext_EN__d11", "O")],
 ]
 
-# S4 : 1 줄 = [위 A / 아래 C] + B, 그 아래 D,E,F, G,H, I,J,K
+# S4: row 1 is [A above / C below] plus B, then D, E, F, then G, H, then I, J, K
 S41 = [
     [("COL", [("SuppS6_from_c", "A"), ("ClaimA_two_states__b", "C")]),
      ([["Fig4d_single_molecules__m1", "Fig4d_single_molecules__m2"],
@@ -152,7 +151,7 @@ def grid_size(g):
 
 
 def cells_of(row):
-    """줄 -> 칸 목록. 칸 = ('P', letter, grid) 또는 ('C', [(letter, grid), ...])"""
+    """row -> list of cells. cell = ('P', letter, grid) or ('C', [(letter, grid), ...])"""
     out = []
     for a, b in row:
         if a == "COL":
@@ -192,16 +191,16 @@ def build(name, ROWS):
     left = [b for b in need
             if re.search(r">%s<" % re.escape(b.split("__")[-1]),
                          io.open(os.path.join(PD, b + ".svg"), encoding="utf8").read())]
-    # ── 1 차 : 줄마다 자연 폭
+    # -- first pass: the natural width of each row
     rows = [cells_of(r) for r in ROWS]
     natw = []
     for cs in rows:
         natw.append(sum(cell_size(c)[0] for c in cs) + PAD * (len(cs) - 1))
     target = max(natw + [TARGET_W - LABW])
-    scales = [1.0 for _w in natw]          # 배율 금지 (규격 ⒝)
-    slacks = [target - w for w in natw]    # 남는 폭은 틈으로 나눈다
+    scales = [1.0 for _w in natw]          # no scaling, per specification b
+    slacks = [target - w for w in natw]    # the leftover width is distributed into the gaps
 
-    # ── 2 차 : 자리 잡기 (줄마다 배율)
+    # -- second pass: placement, per row
     place, y, n = [], 0.0, 0
     for ri, (cs, s) in enumerate(zip(rows, scales)):
         gapx = PAD + (slacks[ri] / (len(cs) - 1) if len(cs) > 1 else 0.0)
@@ -243,7 +242,7 @@ def build(name, ROWS):
                        'overflow="visible">' % (sw, sh, ow, oh))
             out.append(inner(os.path.join(PD, f + ".svg"), "r%d" % idx))
             out.append('</svg></g>')
-    # 글자는 패널을 다 얹은 뒤에 - 그리고 자리는 틀 선에서 잰다
+    # the letters come after every panel is placed, and their positions are measured from the frame line
     LABXY = []
     for lab, subs, x, yy, w, h, _i in place:
         f0, sx0, sy0 = subs[0][0], subs[0][1], subs[0][2]
@@ -292,7 +291,7 @@ def build(name, ROWS):
                 src = pymupdf.open(os.path.join(PD, f + ".pdf"))
                 page.show_pdf_page(pymupdf.Rect(sx, sy, sx + sw, sy + sh), src, 0)
                 src.close()
-        for lab, lx, ly, _ok in LABXY:          # 패널 뒤에 얹는다
+        for lab, lx, ly, _ok in LABXY:          # placed after the panels
             page.insert_text(pymupdf.Point(lx, ly), lab,
                              fontname="hebo", fontsize=FS_LAB, color=(0, 0, 0))
         doc.save(os.path.join(OUTD, name + ".pdf"))

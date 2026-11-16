@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
-r"""Fig 2 M and Supplementary Fig 2 G: rebuilds the array type groups on cohort zone windows
+r"""Fig 2 M and Supplementary Fig 2 G: builds the array type groups on cohort zone windows
 
-   Earlier path: the majority-type path of figx9_12_prep.py (Fig 2 M table FIGX9_12_GROUPS) and answer_x12.py
+   Nine-window mode: the majority-type path of figx9_12_prep.py (Fig 2 M table FIGX9_12_GROUPS) and answer_x12.py
            variant windows = the 9 fixed-depth windows of v20_nxn_scan (proximal 1-3, 4-7, 8-12, 13-25, middle, and the four symmetric distal ones)
-   New version: variant windows = 4 cohort zones (S24 boundaries proximal 3|4, 17|18, distal 10|11 -> proximal 1-3, proximal 4-17, middle, distal 1-10)
+   Zone mode: variant windows = 4 cohort zones (S24 boundaries proximal 3|4, 17|18, distal 10|11 -> proximal 1-3, proximal 4-17, middle, distal 1-10)
            a unit that falls in two zones goes to the shallower one (same rule as zone_of in VTZONE.py)
-   Nothing else changes: 40 tokens (top SD of carrier rate across haplotypes, candidates = units 2-98%), at least 2 units in a window,
+   Common to both: 40 tokens (top SD of carrier rate across haplotypes, candidates = units 2-98%), at least 2 units in a window,
      Jaccard >=0.90 single linkage, group = 3 or more haplotypes, separating token = within-group >=0.80 and within-group - outside-group >=0.30
    Gate: run with X12_WINDOWS=nine, and the values must equal the three published tables (majority-type rows of X12_TYPE_GROUPS, X12_SIG_TOKENS, X12_HAP_GROUPS)
    Environment variables (no defaults): RDNA_DATA_ROOT (root that holds v11_readvar), X12_WINDOWS (nine|zone), X12_OUT (output folder)

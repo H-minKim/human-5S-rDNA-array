@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
-"""a0x 공용 적재기 — a02_tss_profile.py 와 같은 정의(정본 TSS · β · 트랙→정본 배열)."""
+"""Shared loader for the a0x scripts, with the definitions of a02_tss_profile.py (canonical TSS, β, track to canonical array)."""
 import io, os, gzip, glob, collections
 import numpy as np
 
 # The data and output roots are environment variables with no default (CONVENTIONS, "the deposited copy wins").
-#  변수 표는 `README.md` §2 에 있다.
+#  The table of variables is in `README.md`, section 'Environment variables'.
 
 def _need(k):
     try:
@@ -13,24 +13,24 @@ def _need(k):
         raise SystemExit(
             "environment variable %s is not set; it is required by %s "
             "(a module stops the script that imports it). "
-            "The deposited copy has no default; see README.md section 2."
+            "The deposited copy has no default; see README.md, section 'Environment variables'."
             % (k, os.path.basename(__file__)))
 
 R = _need("RDNA_V12_CANON_DIR")
 D = _need("RDNA_ACCESS_DIR")
-#  이 셋은 주소가 아니라 예치 자료의 파일 이름에 들어 있는 기계 라벨이다
-#  (`METH_READUNIT_<label>.tsv.gz`). `172.31.x.x` 는 RFC1918 사설 대역으로 닿을 수 없다.
-#  다른 이름으로 예치된 자료를 쓸 때는 `NODE_LABELS` 로 덮어쓴다 (`w3=…,iB=…,iA=…`).
+#  These three are not addresses but machine labels that appear in the names of the deposited data files
+#  (`METH_READUNIT_<label>.tsv.gz`). `172.31.x.x` is the RFC1918 private range and is not reachable.
+#  To use data deposited under other names, override them with `NODE_LABELS` (`w3=...,iB=...,iA=...`).
 HOST = {"w3": "ip-172-31-58-58", "iB": "ip-172-31-32-12", "iA": "ip-172-31-57-143"}
 if os.environ.get("NODE_LABELS"):
     HOST = dict(kv.split("=", 1) for kv in os.environ["NODE_LABELS"].split(",") if "=" in kv)
 METH = {"UCSC_ONT_FIBERSEQ": "fsmeth_v12c", "PACBIO_FIBERSEQ": "pbmeth_v12d"}
 COMP = {"A": "T", "C": "G", "G": "C", "T": "A", "N": "N"}
-PB_EXCL = {"HG02630", "hg002"}          # PacBio fibertools 0.4.2 — jasmine 비교에서 제외
+PB_EXCL = {"HG02630", "hg002"}          # PacBio fibertools 0.4.2 - excluded from the jasmine comparison
 BCUT = 0.5
 
 
-STATE_MODE = os.environ.get("STATE_MODE", "")            # "" = β<0.5 · "gmm" = a13 혼합분포 판정
+STATE_MODE = os.environ.get("STATE_MODE", "")            # "" = beta < 0.5 - "gmm" = the a13 mixture-model call
 SUF = "_gmm" if STATE_MODE == "gmm" else ""
 
 
@@ -46,7 +46,7 @@ def load_state_gmm():
 
 
 def load_units():
-    """(sample, slot, apos) -> (unit_start, unit_end, tss 정본 1기반), 정본 서열 dict"""
+    """(sample, slot, apos) -> (unit_start, unit_end, tss; canonical, 1-based), and the dict of canonical sequences"""
     SUM = {}
     for l in io.open(os.path.join(R, "02_canonical", "SUM_V11.tsv"), encoding="utf8").readlines()[1:]:
         x = l.rstrip("\n").split("\t"); SUM[(x[0], x[1])] = x[4]
@@ -94,7 +94,7 @@ def load_beta(min_cpg=10):
 
 
 def load_m6a():
-    """(sample, src, read, slot, apos) -> [n_a, n_m6a]  (in_final=Y, 두 가닥 합)"""
+    """(sample, src, read, slot, apos) -> [n_a, n_m6a]  (in_final=Y, both strands summed)"""
     M = collections.defaultdict(lambda: [0, 0])
     for src, meth in METH.items():
         for node in ("w3", "iB", "iA"):
@@ -111,8 +111,8 @@ def load_m6a():
 
 
 def iter_reads(UNIT, pad_left, pad_right):
-    """read 마다 (smp, src, rid, slot, arr(uint8 정본배열), lo, [(apos, T_index)])
-    arr[i] = 정본 0기반 lo+i 의 'M'/'N'/'.'"""
+    """per read: (smp, src, rid, slot, arr (uint8 canonical array), lo, [(apos, T_index)])
+    arr[i] = 'M'/'N'/'.' at canonical 0-based position lo+i"""
     for tf in sorted(glob.glob(os.path.join(D, "a01_tracks", "*.tsv.gz"))):
         reads = collections.defaultdict(list)
         with gzip.open(tf, "rt", encoding="utf8") as f:

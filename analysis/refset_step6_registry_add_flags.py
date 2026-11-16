@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
-# → V11F4_DATASET_hap_flags.tsv (0b7c991fada5 · 616 행 · 42 열)
-#   단계 : ⑥ 자료 대장
+# -> V11F4_DATASET_hap_flags.tsv (0b7c991fada5, 616 rows, 42 columns)
+#   Step 6: the data registry.
 
 # -*- coding: utf-8 -*-
 # Flags the haplotypes whose assembly and canonical sequence are not taken at face value
-#   입력 : V11F4_DATASET_hap.tsv (수정1 지도 + 수정4 메틸) + JXHIFI (HiFi 재현율)
-#   깃발은 "틀렸다" 가 아니라 "이 용도로는 쓰지 말라" 다. 쓰임마다 다르므로 열을 나눠 둔다.
+#   Inputs: V11F4_DATASET_hap.tsv, with the revision-1 map and the revision-4 methylation, plus JXHIFI for the HiFi recall.
+#   A flag does not mean the entry is wrong but that it should not be used for a particular purpose, so the flags are kept in separate columns.
 import io
 import os
 import gzip
@@ -16,7 +16,7 @@ NL = "\n"
 TAB = "\t"
 SRC = os.path.join(OUT, "V11F4_DATASET_hap.tsv")
 
-# ── HiFi 합의 재현율 (다수형 기준) — 앞서 쓴 것과 같은 코드
+# -- HiFi consensus recall, against the majority allele
 SUB = {75: ("G", "A"), 369: ("A", "G"), 563: ("C", "G"), 568: ("G", "A"), 1096: ("T", "G"),
        1344: ("A", "C"), 1387: ("C", "T"), 1398: ("G", "C"), 1683: ("G", "T"), 1756: ("A", "C")}
 
@@ -66,7 +66,7 @@ SPAN_OK = {("HG02792", "2"), ("HG03567", "2"), ("HG03704", "2"),
            ("NA19468", "2"), ("HG03816", "2"), ("HG01940", "1")}
 SPAN_BAD = {("NA18565", "2"): "관통 read 5 개가 전부 37~38 유닛 (정본 35) — 3 유닛 차"}
 SPAN_NONE = {("NA19035", "2"), ("HG04184", "2"), ("HG04153", "2")}
-# ── 정본 fasta 가 지도보다 긴 3 슬롯 (원인 미규명)
+# -- the three slots whose canonical fasta is longer than the map; the cause is not established
 LEN_ODD = {("HG01150", "2"): "2.11x", ("NA20503", "2"): "1.54x", ("NA20827", "1"): "1.36x"}
 
 f = io.open(SRC, encoding="utf8")

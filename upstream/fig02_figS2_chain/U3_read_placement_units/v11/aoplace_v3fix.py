@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# ARRAY_ONLY actual placement, using only the gates fixed by the test (2026-09-09)
+# ARRAY_ONLY actual placement, using only the gates fixed by the test
 #
 #  Gates (fixed in the test, no post hoc adjustment)
 #      K = 16, Δ >= 10
@@ -13,7 +13,7 @@
 #    Δ, which asks "does it attach confidently only on its own individual", is the real discriminating axis.
 #
 #  Units are cut by alignment coordinates (no blastn)
-#    The cause that broke chain placement was blastn cutting (unit count agreement 70.8%).
+#    blastn cutting breaks chain placement (unit count agreement 70.8%).
 #
 #  Targets = reads that TUC judged to span the array, without flank
 #    arr_span >= 36000 (16 units = meets K), flankL,flankR < 500
@@ -27,7 +27,7 @@ import random
 import subprocess
 import collections
 
-W = os.path.expanduser(os.environ.get("WDIR", "~/aojx3"))
+W = os.path.expanduser(os.environ["WDIR"])
 os.makedirs(W, exist_ok=True)
 R = os.path.expanduser("~/s5s_tuc/ref")
 NL = "\n"
@@ -308,11 +308,11 @@ for smp in [x.strip() for x in io.open(sys.argv[1], encoding="utf8") if x.strip(
         npass += 1
         # Placement succeeded, record the units covered by this read
         N = UB[(smp, ctg)][0][3]
-        # Do not cut the unit record at K (2026-09-09 fix)
+        # The unit record is not cut at K
         #   The position is already fixed by the first K units, and the remaining units are contiguous,
-        #   so their positions follow automatically as r0[0]+t. Originally they were discarded.
-        #   Measured: reads actually spanned a median of 23.6 units but only 16 were written, a 35.9% loss.
-        #   However, units after the K-th were not used in the placement score,
+        #   so their positions follow automatically as r0[0]+t.
+        #   Measured: reads span a median of 23.6 units; writing only 16 would lose 35.9%.
+        #   However, units after the K-th are not used in the placement score,
         #     so they are marked separately with the scored column (to avoid mixing them before testing).
         for t, (u, _s) in enumerate(seg):
             # scored = 1 means one of the first K units used in the placement score, 0 means after that

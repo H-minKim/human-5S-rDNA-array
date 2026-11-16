@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
-# 타 생물종 5S 산출물 형식 통일 (D 디스크 재편)
-#   열쇠 : array_id = <종키>__<염색체>_<시작>_<끝>  (모든 표가 이 하나로 이어진다)
-#   종키 : 조립본 단위 (human_CHM13v2 · zfinch_v03_dip · zebrafish_GRCz12tu · arabidopsis_ColCC ...)
-#   모든 read/유닛/array 표 앞에 species · sample 열을 붙인다 (표만 보고도 출처를 알게)
-#   폴더 : 00_catalog · 01_canonical(정본) · 02_consensus_map · 03_reads · 04_bam · 05_bedmethyl · 06_aux
-#   옛 폴더(zebrafish · zfinch_ont · arabidopsis_ont 등)는 새 자리로 복사만 하고 지우지 않는다
+# Unify the format of the other-species 5S outputs, reorganising the D drive.
+#   The key: array_id = <species key>__<chromosome>_<start>_<end>, which joins every table.
+#   The species key is per assembly: human_CHM13v2, zfinch_v03_dip, zebrafish_GRCz12tu, arabidopsis_ColCC and so on.
+#   Every read, unit and array table gains leading species and sample columns, so that the source is visible from the table alone.
+#   The folders: 00_catalog, 01_canonical, 02_consensus_map, 03_reads, 04_bam, 05_bedmethyl, 06_aux.
+#   The older folders are copied to their new places and never deleted.
 # MIT License · Copyright (c) 2026 Hungmin Kim
 import io
 import os
@@ -21,9 +21,9 @@ NEW = os.path.join(D, "data_v2")
 SUB = ["00_catalog", "01_canonical", "02_consensus_map", "03_reads", "04_bam", "05_bedmethyl", "06_aux", "cms_tbl"]
 for s in SUB:
     os.makedirs(os.path.join(NEW, s), exist_ok=True)
-# 종키 : 옛 폴더 이름 -> 새 종키, 그리고 표본 이름
+# the species key: old folder name -> new species key, and the sample name
 SPK = {"zebrafish": "zebrafish_GRCz12tu", "zfinch_ont": "zfinch_v03_dip", "arabidopsis_ont": "arabidopsis_ColCC"}
-# 제브라피시 read 표는 옛 스크립트(9 열)라 쓰지 않는다 — 같은 units_matrix.py 로 다시 계산한 원본을 쓴다
+# the 9-column zebrafish read table is not used; the one computed with units_matrix.py is used instead
 ZFU2 = "$SCRATCH_DIR/relay/zfu2"
 LOG = []
 
@@ -46,7 +46,7 @@ def write_tsv(p, hd, rows):
     LOG.append("%s  %d 행" % (os.path.relpath(p, D), len(rows)))
 
 
-# 1) 카탈로그 : 두 파일 합치고 array_id 붙이기
+# 1) the catalogue: merge the two files and attach array_id
 SPMAP = {"Danio_rerio": "zebrafish_GRCz12tu", "Taeniopygia_guttata": "zfinch_v03_dip",
          "Arabidopsis_thaliana": "arabidopsis_ColCC", "Zea_mays": "maize_Mo17_T2T"}
 rows, hd = [], None
@@ -62,7 +62,7 @@ for fn in ("5S_array_catalog.tsv", "5S_array_catalog_primates_mouse.tsv"):
         key = SPMAP.get(sp)
         if key is None:
             key = sp if "_" in sp else sp
-        # 영장류·마우스 카탈로그는 1 열이 이미 종키
+        # in the primate and mouse catalogues column 1 is already the species key
         if sp in ("chimp_mPanTro3", "bonobo_mPanPan1", "gorilla_mGorGor1", "orang_sumatran_mPonAbe1",
                   "orang_bornean_mPonPyg2", "siamang_mSymSyn1", "rhesus_T2T_MMU8v2", "mouse_C57BL6J_T2T",
                   "human_CHM13v2"):
@@ -70,14 +70,14 @@ for fn in ("5S_array_catalog.tsv", "5S_array_catalog_primates_mouse.tsv"):
         elif sp == "Arabidopsis_thaliana" and "CEN" in asm:
             key = "arabidopsis_ColCEN12"
         elif sp == "Taeniopygia_guttata" and ("GCA_048771995" in asm or "GCA_048772025" in asm):
-            # mat·pat 두 조립본을 합쳐 만든 dip 참조로 구조표·지도를 냈고 염색체 이름·좌표가 같으므로 종키를 맞춘다
+            # the structure table and the map were produced against the diploid reference built from the maternal and paternal assemblies, and the chromosome names and coordinates match, so the species key is matched to it
             key = "zfinch_v03_dip"
         elif sp == "Danio_rerio" and "GRCz11" in asm:
             key = "zebrafish_GRCz11"
         rows.append([key, aid(key, r[2], r[3], r[4])] + r)
 write_tsv(os.path.join(NEW, "00_catalog", "5S_array_catalog.tsv"),
           ["species_key", "array_id"] + hd, rows)
-# 2) 구조표 : array_id 붙이기 (unit_identity_pct 열은 정렬 없이 잰 값이라 뺀다)
+# 2) the structure table: attach array_id, dropping the unit_identity_pct column, which was measured without alignment
 p = os.path.join(OLD, "array_structure", "5S_array_structure_all.tsv")
 if os.path.exists(p):
     h, rs = read_tsv(p)
@@ -87,13 +87,13 @@ if os.path.exists(p):
     for r in rs:
         out.append([aid(r[0], r[1], r[2], r[3])] + [x for i, x in enumerate(r) if i != drop])
     write_tsv(os.path.join(NEW, "00_catalog", "5S_array_structure.tsv"), ["array_id"] + nh, out)
-# 3) 그대로 옮기는 표
+# 3) tables copied across unchanged
 for fn in ("dataset_access_status.tsv", "5S_methylation_cross_species_summary.tsv", "rhesus_5S_array_judgement.txt"):
     p = os.path.join(OLD, fn)
     if os.path.exists(p):
         shutil.copy2(p, os.path.join(NEW, "00_catalog", fn))
         LOG.append("00_catalog/" + fn)
-# 4) read / 유닛 / array 표 : species · sample 열 앞에 붙여 복사
+# 4) the read, unit and array tables: copied with species and sample prepended
 def add_cols(src, dst, sp, smp):
     op = gzip.open if src.endswith(".gz") else io.open
     wp = gzip.open if dst.endswith(".gz") else io.open
@@ -131,7 +131,7 @@ for old_dir, sp in SPK.items():
                 add_cols(p, os.path.join(rd, "%s__%s.read_unit.tsv%s" % (sp, smp, ".gz" if fn.endswith(".gz") else "")), sp, smp)
             elif fn in ("5S_unit_summary.tsv", "5S_array_summary.tsv"):
                 add_cols(p, os.path.join(rd, fn), sp, None)
-    # BAM · bedMethyl · 부가
+    # the BAMs, the bedMethyl and the extras
     for sub, tgt in (("bam", "04_bam"), ("bedmethyl", "05_bedmethyl"), ("extract", "06_aux")):
         s2 = os.path.join(src, sub)
         if os.path.isdir(s2):
@@ -148,7 +148,7 @@ for old_dir, sp in SPK.items():
                                                                "flowcell_basecall.tsv", "array_read_selection.tsv",
                                                                "batch_basecall.tsv")):
             shutil.copy2(p, os.path.join(a2, fn))
-# 4b) 제브라피시 read 표 : 새 형식 원본에서
+# 4b) the zebrafish read table, from the source in the new format
 if os.path.isdir(ZFU2):
     sp = "zebrafish_GRCz12tu"
     rd = os.path.join(NEW, "03_reads", sp)
@@ -162,7 +162,7 @@ if os.path.isdir(ZFU2):
             add_cols(p2, os.path.join(rd, "%s__%s.read_unit.tsv" % (sp, smp)), sp, smp)
         elif fn in ("5S_unit_summary.tsv", "5S_array_summary.tsv"):
             add_cols(p2, os.path.join(rd, fn), sp, None)
-# 5) 금화조 PacBio 집계 · BED 등 부가
+# 5) the zebra finch PacBio aggregates, the BEDs and other extras
 for fn in ("zfinch_5S_array_meth_summary.tsv", "zfinch_5S_units_meth.tsv", "grcz11_5S_regions.bed", "grcz12_5S_arrays.bed"):
     p = os.path.join(OLD, fn)
     if os.path.exists(p):

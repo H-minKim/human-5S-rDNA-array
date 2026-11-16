@@ -1,6 +1,4 @@
 #!/bin/bash
-# Transcribed from the run record: the code ran on a compute node and no copy was saved locally.
-# Transcribed from the run record.
 # hifiasm 0.25.0-r726 (node ~/hifiasm). Reads are the 5S reads extracted by U1a (~/s5s_ont/hits = HPRC ONT).
 # 4 individuals where hifiasm failed to join the array into one contig - reassemble with downsampled data
 #

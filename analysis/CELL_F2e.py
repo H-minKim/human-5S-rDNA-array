@@ -4,7 +4,7 @@ r"""Main Fig 2 cell e: only figure 1 of MAJREF.py (fig_T0_majref), at cell size 
    Like MAJREF, run with hook_tieronly / hook_tieronly_en (with the ordinary hook the majority conversion is applied twice)
    Only the appearance changed: figure size, font size (common to main-text cells), line width, annotation text positions, no figure title or large title (the composite removes them anyway)
    Content check: CMPART.py (old fig_T0_majref axes 0 vs this figure)
-Output: $FIGOUT\cellF2_e_majref.png/svg, CELL_F2e_source_values.tsv, CELL_F2e_flips.tsv
+Output: $FIGOUT/cellF2_e_majref.png/svg, CELL_F2e_source_values.tsv, CELL_F2e_flips.tsv
 """
 import io, os, sys, collections
 import numpy as np
@@ -21,7 +21,7 @@ plt.rcParams["svg.fonttype"] = "none"
 sys.path.insert(0, __import__("os").environ.get("V11_CODE", __import__("os").path.join(__import__("os").path.dirname(__import__("os").path.abspath(__file__)), __import__("os").pardir, "common", "fig02_figS2")))
 import v11_io as G
 
-# ---- element names: code and tables unchanged, only the figure text is changed ----
+# ---- element names for the figure text (code and tables keep their own names) ----
 _DISP = {"AluY": "AluY element", "NTS1": "spacer-1", "NTS2": "spacer-2",
          "GArich": "GA-rich", "GA-rich": "GA-rich",
          "promoter": "5′-flanking", "prom": "5′-flanking", "프로모터": "5′-flanking",
@@ -63,8 +63,8 @@ for k in HK:
         for p, t in d.items(): site_alle[p][t] += 1
 NU = len(units)
 for p in site_alle: site_alle[p]["REF"] = NU - sum(site_alle[p].values())
-# the reference choice was unified from mode -> majority (c/NU > 0.5).
-#   hook_tier (= the G6 and lambda measurement frame) uses the same rule. The mode rule takes a non-majority token as the reference,
+# the reference is the majority token (c/NU > 0.5).
+#   hook_tier (= the G6 and lambda measurement frame) uses the same rule. A mode rule takes a non-majority token as the reference,
 #   as at position 1476 (29 allele types, mode 0.4233), so the reference shifts with the sample.
 MAJ = {}
 for p in site_alle:
@@ -156,10 +156,10 @@ ax.fill_between(range(len(LAB)), y - 1.96 * se, y + 1.96 * se, color="#aab7b8", 
 ax.plot(range(XM), y[:XM], "-o", ms=1.3, lw=0.7, color="#2471a3", zorder=3, label="근위 쪽")
 ax.plot(range(XM, len(LAB)), y[XM:], "-o", ms=1.3, lw=0.7, color="#c0392b", zorder=3, label="원위 쪽")
 ax.plot([XM], [y[XM]], "o", ms=3.0, color="#566573", zorder=4, label="가운데")
-# only the annotation text positions are fitted to the cell (the points and text they refer to are unchanged), (offset in points, horizontal alignment)
+# annotation text positions fitted to the cell (offset in points, horizontal alignment)
 _OFF = {"P1": ((2, -6), "left"), "P2": ((2, 12), "left"), "P3": ((5, 1), "left"),
         "D7": ((-2, 5), "right"), "D5": ((0, 10), "center"), "D2": ((-3, 0), "right"), "D1": ((-3, -15), "right")}   # D1 goes down inside the cell (right frame alignment)
-# peak value marks (P1, P2, P3, D7, D5, D2, D1) are removed from the figure (values are in the per-position rows of the value table)
+# peak value marks (P1, P2, P3, D7, D5, D2, D1) are not drawn on the figure (values are in the per-position rows of the value table)
 for l in ():
     if l not in LAB: continue
     i = LAB.index(l)
@@ -169,13 +169,13 @@ for l in ():
                 arrowprops=dict(arrowstyle="-", color="#17202a", lw=0.35, shrinkA=0, shrinkB=0))
 ax.set_xlim(-0.5, len(LAB) - 0.5)
 _xticks(ax, LAB)
-# tick label colour and weight removed (old proximal #2471a3, distal #c0392b, middle #566573 bold), L (cellF2_m_cpg) is already black
+# tick labels have no colour or weight of their own, as in L (cellF2_m_cpg)
 for t_ in ax.get_xticklabels(): t_.set_fontsize(CS.FS_TICK)
-_yl = ax.get_ylim()                                            # vertical range set by the data, as in the original
-ax.set_yticks([6.0, 6.5, 7.0, 7.5, 8.0, 8.5, 9.0, 9.5])      # original ticks unchanged
+_yl = ax.get_ylim()                                            # vertical range set by the data
+ax.set_yticks([6.0, 6.5, 7.0, 7.5, 8.0, 8.5, 9.0, 9.5])      # fixed ticks
 ax.set_ylim(_yl)                                               # fixing the ticks widens the range, so restore it
-ax.set_ylabel(CS.L("유닛당 변이 수", "Variants per unit"))   # axis title on one line, short (old: number of variants per unit (majority reference))
-# the horizontal axis title is removed and goes to the Legend text (the ticks read 'proximal 1 ... distal 1')
+ax.set_ylabel(CS.L("유닛당 변이 수", "Variants per unit"))   # axis title on one line
+# no horizontal axis title, it is in the Legend text (the ticks read 'proximal 1 ... distal 1')
 ax.legend(loc="upper center", ncol=3, frameon=False)
 CS.save(fig, OUT, "cellF2_e_majref")
 print("유닛당 %.2f 개 (CHM13 기준 %.2f) · 바뀐 자리 %d" % (N_.mean(), O.mean(), len(FLIP)))

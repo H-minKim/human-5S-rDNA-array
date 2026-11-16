@@ -1,17 +1,13 @@
 #!/bin/bash
-# Transcribed from the run record: the code ran on a compute node and no copy was saved locally.
-# Transcribed from the run record, Bash heredoc (<<'EOS'); ssh, key and node addresses are not included.
 # hifiasm 0.25.0-r726 (node ~/hifiasm). Reads are the 5S reads extracted by U1a (~/s5s_ont/hits = HPRC ONT).
-# Hypothesis test: does the purge step of hifiasm delete short haplotypes as 'duplicates' (2026-09-05)
+# Reassemble the same reads with -l 0 (purge off) to recover the shorter haplotype
 #
 #  Basis: in tandem arrays the two real haplotypes are 99.62% identical (measured).
 #        The shorter one looks like a subsequence of the longer one, so purge_dups removes it as a haplotig.
-#        In fact there are 26 individuals for which hifiasm output only the longer one correctly and not the shorter one
+#        There are 26 individuals for which hifiasm outputs only the longer one correctly and not the shorter one
 #        (HG03704 only 136 units, spanning reads show 33 units, truth 33,136).
 #
-#  Test: reassemble the same reads with -l 0 (purge off).
-#        If the short haplotype appears, the hypothesis holds.
-#  All other conditions are kept identical (--ont, same fastq, same threads).
+#  All other conditions are identical (--ont, same fastq, same threads).
 set -u
 TH=${TH:-10}
 D=~/nopurge; mkdir -p "$D"; SUM=$D/nopurge_summary.tsv

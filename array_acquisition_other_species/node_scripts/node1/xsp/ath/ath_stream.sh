@@ -1,7 +1,7 @@
 #!/bin/bash
-# 애기장대 ATRun3 pod5 tar (EBI ERR17795792 · 164 GB) 를 디스크에 통째로 두지 않고 흘려 받으며 array read 만 pod5 로 남긴다
-#   pdl.py (병렬 범위 받기 · 순서 보존 · 32 연결) -> tar -xz --to-command (멤버 하나씩 ath_member.sh)
-#   인자 : MODE = test (앞 GB 만 · 전체 id 로 걸러 fastq id = pod5 id 확인) | full (ath.ids)
+# The Arabidopsis ATRun3 pod5 tar (EBI ERR17795792, 164 GB) is streamed rather than stored whole, keeping only the array reads as pod5.
+#   pdl.py (parallel range requests, order preserved, 32 connections) -> tar -xz --to-command, one member at a time through ath_member.sh.
+#   Argument: MODE = test (the first few GB only, filtered against the full id list to confirm fastq id = pod5 id) or full (ath.ids).
 # MIT License · Copyright (c) 2026 Hungmin Kim
 set -u
 H=~/xsp/ath

@@ -1,15 +1,14 @@
 # -*- coding: utf-8 -*-
-#  R9/R10 층별 재측정
+#  Re-measurement stratified by R9 / R10
 #
-# Why : the basecaller version shifts beta by 0.13,
-#    기록에 *"R9/R10 층을 나눈 재측정 미실시 · Fig 4 a·b 에 걸린다"* 가 남아 있다.
-# The 10 `1kGP` individuals of `S4 A` turned out to be of mixed chemistry.
+# Why : the basecaller version shifts beta by 0.13, and
+#    the 10 `1kGP` individuals of `S4 A` are of mixed chemistry.
 #
-#  어떻게 — 각 패널이 자기 자로 잰 것을 그대로 쓰고 층만 가른다. 새 자를 만들지 않는다.
-#    ⑴ `S4 A` : `figx25_shape_prep.py` 의 그 recipe (H2 관문 · 유닛 β = b 평균 · `shape()`)
-#    ⑵ `Fig 4 a·b` 의 골 : `valley_hardcall.py` 의 그 관문
-#       (HPRC_ONT_submissions · n_cpg>=20 · H2 슬롯 · ao/jx 중복제거 jx 우선 · 하드콜 β)
-#  읽기만 한다. 쓰는 것은 모래상자뿐.
+#  How: each panel's own ruler is used unchanged and only the stratum is split out. No new ruler is made.
+#    (1) `S4 A`: the recipe of `figx25_shape_prep.py` (H2 gate; unit beta = mean of b; `shape()`)
+#    (2) the valley of `Fig 4 a and b`: the gate of `valley_hardcall.py`
+#       (HPRC_ONT_submissions; n_cpg >= 20; H2 slots; ao/jx deduplicated with jx preferred; hard-call beta)
+#  It only reads. The only thing it writes to is its sandbox.
 # The HPRC release 2 ONT sequencing index this script reads is not part of this archive.
 # Set RDNA_HPRC_R2_ONT_INDEX to a local copy; without it the script falls back to a file of
 # that name beside itself. The README says where the index comes from and gives its md5.
@@ -40,7 +39,7 @@ V11 = _need("RDNA_V11_READVAR_DIR")
 W = _need("RDNA_METH_BLOCKS_DIR")
 L1P = os.path.join(V11, "02_tables", "L1_READ_UNIT.parquet")
 
-#  ───────── 화학 지도 (둘 다 실측 파일에서)
+#  --------- chemistry map (both taken from the measured files)
 hp = {}
 for r in csv.DictReader(io.open(os.environ.get("RDNA_HPRC_R2_ONT_INDEX",
                                      os.path.join(SP, "hprc_ont_r2_index_2026-10-24.csv")),
@@ -58,7 +57,7 @@ for r in csv.DictReader(io.open(os.path.join(V11, "03_figures", "paper_Fig", "00
 print("화학 지도 : HPRC 색인 %d 개체 · 1kGP 메타표 %d 개체" % (len(HPCHEM), len(kg)))
 print()
 
-#  ───────── ⑴ `S4 A` — figx25 의 recipe 그대로, 층만 더한다
+#  --------- (1) `S4 A` - the figx25 recipe unchanged, with the stratum added
 G = np.linspace(0.01, 0.99, 4901)
 
 
@@ -132,7 +131,7 @@ for f in ["1kGP", "GIAB", "HPRC"]:
                      sh["골"], sh["골봉비"]])
 print()
 
-#  ───────── ⑵ `Fig 4 a·b` 의 골 — valley_hardcall 의 관문 그대로, 층만 가른다
+#  --------- (2) the valley of `Fig 4 a and b` - the valley_hardcall gate unchanged, split by stratum
 h2 = pd.read_parquet(L1P, columns=["sample", "slot", "gate"])
 H2 = set(map(tuple, h2.loc[h2.gate == 1, ["sample", "slot"]].drop_duplicates()
              .astype(str).values))

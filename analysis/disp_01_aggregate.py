@@ -1,21 +1,21 @@
 # -*- coding: utf-8 -*-
-# 흩어진 5S 좌위 → 자리(site) 단위 집계 (로컬 자료만, 읽기 전용)
+# Dispersed 5S loci aggregated per site (local data only, read-only)
 #
-# 입력 : $WORK_ROOT\05_checks\2026-09-17_TUC_dropped_reads_5S_content_methylation\
-#   structure_exact_cells\per_individual\<S>.STRUCT_LOCI.tsv.gz  (좌위 1 행 · ubins50_exact = 50bp 칸 CpG:메틸)
-#   CHM13_positions\LOCI_SITE.tsv.gz                (좌위 → 자리, core·mapq>=20)
-# 출력 : dispersed_vs_array\DISP_SITE_*.tsv
-#   · 자리 × 상태(low/mid/high/NA) × 칸 (n, meth) — 짝/홀 개체 반쪽 따로(반쪽 재현용)
-#   · 자리 × 칸 덮음(좌위 수)
-#   · 자리 × 개체 β (자리 안 이봉·개체 일관성용)
-#   · ARRAY 대조(같은 코드) 상태 × 칸
-# 인자 : 표본목록(쉼표) | ALL   태그
+# Input: $WORK_ROOT/05_checks/2026-09-17_TUC_dropped_reads_5S_content_methylation/
+#   structure_exact_cells/per_individual/<S>.STRUCT_LOCI.tsv.gz  (one row per locus; ubins50_exact = 50 bp bin CpG:meth)
+#   CHM13_positions/LOCI_SITE.tsv.gz                (locus -> site; core and mapq >= 20)
+# Output: dispersed_vs_array/DISP_SITE_*.tsv
+#   - site x state (low/mid/high/NA) x bin (n, meth) - the even and odd individual halves separately (for the half-set reproduction)
+#   - site x bin coverage (number of loci)
+#   - site x individual beta (for within-site bimodality and per-individual consistency)
+#   - the ARRAY control (same code) state x bin
+# Arguments: sample list (comma separated) | ALL   tag
 import io, os, sys, gzip, glob, collections
 
 def _need(_v):
     """No defaults are set: the script stops if a variable is missing.
-    이 글이 읽는 자료의 뿌리는 README.md 의
-    "Running this code" 절에 적혀 있다."""
+    The roots of the data this script reads are listed in the
+    "Running this code" section of README.md."""
     import os as _o, sys as _s
     _x = _o.environ.get(_v)
     if not _x:
@@ -47,16 +47,16 @@ print("LOCI_SITE 좌위 %d" % len(SITE), flush=True)
 
 files = sorted(glob.glob(os.path.join(R, "structure_exact_cells", "per_individual", "*.STRUCT_LOCI.tsv.gz")))
 samples = [os.path.basename(p).split(".")[0] for p in files]
-PAR = {s: i % 2 for i, s in enumerate(samples)}       # 반쪽 = 개체 순번 짝/홀
+PAR = {s: i % 2 for i, s in enumerate(samples)}       # Half = even or odd individual index
 
 BINS = collections.defaultdict(lambda: [0, 0])     # (site, state, half, bin) -> [n, meth]
-COV = collections.Counter()                         # (site, bin) -> 좌위 수
-NLOC = collections.Counter()                        # site -> 좌위 수
-GRP = collections.defaultdict(collections.Counter)  # site -> 구조 그룹
-STC = collections.defaultdict(collections.Counter)  # site -> 상태 수
+COV = collections.Counter()                         # (site, bin) -> number of loci
+NLOC = collections.Counter()                        # site -> number of loci
+GRP = collections.defaultdict(collections.Counter)  # site -> structure group
+STC = collections.defaultdict(collections.Counter)  # site -> number of states
 SB = collections.defaultdict(lambda: [0, 0])        # (site, sample) -> [cpg_spec, meth_spec]
-LB = collections.defaultdict(list)                  # site -> 좌위 beta_spec (CpG>=10)
-PROFCHK = collections.defaultdict(lambda: [0, 0])   # (group, bin) -> 파일럿 대조용 (자리 무관)
+LB = collections.defaultdict(list)                  # site -> locus beta_spec (CpG >= 10)
+PROFCHK = collections.defaultdict(lambda: [0, 0])   # (group, bin) -> for the pilot control (independent of site)
 nsite = nnos = 0
 for p in files:
     smp = os.path.basename(p).split(".")[0]

@@ -1,13 +1,13 @@
 # tables/ — the result tables the figure code reads
 
-121 tables, 43.7 MB. Each one is the exact file a figure was drawn from: it was
+121 tables, 45.8 MB. Each one is the exact file a figure was drawn from: it was
 selected by matching the `input_table_md5` recorded in the `MANIFEST_*.tsv` files,
 not by file name, because several of these names exist in more than one version
 folder in the working tree with different content.
 
 Point the table roots at this folder when re-running the code, for example
-`TABLE_DIR`, `DATA_ROOT`, `P11_TABLE_DIR`, `P10_DIR` and `REGISTRY_DIR`
-(the full list is in the repository README, section *Running this code*).
+`TABLE_DIR`, `DATA_ROOT`, `P11_TABLE_DIR` and `REGISTRY_DIR`
+(the full list is in the repository README, section *Environment variables*).
 
 **4 tables are not here because of their size**; they are in the Zenodo record
 that archives this repository:
@@ -18,6 +18,13 @@ that archives this repository:
 | 65.2 | `P10_CPG_ADD3.tsv.gz` |
 | 57.0 | `L1_READ_UNIT.parquet` |
 | 54.0 | `P10_CPG_ALL.tsv.gz` |
+
+Of those four, `L1_READ_UNIT.parquet` is the one that **this repository cannot
+rebuild**: it is an output of the `v11_readvar` analysis, which runs on the
+compute-node side from the placed SAM files of `upstream/v11_node/`, and those
+SAM files are intermediates of the public reads and are not deposited. Take the
+file from the Zenodo record and point `RDNA_HUMAN_L1_PARQUET` at it. The other
+three are rebuildable from what is here; they are out only for their size.
 
 **9 tables carry English names.** The content is
 unchanged, so the md5 recorded in the manifests still applies:
@@ -39,64 +46,64 @@ unchanged, so the md5 recorded in the manifests still applies:
 | `1kGP_3202_ped_population_2026-09-23.txt` | `bac176a443f9` | 97483 |
 | `ALIGNED_POS_RATE.tsv` | `a0f3a2ce577d` | 1151660 |
 | `ARRAYPROF_noHG008T_2026-10-16.tsv` | `a80b86bc5741` | 9461 |
-| `BOUNDARY_WIDE_H2_508.tsv` | `963331f95ce8` | 882512 |
-| `CONSENSUS_MAP_G8_full.tsv` | `bb68fe3a2a23` | 8864818 |
+| `BOUNDARY_WIDE_H2_508.tsv` | `963331f95ce8` | 882317 |
+| `CONSENSUS_MAP_G8_full.tsv` | `34dc9870ee54` | 8864831 |
 | `CONSENSUS_SUM_G8_full.tsv` | `4c8252462824` | 21186 |
 | `COSHARE_PERHAP.tsv` | `398d1259d27a` | 844653 |
 | `COV_AFTER_FILTER.tsv` | `55cec51e3838` | 205808 |
 | `DC_TABLE.tsv` | `6029cf9c721e` | 21483 |
-| `DISP_PROFILES.tsv` | `0599c32be6b0` | 33231 |
-| `DISP_SITES_TABLE.tsv` | `4edb4f1dad70` | 11740 |
+| `DISP_PROFILES.tsv` | `0599c32be6b0` | 32869 |
+| `DISP_SITES_TABLE.tsv` | `ae1bf0bcc790` | 11801 |
 | `EXAMPLE_PROFILE.tsv` | `ddf56e9d56c0` | 3675 |
 | `F8X2_pairs.tsv` | `2ce60ee20897` | 621 |
 | `FIG1_2_MID.tsv` | `a7638c89acf3` | 678 |
-| `FIG1_2_UNITS.tsv` | `fc4eb1dba1c8` | 1950 |
-| `FIG1_V5_A_bp_HC.tsv` | `c30a31686bc7` | 29542 |
+| `FIG1_2_UNITS.tsv` | `5c98df7d82d3` | 1949 |
+| `FIG1_V5_A_bp_HC.tsv` | `38e6e4aaa87f` | 29546 |
 | `FIG2_data_hifi.tsv` | `1ff07c00c41a` | 624 |
 | `FIG2_data_unitcmp.tsv` | `978bda6f0176` | 6666 |
 | `FIG3_A_UNITPROFILE_ZONE.tsv` | `a315cdac6f4a` | 31581 |
 | `FIG3_B_POSBETA.tsv` | `e6b0b57f9d6b` | 11495 |
-| `FIG3_C_LOWCOUNT.tsv` | `580823d3003c` | 751 |
-| `FIG3_G_TYPEDIST.tsv` | `f893f27bea9a` | 17433 |
-| `FIG3_SUPP_A_SEQ1K.tsv` | `590470d4af17` | 11005 |
-| `FIG5V2_PAIRZONE5.tsv` | `f1cfef234fb3` | 3554 |
-| `FIG8_PAIRS.tsv` | `d83d18590dc7` | 1895 |
+| `FIG3_C_LOWCOUNT.tsv` | `580823d3003c` | 699 |
+| `FIG3_G_TYPEDIST.tsv` | `77f00dfd554a` | 17489 |
+| `FIG3_SUPP_A_SEQ1K.tsv` | `072cb3bc1c42` | 11004 |
+| `FIG5V2_PAIRZONE5.tsv` | `d2a865760e06` | 3706 |
+| `FIG8_PAIRS.tsv` | `355fb486a09f` | 1945 |
 | `FIGX25_DENSITY.tsv` | `92b829838fe4` | 27495 |
-| `FIGX25_PROFILE.tsv` | `cbb8972f3b91` | 4628 |
+| `FIGX25_PROFILE.tsv` | `1b027fc9e331` | 4624 |
 | `FIG_data_table.tsv` | `2c0c009285c9` | 1233 |
 | `FILTER_DECOMPOSE.tsv` | `fdfa9107be64` | 241 |
 | `FILTER_DECOMPOSE_BDP1_2026-11-01.tsv` | `4d24ab436b8a` | 116 |
 | `FILTER_DECOMPOSE_GMATAC_2026-11-01.tsv` | `13f08b85afcd` | 76 |
 | `GM12878_interaction_NEWZONE_GMWGS_2026-10-14.tsv` | `b2355947b209` | 139 |
 | `GM_QUALGATE_2026-11-01.tsv` | `0a596a6b423b` | 32158 |
-| `INTEGRATED_14SITES.tsv` | `0d518807d74e` | 1591 |
+| `INTEGRATED_13SITES.tsv` | `c4882945692a` | 1634 |
 | `K562_QUALGATE_MIX.tsv` | `1414cf754e97` | 37510 |
 | `K562_QUALGATE_MIX_BDP1BRF1.tsv` | `c627d845531e` | 9931 |
 | `K562_QUALGATE_NEWZONE_2026-10-13.tsv` | `c8a0b6b322da` | 22756 |
 | `K562_interaction_NEWZONE_withBDP1BRF1_2026-10-14.tsv` | `270dc585ce15` | 411 |
-| `K562_zoneratio_Q20_NEWZONE_withBDP1BRF1_2026-10-14.tsv` | `31c86607c38e` | 740 |
+| `K562_zoneratio_Q20_NEWZONE_withBDP1BRF1_2026-10-14.tsv` | `79afcf0bb43e` | 725 |
 | `L2_HAP_UNIT.parquet` | `2d0217ca81b8` | 9477685 |
 | `MAP_G8_GM12878FS.tsv` | `c5fa06b45060` | 9205700 |
 | `MAP_G8_K562r.tsv` | `a91b74d6df1b` | 9201404 |
 | `MAP_hapB_v4_110units.tsv` | `68f5caa084c2` | 18897 |
 | `METH_TERM_units.tsv` | `fad6e6a66b4a` | 232924 |
 | `MODEL_TEST_ALL6.tsv` | `ae81acc0f287` | 5368 |
-| `NORM_VS_CANCER_SAMPLE.tsv` | `977c4a3e441a` | 2299 |
+| `NORM_VS_CANCER_SAMPLE.tsv` | `d889dbccca0f` | 2297 |
 | `P08_X2_zone_region.tsv` | `584cbac13842` | 3287 |
-| `P10_ARRAYS.tsv` | `4299508a8ca8` | 32060 |
+| `P10_ARRAYS.tsv` | `e6eb7058310e` | 32072 |
 | `P10_CPG_SEGS_ADD3.tsv` | `a95f2e09f8dd` | 9186 |
 | `P10_DXZ4_POLARITY_FINAL.tsv` | `a6a120f498ee` | 1689 |
 | `P10_FRAME_SEGS_ALL.tsv` | `4108ba22cc74` | 15631 |
-| `P10_ONOFF_TESTS.tsv` | `b1add5f9ad93` | 854 |
+| `P10_ONOFF_TESTS.tsv` | `74af1e5ed562` | 869 |
 | `P10_UNIT_STEPS_ABS.tsv` | `f95b9e89a86c` | 248 |
 | `P11_GM12878_MARKERS_NEWZONE_2026-10-13.tsv` | `4fec23b0c0a3` | 3367 |
 | `P11_K562_MARKERS_NEWZONE_2026-10-13.tsv` | `7a7ddea532af` | 2875 |
-| `P11_percellline_NEWZONE_GMWGS_bootstrap_2026-10-14.tsv` | `c4c303b1b5d6` | 2749 |
-| `POP_COHORT.tsv` | `82edeaab20ea` | 52499 |
-| `PROB_A4_DIST_SITE_TONE.tsv` | `aab77f6cd3d7` | 579566 |
-| `PROB_A4_SITE.tsv` | `8e0915d1dda2` | 4883 |
-| `PROB_A4_SITE_TONE.tsv` | `8a06d5f3f884` | 21807 |
-| `Q1_results.tsv` | `b1a29eaec02f` | 1697 |
+| `P11_percellline_NEWZONE_GMWGS_bootstrap_2026-10-14.tsv` | `a04e49a9d8e7` | 2623 |
+| `POP_COHORT.tsv` | `c68b2063eb7a` | 51974 |
+| `PROB_A4_DIST_SITE_TONE.tsv` | `01770c17a2fc` | 582858 |
+| `PROB_A4_SITE.tsv` | `68ec37019501` | 5145 |
+| `PROB_A4_SITE_TONE.tsv` | `0a43fa70958b` | 21873 |
+| `Q1_results.tsv` | `b1a29eaec02f` | 1690 |
 | `Q2b_results.tsv` | `8638d02a23db` | 7323 |
 | `REGCHAR_axis.tsv` | `d2da5973f84a` | 46409 |
 | `REGCHAR_relcount.tsv` | `97d494a4469b` | 2955 |
@@ -104,23 +111,23 @@ unchanged, so the md5 recorded in the manifests still applies:
 | `RU_K562r.tsv.gz` | `f8b13b7421bb` | 380352 |
 | `RU_K562u.tsv.gz` | `5e0799454a25` | 397158 |
 | `S14_length.tsv` | `1de63221dd12` | 484 |
-| `S18_changepoint.tsv` | `fb7c0859f602` | 108993 |
+| `S18_changepoint.tsv` | `fb7c0859f602` | 107612 |
 | `S1_per_position_profile.tsv` | `98996f44644b` | 169950 |
 | `S24_gain_curve.tsv` | `5adce291cd1f` | 20837 |
 | `S24_optimal_zoning.tsv` | `bbe1c8dab70d` | 1347 |
 | `S26b_boundary_drivers.tsv` | `dfc5b7df3b36` | 1451 |
 | `S26b_position_profile.tsv` | `097ff70985d7` | 10299 |
-| `STAGE_ALL_V11F2.tsv` | `683992af188f` | 59189 |
-| `SUBUNIT_BIMODAL2.tsv` | `a6ab3256ba53` | 14980 |
+| `STAGE_ALL_V11F2.tsv` | `16c79bac4378` | 59729 |
+| `SUBUNIT_BIMODAL2.tsv` | `24c5cc0b9ea9` | 14980 |
 | `SUPP3_2_POSSD.tsv` | `5b1c646147a2` | 2108 |
 | `SUPP3_B_HAP3.tsv` | `4650d5dd5fa0` | 267349 |
 | `SourceData_SuppFig1.xlsx` | `63c58b4b03e9` | 18338 |
-| `T1_pair_summary.tsv` | `960664742fc1` | 14597 |
-| `TIERS_H0H3_SLOTS_2026-10-05.tsv` | `fc34c6326111` | 94793 |
+| `T1_pair_summary.tsv` | `e4f8375e8199` | 15115 |
+| `TIERS_H0H3_SLOTS_2026-10-05.tsv` | `64725a33454f` | 94741 |
 | `TRANSCRIBED_FOR_PANEL_A.tsv` | `0eab96ae032d` | 1806 |
-| `TableS1_Hia5_untreated_control_by_position.tsv` | `07b25442b25a` | 949 |
-| `TableS3_alternative_explanations_predicted_vs_observed.tsv` | `7350a4eea9a7` | 1888 |
-| `TableS7_nucleosome_removed_occupancy.tsv` | `4644d7f1856d` | 781 |
+| `TableS1_Hia5_untreated_control_by_position.tsv` | `07b25442b25a` | 943 |
+| `TableS3_alternative_explanations_predicted_vs_observed.tsv` | `7350a4eea9a7` | 1878 |
+| `TableS7_nucleosome_removed_occupancy.tsv` | `4644d7f1856d` | 775 |
 | `V11F4_DATASET_hap.tsv` | `b6c5011279b5` | 143783 |
 | `V11F4_DATASET_hap_flags.tsv` | `d1a8f1484fb9` | 177229 |
 | `V11F4_DATASET_hap_flags_v2.tsv` | `24316816ab1d` | 179719 |
@@ -140,11 +147,11 @@ unchanged, so the md5 recorded in the manifests still applies:
 | `X5_lag2_noncircular.tsv` | `4ce156fb8f62` | 1056 |
 | `X7_homogenisation_evidence.tsv` | `0db41b93c163` | 910 |
 | `X9_patch_floor.tsv` | `2f5368ed3d30` | 610 |
-| `XA_decay_constant_robustness.tsv` | `462ec3f54a59` | 606 |
-| `Y4_cellline_summary.tsv` | `3e59d7e8fc71` | 405 |
+| `XA_decay_constant_robustness.tsv` | `462ec3f54a59` | 603 |
+| `Y4_cellline_summary.tsv` | `4b3233519253` | 399 |
 | `Y5_terminal_defining_variants.tsv` | `b013af3755fa` | 3210 |
 | `ZB_neighbour_divergence.tsv` | `be24394880b3` | 398 |
-| `ZM_population_carrier.tsv` | `f9d80cbf0aad` | 670 |
+| `ZM_population_carrier.tsv` | `f9d80cbf0aad` | 646 |
 | `ZM_terminal_similarity.tsv` | `5398b28a3f9c` | 551 |
 | `ZN_depthset_census.tsv` | `b3343a3840c1` | 2094 |
 | `ZP_gap_shape.tsv` | `17ddf3048255` | 320 |
@@ -153,7 +160,40 @@ unchanged, so the md5 recorded in the manifests still applies:
 | `fig_VTPD_region_type_composition_source_values.tsv` | `914783b86972` | 32514 |
 | `hap_seq_node_v8.tsv` | `bc11cdc3aec7` | 25342 |
 | `hor_anchor_per_read_unit.tsv` | `7ac0f3445d31` | 325340 |
-| `lowmeth_changepoint_4haplotypes_2026-10-12.tsv` | `af278c7324de` | 607 |
-| `peaks_both_v2.tsv` | `61dac6219562` | 4427 |
+| `lowmeth_changepoint_4haplotypes_2026-10-12.tsv` | `af278c7324de` | 595 |
+| `peaks_both_v2.tsv` | `6f3ab4d07673` | 4249 |
 | `privvar_per_read_unit.tsv` | `e6daf9ef2296` | 6098 |
-| `unit_marker_meth.tsv` | `52fcf2405a86` | 174271 |
+| `unit_marker_meth.tsv` | `52fcf2405a86` | 172689 |
+
+**26 more files are in this folder**, 33.4 MB, which brings it to 147 files and
+79.2 MB: the 16 Source Data workbooks (`.xlsx`), and 10 data files that the scripts
+or the manifests of this repository read or name.
+
+| file | md5 | bytes |
+|---|---|--:|
+| `FIG5V2_ZONE5.tsv` | `7a6f851682cf` | 237 |
+| `FIGX19_E_HAP_cut0508.tsv` | `5029d62eb4a5` | 426 |
+| `FIGX19_E_PAIR.tsv` | `2c44ea4b3f14` | 358 |
+| `FIGX19_F_SEG.tsv` | `ea37d896bbd8` | 1132 |
+| `FIGX25_BIMODAL.tsv` | `aea480f5560d` | 418 |
+| `Fig2_SourceData.xlsx` | `668e40a444d8` | 161160 |
+| `Fig3_main_SourceData.xlsx` | `2ee041c645fb` | 174143 |
+| `Fig3_supp_SourceData.xlsx` | `86300dde5db8` | 206974 |
+| `FigS2_SourceData.xlsx` | `e70639ea185c` | 57194 |
+| `PICKED_CALLS.tsv` | `c1907a894396` | 299120 |
+| `PICKED_MOLECULES.tsv` | `37500a163200` | 627 |
+| `SourceData_Fig1_FigS1.xlsx` | `a16a2ffccccf` | 75341 |
+| `SourceData_Fig4.xlsx` | `c49bf7ab7556` | 100027 |
+| `SourceData_Fig5_FigS7.xlsx` | `d71d6b63a55f` | 478737 |
+| `SourceData_Fig6_A-H.xlsx` | `e6ae3a4ed269` | 14899 |
+| `SourceData_Fig6_I-L.xlsx` | `48b277690e15` | 16811 |
+| `SourceData_Fig7_FigS11_FigS12_FigS13.xlsx` | `4def655080ca` | 2960714 |
+| `SourceData_FigS10.xlsx` | `494c9cab8023` | 242017 |
+| `SourceData_FigS4.xlsx` | `b61ceeb5a265` | 222485 |
+| `SourceData_FigS5.xlsx` | `eab4cc596813` | 102420 |
+| `SourceData_FigS6.xlsx` | `d6a0ca012a96` | 46942 |
+| `SourceData_FigS8.xlsx` | `c1a2c0cd5165` | 13327 |
+| `SourceData_FigS9_A-B.xlsx` | `31aa71defdbb` | 18416 |
+| `gm_v5_contigsig_v2.json` | `bd718546936a` | 1868368 |
+| `k562_v5_contigsig_v2.json` | `fb2971da132f` | 572804 |
+| `ru_v11.parquet` | `1995b1901373` | 25732589 |

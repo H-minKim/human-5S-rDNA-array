@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# 부류별 표를 만든다(코딩부 / 스페이서 / 바깥) — 결과를 파일로 쓴다(콘솔 인코딩 회피)
+# Build the per-class table, coding against spacer against outside, writing the result to a file, which avoids the console encoding.
 import io
 import collections
 import sys

@@ -1,9 +1,9 @@
 #!/bin/bash
-# cancer17.tsv 의 URL 을 흘려 읽는다 (BAM·fastq.gz 두 종류)
-#   단계 : ① read 추출 (암 17 시료)
-# 암 17 샘플에서 5S rDNA read 추출 — HPRC/GIAB 와 동일한 v5 관문(BBDuk k25 hdist2)
-# 원본을 디스크에 받지 않는다(compute-to-data 스트리밍).
-# 입력이 BAM(PacBio/GIAB) 과 fastq.gz(ENA CASTLE) 두 종류다.
+# Stream the URLs in cancer17.tsv, which are of two kinds, BAM and fastq.gz.
+#   Step 1: read extraction, the 17 cancer samples.
+# Extract 5S rDNA reads from the 17 cancer samples, through the same gate as HPRC and GIAB (BBDuk, k = 25, hdist = 2).
+# The source files are never written to disk; the computation is streamed to the data.
+# The inputs are of two kinds: BAM for PacBio and GIAB, and fastq.gz for ENA CASTLE.
 set -u
 W=~/cancer5s; mkdir -p $W/{hits,done,log,tmp}; cd $W || exit 9
 G=~/giab5s_seq

@@ -1,26 +1,26 @@
 # -*- coding: utf-8 -*-
-# 07 합본 — read 를 유닛마다 모아 자리별 합의 변이를 부른다 (타 생물종 전용)
+# Stage 07, the merge: the reads are collected per unit and a consensus variant called at each position, for the other species only.
 #
-#   왜 필요한가 : read 한 개의 변이 목록은 대부분 ONT 오류다(고릴라 실측 중앙 94 개/2,248 bp = 4.2%).
-#     유닛마다 그 유닛을 덮은 read 들을 모아 자리마다 깊이로 나눠야 진짜 변이가 남는다.
+#   Why it is needed: the variant list of a single read is mostly ONT error (measured in gorilla: a median of 94 per 2,248 bp, 4.2%).
+#     Only by collecting the reads covering each unit and dividing by the depth at each position do the real variants remain.
 #
-#   방법 (사람 파이프라인의 깊이 문턱 합의와 같은 규칙)
-#     1) 유닛 = (array_id, array_pos). 그 유닛을 덮은 read 조각을 모은다(NOALN 제외)
-#     2) 자리마다 덮은 깊이 = 그 자리를 cov_start_in_ref~cov_end_in_ref 안에 넣은 조각 수
-#     3) 변이 토큰마다 지지 수 / 그 자리 깊이 = 지지율. 지지율 >= THR 이고 깊이 >= MINDEP 이면 채택
-#     4) 채택된 토큰을 자리순으로 묶어 유닛의 합의 변이 목록으로 삼는다
-#   채움 금지 — 안 덮인 자리는 그냥 비운다(cons_cov_start/end 로 어디까지 덮었는지 적는다)
-#   mapq 로 거르지 않는다(탠덤 array 안은 mapq0 이 정상)
+#   The method, the same depth-threshold consensus rule as the human pipeline:
+#     1) a unit is (array_id, array_pos), and the read fragments covering it are collected, excluding NOALN;
+#     2) the depth at a position is the number of fragments whose cov_start_in_ref..cov_end_in_ref spans it;
+#     3) for each variant token, the support count over the depth at that position is the support fraction, and it is accepted at a support fraction of at least THR and a depth of at least MINDEP;
+#     4) the accepted tokens are collected in positional order as that unit's consensus variant list.
+#   No filling: an uncovered position is simply left empty, with cons_cov_start and cons_cov_end recording how far the coverage reached.
+#   No mapq filter: mapq 0 is normal inside a tandem array.
 #
-#   엄격판(varlist_strict) : 치환 + 3 bp 초과 indel 만. ONT 는 호모폴리머 결실을 흔히 내서
-#     1~3 bp 결실이 문턱을 넘어버린다(고릴라 실측 : 채택 결실 204 개 중 121 개가 조립본에 없다.
-#     치환은 1,514/1,593 = 95% 가 조립본과 일치). 유닛 단위 결론은 엄격판으로 낼 것.
-#   검산 : 같은 유닛의 조립본 변이(g8 지도)와 얼마나 맞는지 세어 함께 낸다(전체판·엄격판 따로)
-#   감도 : THR 0.20 / 0.35 / 0.50 세 값의 변이 수를 같이 적는다
+#   The strict version (varlist_strict) keeps only substitutions and indels longer than 3 bp. ONT frequently produces homopolymer deletions,
+#     so 1-3 bp deletions cross the threshold (measured in gorilla: 121 of the 204 accepted deletions are absent from the assembly,
+#     while 1,514 of 1,593 substitutions, 95%, agree with it). Any per-unit conclusion should use the strict version.
+#   Check: how far the result agrees with the assembly variants for the same unit, from the g8 map, is counted and reported, separately for the full and the strict version.
+#   Sensitivity: the variant count at THR of 0.20, 0.35 and 0.50 is reported alongside.
 #
-#   산출 : <out>/<species>__<sample>.unit_consensus.tsv   (유닛 한 줄)
-#          <out>/<species>__<sample>.site_support.tsv      (지지율 >= REPORT 인 변이 한 줄)
-#   인자 : read유닛표 참조유닛폴더 지도폴더 출력폴더 [THR=0.35] [MINDEP=3] [REPORT=0.10]
+#   Outputs: <out>/<species>__<sample>.unit_consensus.tsv, one row per unit,
+#          and <out>/<species>__<sample>.site_support.tsv, one row per variant with a support fraction of at least REPORT.
+#   Arguments: the read-unit table, the reference unit folder, the map folder, the output folder, [THR = 0.35], [MINDEP = 3], [REPORT = 0.10].
 # MIT License · Copyright (c) 2026 Hungmin Kim
 import io
 import os
@@ -72,11 +72,11 @@ os_.write(TAB.join(HS) + NL)
 tot = collections.Counter()
 
 
-# 입력은 read 순서라 유닛별로 모여 있지 않다. 한 번 훑으며 유닛마다 필요한 것만 쌓는다
-#   (행 전체를 들고 있으면 수 GB 가 된다)
-COV = collections.defaultdict(list)      # (array_id, array_pos) -> [(덮은 시작, 끝), ...]
+# The input is in read order and is not grouped by unit, so it is traversed once, accumulating only what each unit needs
+#   (holding whole rows would come to several GB).
+COV = collections.defaultdict(list)      # (array_id, array_pos) -> [(coverage start, coverage end), ...]
 VAR = collections.defaultdict(collections.Counter)
-NUMS = collections.defaultdict(lambda: [0, 0, 0])   # 전체 · 정렬됨 · 완전덮음
+NUMS = collections.defaultdict(lambda: [0, 0, 0])   # all, aligned, fully covered
 
 
 def flush(key):

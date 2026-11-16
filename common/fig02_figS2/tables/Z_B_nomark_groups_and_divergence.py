@@ -9,7 +9,7 @@ Z_B - ① distal group arrangement pattern of the 372 'no terminal type' haploty
    - symmetric difference of the variant sets of two units converted to bp (SNV 1 bp, indel by length) -> mismatch rate over 2,240 bp
    - pair types: terminal-ordinary (neighbours), ordinary-ordinary (neighbours), terminal-terminal, by zone (proximal, middle)
    - percentiles are reported so it can be compared with recombination suppression thresholds (literature)
-Output: $OUTDIR\ZB_nomark_groups.tsv, ZB_neighbour_divergence.tsv
+Output: $OUTDIR/ZB_nomark_groups.tsv, ZB_neighbour_divergence.tsv
 """
 import io, os, sys, collections
 import numpy as np

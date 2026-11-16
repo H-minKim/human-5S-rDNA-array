@@ -1,19 +1,19 @@
 # -*- coding: utf-8 -*-
-# 5S 메틸 추출
-#   입력 : 배치 BAM (junction ~/placed_bam · ARRAY_ONLY ~/placed_bam_g8) 의 MM/ML — read 원본 그대로
-#          유닛 경계 : 지도 CONSENSUS_MAP (canonV8) 의 unit_start/unit_end
-#   좌표 규칙 (파일럿에서 서열로 검증 · CpG 적중률 0.986)
-#     · MM 은 원본 read 방향 기준이다. 역정렬 기록은 SAM SEQ 가 뒤집혀 있으므로
-#       원본 좌표 op -> SEQ 좌표 sp = len(SEQ)-1-op 로 되돌린 뒤 CIGAR 로 참조 좌표에 옮긴다.
-#     · 역방향 read 의 C 는 정본 forward 의 G 자리에 떨어진다 -> 1 을 빼서 CpG 의 C 로 맞춘다.
-#       (보정 없이 쓰면 적중률 0.65 로 떨어진다 — 과거 64% 오좌표 사고와 같은 자리)
-#     · junction BAM 은 [flank5000][정본][flank5000] 프레임이라 참조좌표 -5000, ARRAY_ONLY 는 그대로.
-#   산출 (gzip)
-#     METH_READUNIT_<노드>.tsv.gz : 개체·출처·설정·슬롯·유닛번호·read·가닥·CpG수·메틸수·beta·calls
-#         calls = "유닛내좌표:값" 목록 (값 0-255, ML 그대로) -> 각 read 의 각 부위를 바로 볼 수 있다
-#     METH_SITE_<노드>.tsv.gz     : 개체·출처·슬롯·유닛번호·유닛내좌표 별 집계 (n · n_meth · beta)
-#   문턱 : 메틸 판정 ML >= 128 (확률 0.5)
-#   인자 : 출력폴더 [개체목록파일]
+# 5S methylation extraction
+#   Input: the MM/ML of the batch BAMs (junction in placed_bam, ARRAY_ONLY in placed_bam_g8), exactly as they came off the read.
+#          Unit boundaries: unit_start and unit_end from the CONSENSUS_MAP (canonV8).
+#   The coordinate rules, verified against sequence in the pilot at a CpG hit rate of 0.986:
+#     · MM is in the original read orientation. For a reverse alignment the SAM SEQ is flipped, so
+#       the original coordinate op is mapped to the SEQ coordinate sp = len(SEQ) - 1 - op, and then to reference coordinates through the CIGAR.
+#     · A C on a reverse read lands on the G of the forward canonical sequence, so 1 is subtracted to bring it onto the C of the CpG.
+#       Without this correction the hit rate falls to 0.65.
+#     · A junction BAM is in the frame [flank 5000][canonical][flank 5000], so 5000 is subtracted from the reference coordinate; ARRAY_ONLY is used as is.
+#   Outputs, gzipped:
+#     METH_READUNIT_<node>.tsv.gz: individual, source, configuration, slot, unit index, read, strand, CpG count, methylated count, beta, calls.
+#         calls is a list of "position within unit:value" with the value 0-255 as the raw ML, so any part of any read can be inspected directly.
+#     METH_SITE_<node>.tsv.gz: aggregates per individual, source, slot, unit index and position within the unit (n, n_meth, beta).
+#   Threshold: a site is called methylated at ML >= 128, a probability of 0.5.
+#   Arguments: output folder, [list file of individuals].
 import io
 import os
 import re
@@ -23,8 +23,8 @@ import bisect
 import subprocess
 import collections
 
-#  노드의 집 폴더. `ubuntu` 는 AMI 의 기본 계정 이름이고 사람 이름이 아니다.
-H = os.environ.get("NODE_HOME", "/home/ubuntu")
+#  The compute node's home directory. "ubuntu" is the default account name of the AMI, not a person's name.
+H = os.environ["NODE_HOME"]   # the compute node's home directory
 NL = chr(10)
 TAB = chr(9)
 CIG = re.compile(r"(\d+)([MIDNSHP=X])")
@@ -41,7 +41,7 @@ def rc(s):
     return "".join(CMP.get(c, "N") for c in reversed(s))
 
 
-# ── 유닛 경계 (정본 좌표 · 1-based 포함)
+# -- unit boundaries, in canonical coordinates, 1-based inclusive
 U = collections.defaultdict(list)
 f = io.open(MAPF, encoding="utf8")
 ix = dict((n, i) for i, n in enumerate(f.readline().rstrip(NL).split(TAB)))
@@ -75,7 +75,7 @@ def bams():
 
 
 def calls_of(seq, flag, mm, ml):
-    """C+m 확률 (SEQ 좌표, 값). MM 은 원본 read 방향 기준."""
+    """C+m probabilities (SEQ coordinate, value). MM is relative to the original read orientation."""
     orig = rc(seq) if (flag & 16) else seq
     vals = [int(x) for x in ml.split(",") if x != ""]
     out = []
@@ -153,10 +153,10 @@ for b, smp, cfg, src, off, kind in bams():
         for sp, v in calls_of(seq, flag, mm, ml):
             if sp not in m:
                 continue
-            cp = m[sp] - off                      # 정본 0-based
+            cp = m[sp] - off                      # canonical, 0-based
             if flag & 16:
-                cp -= 1                           # 역방향 C -> CpG 의 C
-            p1 = cp + 1                           # 정본 1-based
+                cp -= 1                           # a C on the reverse strand -> the C of the CpG
+            p1 = cp + 1                           # canonical, 1-based
             if p1 < 1:
                 continue
             S = STARTS[key]

@@ -1,17 +1,17 @@
 # -*- coding: utf-8 -*-
-"""HepG2 FiberHMM calls.bam -> 유닛 안 TSS 기준 rel 좌표 (2026-10-12)
+"""HepG2 FiberHMM calls.bam -> rel coordinates from the TSS inside the unit
 
-자리표(어느 유닛인가)가 필요 없다 — read 안에서 유전자 닻을 찾아 유닛을 가른다.
-좌표는 전부 분자(molecular) 좌표다 — FiberHMM @PG 가 그렇게 적어 놨다
-  (coord=molecular · ns/nl/as/al/MA in molecular original-fiber coordinates).
-rel = 0 은 HPRC 와 같은 규칙 : 유닛 안 마지막 GTCTACGGC 의 시작 = TSS.
-창은 TSS +-1200 (HPRC READCOV 폭 2401 과 같게) · 관통은 TSS-1120..TSS+1119.
+No placement table (which unit is which) is needed: the gene anchor is found inside the read and the read is cut into units there.
+All coordinates are molecular coordinates, as the FiberHMM @PG line records
+  (coord=molecular; ns/nl/as/al/MA in molecular original-fiber coordinates).
+rel = 0 follows the HPRC rule : the start of the last GTCTACGGC inside the unit is the TSS.
+The window is TSS +-1200 (the HPRC READCOV width of 2401); spanning means TSS-1120..TSS+1119.
 
-내는 것
+Written
   FHMM_UNITS_HEPG2.tsv    sample slot unit_key read_id cls rel_start rel_end size
   FHMM_READCOV_HEPG2.tsv  sample slot unit_key read_id rel_lo rel_hi
   UNIT_HEPG2.tsv          sample slot unit_key read_id n_cpg n_meth beta n_at n_m6a
-  SITE_M6A_HEPG2.tsv      sample unit_key read_id rel 자리 목록 (쉼표) · 비호출기 방법용
+  SITE_M6A_HEPG2.tsv      sample unit_key read_id list of rel positions (comma separated), for the caller-free method
 """
 import io
 import os
@@ -31,7 +31,7 @@ def _need(k):
         raise SystemExit(
             "environment variable %s is not set; it is required by %s." % (k, _SELF)
             + chr(10)
-            + "The deposited copy has no default; see README.md section 2")
+            + "The deposited copy has no default; see README.md, section 'Environment variables'")
     return v
 
 
@@ -42,7 +42,7 @@ HIA = sys.argv[3] if len(sys.argv) > 3 else LABEL
 ANCH = "GTCTACGGC"
 PAD = 1200
 SPAN = 1120
-MINGAP = 500          # 이보다 가까운 닻 둘은 같은 유닛 -> 뒤쪽을 쓴다(rfind 와 같음)
+MINGAP = 500          # Two anchors closer than this belong to the same unit -> the later one is used (same as rfind)
 MLCUT = 128
 COMP = {"A": "T", "C": "G", "G": "C", "T": "A", "N": "N"}
 
@@ -52,7 +52,7 @@ def rc(s):
 
 
 def parse_mm(seq, mm, ml):
-    """MM/ML -> {('A','a'): [(pos, prob)], ...}  pos 는 seq(원본 방향) 좌표."""
+    """MM/ML -> {('A','a'): [(pos, prob)], ...}  pos is in seq (original orientation) coordinates."""
     out = {}
     if not mm:
         return out
@@ -106,7 +106,7 @@ def parse_ma(ma):
 
 
 def anchors(seq):
-    """닻 시작 자리 목록 (가까운 둘은 뒤쪽만)."""
+    """List of anchor start positions (of two close ones only the later is kept)."""
     hits = []
     i = seq.find(ANCH)
     while i >= 0:
@@ -138,7 +138,7 @@ def main():
 
     STAT = collections.Counter()
     SEEN = set()
-    MSPM = [0, 0]      # msp 안 (m6A, A/T)
+    MSPM = [0, 0]      # Inside an MSP (m6A, A/T)
     NUCM = [0, 0]
     ORI = collections.Counter()
     for smp, hia5 in ((LABEL, HIA),):
@@ -159,7 +159,7 @@ def main():
             if not seq:
                 continue
             if r.is_reverse:
-                seq = rc(seq)          # 분자(원본) 방향으로 되돌린다
+                seq = rc(seq)          # Turned back to the direction of the molecule (the original)
             L = len(seq)
             try:
                 mm = r.get_tag("MM")
@@ -177,14 +177,14 @@ def main():
             _, SEG = parse_ma(ma)
             MODS = parse_mm(seq, mm, ml)
 
-            # 방향 — 닻이 정방향이냐
+            # Direction - whether the anchor is on the forward strand
             nf = seq.count(ANCH)
             nr = rc(seq).count(ANCH)
             if nr > nf:
                 ORI["rev"] += 1
                 seq = rc(seq)
                 SEG = dict((c, flip_iv(v, L)) for c, v in SEG.items())
-                # C+m 은 CpG 의 C 자리라 뒤집으면 짝 C 로 -1 (L-2-p). A/T 채널은 L-1-p.
+                # C+m sits on the C of a CpG, so flipping moves it to the partner C, that is -1 (L-2-p). The A/T channel is L-1-p.
                 MODS = dict((k, [((L - 2 - p) if k == ("C", "m") else (L - 1 - p), q)
                                  for (p, q) in v])
                             for k, v in MODS.items())
@@ -194,14 +194,14 @@ def main():
                 STAT[smp + "_anchor<2"] += 1
                 continue
 
-            # m6A 자리(하드콜) · A/T 분모
+            # m6A positions (hard call); A/T is the denominator
             m6a = set()
             for key in (("A", "a"), ("T", "a")):
                 for (p, q) in MODS.get(key, []):
                     if q >= MLCUT:
                         m6a.add(p)
             atset = [i for i, c in enumerate(seq) if c == "A" or c == "T"]
-            # 5mC 하드콜 (CpG 자리만)
+            # 5mC hard call (CpG positions only)
             cmeth = {}
             for (p, q) in MODS.get(("C", "m"), []):
                 cmeth[p] = q
@@ -217,7 +217,7 @@ def main():
                 fc.write(TB.join([smp, hia5, ukey, r.query_name,
                                   "%d" % (max(0, lo) - tss),
                                   "%d" % (min(L - 1, hi) - tss)]) + NL)
-                # 발자국
+                # Footprints
                 for cls in ("tf", "nuc", "msp"):
                     for (s, e, sz) in SEG.get(cls, []):
                         c = (s + e) // 2
@@ -227,7 +227,7 @@ def main():
                                           "%d" % (s - tss), "%d" % (e - tss),
                                           "%d" % sz]) + NL)
                         STAT[cls] += 1
-                # β — 유닛 = 앞 닻+119 .. 이 닻+118 (유전자가 유닛 끝)
+                # beta - a unit is previous anchor+119 .. this anchor+118 (the gene lies at the end of the unit)
                 us = (AN[k - 1] + 119) if k > 0 else None
                 ue = tss + 118
                 if us is None or ue > L - 1:
@@ -248,14 +248,14 @@ def main():
                 fb.write(TB.join([smp, hia5, ukey, r.query_name, "%d" % nc,
                                   "%d" % nm_, beta, "%d" % nat, "%d" % nm6,
                                   "%d" % ulen]) + NL)
-                # 자리별 (비호출기 방법용) — 좁은 창만 적는다 (-250..+200)
+                # Per position (for the caller-free method) - only the narrow window is written (-250..+200)
                 a0, a1 = tss - 250, tss + 200
                 at_r = [i - tss for i in atset if a0 <= i <= a1]
                 m6_r = sorted(i - tss for i in m6a if a0 <= i <= a1)
                 fs.write(TB.join([smp, ukey, r.query_name,
                                   ",".join("%d" % v for v in at_r),
                                   ",".join("%d" % v for v in m6_r)]) + NL)
-            # 검산 — msp 안 / nuc 안 m6A 비율
+            # Check - the m6A fraction inside MSPs and inside nucleosomes
             for cls, acc in (("msp", MSPM), ("nuc", NUCM)):
                 for (s, e, sz) in SEG.get(cls, []):
                     for i in range(max(0, s), min(L - 1, e) + 1):

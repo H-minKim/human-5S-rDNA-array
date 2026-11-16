@@ -1,21 +1,21 @@
 # -*- coding: utf-8 -*-
-# 그룹 참조가 여럿인 array : 유닛마다 가장 맞는 참조를 골라 변이를 다시 부른다
+# For an array with several group references: pick the best-matching reference per unit and re-call the variants.
 #
-# 경계는 다시 자르지 않는다 (사용자 경고 대응)
-#   G8 유닛 경계는 유전자 HSP 에서만 나온다(유전자끝+1 .. 다음 유전자끝). 참조 유닛은
-#   (a) 길이 문턱 LO/HI 와 (b) 변이 호출용 정렬 에만 쓰인다. 그룹 참조 길이가 전부 LO/HI
-#   안에 드는 것을 먼저 확인했으므로, 여기서는 기존 지도의 유닛 좌표를 그대로 읽어 쓴다.
-#   따라서 참조가 늘어도 경계는 한 벌 그대로이고, 바뀌는 것은 '어느 참조로 변이를 불렀나' 뿐이다.
+# The boundaries are not re-cut.
+#   A G8 unit boundary comes only from the gene HSPs (gene end + 1 .. next gene end). The reference unit is used
+#   only for (a) the length thresholds LO/HI and (b) the alignment that calls the variants. Since every group reference length was
+#   first confirmed to fall inside LO/HI, the unit coordinates are read straight from the existing map.
+#   Adding references therefore leaves one single set of boundaries; all that changes is which reference the variants were called against.
 #
-# 절차
-#   1) 기존 g8map 에서 유닛 좌표(chrom_start/chrom_end/strand)를 읽는다
-#   2) 그룹 참조마다 [끝 CTX][참조][앞 CTX] 문맥 참조를 만든다 (G8v4 규칙 · 채움 금지)
-#   3) 유닛 서열을 한 번에 minimap2 로 모든 문맥 참조에 정렬 → 점수 최고를 선택 참조로
-#   4) 선택 참조 프레임에서 cs 로 변이를 부른다. array 참조 프레임 변이는 그대로 보존
-#   5) 2 등과 점수 차가 작으면 AMBIG 로 표시한다(어느 종류인지 못 가린 유닛)
-#   6) 그룹 참조 <-> array 참조 자리 대응표(xwalk)를 따로 낸다 — 프레임이 다르므로 필수
+# procedure
+#   1) Read the unit coordinates (chrom_start / chrom_end / strand) from the existing g8map.
+#   2) Build a context reference [end CTX][reference][start CTX] for each group reference (the G8v4 rule, no filling).
+#   3) Align the unit sequence to every context reference in one minimap2 call and take the highest score as the chosen reference.
+#   4) Call the variants from cs in the chosen reference's frame; the variants in the array reference frame are kept as they are.
+#   5) If the margin over the runner-up is small, mark the unit AMBIG: its type could not be resolved.
+#   6) Write a separate position crosswalk between the group reference and the array reference; the frames differ, so it is required.
 #
-# 인자 : array_id 지도파일 조립fasta 참조유닛폴더 그룹유닛파일(쉼표) CTX 출력폴더
+# Arguments: array_id, map file, assembly fasta, reference unit folder, group unit files (comma separated), CTX, output folder.
 # MIT License · Copyright (c) 2026 Hungmin Kim
 import io
 import os
@@ -41,7 +41,7 @@ def rdfa(p):
 
 
 def cs_vars(cs, rs):
-    # minimap2 cs 태그를 참조 자리 변이 토큰으로 (G8v4 와 같은 표기 · 채움 없음)
+    # Turn the minimap2 cs tag into variant tokens in reference coordinates, in the same notation as G8v4 and with no filling.
     p = rs
     out = []
     for m in re.finditer(r"([:*+-])([0-9]+|[a-z]+)", cs):
@@ -90,11 +90,11 @@ with io.open(up, "w", encoding="utf8", newline=NL) as fh:
     for i, (r, s) in enumerate(zip(use, seqs)):
         s = s.upper()
         fh.write(">u%d%s%s%s" % (i, NL, rc(s) if r["strand"] == "-" else s, NL))
-# 참조끼리의 거리 Dmax : 참조를 짝마다 따로 정렬해 (자기점수 - 상대점수) 를 잰다.
-#   유닛의 1 등-2 등 점수차를 이 Dmax 로 나누면 "어느 쪽인지 얼마나 확실한가" 가 된다.
-#   고정 문턱(예 10 점)은 array 마다 참조 거리가 달라 자의적이다.
-#   짝마다 따로 도는 이유 : arrayref 가 그룹 대표 중 하나와 서열이 같아서, 표적을 한꺼번에
-#   주면 minimap2 가 같은 표적을 중복으로 보고 상대 점수를 아예 내놓지 않는다(실측 orang_bornean).
+# Dmax, the distance between references: each pair is aligned separately and (self score - other score) is measured.
+#   Dividing a unit's first-to-second score margin by Dmax gives how confidently its type is resolved.
+#   A fixed threshold such as 10 points would be arbitrary, because the distance between references differs per array.
+#   The pairs are run separately because the array reference has the same sequence as one of the group representatives: given all
+#   targets at once, minimap2 treats them as duplicates and reports no score for the other one at all (observed for the Bornean orangutan).
 GK = [k for k in refs if k != "arrayref"]
 
 
@@ -168,7 +168,7 @@ for i, r in enumerate(use):
         frac = (s1 - s2) / float(DM) if DM > 0 else 0.0
         lv = "OK" if frac >= 0.50 else ("WEAK" if frac >= 0.20 else "AMBIG")
         if lv == "AMBIG":
-            # 어느 종류인지 못 가린 유닛은 공통 프레임(array 참조)으로 둔다
+            # A unit whose type could not be resolved is left in the common frame, that of the array reference.
             d.update({"ref_used": "arrayref", "n_var_bestref": "-", "varlist_bestref": "-"})
         else:
             d.update({"ref_used": k1, "n_var_bestref": len(vs),

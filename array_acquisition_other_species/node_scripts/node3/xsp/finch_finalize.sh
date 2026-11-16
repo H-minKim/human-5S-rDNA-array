@@ -1,10 +1,10 @@
 #!/bin/bash
 # Zebra finch, final step: re-called flowcell BAM -> merge per library -> modkit -> read x unit matrix -> position check against the original alignment
-#   라이브러리(데이터 종류)를 섞지 않는다 : LIG = ligation (PAQ25082) · UL = ultralong (R10 5 kHz 8 개)
+#   Library types are not mixed: LIG = ligation (PAQ25082), UL = ultralong (eight R10 5 kHz flowcells).
 # The BAM for this share must be moved to ~/xsp/zfont/bc beforehand
-#   modkit : 제브라피시·파일럿과 같은 옵션 (--cpg --combine-strands · 5mC 5hmC) · include-bed 는 BED3
-#   위치 대조 : 재콜링 primary 정렬이 같은 read 의 원 fastq 정렬(PAF, primary·supplementary 모두) 중 겹치는 것과 시작점이 얼마나 다른가
-#     mat·pat chr2 array 는 서열 동일 -> pat CM109751.1 좌표를 mat 로 옮겨 비교 (-61,764)
+#   modkit with the same options as zebrafish and the pilot (--cpg --combine-strands, 5mC and 5hmC); include-bed is BED3.
+#   Position check: how far the start of the re-basecalled primary alignment is from whichever of that read's original fastq alignments (PAF, primary and supplementary) overlaps it.
+#     The maternal and paternal chr2 arrays are identical in sequence, so paternal CM109751.1 coordinates are shifted into maternal ones for the comparison (-61,764).
 # MIT License · Copyright (c) 2026 Hungmin Kim
 set -u
 Z=~/xsp/zfont
@@ -21,14 +21,14 @@ for g in LIG UL; do
   $MK pileup $F/bTaeGut7_$g.5S.bam $F/bTaeGut7_$g.5S.cpg.bed --ref $A/zfinch_v03_dip.fna --cpg --include-bed $F/arrays3.bed --combine-strands --modified-bases 5mC 5hmC -t 8 --log-filepath $F/$g.pileup.log > /dev/null 2>&1
   $MK extract full $F/bTaeGut7_$g.5S.bam $F/bTaeGut7_$g.5S.reads.tsv --ref $A/zfinch_v03_dip.fna --cpg --include-bed $F/arrays3.bed -t 8 --log-filepath $F/$g.extract.log > /dev/null 2>&1
   echo "$g : BAM read $(samtools view -c $F/bTaeGut7_$g.5S.bam) · MM $(samtools view $F/bTaeGut7_$g.5S.bam | grep -c MM:Z) · pileup 행 $(wc -l < $F/bTaeGut7_$g.5S.cpg.bed) · extract 행 $(wc -l < $F/bTaeGut7_$g.5S.reads.tsv)"
-  # units_matrix.py 는 흘려 읽기 -> read_id · ref_position 순 정렬 (열 번호는 머리줄에서 찾는다)
+  # units_matrix.py streams its input, so it must be sorted by read_id then ref_position; the column indices are located from the header.
   x=$F/bTaeGut7_$g.5S.reads.tsv
   c=$(head -1 $x | tr '\t' '\n' | grep -n -x ref_position | cut -d: -f1)
   { head -1 $x; tail -n +2 $x | LC_ALL=C sort -t $'\t' -k1,1 -k${c},${c}n -S 2G --parallel 4; } > $x.sorted && mv $x.sorted $x
 done
 python3 ~/xsp/units_matrix.py --fa $A/zfinch_v03_dip.fna --bed $Z/zfinch_v03_5S_arrays.bed --tbl $Z/zfinch_v03_mat.tbl,$Z/zfinch_v03_pat.tbl \
   --samples bTaeGut7_LIG,bTaeGut7_UL --bam "$F/{s}.5S.bam" --meth "$F/{s}.5S.reads.tsv" --out $F/units
-# 위치 대조
+# position check
 norm='{c=$2; s=$3; e=$4; if(c=="CM109751.1" && s>96000000 && e<98000000){c="CM109790.1"; s-=61764; e-=61764}; print $1"\t"c"\t"s"\t"e"\t"$5}'
 zcat $Z/sel/*.paf.gz | awk -F'\t' '{print $1"\t"$6"\t"$8"\t"$9"\t"$5}' | awk -F'\t' "$norm" > $F/orig_aln.tsv
 for b in $Z/bc/*.bam; do samtools view -F 0x904 $b; done | awk -F'\t' '{c=$6; e=$4-1; while(match(c,/[0-9]+[MDN=X]/)){e+=substr(c,RSTART,RLENGTH-1); c=substr(c,RSTART+RLENGTH)}; st=(int($2/16)%2)?"-":"+"; print $1"\t"$3"\t"$4-1"\t"e"\t"st}' | awk -F'\t' "$norm" > $F/new_aln.tsv

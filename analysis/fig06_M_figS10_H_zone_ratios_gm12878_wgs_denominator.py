@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
-# [archive copy] from the working copy fig6v5_step1_gmwgs.py (md5 d2067c977aff) · data and output roots via environment variables with no default (the script stops if one is unset) · module names changed to the archive names · no change to any computation
+# Working name: fig6v5_step1_gmwgs.py. Data and output roots come from environment variables with no default (the script stops if one is unset).
 # WARNING — this script WRITES tables, into P11_TABLE_OUT_DIR (no default). Pointing it at the folder that holds the published
 #   input tables (P11_TABLE_DIR) OVERWRITES them. To verify, set P11_TABLE_OUT_DIR to an empty temporary folder.
 import os as _os_need, sys as _sys_need
 def _need(k):
     v = _os_need.environ.get(k)
     if not v:
-        _sys_need.exit("environment variable %s is not set; it is required by %s (a module stops the script that imports it). The deposited copy has no default; see README.md section 2" % (k, _os_need.path.basename(globals().get("__file__", "an exec-loaded block"))))
+        _sys_need.exit("environment variable %s is not set; it is required by %s (a module stops the script that imports it). The deposited copy has no default; see README.md, section 'Environment variables'" % (k, _os_need.path.basename(globals().get("__file__", "an exec-loaded block"))))
     return v
-# . Figure 6 version 5: the denominator of the GM12878 marker based values changes to whole genome NA12878 WGS, that is, through the same gate as the ChIP data (decided on 2026-10-14).
+# . Figure 6 version 5: the denominator of the GM12878 marker based values is whole genome NA12878 WGS, that is, through the same gate as the ChIP data.
 #   Denominator = 02_tables/denominator_comparison_2026-10-14/denom_GM_WGS_ERR3239334.tsv (gm_wgs_gate.py, 1000 Genomes ERR3239334 whole genome, same extraction and gate as K562 WGSNAT).
 #   K562 is unchanged (ENCODE K562 WGS). The K562 rows are checked against the existing NEWZONE table and must agree in every cell, random number stream included, which is why K562 runs first.
 #   rt_loop is the same code as in fig6v3_step1_marker_values.py (a copy). Only new files are written.

@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
-# read 단위 메틸 — 같은 read 안의 CpG 는 독립이 아니다.
-#   CpG 수로 낸 이항 구간은 표본크기를 read 수가 아니라 CpG 수로 세어
-#   불확실성을 크게 과소평가한다(실측: Potok 알 chr18 array 를 덮은 read 가 17 개뿐인데
-#   CpG 82 개로 ±0.107 이 나왔다).
-#   그래서 read 마다 CpG 메틸 비율을 하나 내고, read 를 표본단위로 삼아 평균과 구간을 낸다.
+# Methylation per read: CpG sites on the same read are not independent.
+#   A binomial interval over CpG counts takes the sample size to be the number of CpG sites rather than the number of reads,
+#   and so understates the uncertainty badly. Measured: only 17 reads cover the chr18 array in the Potok egg sample,
+#   yet 82 CpG sites gave an interval of +-0.107.
+#   So one CpG methylation ratio is computed per read, and the mean and interval are taken over reads as the sampling unit.
 #
-#   인자 : bam 라벨 구역목록.tsv 출력.tsv  [최소 read당 CpG 수(기본 3)]
+#   Arguments: bam, label, regions.tsv, out.tsv, [minimum CpG sites per read (default 3)].
 # MIT License · Copyright (c) 2026 Hungmin Kim
 import io
 import math

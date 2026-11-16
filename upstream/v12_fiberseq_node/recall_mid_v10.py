@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
-# 10bp 를 넘게 모자란 read 유닛 처리 (노드에서 실행) —
-#   "read 의 끝이 아니고 옆에 유닛이 있으면(array 안 유닛이면) 10bp 이상 결실이라도 그냥 결실로 표시"
-#   ① read 중간 유닛 (그 read 가 덮은 유닛 번호의 최소·최대가 아니고 좌표상 앞뒤에 유닛이 있음)
-#        -> 모자란 만큼 결실 토큰으로 적고 OK_MIDDEL  (시작 모자람 s -> "1Ds" · 끝 모자람 e -> "(2241-e)De" , 규칙 B 와 같은 토큰)
-#   ② read 양쪽 끝 유닛 -> NO_FULL_READEND (버림 · 지금처럼)
-#   함께 재는 것 (사용자 질문 "그쪽 옆 유닛의 상태는?") : 10bp 넘게 모자란 쪽의 옆 유닛마다
-#        옆 유닛 검산상태 · 두 유닛 사이 read 간격(겹침은 음수) · 옆 유닛이 마주보는 쪽에 정본 밖으로 더 가진 염기 · 옆 유닛 자신의 모자람
-#   유닛 서열 = 저장된 SAM SEQ 에서 저장된 read 좌표로 꺼냄 (recall_edge.py 와 같음 · 다시 자르거나 정렬하지 않음)
-#   인자 : JX|AO · 입력표(.edge.tsv) · 출력표(.mid.tsv)   ->  출력표 + 출력표.nb.tsv(옆 유닛 진단)
+# Handling read units short by more than 10 bp (run on the compute node):
+#   if the unit is not at the end of the read and has neighbouring units (that is, it lies inside the array), a shortfall of more than 10 bp is still recorded as a deletion.
+#   1) A middle unit of the read: not the lowest or highest unit index that read covers, and with units on both sides in coordinate order.
+#        -> record the shortfall as a deletion token and mark OK_MIDDEL (start shortfall s -> "1Ds", end shortfall e -> "(2241-e)De"; the same tokens as rule B).
+#   2) A unit at either end of the read -> NO_FULL_READEND, discarded.
+#   Also measured, for each neighbour on the side with the shortfall over 10 bp:
+#        the neighbour's verify status, the read gap between the two units (negative if they overlap), any bases the neighbour carries beyond the canonical unit on the facing side, and the neighbour's own shortfall.
+#   The unit sequence is taken from the stored SAM SEQ using the stored read coordinates, as in recall_edge.py; nothing is re-cut or re-aligned.
+#   Arguments: JX|AO, input table (.edge.tsv), output table (.mid.tsv) -> the output table plus <output>.nb.tsv with the neighbour diagnostics.
 import io
 import os
 import re

@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
-# 타 생물종 5S array 메틸 — 그림
+# Methylation of the 5S arrays in the other species: the figure.
 #
 # Reading rules
-#   · 종간 절대값 비교 금지 — 시료·호출기 판본이 다르다 (보노보 내부대조 0.13 차)
-#   · valid axis 는 'array - 제 flank' 다. 같은 시료·같은 호출기 안의 대비.
-#   · 애기장대는 flank 가 bedmethyl 범위 밖이라 Δ 를 못 낸다.
-#   · 붉은털은 read 없이 공개 자리별 메틸(피복 1-7%)이라 다른 자료종이다.
+#   · The absolute level must not be compared between species, because the samples and the basecaller releases differ; the bonobo's own internal control differs by 0.13.
+#   · The valid axis is the array minus its own flank, a contrast within the same sample and the same basecaller.
+#   · For Arabidopsis the flank lies outside the bedmethyl range, so no delta can be computed.
+#   · The rhesus has no reads, only public per-position methylation at 1-7% coverage, which makes it a different kind of data.
 #
-#  matplotlib 글리프 함정: ASCII 만.
+#  ASCII only in the figure text.
 import io, os
 import numpy as np
 import pandas as pd
@@ -29,7 +29,7 @@ def _need(k):
     v = _os_need.environ.get(k)
     if not v:
         _sys_need.exit("environment variable %s is not set (the deposited copy has no default; "
-                       "see README.md, section 'How to run it')" % k)
+                       "see README.md, section 'Environment variables')" % k)
     return v
 
 
@@ -52,14 +52,14 @@ P("타 생물종 5S array 메틸 — array %d · 종 %d" % (len(T), T.species_ke
 P("=" * 100)
 P()
 
-# 종 순서 : 자료질(Tier) -> 계통
+# the species are ordered by data quality, that is tier, then by phylogeny
 ORDER = ["제브라피시", "금화조", "애기장대", "생쥐", "붉은털원숭이",
          "시아망", "보르네오오랑", "수마트라오랑", "고릴라", "침팬지", "보노보"]
 ORDER = [s for s in ORDER if s in set(T["종"])]
 YI = {s: i for i, s in enumerate(ORDER[::-1])}
 T["yi"] = T["종"].map(YI)
 
-# 비교 가능성 딱지
+# the comparability label
 CMP = {"침팬지": "guppy6.3.8", "고릴라": "guppy6.3.8", "보르네오오랑": "guppy6.3.8",
        "수마트라오랑": "guppy6.3.8", "보노보": "6.3.7+6.3.8 혼합", "시아망": "dorado0.9.1",
        "제브라피시": "guppy6.4.2", "금화조": "dorado2.1.2", "애기장대": "dorado2.1.2",
@@ -82,7 +82,7 @@ gs = fig.add_gridspec(2, 2, width_ratios=[1.55, 1.0], height_ratios=[1.35, 1.0],
                       hspace=0.30, wspace=0.20, left=0.105, right=0.975,
                       top=0.915, bottom=0.075)
 
-# ---------------------------------------------------------------- (a) 종별 array
+# ---------------------------------------------------------------- (a) the array, per species
 ax = fig.add_subplot(gs[:, 0])
 rng = np.random.RandomState(7)
 for r in T.itertuples(index=False):
@@ -106,7 +106,7 @@ ax.set_xlabel("array 의 CpG 메틸 (5mC)")
 ax.set_title("(a) 종별 · array 별 메틸 — 점 = array (크기 = array 길이) · 회색 마름모 = 제 flank\n"
              "종끼리 절대값을 비교하지 말 것 (시료·호출기가 다르다). 같은 줄 안에서만 읽는다.",
              fontsize=10.5)
-#  이름표 : 저메틸 array + flank 보다 크게 낮은 array (Delta < -0.10) 도 같이
+#  Labels: the hypomethylated arrays, and also any array substantially below its flank, with a delta under -0.10.
 labT = T[(T.meth < 0.35) | (T.delta < -0.10)].copy()
 labT["lab"] = np.where(labT.chrom_name.astype(str) != "nan",
                        labT.chrom_name.astype(str), labT.chrom.astype(str))
@@ -145,7 +145,7 @@ for s in ORDER:
       % (s, len(g), g.delta.median(), g.delta.min(), g.delta.max()))
 P()
 
-# ---------------------------------------------------------------- (c) 크기 vs 메틸
+# ---------------------------------------------------------------- (c) size against methylation
 ax = fig.add_subplot(gs[1, 1])
 P("  [c] array 크기와 메틸 — 종 안에서 상관 (array 3 개 이상인 종만)")
 COL = {"제브라피시": "#2e7d32", "금화조": "#c0392b", "애기장대": "#7e57c2",

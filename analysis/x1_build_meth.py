@@ -1,18 +1,18 @@
 # -*- coding: utf-8 -*-
-# 타 생물종 5S array — array 하나하나의 메틸을 한 표로
+# 5S arrays in the other species: the methylation of every single array in one table.
 #
-#   자료 뿌리(읽기만) : $ANALYSIS_ROOT\2026-09-11_5S_other_species\data_v2
+#   Data root, read-only: 2026-09-11_5S_other_species/data_v2 under the analysis root.
 # Output is written only to this folder.
 #
-#   출처
-#     제브라피시 31 : 00_catalog/ZEBRAFISH_ALL_ARRAYS.tsv  (array·flank·차 이미 있음)
-#     그 외        : 09_array_vs_flank/AVF.tsv            (array / flank_left / flank_right)
-#     애기장대 CG   : 05_bedmethyl/.../allC.bed.gz 에서 CG 문맥만 다시 셈
-#                    (AVF 의 애기장대 값은 전문맥이라 다른 종과 못 비교한다)
-#     생쥐          : 10_mouse_5S/README_MOUSE.md 의 내부대조 수치
-#     붉은털(Tier2) : 11_rhesus_tier2/rhesus_tier2_5S_meth.tsv (공개 자리별 메틸, read 없음)
+#   Sources:
+#     the 31 zebrafish arrays: 00_catalog/ZEBRAFISH_ALL_ARRAYS.tsv, which already holds the array, the flank and the difference;
+#     everything else: 09_array_vs_flank/AVF.tsv, as array, flank_left and flank_right;
+#     Arabidopsis CG: recounted from 05_bedmethyl/.../allC.bed.gz, taking the CG context only
+#                    (the AVF value for Arabidopsis covers all contexts and cannot be compared with the other species);
+#     mouse: the internal-control values in 10_mouse_5S/README_MOUSE.md;
+#     rhesus, tier 2: 11_rhesus_tier2/rhesus_tier2_5S_meth.tsv, public per-position methylation with no reads.
 #
-#  matplotlib 안 씀
+#  matplotlib is not used here.
 import io, os, gzip, collections
 import numpy as np
 import pandas as pd
@@ -25,7 +25,7 @@ def _need(k):
     v = _os_need.environ.get(k)
     if not v:
         _sys_need.exit("environment variable %s is not set (the deposited copy has no default; "
-                       "see README.md, section 'How to run it')" % k)
+                       "see README.md, section 'Environment variables')" % k)
     return v
 
 
@@ -73,7 +73,7 @@ P("  AVF.tsv %d 행 · 종 %d · array %d"
 
 
 def pooled(g):
-    """호출 수로 가중한 pooled 메틸 (단순 평균 금지)"""
+    """pooled methylation weighted by the number of calls (not a simple mean)"""
     n = g.n_c.sum()
     return (g.n_c * g.frac_5mC).sum() / n if n > 0 else np.nan, int(n), int(g.reads.sum())
 
@@ -94,7 +94,7 @@ T = pd.DataFrame(rows)
 P("  -> array %d 개 (종 %d)" % (len(T), T.species_key.nunique()))
 P()
 
-# ---------------------------------------------------------------- 애기장대 CG 재계산
+# ---------------------------------------------------------------- Arabidopsis CG, recounted
 P("  애기장대 : AVF 값은 전문맥이라 CG 만 다시 센다")
 bp = R + "/05_bedmethyl/arabidopsis_ColCC/ColCC_ATRun3.5S.allC.bed.gz"
 ara = T[T.species_key == "arabidopsis_ColCC"].copy()
@@ -106,7 +106,7 @@ with gzip.open(bp, "rt") as f:
         t = l.rstrip("\n").split("\t")
         code = t[3]
         if not code.startswith("m,"):
-            continue                        # 5mC 만 (h 는 따로)
+            continue                        # 5mC only; h is handled separately
         ctx = code.split(",")[1]
         c, s = t[0], int(t[1])
         nmod, ncan = int(t[11]), int(t[12])
@@ -128,18 +128,18 @@ for aid in ara.array_id:
     T.loc[T.array_id == aid, "meth"] = fr("CG")
     T.loc[T.array_id == aid, "CHG"] = fr("CHG")
     T.loc[T.array_id == aid, "CHH"] = fr("CHH")
-    T.loc[T.array_id == aid, "flank"] = np.nan          # flank 는 bed 범위 밖
+    T.loc[T.array_id == aid, "flank"] = np.nan          # the flank lies outside the bed range
 P("   flank 는 bedmethyl 범위 밖이라 애기장대 Δ 는 못 낸다 (전문맥 Δ 만 있음)")
 P()
 
-# ---------------------------------------------------------------- 제브라피시 유닛수
+# ---------------------------------------------------------------- zebrafish unit counts
 Z = pd.read_csv(R + "/00_catalog/ZEBRAFISH_ALL_ARRAYS.tsv", sep="\t")
 Z = Z[Z.meth_mean.astype(str) != "-"].copy()
 zmap = {r.array_id: (r.refunit_len, r.g8_units, r.locus_type_lit, r.chrom_name)
         for r in Z.itertuples(index=False)}
 P("  제브라피시 유닛 정보 %d array" % len(zmap))
 
-# ---------------------------------------------------------------- 유닛 정보 일반
+# ---------------------------------------------------------------- unit information in general
 U = pd.read_csv(R + "/00_catalog/UNIT_REF_TABLE.tsv", sep="\t")
 P("  UNIT_REF_TABLE %d 행 · 열 %s" % (len(U), list(U.columns)[:8]))
 ucol = [c for c in U.columns if "unit" in c.lower() or "len" in c.lower()]
@@ -163,7 +163,7 @@ for i, r in T.iterrows():
             if k.lower() in ("n_units", "g8_units", "units"):
                 T.loc[i, "n_unit"] = d[k]
 
-# ---------------------------------------------------------------- 생쥐 (README 실측)
+# ---------------------------------------------------------------- mouse, measured from the README
 T = pd.concat([T, pd.DataFrame([dict(
     species_key="mouse_mm39", array_id="mouse_mm39__chr8_124264035_124351175",
     chrom="chr8", array_start=124264035, array_len=87140,
@@ -173,14 +173,14 @@ T = pd.concat([T, pd.DataFrame([dict(
     unit_len=1701, n_unit=52, note="mm39 축약판(T2T 는 134kb/80copy)")])],
     ignore_index=True)
 
-# ---------------------------------------------------------------- 붉은털 (Tier 2)
+# ---------------------------------------------------------------- rhesus, tier 2
 RH = pd.read_csv(R + "/11_rhesus_tier2/rhesus_tier2_5S_meth.tsv", sep="\t")
 for c in ("mean_pct", "coverage_pct", "span_bp", "refunit_len", "g8_units",
           "cpg_sites_with_value"):
     if c in RH.columns:
         RH[c] = pd.to_numeric(RH[c], errors="coerce")
 RH = RH.dropna(subset=["mean_pct"])
-#  RH 파일에는 array 행과 flank 행이 섞여 있다. 갈라서 flank 는 대조로만 쓴다.
+#  The rhesus file mixes array rows and flank rows. They are separated and the flank is used only as a control.
 RH["is_flank"] = RH.array_status.astype(str).str.contains("FLANK")
 fl_mean = ((RH[RH.is_flank].mean_pct * RH[RH.is_flank].cpg_sites_with_value).sum()
            / RH[RH.is_flank].cpg_sites_with_value.sum()) / 100.0
@@ -198,7 +198,7 @@ for r in RH[~RH.is_flank].itertuples(index=False):
         note="자리 피복 %.1f%% · %s" % (r.coverage_pct, r.array_status))])],
         ignore_index=True)
 
-# ---------------------------------------------------------------- 메타 붙이기
+# ---------------------------------------------------------------- attaching the metadata
 T["종"] = T.species_key.map(lambda k: META.get(k, ("?",))[0])
 T["학명"] = T.species_key.map(lambda k: META.get(k, ("", "?"))[1])
 T["시료"] = T.species_key.map(lambda k: META.get(k, ("", "", "?"))[2])

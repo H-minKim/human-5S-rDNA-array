@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
-# coding(5S 유전자) CpG 만으로 본 read x 유닛 메틸 분포 — 종 · array 마다 따로.
-#   입력 : tables/OTHERSP_READUNIT_CODING.tsv.gz (x11 · BAM MM/ML 직접 · 유닛 전체값은 기존 read_unit 과 일치 검산)
-#   사람 참고 : v11 L1 b_gene / n_gene (관문 통과)
-#   조건 : 유전자 히트가 있는 유닛 · coding CpG 호출 >= 그 array coding 중앙값의 절반 · 최소 3
-#   판정 : x10 과 같은 규칙(두 번째 봉우리 >= 0.30 떨어짐 · 골 <= 그 봉우리 절반 · 그쪽 분자 >= 2%)
-#          폭 h = max(0.035, 0.5/CpG중앙) — coding CpG 가 적으면 넓어진다
-#   보조 : 이항 귀무(같은 array·자리 분자가 자리평균 p 공유, 같은 호출수) 대비 과분산비
-#          OFF = β < 0.35 · 같은 read-유닛의 전체/스페이서 β 도 같이 적는다(그림은 coding 만)
+# The read x unit methylation distribution from the coding CpG sites alone, that is the 5S gene, separately per species and array.
+#   Input: tables/OTHERSP_READUNIT_CODING.tsv.gz, built from the BAM MM/ML directly, with its whole-unit values checked against the existing read_unit table.
+#   For comparison with human: b_gene and n_gene from L1, past the gate.
+#   Conditions: a unit with a gene hit, coding CpG calls at least half that array's coding median, and at least 3.
+#   The call follows the same rule as x10: a second peak at least 0.30 away, a trough no higher than half that peak, and at least 2% of molecules on its side.
+#          The width is h = max(0.035, 0.5 / median CpG count), which widens where there are few coding CpG sites.
+#   Also reported: the overdispersion ratio against a binomial null in which the molecules at a position share that position's mean p at the same number of calls.
+#          OFF is beta < 0.35; the whole-unit and spacer beta of the same read-unit are recorded alongside, although the figure shows the coding part only.
 import io, importlib.util
 import numpy as np
 import pandas as pd
@@ -26,7 +26,7 @@ def _need(k):
     v = _os_need.environ.get(k)
     if not v:
         _sys_need.exit("environment variable %s is not set (the deposited copy has no default; "
-                       "see README.md, section 'How to run it')" % k)
+                       "see README.md, section 'Environment variables')" % k)
     return v
 
 

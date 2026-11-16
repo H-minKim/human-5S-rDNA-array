@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
-# 칸 차례는 염색체 번호 → 좌표
-#   앞 판은 '완전유닛 수' 로 줄을 세워 chr18 이 chr4 들 가운데 끼어 있었다.
-#   한 종 안에서 : 염색체 번호 오름차순 → array 시작좌표 오름차순. 묶음(mat/pat 합친 자리) 단위로 센다.
+# The panel order is by chromosome number, then by coordinate.
+#   Within a species: increasing chromosome number, then increasing array start coordinate, counted per locus, with the maternal and paternal copies merged.
 import re
 import pandas as pd
 
@@ -9,7 +8,7 @@ _CACHE = {}
 
 
 def panel_order(NEW):
-    """{묶음 이름 : (염색체번호, 시작좌표)} — 작은 값이 먼저 온다"""
+    """{group name : (chromosome number, start coordinate)}; smaller values come first"""
     if NEW in _CACHE:
         return _CACHE[NEW]
     MT = pd.read_csv(NEW + "/tables/PERARRAY_META.tsv", sep="\t")

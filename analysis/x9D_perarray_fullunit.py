@@ -1,68 +1,64 @@
 # -*- coding: utf-8 -*-
-# 완전유닛 자료를 array 단위로 뽑는다
-#   v13 파이프라인(x9A)과 같은 여과·같은 판정 이지만, 덤프에 array_id·유닛번호·시작좌표를 싣고
-#   자리별 프로파일을 array 단위로도 누적한다 → 대주제 A·B·C·E 를 완전유닛 기준으로 다시 그릴 수 있다.
-#   (지금까지 A·B·C·E 는 느슨한 여과 n_calls >= 0.5 x array 중앙 을 썼다 — 문서 25 의 기준 불일치 ①)
-#   산출 : tables/UNITBETA_PERARRAY_v13.tsv.gz · tables/PROFILE_BP_PERARRAY_v13.tsv.gz
-#          (PROFILE_*_v13X 는 x9A 결과와 같아야 하는 대조용 이다 — 정본은 x9A 산출)
-# 아래는 v13 설명 그대로 :
-# 유닛 안 메틸 프로파일 v13 — 판정을 문턱에서 검정으로
-#   v12 까지는 Ashman D·Sarle BC·소수성분 문턱 + 귀무 관문으로 '이봉' 을 정했다. 그 문턱은 유닛 수에 흔들렸다
-#   (수마트라 과분산 귀무 통과율 전수 3.3% ↔ 3,000 부분표본 13.7%).
-#   v13 은 묶음마다 베타-이항 1 성분 vs 2 성분 혼합 을 적합해 셋을 모두 요구한다 :
-#     ① 모수 부트스트랩 우도비가 유의 (p <= 0.01 · 귀무 LR 분포는 적합된 1 성분에서 모의)
-#     ② split-half 재현 (성분 평균 차 <= 간격/4 · 저몫 차 <= 0.05)
-#     ③ 적합이 만드는 분자 수준 밀도의 봉우리 >= 2 개
-#   셋 중 ①만 서면 보류 로 적고 분할은 단봉과 같게(가장 가까운 컷) 한다. 옛 판정은 '옛판정_v12' 열에 남긴다.
-#   아래는 v12 설명 그대로 :
-# 유닛 안 메틸 프로파일 v12 — v11 + 가장 가까운 컷 + 과분산 귀무
+# Extract the complete-unit data per array.
+#   The filter and the call are the same as in the v13 pipeline (x9A), but the dump also carries the array_id, the unit index and the start coordinate,
+#   and the per-position profile is accumulated per array as well, so that topics A, B, C and E can be redrawn on the complete-unit basis.
+#   (Elsewhere topics A, B, C and E use the looser filter n_calls >= 0.5 times the array median.)
+#   Outputs: tables/UNITBETA_PERARRAY_v13.tsv.gz and tables/PROFILE_BP_PERARRAY_v13.tsv.gz
+#          (The PROFILE_*_v13X tables are a control that must match the x9A output; x9A's output is the canonical one.)
+#   The v13 pipeline, as in x9A:
+# Methylation profile within the unit, v13: the call is made by a test rather than a threshold.
+#   Thresholds on Ashman's D, Sarle's bimodality coefficient and the minor-component weight, with a null gate, move with the number of units
+#   (the overdispersed-null pass rate for the Sumatran orangutan is 3.3% on the full set against 13.7% on a 3,000-unit subsample).
+#   v13 fits a one-component against a two-component beta-binomial mixture per group and requires all three of:
+#     1) a significant parametric bootstrap likelihood ratio (p <= 0.01; the null LR distribution is simulated from the fitted one-component model)
+#     2) split-half reproducibility (the component means differ by at most a quarter of their separation, and the low fraction by at most 0.05)
+#     3) at least 2 peaks in the molecule-level density implied by the fit
+#   If only 1) holds, the call is recorded as undecided and the split is made as for a unimodal group, at the nearest cut. The threshold call is kept in its own column.
 # A unimodal group is split with nearest_cut rather than with a hard cut on the ratio (ratio_split).
-#              하드 컷은 컷 값 동점이 전부 HIGH 로 가 달성 LOW 가 목표 0.2191 보다 늘 작았다(중앙 0.175·최대 차 0.154).
-#   바뀐 점 ② 과분산(베타-이항) 귀무 통과율 을 함께 적는다 — '두 상태' 가 아니라 '하나의 넓은 분포' 여도
-#              3 조건이 통과하는지 보는 더 센 귀무. 판정에는 쓰지 않고 표에만 적는다(판정 규칙은 v11 그대로).
-#   아래는 v11 설명 그대로 :
-#   v10 에서 제브라 25/31 묶음이 '이봉' 으로 나왔는데, 실측해 보니 CpG 7~8 개짜리 묶음은
-#   진짜 단봉이어도 3 조건이 99~100% 로 '이봉' 을 뱉는다 (표 BIMODAL_NULL_CHECK.tsv).
-#   그래서 묶음마다 같은 n_cpg·같은 평균 β 의 단봉(이항) 모의 를 돌려 3 조건 통과율을 재고,
-#   통과율 >= 5% 면 이봉으로 인정하지 않고 단봉으로 보아 비율 분할(f) 을 쓴다. 통과율을 표에 적는다.
-#   (CpG 가 많은 유인원·금화조·애기장대는 통과율 0.0% 로 영향 없음)""
-#   ① 묶음(array)마다 따로 이봉 판정 : Ashman D > 2 (가우스 2성분 EM) · Sarle BC > 0.555 · 소수 성분 >= 5%
+#              With a hard cut, ties at the cut value all go to HIGH, so the achieved LOW fraction is always below the target of 0.2191 (median 0.175, largest shortfall 0.154).
+#   The pass rate against an overdispersed (beta-binomial) null is also recorded: it is the stronger null, asking whether a single broad distribution,
+#              rather than two states, would already satisfy the three conditions. It is reported in the table only and does not enter the call.
+#   The threshold call and its null gate:
+#   Measured: a group with only 7-8 CpG sites satisfies the three bimodality conditions
+#   99-100% of the time even when it is genuinely unimodal (table BIMODAL_NULL_CHECK.tsv).
+#   So for each group a unimodal (binomial) simulation with the same n_cpg and the same mean beta is run to measure the pass rate,
+#   and at a pass rate of 5% or more the group is not accepted as bimodal but treated as unimodal with the fraction split f. The pass rate is reported.
+#   (For the apes, zebra finch and Arabidopsis, which have many CpG sites, the pass rate is 0.0%.)
+#   1) Bimodality is decided per group (array): Ashman's D > 2 (two-component Gaussian EM), Sarle's bimodality coefficient > 0.555, minor component >= 5%.
 # Definition check: human 5S (P10) gives D 3.002, BC 0.8311, w_minor 0.306, matching the specification values 3.00 / 0.83 / 0.306
-#   ② 이봉 → 그 묶음 자신의 두 이항 성분(EM) 우도비 로 가른다 (p_low·p_high·동치 컷을 표에 적음)
-#   ③ 단봉 → 사람 5S 의 LOW 비율 f 를 그 묶음 순위에 적용 (상보 분할 · 가운데 비우지 않음)
-#      f 는 우리 사람 자료풀(P10 25,644 완전유닛) 에서 직접 냈다 : p_low 0.1580 · p_high 0.7867 · 컷 0.4610 · f = 0.2191
+#   2) If bimodal, units are split by the likelihood ratio of that group's own two binomial components (EM); p_low, p_high and the equivalent cut are reported.
+#   3) If unimodal, the human 5S LOW fraction f is applied to that group's ranking (a complementary split, with no gap left in the middle).
+#      f comes from the human pool itself (25,644 complete units in P10): p_low 0.1580, p_high 0.7867, cut 0.4610, f = 0.2191.
 # (matches the specification values to the decimal; table HUMAN_RATIO_F.tsv)
-#   ④ 금화조·제브라의 '고메틸 array vs 저메틸 array' 는 array 사이 차이다 — 합쳐서 이봉이라 부르지 않는다(묶음마다 따로 판정)
-#   그 여과는 v5 에서 '흔한 자리 90% 덮음' 을 쓰려고 넣었던 것인데, 완전유닛 기준이 참조 CpG 90% 관측 으로 바뀐 뒤로는
-#   같은 일을 두 번 하는 셈이고 유닛 길이가 들쭉날쭉한 종(침팬지)에서만 과하게 깎였다(완전유닛 679 → 여과 없이 4,666).
-#   그래서 완전유닛 = n_cpg >= MINC 이고 그 유닛의 참조 CpG 중 90% 이상을 관측한 read-유닛, 하나로 간다.
-#   · 묶음마다 x10 원 함수(density/call) 를 그 묶음의 완전유닛 β 에 돌려 이봉/단봉과 봉우리 둘을 얻는다
-#   · 이봉 이면 우도비로 가른다 : d = n_meth*ln(a1/a0) + (n_cpg-n_meth)*ln((1-a1)/(1-a0)) · d>0 → hi
+#   4) In zebra finch and zebrafish the contrast between a highly and a weakly methylated array is a difference between arrays, not bimodality of a pooled distribution, so the call is made per group.
+#   A complete unit is defined once: a read-unit with n_cpg >= MINC that observes at least 90% of that unit's reference CpG sites.
+#   · For each group, x10's own density/call functions are run on that group's complete-unit beta values to obtain the uni/bimodal call and the two peaks.
+#   · If bimodal, the split is by likelihood ratio: d = n_meth*ln(a1/a0) + (n_cpg-n_meth)*ln((1-a1)/(1-a0)); d > 0 gives hi.
 # - if unimodal, the top and bottom 25% by rank are used; the grouping column of the table records which was used
-#   · 그 밖(하드콜 ML>=128 · 완전유닛=참조 CpG 90% 관측 · bp 자리 · 깊이가중)은 v7 과 같다
-#   v6 은 값 문턱(q1c/q4c)을 썼는데, 유닛의 75% 넘게 β=1.00 인 묶음(제브라 177 bp · 금화조 chr2/chr4)에서
-#   하위컷=상위컷=1.0 이 되어 전부 q1 으로 들어가고 q4 가 비었다(그림에서 하위 25% n = 전체 n).
-#   → 정렬 순위로 아래 25% / 위 25% 를 정확히 잘라낸다(동점은 씨앗 0 의 무작위 순서).
-# Why v4/v5 came out 0 (measured): the "90% coverage of common positions" criterion holds only in a canonical frame where positions are shared between units, as in the human case.
-#     타종은 유닛마다 서열이 조금씩 달라 같은 CpG 가 다른 bp 자리에 오고, '흔한 자리' 가 유닛당 CpG 의 2~8 배가 된다 → 아무도 90% 를 못 덮는다.
-#   그래서 같은 뜻(부분 read 걸러내기)을 그 유닛의 참조 CpG 수 로 바꾼다 :
-#     완전유닛 = 그 유닛(참조 서열)이 가진 CpG 의 90% 이상 을 관측한 read-유닛 · 그리고 n_cpg >= MINC
-#   ※ v4(x60)는 완전유닛 여과에서 모든 유닛이 탈락했다. 원인 : 사람 판의 자리 c 는 정본틀 이라 유닛끼리 자리가 공유되는데
-#     우리 좌표는 유닛 길이가 제각각(고릴라 2,248/2,246/2,244/2,183…)이라 같은 CpG 가 여러 bp 자리로 번져
-#     '흔한 자리' 가 유닛당 CpG 의 2~8 배가 됐다 → 어떤 유닛도 90% 를 못 덮는다.
-#   그래서 먼저 g8 지도로 틀이 맞는 유닛 만 고른다 : unit_len 이 그 array 의 최빈값 ±2 이고 cov_start<=2 · cov_end>=unit_len-2
-#   ① 하드콜 : CpG 마다 ML >= 128 → 0/1 (확률평균 안 씀)
-#   ② 집계 단위 = bp 자리 그대로 (칸으로 미리 묶지 않는다)
-#   ③ β = 깊이가중 : 자리마다 메틸수 합 / 호출수 합 (유닛별 평균의 평균 금지)
-#   ④ 자리마다 최소 깊이 관문 (그릴 때 ±HALF bp 창 안 호출 >= MINCALL)  ← 그리는 쪽 x61 에서
-#   ⑤ 미끄럼 평균은 그릴 때만 (bp 로 고른 깊이가중 창)                ← x61
-#   완전유닛 여과 (이걸 빼면 가짜 저메틸 봉우리) :
-#       (가) n_cpg >= MINC  · (나) '흔한 자리'(자리별 관측수 >= 0.10 x 최대 자리 관측수)의 90% 이상을 덮는 유닛만
-#       ※ 타종은 유닛당 CpG 가 7~190 으로 종마다 달라 MINC 를 그 묶음 중앙 CpG 의 절반(최대 20)으로 둔다 — 표에 적는다.
-#   무리 : all · q1(하위 25%) · q4(상위 25%)  ← 순위 절단(자료가 찾은 두 무리가 아님)
-#   좌표 틀 : g8 유닛틀(유전자가 유닛 끝) · array strand 로 뒤집음 · 유전자 구간을 같은 틀로 옮겨 적는다
-#   산출 : tables/PROFILE_BP_v13X.tsv.gz (묶음 x 무리 x bp 자리 : 호출수·메틸수·beta)
-#          tables/PROFILE_META_v13X.tsv  (완전유닛 수·버린 수·흔한자리·컷·Ashman D·유전자 구간)
+#   - Hard call at ML >= 128, a complete unit observes 90% of the reference CpG sites, positions in bp, depth-weighted.
+#   A value threshold (q1c/q4c) fails in groups where more than 75% of units have beta = 1.00 (zebrafish 177 bp, zebra finch chr2/chr4):
+#   the lower and upper cuts both become 1.0, every unit falls into q1 and q4 is empty.
+#   So the bottom and top 25% are cut by sorted rank instead, with ties broken in a random order from seed 0.
+# A "90% coverage of common positions" criterion holds only in a canonical frame where positions are shared between units, as in the human case.
+#     In the other species the unit sequences differ slightly, so the same CpG lands on different bp positions and the set of common positions grows to 2-8 times the CpG count per unit, which no unit can cover to 90%.
+#   The same intent (excluding partial reads) is therefore expressed against that unit's own reference CpG count:
+#     a complete unit is a read-unit observing at least 90% of the CpG sites in that unit's reference sequence, with n_cpg >= MINC.
+#   Note: in the human version the coordinate c is in the canonical frame, so positions are shared between units, whereas
+#     here the unit lengths differ (gorilla 2,248 / 2,246 / 2,244 / 2,183 ...) and one CpG spreads over several bp positions,
+#     so the set of common positions grows to 2-8 times the CpG count per unit and no unit covers 90% of it.
+#   Units in frame are therefore selected first from the g8 map: unit_len within +-2 of that array's mode, cov_start <= 2 and cov_end >= unit_len - 2.
+#   1) Hard call: each CpG is 0 or 1 at ML >= 128; probabilities are never averaged.
+#   2) The unit of aggregation is the bp position itself; nothing is pre-binned.
+#   3) beta is depth-weighted: per position, the sum of methylated calls over the sum of calls. Never a mean of per-unit means.
+#   4) A minimum-depth gate per position (at plotting time, calls within a +-HALF bp window >= MINCALL), applied in the plotting script x61.
+#   5) The running mean is applied only when plotting (a depth-weighted window measured in bp), in x61.
+#   The complete-unit filter; without it a spurious hypomethylated peak appears:
+#       (a) n_cpg >= MINC, and (b) only units covering at least 90% of the common positions (those observed at least 0.10 x the maximum per-position count).
+#       Note: CpG sites per unit range from 7 to 190 across species, so MINC is set to half that group's median CpG count, capped at 20, and reported.
+#   Groups: all, q1 (bottom 25%) and q4 (top 25%). These are rank cuts, not two clusters found in the data.
+#   Coordinate frame: the g8 unit frame with the gene at the end of the unit, flipped to the array strand, and the gene interval is written in the same frame.
+#   Outputs: tables/PROFILE_BP_v13X.tsv.gz, holding the calls, the methylated calls and beta per group, class and bp position,
+#          and tables/PROFILE_META_v13X.tsv, holding the complete-unit count, the number discarded, the common positions, the cut, Ashman's D and the gene interval.
 import io, os, sys, glob, re, struct, collections, math
 from scipy import stats
 import numpy as np
@@ -76,7 +72,7 @@ def _need(k):
     v = _os_need.environ.get(k)
     if not v:
         _sys_need.exit("environment variable %s is not set (the deposited copy has no default; "
-                       "see README.md, section 'How to run it')" % k)
+                       "see README.md, section 'Environment variables')" % k)
     return v
 
 
@@ -85,7 +81,7 @@ B = _need("RDNA_DATA_ROOT")
 OLD = _need("RDNA_PREV_OUT_DIR")
 sys.path.insert(0, NEW + "/code")
 import arch  # noqa
-import bbmix  # 베타-이항 1/2 성분 가중 우도 적합(원판 xa1 과 값 동일 — 표 BBMIX_CHECK.tsv)
+import bbmix  # Weighted-likelihood fit of a one- and two-component beta-binomial (values identical to xa1; table BBMIX_CHECK.tsv).
 try:
     sys.stdout.reconfigure(encoding="utf-8")
 except Exception:
@@ -94,19 +90,19 @@ LOG = io.open(NEW + "/logs/X9D_PERARRAY.txt", "w", encoding="utf8", newline="\n"
 REASON = "완전유닛 array 단위 덤프(A·B·C·E 완전유닛판 자료)(2026-10-04)"
 MLTHR, COVMIN = 128, 0.9
 FRATIO = 0.2191
-NSIM, NCAP = 100, 3000   # 옛 귀무 모의(기록용) : 묶음당 모의 횟수 · 유닛 표본 상한(씨앗 0)
-# ---- v13 판정 규칙 : 문턱(D·BC)은 기록만 하고, 판정은 아래 셋을 모두 요구한다
-BOOT = 99          # 부트스트랩 벌 수 → p 의 바닥은 1/(BOOT+1) = 0.01
-LRMIN = 30.0       # 이보다 작은 LR 은 부트스트랩 없이 '비유의' (실측된 귀무 LR 최대가 15.5 였다)
-PALPHA = 0.01      # 유의 문턱 (= p 바닥)
-WTOL = 0.05        # split-half 에서 저몫 차 허용
-SEPDIV = 4.0       # split-half 에서 성분 평균 차 허용 = (두 성분 간격)/SEPDIV
-# ---- 파일럿(xa5·xa6)에서 드러난 구멍을 막는 관문 — 문턱은 실측 분포에서 골랐다(표 V13_RULE_V2.tsv)
-NULLMAX_OK = 100.0  # 귀무 LR 최대가 이보다 크면 적합이 폭주한 것 → 검정 불가(실측 6e8 까지 나왔다)
-SEPRES = 2.0        # 두 성분 간격 >= SEPRES x (1/CpG중앙) — 양자화가 만든 성분 제외
+NSIM, NCAP = 100, 3000   # The null simulation of the threshold call: replicates per group and the cap on sampled units (seed 0).
+# ---- The v13 rule: the thresholds (D, BC) are recorded only, and the call requires all three of the following.
+BOOT = 99          # bootstrap replicates, so the floor on p is 1/(BOOT+1) = 0.01
+LRMIN = 30.0       # An LR below this is non-significant without bootstrapping; the largest null LR measured was 15.5.
+PALPHA = 0.01      # significance threshold (= the floor on p)
+WTOL = 0.05        # tolerance on the difference in the low fraction between split halves
+SEPDIV = 4.0       # tolerance on the difference in component means between split halves = (component separation) / SEPDIV
+# ---- Further gates; the thresholds are chosen from the measured distributions (table V13_RULE_V2.tsv).
+NULLMAX_OK = 100.0  # If the largest null LR exceeds this the fit has diverged and the test cannot be used; values up to 6e8 were observed.
+SEPRES = 2.0        # Require the component separation to be at least SEPRES x (1 / median CpG count), which excludes components created by quantisation.
 MINW = 0.05 # lower bound on the minor-component weight, so that a 1.7% tail is not counted as a peak
-VALLEY = 0.6        # 골깊이비 상한 — 0.9 를 넘는 '어깨' 를 두 봉우리로 세지 않기 위해
-NSPLIT, STARTS = 5, 5   # split-half 를 5 벌 (한 벌이면 최적화 국소해 때문에 판정이 뒤집힌다 — 실측)
+VALLEY = 0.6        # An upper bound on the trough-to-peak ratio, so that a shoulder above 0.9 is not counted as two peaks.
+NSPLIT, STARTS = 5, 5   # Five split-half replicates: with one, a local optimum in the fit can flip the call.
 
 
 def em_two_binomial(kn, iters=200): # two-component binomial EM
@@ -143,11 +139,11 @@ def ratio_split(betas, f):
 
 
 def nearest_cut(betas, f):
-    """v12 : 달성 비율이 목표 f 에 가장 가까운 컷
-       A hard cut on the ratio sends every tie at the cut value to HIGH, so the attained LOW fraction was always below target
-       (v11 실측 : 달성 중앙 0.175 · 목표 0.2191 · |차| 최대 0.154).
-       서로 다른 β 값을 전부 컷 후보로 두고 (β < c) 의 몫이 f 에 가장 가까운 c 를 고른다.
-       동점은 쪼개지 않는다(값이 같은 유닛은 늘 같은 무리). 동률이면 작은 컷을 골라 재현되게 한다."""
+    """The cut whose attained fraction is closest to the target f.
+       A hard cut on the ratio sends every tie at the cut value to HIGH,
+       so the attained LOW fraction stays below the target.
+       Every distinct β value is a candidate cut, and the c whose (β < c) fraction is closest to f is chosen.
+       Ties are not split (units with the same value always fall in the same group). Between equal candidates the smaller cut is chosen, for reproducibility."""
     b = np.asarray(betas, dtype=float)
     uq = np.unique(b)
     fr = np.array([float((b < c).mean()) for c in uq])
@@ -156,10 +152,10 @@ def nearest_cut(betas, f):
 
 
 def betabinom_null_rate(kk, nn, nsim, rng, iters=60):
-    """과분산 귀무 — '두 상태' 가 아니라 하나의 넓은(연속) 분포 여도 3 조건을 통과하는가?
-       단봉 이항 귀무는 표본오차만 담아 분산이 너무 작다(생물 변이가 0). 그래서 같은 (k,n) 에
-       적률법으로 베타-이항 을 맞춰 모의한다. 반환 : (통과율, α, β, 쓸 수 있나)
-       α<1 또는 β<1 이면 베타 자체가 U 자(이봉)라 '단봉 귀무' 가 아니다 → 쓸 수 없다고 표시한다."""
+    """Overdispersed null: does a single broad (continuous) distribution, not 'two states', also pass the 3 conditions?
+       A unimodal binomial null holds sampling error only, so its variance is too small (no biological variation). A beta-binomial is therefore
+       fitted to the same (k,n) by the method of moments and simulated. Returns : (pass rate, α, β, usable)
+       With α<1 or β<1 the beta itself is U-shaped (bimodal) and is not a 'unimodal null', so it is flagged as not usable."""
     p = kk / nn
     m = float(kk.sum() / nn.sum())
     s2 = float(np.var(p, ddof=1)) if len(p) > 1 else 0.0
@@ -205,7 +201,7 @@ G = {"__name__": "x11hdr"}
 exec(compile(head, OLD + "/code/x11_coding_readunit.py", "exec"), G)
 NIBCOMP, load_species, bam_records, parse_tags, read_fa = (
     G["NIBCOMP"], G["load_species"], G["bam_records"], G["parse_tags"], G["read_fa"])
-# ---- x10 의 판정 함수(density/call)를 원문 그대로 가져온다 (내가 옮겨 적지 않는다)
+# ---- x10's density and call functions are imported verbatim rather than re-implemented here.
 _x10 = io.open(NEW + "/code/x10_readunit_per_array.py", encoding="utf8").read()
 _hdr = _x10.split("def density(")[0]
 _body = "def density(" + _x10.split("def density(")[1].split('P("=" * 104)')[0]
@@ -216,7 +212,7 @@ x10_call = _ns["call"]
 
 BC = pd.read_csv(NEW + "/tables/BONOBO_READ_BASECALLER.tsv", sep="\t")
 B637 = set(BC.loc[BC.basecaller.astype(str).str.contains("6.3.7"), "read_id"])
-MT3 = pd.read_csv(NEW + "/tables/PERARRAY_META_v3.tsv", sep="\t")      # 묶음 정의(= x52 가 쓴 것)를 그대로 쓴다
+MT3 = pd.read_csv(NEW + "/tables/PERARRAY_META_v3.tsv", sep="\t")      # The group definition is taken unchanged from x52.
 GRP_OF = {}
 for t in MT3.itertuples(index=False):
     for a in str(t.array목록).split("|"):
@@ -229,7 +225,7 @@ SPK = [("고릴라", "gorilla_mGorGor1"), ("보노보", "bonobo_mPanPan1"), ("�
 
 
 def ashman(x):
-    """2성분 정규 혼합 EM 으로 Ashman D = sqrt(2)|m1-m2| / sqrt(s1^2+s2^2)"""
+    """Ashman D = sqrt(2)|m1-m2| / sqrt(s1^2+s2^2) from a two-component normal mixture fitted by EM"""
     x = np.asarray(x, float)
     if len(x) < 50 or x.std() < 1e-6:
         return np.nan
@@ -258,15 +254,15 @@ for ko, sp in SPK:
         g_ = pd.read_csv(f_, sep="\t")
         aid_ = g_.array_id.iloc[0]
         STR[aid_] = g_.strand.iloc[0]
-        # 틀이 맞는 유닛만 : 길이가 그 array 최빈값 ±2 이고 지도 덮임이 유닛 전체인 것
+        # Units in frame only: length within +-2 of that array's mode, and map coverage spanning the whole unit.
         modal = int(g_.unit_len.mode().iloc[0])
         ok_ = g_[(g_.unit_len.sub(modal).abs() <= 2) & (g_.cov_start <= 2) & (g_.cov_end >= g_.unit_len - 2)]
         FRAMEOK[aid_] = set(int(x) for x in ok_.array_pos)
         FRAMEN[aid_] = (len(ok_), len(g_), modal)
-    REFCPG = {}                      # (array, 유닛index) -> 그 유닛 참조 서열의 CpG 수
+    REFCPG = {}                      # (array, unit index) -> the CpG count of that unit's reference sequence
     for a in [x for x in Asp if x in GRP_OF]:
         v = Asp[a]; sq = v["seq"]
-        cg = np.flatnonzero((sq[:-1] == 67) & (sq[1:] == 71)) + 1 + (v["lo1"] - 1)   # 1기반 게놈 좌표
+        cg = np.flatnonzero((sq[:-1] == 67) & (sq[1:] == 71)) + 1 + (v["lo1"] - 1)   # 1-based genome coordinate
         ui_ = np.searchsorted(v["us"], cg, side="right") - 1
         ok2 = (ui_ >= 0) & (cg <= v["ue"][np.clip(ui_, 0, None)])
         cnt_ = collections.Counter(ui_[ok2].tolist())
@@ -275,7 +271,7 @@ for ko, sp in SPK:
     bychrom = collections.defaultdict(list)
     for a in keep_aids:
         bychrom[Asp[a]["chrom"]].append(a)
-    # 묶음마다 read-유닛 모으기 : (n_cpg, n_meth, 자리 비트, 메틸 비트)
+    # Collect read-units per group: (n_cpg, n_meth, position bits, methylation bits).
     UNITS = collections.defaultdict(list)
     for bam in sorted(glob.glob(B + "/04_bam/%s/*.5S.bam" % sp)):
         for refs, r in bam_records(bam):
@@ -350,7 +346,7 @@ for ko, sp in SPK:
                 vv, rp = vv[cg], rp[cg]
                 if not len(rp):
                     continue
-                call = (vv >= MLTHR).astype(np.uint8)          # ① 하드콜
+                call = (vv >= MLTHR).astype(np.uint8)          # 1) hard call
                 ui = np.searchsorted(v["us"], rp, side="right") - 1
                 good = (ui >= 0) & (rp <= v["ue"][np.clip(ui, 0, None)])
                 if not good.any():
@@ -365,7 +361,7 @@ for ko, sp in SPK:
                     bm_c[pos] = True
                     bm_m[pos[cl.astype(bool)]] = True
                     UNITS[key].append((int(w.sum()), int(cl.sum()), np.packbits(bm_c), np.packbits(bm_m), int(REFCPG[aid].get(int(u), 0)), aid, int(u), int(v["us"][u])))
-    # ---------------- 묶음마다 완전유닛 여과 → 자리별 누적
+    # ---------------- per group: filter to complete units, then accumulate per position
     for key, lst in UNITS.items():
         L = GSPEC[key]["유닛길이"]
         nbits = L + 2
@@ -373,17 +369,17 @@ for ko, sp in SPK:
         for nc, nm, bc, bmm, nref, _a, _u, _st in lst:
             TOT += np.unpackbits(bc)[:nbits]
         mx = TOT.max() if TOT.size else 0
-        CPGB = np.flatnonzero(TOT >= 0.10 * mx)                 # 흔한 자리 = 0.10 x 최대 자리 관측수
+        CPGB = np.flatnonzero(TOT >= 0.10 * mx)                 # a common position is one observed at least 0.10 x the maximum per-position count
         med_cpg = float(np.median([x[0] for x in lst])) if lst else 0.0
         med_ref = float(np.median([x[4] for x in lst])) if lst else 0.0
-        MINC = int(min(20, max(3, round(0.5 * med_cpg))))       # 종마다 CpG 수가 달라 적응(표에 적음)
-        kept, keptinfo = [], []      # keptinfo = (array_id, 유닛번호, 시작좌표) — 완전유닛판 A·B·C·E 용
+        MINC = int(min(20, max(3, round(0.5 * med_cpg))))       # adapted per species because the CpG count differs; reported in the table
+        kept, keptinfo = [], []      # keptinfo = (array_id, unit index, start coordinate), for the complete-unit versions of A, B, C and E
         drop_nc = drop_cov = 0
         for nc, nm, bc, bmm, nref, aid_, u_, st_ in lst:
             if nc < MINC:
                 drop_nc += 1
                 continue
-            if nref > 0 and nc / float(nref) < COVMIN:        # 완전유닛 = 참조 CpG 의 90% 이상 관측
+            if nref > 0 and nc / float(nref) < COVMIN:        # a complete unit observes at least 90% of the reference CpG sites
                 drop_cov += 1
                 continue
             bits = np.unpackbits(bc)[:nbits].astype(bool)
@@ -412,7 +408,7 @@ for ko, sp in SPK:
         AD = float(np.sqrt(2) * abs(mm[0] - mm[1]) / np.sqrt(ss[0] ** 2 + ss[1] ** 2))
         wmin = float(min(ww))
         cond3 = (AD > 2) and (BC > 0.555) and (wmin >= 0.05)
-        # ---- 귀무 모의 : 같은 n_cpg·같은 평균으로 단봉(이항)을 만들어 3 조건 통과율
+        # ---- Null simulation: build a unimodal (binomial) set with the same n_cpg and mean, and measure the pass rate of the three conditions.
         kk_ = np.array([nm for _nc, nm, _b, _m in kept], dtype=float)
         nn_ = np.array([nc for nc, _nm, _b, _m in kept], dtype=float)
         rngs = np.random.default_rng(0)
@@ -439,18 +435,18 @@ for ko, sp in SPK:
                 ADs = float(np.sqrt(2) * abs(ms[0] - ms[1]) / np.sqrt(sss[0] ** 2 + sss[1] ** 2))
                 hits += (ADs > 2 and BCs > 0.555 and min(wws) >= 0.05)
         nullrate = hits / float(NSIM)
-        gate11 = cond3 and (nullrate < 0.05)       # v11·v12 의 옛 판정 — 기록만 한다(대조용)
-        # ---- 과분산 귀무 (적는 값) : '하나의 넓은 분포' 여도 3 조건을 통과하나?
+        gate11 = cond3 and (nullrate < 0.05)       # The threshold calls, recorded for comparison only.
+        # ---- The overdispersed null, reported only: would a single broad distribution also satisfy the three conditions?
         bbrate, bba, bbb, bbok = betabinom_null_rate(kk_, nn_, NSIM, np.random.default_rng(1))
-        # ================= v13 판정 : 문턱이 아니라 검정 =================
-        #   ① 베타-이항 1 성분 vs 2 성분 혼합의 모수 부트스트랩 우도비 가 유의할 것 (p <= PALPHA)
-        #   ② split-half 재현 : 무작위 반반으로 갈라 적합한 두 성분이 (간격/4) 안에서 맞고, 저몫 차 <= WTOL
-        #   ③ 적합이 만드는 분자 수준 밀도의 봉우리가 2 개 이상 ('성분이 둘' != '봉우리가 둘')
+        # ================= the v13 call: a test, not a threshold =================
+        #   1) The parametric bootstrap likelihood ratio of a one- against a two-component beta-binomial mixture must be significant (p <= PALPHA).
+        #   2) Split-half reproducibility: on a random half-split the two fitted components must agree to within a quarter of their separation, and the low fractions to within WTOL.
+        #   3) The molecule-level density implied by the fit must have at least 2 peaks; two components is not the same as two peaks.
         kk_all = np.array([nm for _nc, nm, _b, _m in kept], dtype=float)
         nn_all = np.array([nc for nc, _nm, _b, _m in kept], dtype=float)
         ku, nu, cu = bbmix.pack(kk_all, nn_all)
         LRobs, _lg1, _lg2, ab1, prm = bbmix.lr_stat(ku, nu, cu)
-        if LRobs >= LRMIN:                          # 작은 LR 은 부트스트랩 없이 비유의(귀무 LR 최대 실측 15.5)
+        if LRobs >= LRMIN:                          # A small LR is non-significant without bootstrapping; the largest null LR measured was 15.5.
             rngb = np.random.default_rng(12345)
             nl = []
             for _ in range(BOOT):
@@ -464,8 +460,8 @@ for ko, sp in SPK:
         sep = float(prm["mu_high"] - prm["mu_low"])
         minw = float(min(prm["w_low"], 1 - prm["w_low"]))
         npk, vratio, pk0, pk1 = bbmix.mixture_peaks(prm)
-        sepres = sep * med_cpg                       # 두 성분 간격이 분해능(1/CpG)의 몇 배인가
-        # ---- 관문을 차례로 보고 탈락 사유별로 이름을 다르게 붙인다(뭉뚱그린 '보류' 금지)
+        sepres = sep * med_cpg                       # how many times the resolution (1 / CpG count) the component separation is
+        # ---- The gates are checked in order and each failure gets its own name, rather than one undifferentiated "undecided".
         sig = bool(pval <= PALPHA)
         dlo = dhi = dw = np.nan
         npass = -1
@@ -481,7 +477,7 @@ for ko, sp in SPK:
             verdict = "단봉+소수꼬리(소수 성분 %.3f)" % minw
         else:
             dlos, dhis, dws, npass = [], [], [], 0
-            for _s in range(NSPLIT):               # 재현은 5 벌
+            for _s in range(NSPLIT):               # five replicates for reproducibility
                 rh = np.random.default_rng(100 + _s)
                 ix_ = rh.permutation(len(nn_all))
                 hs = []
@@ -507,12 +503,12 @@ for ko, sp in SPK:
                       % (p0, p1, cutv, pval, LRobs))
         else:
             p0 = p1 = np.nan
-            cutv, achv = nearest_cut(bvals, FRATIO)      # v12 : 달성이 목표에 가장 가까운 컷
+            cutv, achv = nearest_cut(bvals, FRATIO)      # the cut whose achieved fraction comes closest to the target
             lab = np.where(bvals < cutv, "q1", "q4").astype(object)
             method = ("사람 5S 비율 목표 f=%.4f · 가장 가까운 컷 %.4f (달성 %.4f · %s)"
                       % (FRATIO, cutv, achv, verdict))
         acc = {g: np.zeros((2, nbits)) for g in ("all", "q1", "q4")}
-        accA = collections.defaultdict(lambda: np.zeros((2, nbits)))   # array 단위 자리별 누적(완전유닛판 B·C·E 용)
+        accA = collections.defaultdict(lambda: np.zeros((2, nbits)))   # per-array accumulation by position, for the complete-unit versions of B, C and E
         cnt = collections.Counter()
         cntA = collections.Counter()
         for (nc, nm, bits, mb), lb, (aid_, u_, st_) in zip(kept, lab, keptinfo):
@@ -530,12 +526,12 @@ for ko, sp in SPK:
             n, m = acc[g]
             for p_ in np.flatnonzero(n > 0):
                 ROWS.append((GSPEC[key]["종"], key, g, L, int(p_), int(n[p_]), int(m[p_]), round(m[p_] / n[p_], 6)))
-        for (aid_, g), arr in accA.items():                 # array 단위 자리별 프로파일
+        for (aid_, g), arr in accA.items():                 # the per-position profile, per array
             n, m = arr
             for p_ in np.flatnonzero(n > 0):
                 AROWS.append((GSPEC[key]["종"], key, aid_, g, L, int(p_), int(n[p_]), int(m[p_]),
                               round(m[p_] / n[p_], 6), int(cntA[(aid_, g)])))
-        # 유전자 구간(같은 틀)
+        # the gene interval, in the same frame
         aid0 = [a for a in GRP_OF if GRP_OF[a] == key][0]
         v0 = Asp[aid0] if aid0 in Asp else None
         gw = []
@@ -549,7 +545,7 @@ for ko, sp in SPK:
                          틀맞춤유닛=sum(x[0] for x in fr), 지도유닛=sum(x[1] for x in fr),
                          버림_CpG적음=drop_nc, 버림_덮임부족=drop_cov, MINC=MINC, 흔한자리=int(len(CPGB)),
                          최대자리관측=int(mx), CpG중앙=med_cpg, 참조CpG중앙=med_ref, q1컷=round(q1c, 4), q4컷=round(q4c, 4), 무리방법=method,
-                         판정=verdict.split("(")[0].strip(), 판정상세=verdict,   # 판정 = 이봉/단봉/단봉+소수꼬리/보류/판정불가/검정불가
+                         판정=verdict.split("(")[0].strip(), 판정상세=verdict,   # call = bimodal / unimodal / unimodal with a minor tail / undecided / not callable / not testable
                          LRT_LR=round(float(LRobs), 2), LRT_귀무최대=(round(nullmax, 2) if np.isfinite(nullmax) else np.nan),
                          LRT_p=round(float(pval), 4), LRT_B=BOOT,
                          성분_저=round(prm["mu_low"], 4), 성분_고=round(prm["mu_high"], 4), 성분_저몫=round(prm["w_low"], 4),

@@ -1,22 +1,18 @@
 # -*- coding: utf-8 -*-
-# 애기장대 세 문맥(CG·CHG·CHH)의 array 별 요약 — `tables/FIGDATA_SUPP4_ATH_CONTEXT.tsv`
+# A per-array summary of the three Arabidopsis contexts (CG, CHG, CHH), written to tables/FIGDATA_SUPP4_ATH_CONTEXT.tsv.
 #
-#   왜 이 글이 생겼나
-#     이 표의 세 수(CG 0.844 · CHG 0.423 · CHH 0.146)가 원고 본문과 legend 에 실린다.
-#     그런데 지금까지 그 표를 쓰는 유일한 코드가 그림을 그리는 글(`xb2_supp.py`)이었다.
-#     논문에 들어가는 수는 결과를 만드는 코드 가 내야 한다 — 그리는 코드는 논문에 넣지 않는다.
-#     ⇒ 계산을 그대로 이리로 옮겼다. 값은 한 자리도 바뀌지 않는다(바이트 대조로 확인한다).
+#   Three numbers from this table (CG 0.844, CHG 0.423, CHH 0.146) appear in the manuscript text and legend.
 #
-#   자(ruler) : `평균β` 는 호출 가중 이다 — array 안 모든 read×유닛에 대해 `Σn_5mC / Σn_calls`.
-#     read 유닛 β 의 산술평균(`ATH_CONTEXT_PERARRAY` 의 CG 0.841)과 다른 수 다.
-#     집계 단위가 다르므로 섞어 쓰면 틀린다 — 원고가 쓰는 값은 이 글이 내는 쪽(0.844) 이다.
+#   Ruler: the mean beta is call-weighted, that is sum(n_5mC) / sum(n_calls) over every read x unit in the array.
+#     It is a different number from the arithmetic mean of the read-unit betas, which gives CG 0.841.
+#     The unit of aggregation differs, so the two must not be mixed; the manuscript uses the value this script produces, 0.844.
 #
-#   차례 : 염색체 번호 → array 시작좌표(`figorder.panel_order`). 그림 배치가 아니라 자료 차례 이고,
-#     `PERARRAY_META`·`CHROM_NAMES`·`UNITBETA_PERARRAY_v13` 세 결과표에서만 나온다.
+#   Order: by chromosome number, then by the array's start coordinate. This is the order of the data, not the layout of the figure,
+#     and it appears only in the three result tables PERARRAY_META, CHROM_NAMES and UNITBETA_PERARRAY_v13.
 #
-#   입력  : tables/ATH_READUNIT_CONTEXT.tsv.gz · tables/ATH_CONTEXT_PERARRAY.tsv (둘 다 `x13_ath_context.py`)
+#   Inputs: tables/ATH_READUNIT_CONTEXT.tsv.gz and tables/ATH_CONTEXT_PERARRAY.tsv, both from x13_ath_context.py.
 #           tables/UNITBETA_PERARRAY_v13.tsv.gz (`x9D`) · tables/PERARRAY_META.tsv (`x34`) · tables/CHROM_NAMES.tsv (`x9Q`)
-#   산출  : tables/FIGDATA_SUPP4_ATH_CONTEXT.tsv
+#   Output: tables/FIGDATA_SUPP4_ATH_CONTEXT.tsv
 import os as _os_need, sys as _sys_need
 
 
@@ -25,7 +21,7 @@ def _need(k):
     v = _os_need.environ.get(k)
     if not v:
         _sys_need.exit("environment variable %s is not set (the deposited copy has no default; "
-                       "see README.md, section 'How to run it')" % k)
+                       "see README.md, section 'Environment variables')" % k)
     return v
 
 

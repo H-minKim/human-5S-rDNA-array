@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-# . The two supplementary tables of the cell line Results, Supplementary Table S3 and Supplementary Table S4.
+# The two supplementary tables of the cell line Results, Supplementary Table S3 and Supplementary Table S4.
 #   Table 1 (second Results paragraph): the fixed window evidence table, units 1 to 10 from each end against the interior, which is from the 21st unit inward, for whole unit beta against gene body beta.
-#        This is the same computation, the same seed (20261029) and the same order as the scratch script unit_vs_gene_beta_table_2026-10-29.py, so it must produce the same numbers as the 10-29 evidence table (asserted).
+#        The seed is 20261029, and the numbers are asserted against the reference values in REF1.
 #   Table 2 (third Results paragraph): whole unit beta and gene body beta by change point zone, that is, the k of Figure 6I and Supplementary Figure S9A.
 #        The ruler is the read count weighted mean of unit beta, the same ruler as table 1. Supplementary Figure S9B holds the values of Source Data version 21 and may be on a different ruler, so the two are printed side by side.
 #   Inputs 02_tables/P11_K562_UNIT_BETA_v2.tsv, P11_GM12878FS_UNIT_BETA_v2.tsv and lowmeth_changepoint_4haplotypes_2026-10-12.tsv.
@@ -34,7 +34,7 @@ for cell, fn in FN.items():
     for slot in (1, 2):
         t = d[d.slot == slot].copy(); assert t.array_pos.max() <= NS[(cell, slot)] and t.array_pos.is_unique
         U[(cell, slot)] = t
-# ── Table 1: the fixed windows, with the same computation, the same seed and the same order as the 10-29 evidence table
+# ── Table 1: the fixed windows
 rng = np.random.default_rng(20261029)
 def boot_diff(e, m, col):
     out = []
@@ -56,7 +56,7 @@ for cell in ("K562", "GM12878"):
             row += ["%.3f" % vals["p"][0], str(vals["p"][1]), "%.3f" % wm(m, col), str(len(m)), "%.3f" % vals["d"][0], str(vals["d"][1])]
             row += ["%.3f [%.3f, %.3f]" % vals[e][2:] for e in ("p", "d")]
             R1.append(row)
-# Matched against the 10-29 evidence table (ledger section 1). The 0.03-0.13 and 0.32-0.60 of the main text come from here.
+# The reference values the table is asserted against. The 0.03-0.13 and 0.32-0.60 of the main text come from here.
 REF1 = {("K562", "A", "whole unit"): ("0.074 [-0.010, 0.155]", "0.031 [-0.062, 0.108]"), ("K562", "A", "gene body (last 119 bp)"): ("0.596 [0.511, 0.668]", "0.552 [0.450, 0.642]"),
         ("K562", "B", "whole unit"): ("0.073 [-0.039, 0.154]", "0.126 [0.002, 0.258]"), ("K562", "B", "gene body (last 119 bp)"): ("0.321 [0.050, 0.532]", "0.541 [0.406, 0.661]"),
         ("GM12878", "A", "whole unit"): ("-0.010 [-0.039, 0.025]", "0.479 [0.365, 0.546]"), ("GM12878", "A", "gene body (last 119 bp)"): ("0.054 [-0.028, 0.155]", "0.477 [0.359, 0.552]"),

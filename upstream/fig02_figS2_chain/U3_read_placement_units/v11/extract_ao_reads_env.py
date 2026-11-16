@@ -13,7 +13,7 @@ NL = chr(10)
 TAB = chr(9)
 H = os.path.expanduser
 host = socket.gethostname()
-I = H(os.environ.get("REPRO_IN", "~/repro_in"))
+I = H(os.environ["REPRO_IN"])
 
 
 def samples(fn):
@@ -36,7 +36,7 @@ for cfg, fn in FN.items():
         r = L.split(TAB)
         if len(r) >= 2:
             SAVED[(cfg, r[0])].add(r[1])
-O = H(os.environ.get("AOREADS", "~/aoreads_out"))
+O = H(os.environ["AOREADS"])
 os.makedirs(O, exist_ok=True)
 man = io.open(os.path.join(O, "manifest_%s.tsv" % host), "w", encoding="utf8", newline=NL)
 for L in io.open(H("~/srcmap_%s.tsv" % host), encoding="utf8"):

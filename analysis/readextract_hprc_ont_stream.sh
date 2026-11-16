@@ -1,18 +1,17 @@
 #!/bin/bash
-# ~/ao_urls.tsv 의 URL 을 흘려 읽어 개체별 hits 를 만든다 (디스크에 원본을 받지 않는다)
-#   단계 : ① read 추출 (HPRC ONT)
-# 한 개체의 BAM 을 병렬로 처리해 마지막 개체를 빨리 끝낸다 (2026-09-04)
+# Stream the URLs in ao_urls.tsv to build the hits per individual, without writing the source files to disk.
+#   Step 1: read extraction, HPRC ONT.
+# Process one individual's BAMs in parallel, so that the last individuals finish sooner.
 #
-#  왜 필요한가 (실측)
-#    extract72.sh 는 한 개체의 BAM 을 `for u in $urls` 로 순차 처리한다.
-#    그래서 개체당 스트림이 1 개뿐이고 14~25 MB/s 에 묶여, 개체당 중앙 251 분이 걸린다.
-#    남은 2 개체(NA21102 10 BAM · NA20503 6 BAM)가 전체 완료를 4 시간 늘리고 있다.
-#    BAM 을 병렬로 쪼개면 그만큼 줄어든다.
+#  Measured:
+#    one stream is capped at 14-25 MB/s, so processing an individual's BAMs one after another
+#    takes a median of 251 minutes per individual.
+#    Individuals with many BAMs (NA21102 with 10 and NA20503 with 6) add 4 hours to the total.
+#    Splitting the BAMs across parallel streams removes that.
 #
-#  출력은 extract72.sh 와 같은 자리·같은 형식이어야 한다
-#    (`~/s5s_new/hits/<sample>.hits.fastq.gz` + `~/s5s_new/done/<sample>.done`).
-#    추출기(campaign_extract_v5.py)와 옵션은 그대로 쓴다 — 바꾸면 264 개체와 비교가 깨진다.
-#  MM/ML 보존(-T MM,ML)과 -F 0x900 은 필수.
+#  The output is `~/s5s_new/hits/<sample>.hits.fastq.gz` + `~/s5s_new/done/<sample>.done`.
+#    The extractor (campaign_extract_v5.py) and its options must be the same for every individual; altering them would break comparability between individuals.
+#  Preserving MM/ML with -T MM,ML and passing -F 0x900 are both required.
 set -u
 S=${1:?개체}
 PAR=${2:-5}
@@ -41,13 +40,13 @@ for u in $urls; do
           >> "$W/log/$S.fx.log" 2>&1
     echo "$i" >> "$W/tmp/fx_$S/done.list"
   ) &
-  # 동시 수 제한
+  # cap on the number of concurrent streams
   while [ "$(jobs -rp | wc -l)" -ge "$PAR" ]; do sleep 5; done
 done
 wait
 echo "[$(date +%T)] $S : BAM 처리 끝 ($(wc -l < "$W/tmp/fx_$S/done.list" 2>/dev/null || echo 0)/$N)"
 
-# 조각을 번호 순서대로 이어붙인다 (순서가 섞이면 안 되는 건 아니지만 재현성을 위해)
+# the chunks are concatenated in numerical order; the order does not matter for correctness, but it makes the output reproducible
 : > "$W/tmp/$S.fx.fastq"
 for k in $(seq 1 $N); do
   f="$W/tmp/fx_$S/p$k.hits.fastq"

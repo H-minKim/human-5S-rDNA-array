@@ -1,4 +1,4 @@
-# Significance call v2: criterion 3 changes from "median over read pairs >= 3" to "fraction of disagreeing pairs (score < 0) <= 0.2". In a large contig a random pair of reads overlaps only a little, so a low median comes from too little overlap rather than from disagreement.
+# Significance call v2: criterion 3 is "fraction of disagreeing pairs (score < 0) <= 0.2" in place of the "median over read pairs >= 3" of mkcontigsig.py. In a large contig a random pair of reads overlaps only a little, so a low median comes from too little overlap rather than from disagreement.
 import json, sys, collections
 sys.stdout.reconfigure(encoding="utf-8")
 def judge(o):

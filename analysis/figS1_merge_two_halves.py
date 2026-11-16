@@ -1,19 +1,19 @@
 # -*- coding: utf-8 -*-
-# supplementary 를 한 쪽으로 합친다
-#   위 : `SFig1_p1_*` (a·b·d / c·e)   아래 : `SFig1_p2_*` (f / g / h / i)
-#   폭은 규격 414.4 pt 로 같다 — 세로로만 잇는다. 축소하지 않는다.
-#   높이는 자유 — 겹침만 없으면 된다.
+# Merge the two halves of the supplementary figure onto one page.
+#   Top: SFig1_p1_* (a, b, d / c, e). Bottom: SFig1_p2_* (f / g / h / i).
+#   Both are the standard 414.4 pt wide, so they are joined vertically only and nothing is scaled.
+#   The height is free; all that matters is that nothing overlaps.
 import os, sys, hashlib, fitz
 sys.stdout.reconfigure(encoding="utf-8")
 # -- (repo) paths come from the environment --------------------------------
-#   기본값이 분석 때 쓴 경로와 같다 ⇒ 작업 폴더에서는 전과 똑같이 돈다.
-#   그림 내용은 한 글자도 바뀜이 없다 — png 화소로 맞대어 확인한다.
+#   The roots are required; the output and table directories fall back to this file's folder.
+#@DROP
 WORK_ROOT = os.environ["WORK_ROOT"]
 OUT_DIR = os.environ.get("OUT_DIR",
                          os.path.join(WORK_ROOT, "04_figures", "paper_figures_final_2026-10-07",
                                       "01_selected_for_paper"))
 D = OUT_DIR
-GAP = 6.0            # 두 쪽 사이 숨 (pt)
+GAP = 6.0            # breathing space between the two halves, in pt
 
 for lang in ("EN", "KO"):
     p1 = os.path.join(D, "SFig1_p1_%s.pdf" % lang)
@@ -46,7 +46,7 @@ for lang in ("EN", "KO"):
     print("SFig1_%s.pdf  %.1f x %.1f pt · 쪽 %d · 패널 %s · 8pt미만 %d · md5 %s"
           % (lang, W, H, d.page_count, " ".join(ls), small,
              hashlib.md5(open(O, "rb").read()).hexdigest()[:12]))
-    # 같은 줄 가로겹침
+    # horizontal overlap within a row
     sp = [(fitz.Rect(x["bbox"]), x["text"].strip(), x["size"])
           for bl in d[0].get_text("dict")["blocks"] for ln in bl.get("lines", [])
           for x in ln.get("spans", []) if x["text"].strip()]

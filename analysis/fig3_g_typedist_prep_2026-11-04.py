@@ -1,30 +1,29 @@
 # -*- coding: utf-8 -*-
-# Fig 3 (G) 의 입력표를 만든다 — FIG3_G_TYPEDIST.tsv
-#   (2026-11-04 에 새로 넣은 칸 · 앞 이름 r96_make_table.py)
+# Builds the input table for Figure 3G, FIG3_G_TYPEDIST.tsv.
 #
-#   무엇을 내나
-#     점 하나 = 한 하플로타입. 같은 array-type 군 구성원까지의 평균 거리와
-#     다른 군까지의 평균 거리를 한 줄에 함께 적는다.
+#   What it produces:
+#     one point per haplotype, with the mean distance to the members of its own array-type group
+#     and the mean distance to the other groups written on the same row.
 #
-#   코호트 : H3 = H1 ∩ H2 (변이로 묶은 군과 메틸을 함께 쓰는 주장이므로)
-#   관문   : L2_HAP_UNIT 을 n_read >= 5 로 거른 뒤, 다섯 구역 모두에 값이 있는 하플로타입만
-#   거리   : 두 하플로타입의 다섯 구역 beta 의 |delta| 평균
-#   제외   : 같은 개체의 짝은 거리 계산에서 뺀다 (비독립)
-#   군     : 무리 크기 >= 5 이고 무리 번호가 0 이 아닌 것만
-#   난수   : default_rng(20261104) · 군 라벨 치환 2,000 회 (표에는 쓰지 않고 화면에만 찍는다)
+#   Cohort: H3 = H1 intersect H2, because the claim uses both the variant-based grouping and the methylation.
+#   Gate: L2_HAP_UNIT filtered to n_read >= 5, then only haplotypes with a value in all five zones.
+#   Distance: the mean |delta| between two haplotypes over the five zone betas.
+#   Excluded: pairs from the same individual, which are not independent.
+#   Groups: cluster size at least 5, and the cluster index not 0.
+#   Random numbers: default_rng(20261104), with 2,000 permutations of the group labels, printed to the terminal and not written to the table.
 #
-#   입력 넷 (절대 경로는 아래 ROOT 와 GRP 로 모은다)
-#     ① <ROOT>/02_tables/TIERS_H0H3_SLOTS_2026-10-05.tsv   층 (H3 를 고르는 데 쓴다)
+#   Four inputs; the absolute paths are assembled from ROOT and GRP below.
+#     1) <ROOT>/02_tables/TIERS_H0H3_SLOTS_2026-10-05.tsv, the tiers, used to select H3
 #     ② <GRP>   5S-rDNA-paper-en/tables/X12_HAP_GROUPS.tsv
-#               Fig 2M 의 군 (single linkage · Jaccard >= 0.90 · 무리 크기 >= 5)
-#     ③ <ROOT>/02_tables/L2_HAP_UNIT.parquet               하플로타입x유닛 메틸 (열 일곱 개만 읽는다)
-#     ④ <ROOT>/02_tables/POP_COHORT.tsv                    초집단과 유닛 수
+#               the groups of Figure 2M (single linkage, Jaccard >= 0.90, cluster size >= 5)
+#     3) <ROOT>/02_tables/L2_HAP_UNIT.parquet, haplotype x unit methylation; only seven columns are read
+#     4) <ROOT>/02_tables/POP_COHORT.tsv, the superpopulation and the unit count
 #
-#   내는 곳 : <FIG>/FIG3_G_TYPEDIST.tsv
-#             환경변수 FIG3G_OUT 을 주면 그 자리에 쓴다 (검산용 · 발행 입력표를 안 건드리고 재현)
+#   Written to <FIG>/FIG3_G_TYPEDIST.tsv.
+#             Setting FIG3G_OUT writes it elsewhere, so the table can be reproduced without touching the published input.
 #
-#   이 표를 읽는 글 : fig3_main_draw_en.py 의 (G) 칸 · fig3_sourcedata_en.py 의 G_type_distance 시트
-#   그림이 찍는 p 는 짝 Wilcoxon 이다 (치환 p 가 아니다).
+#   Read by panel G of fig3_main_draw_en.py and the G_type_distance sheet of fig3_sourcedata_en.py.
+#   The p value printed in the figure is a paired Wilcoxon, not the permutation p.
 import hashlib
 import io
 import os
@@ -104,7 +103,7 @@ print("  짝 윌콕슨 p = %.3g · 짝 안 중앙 차 %+.4f"
 print("  중앙값 : 군 안 %.4f · 군 밖 %.4f"
       % (T.군안거리.median(), T.군밖거리.median()))
 
-# 군 라벨 치환 귀무 (하플로타입 수준 통계로)
+# the null from permuting group labels, on the haplotype-level statistic
 obs = float(np.median(T.차))
 cnt = 0
 NP = 2000
@@ -133,12 +132,12 @@ HDR = [
     "#  거리 : 두 하플로타입의 다섯 구역 |delta beta| 평균 · 같은 개체 짝은 뺀다",
     "#  점 하나 = 한 하플로타입 (군 안 평균 거리 · 군 밖 평균 거리)",
 ]
-#  출처 머리글은 표 안에 쓰지 않는다 — 이 폴더의 그림 입력표 넷(FIG3_G_TYPEDIST ·
-#  FIG5V2_PAIRZONE5 · FIG8_PAIRS · NORM_VS_CANCER_SAMPLE)은 모두 `#` 줄이 없고,
-#  읽는 글 둘이 `comment="#"` 없이 읽는다
-#  (`fig3_main_draw_en.py:103` 과 `fig3_sourcedata_en.py:36` 이 그냥 `pd.read_csv(sep="\t")`).
-#  ⇒ `#` 줄을 넣으면 그림이 그것을 열 이름으로 읽어 깨진다 (2026-11-05 실측으로 잡았다).
-#  그래서 머리글은 곁 파일 로 따로 쓴다. 표는 열 이름 줄부터 시작한다.
+#  No provenance header is written inside the table. The four figure input tables in this folder (FIG3_G_TYPEDIST,
+#  FIG5V2_PAIRZONE5, FIG8_PAIRS and NORM_VS_CANCER_SAMPLE) carry no # lines, and
+#  the two scripts that read them do so without comment="#"
+#  (fig3_main_draw_en.py:103 and fig3_sourcedata_en.py:36 call pd.read_csv(sep="\t") plainly).
+#  A # line would therefore be read as the column names and break the figure.
+#  The header is written to a side file instead, and the table begins with its column names.
 with io.open(OUT, "w", encoding="utf-8", newline=NL) as f:
     T.to_csv(f, sep="\t", index=False, lineterminator=NL)
 with io.open(OUT + ".about.txt", "w", encoding="utf-8", newline=NL) as f:

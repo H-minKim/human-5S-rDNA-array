@@ -1,8 +1,8 @@
 #!/bin/bash
-# 금화조 : 제출본(v0.3) PacBio 메틸 bigwig 와 좌표가 같은 GenBank 판을 받아 5S array 를 찾는다
-#   GCA_048771995.1 (bTaeGut7.mat) · GCA_048772025.1 (bTaeGut7.pat) — 2025-03 판
-#   ① 받기 · 염색체 길이를 bigwig 와 대조 (이름표 = 제출본 seq_id_mapping / alias)
-#   ② cmsearch RF00001 --cut_ga · array 목록
+# Zebra finch: download the GenBank release whose coordinates match the submitted v0.3 PacBio methylation bigwig, and find the 5S arrays in it.
+#   GCA_048771995.1 (bTaeGut7.mat) and GCA_048772025.1 (bTaeGut7.pat), the 2025-03 release.
+#   1) Download, and check the chromosome lengths against the bigwig; the names come from the submission's seq_id_mapping / alias.
+#   2) cmsearch RF00001 --cut_ga, then the array catalogue.
 set -u
 X=$HOME/xsp
 Z=$X/zfinch
@@ -19,7 +19,7 @@ getncbi GCA_048772025.1 zfinch_v03_pat
 [ -s sub_pat.bw ] || curl -sL -o sub_pat.bw "https://genomeark.s3.amazonaws.com/species/Taeniopygia_guttata/bTaeGut7/submission/v0.3/annotations/pat/bTaeGut7.pat%2BWZ.cur.20250313.PBmethylation.v0.1.bw"
 $X/tools/bigWigInfo -chroms sub_pat.bw 2>&1 | awk 'NF==3{print $1"\t"$3}' > sub_pat_chroms.tsv
 for h in mat pat; do
-  # 길이로 bigwig 염색체 <-> GenBank 서열 대응 (1:1 만 인정)
+  # Match bigwig chromosomes to GenBank sequences by length, accepting one-to-one matches only.
   awk -F'\t' 'NR==FNR{L[$2]=L[$2] (L[$2]?",":"") $1; next} {print $1"\t"$2"\t"(($2 in L)?L[$2]:"-")}' $X/asm/zfinch_v03_$h.fna.fai sub_${h}_chroms.tsv > len_match_$h.tsv
   echo "$h : bigwig 염색체 $(wc -l < sub_${h}_chroms.tsv) · 길이 1:1 대응 $(awk -F'\t' '$3!="-" && $3 !~ /,/' len_match_$h.tsv | wc -l) · 대응 없음 $(awk -F'\t' '$3=="-"' len_match_$h.tsv | wc -l)"
 done > len_match_summary.txt

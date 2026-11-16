@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
-# Task 1-A: extract and keep the 5S array sequence from every haplotype that has an assembly
+# Extract and keep the 5S array sequence from every haplotype that has an assembly
 #   (same method as asm_units3.py, but all sequences and coordinates are saved)
 #
 #   This becomes the raw material of the consensus map in assembly coordinates.
-#   Coordinates must be kept so that bigwig methylation can later be attached at the same positions
-#   (asm_units3.py kept only a2-a1 and discarded the coordinates, so they had to be found again).
+#   Coordinates are kept so that bigwig methylation can be attached at the same positions.
 #
 # URLs are always read from the index CSV. They are never made up.
 # Units are counted with Python sorted(). awk asorti sorts as strings and scrambles coordinates.
@@ -149,7 +148,7 @@ for smp in sys.argv[1:]:
                 a = sorted([d["PROX50k"][0], d["PROX50k"][1],
                             d["DIST50k"][0], d["DIST50k"][1]])
                 seq = "".join(io.open(reg, encoding="utf8").read().split(NL)[1:])
-                # record whether the proximal probe is at the front or back of the array (reference window direction trap)
+                # record whether the proximal probe is at the front or back of the array
                 pmid = (d["PROX50k"][0] + d["PROX50k"][1]) // 2
                 side = "PROX_FIRST" if pmid < a[1] else "DIST_FIRST"
                 found = (c, a[1], a[2], seq[a[1]:a[2]], side)

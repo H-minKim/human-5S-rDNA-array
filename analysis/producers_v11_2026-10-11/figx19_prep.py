@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-# FigX19 자료 — 근위 변이집합이 유닛 메틸에 미치는 영향 (유닛 단위)
-#   자료 : L2_HAP_UNIT.parquet (하플로타입 × 유닛 · HPRC_ONT_submissions)
-#   규칙 : ap = 근위 끝에서 센 자리(ap 1 = 근위 말단) · ad = 원위 끝에서 센 자리 (실측 확인함)
-#   위치가 메틸을 지배하므로 모든 비교는 위치 띠 안에서 · 개체 색조는 하플로타입 안에서 지운다
+# FigX19 data: the effect of the proximal variant set on unit methylation, per unit.
+#   Data: L2_HAP_UNIT.parquet (haplotype x unit, HPRC_ONT_submissions).
+#   Convention: ap is the position counted from the proximal end (ap 1 = the proximal terminus) and ad is counted from the distal end; both confirmed by measurement.
+#   Position dominates methylation, so every comparison is made within a position band, and the individual offset is removed within haplotype.
 import io, os, sys, itertools
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 import itertools
@@ -11,8 +11,8 @@ from scipy import stats
 
 def _need(_v):
     """No defaults are set: the script stops if a variable is missing.
-    이 글이 읽는 자료의 뿌리는 README.md 의
-    "Running this code" 절에 적혀 있다."""
+    The roots of the data this script reads are listed in the
+    "Running this code" section of README.md."""
     import os as _o, sys as _s
     _x = _o.environ.get(_v)
     if not _x:
@@ -32,8 +32,7 @@ rng = np.random.default_rng(19)
 T = os.path.join(_need("RDNA_V11_ROOT"), "02_tables")
 MINREAD = 5
 
-#  원본은 `T = "$DATA_ROOT/02_tables/"` 로 끝에 `/` 가 있었고
-#    여기서 문자열을 이어붙였다. 경로치환이 그 `/` 를 없애 `…02_tablesL2_HAP_UNIT.parquet` 가 됐다.
+#  The path is built with os.path.join, so the root needs no trailing slash.
 L = pd.read_parquet(os.path.join(T, "L2_HAP_UNIT.parquet"), columns=[
     "sample", "slot", "ap", "ad", "N", "side", "f_hi", "n_read", "varlist", "n_var",
     "n_var_common", "n_var_rare", "n_var_gene", "nv_coding", "vsig", "vsig_n",
@@ -51,7 +50,7 @@ PROV = [dict(항목="바탕 자료", 자료="L2_HAP_UNIT.parquet", 자료원="HP
              개체=L["sample"].nunique(), 하플로=L.hap.nunique(), 유닛=len(L),
              비고="read>=%d 인 유닛만" % MINREAD)]
 
-# ---------- A : 위치가 먼저다 ----------
+# ---------- A: position comes first ----------
 P()
 P("[A] 위치가 메틸을 지배한다 — 근위 자리별 f_hi (그래서 아래 비교는 전부 위치 띠 안에서 한다)")
 A = (L[L.ap <= 20].groupby("ap")
@@ -60,7 +59,7 @@ A = (L[L.ap <= 20].groupby("ap")
 P(A.to_string(index=False))
 A.to_csv(os.path.join(HERE, "FIGX19_A_POS.tsv"), sep="\t", index=False, float_format="%.4f")
 
-# 위치 띠 : 근위 1-3 / 4-10 (정본 구역 Z1 · Z2) · 견줌용 내부 11-30
+# Position bands: proximal 1-3 and 4-10, the canonical zones Z1 and Z2, with interior 11-30 for comparison.
 def band(ap):
     if ap <= 3: return "근위 1-3"
     if ap <= 10: return "근위 4-10"
@@ -72,7 +71,7 @@ P()
 P("   근위 30 유닛 안 : 유닛 %s · 하플로 %d · 개체 %d"
   % (format(len(PROX), ","), PROX.hap.nunique(), PROX["sample"].nunique()))
 
-# ---------- B : 변이 개수 ↔ 메틸 (위치 통제 전/후) ----------
+# ---------- B: variant count against methylation, before and after controlling for position ----------
 P()
 P("[B] 변이 개수 와 f_hi — 통제 전/후")
 rows = []
@@ -83,7 +82,7 @@ for b, g in PROX.groupby("띠"):
     r, p = stats.spearmanr(g.n_var, g.f_hi)
     rows.append(dict(구분="위치 띠 안 : " + b, n=len(g), rho=r, p=p))
     P("   %-12s rho %+.3f (p %.3g · 유닛 %d · 하플로 %d)" % (b, r, p, len(g), g.hap.nunique()))
-# 하플로타입 안에서 (개체 색조 제거) : 하플로마다 rho 를 구해 부호검정
+# Within haplotype, removing the individual offset: rho is computed per haplotype and a sign test applied.
 hr = []
 for h, g in PROX.groupby("hap"):
     if g.n_var.nunique() > 2 and len(g) >= 15:
@@ -99,7 +98,7 @@ PROV.append(dict(항목="B 변이 개수↔메틸", 자료="L2_HAP_UNIT", 자료
                  개체=PROX["sample"].nunique(), 하플로=len(hr), 유닛=len(PROX),
                  비고="근위 1-30 · 하플로 안 rho 는 유닛 15 개 이상인 하플로만"))
 
-# ---------- C : 토큰 하나하나 (같은 하플로 · 같은 띠 안) ----------
+# ---------- C: token by token, within the same haplotype and the same band ----------
 P()
 P("[C] 변이 토큰마다 — 같은 하플로타입·같은 위치 띠 안에서 '가진 유닛 vs 안 가진 유닛'")
 ex = PROX[["hap", "띠", "ap", "f_hi", "vl"]].copy()
@@ -136,7 +135,7 @@ PROV.append(dict(항목="C 토큰별 효과", 자료="L2_HAP_UNIT", 자료원="H
                  개체=PROX["sample"].nunique(), 하플로=PROX.hap.nunique(), 유닛=len(PROX),
                  비고="근위 1-30 · 토큰 %d 종 검정 · 짝=하플로×띠" % len(C)))
 
-# ---------- D : 변이집합(유형) 단위 ----------
+# ---------- D: per variant set (haplotype type) ----------
 P()
 P("[D] 변이집합(유형) 단위 — 같은 띠 안에서 유형마다 f_hi 가 다른가")
 rows = []
@@ -159,11 +158,11 @@ PROV.append(dict(항목="D 변이집합 유형", 자료="L2_HAP_UNIT", 자료원
                  개체=PROX["sample"].nunique(), 하플로=PROX.hap.nunique(), 유닛=int(D.유닛.sum()),
                  비고="띠마다 상위 10 유형(유닛 30 이상)"))
 
-# ---------- E : 같은 집합이면 메틸도 닮는가 (다른 하플로타입끼리) ----------
+# ---------- E: do units with the same variant set also resemble each other in methylation, across haplotypes ----------
 P()
 P("[E] 같은 변이집합을 가진 유닛은 메틸도 닮는가 — 같은 띠 · 다른 하플로타입 유닛쌍")
-# 자를 둘로 낸다 — 본표는 f_hi_thr (컷 0.508), 대조는 f_hi (컷 0.65).
-#   까닭 : Fig4 묶음이 0.508 로 통일돼 있다 ( 요청).
+# Two rulers are reported: the main table uses f_hi_thr (cut 0.508) and the control uses f_hi (cut 0.65).
+#   The Figure 4 set uses 0.508 throughout.
 def _epair(col, seed=19):
     _rng = np.random.default_rng(seed)
     rows = []
@@ -210,7 +209,7 @@ PROV.append(dict(항목="E 같은 집합끼리 닮는가", 자료="L2_HAP_UNIT",
                  개체=PROX["sample"].nunique(), 하플로=PROX.hap.nunique(), 유닛=len(PROX),
                  비고="다른 하플로타입끼리만 짝지음 · 같은 위치 띠"))
 
-# ---------- F : 변이가 어디에 있나 (구획) ----------
+# ---------- F: where the variants lie (compartment) ----------
 P()
 P("[F] 변이가 유전자부에 있을 때 — 같은 띠 안에서 b_gene / b_sp")
 rows = []

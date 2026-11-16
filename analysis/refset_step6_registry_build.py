@@ -1,18 +1,18 @@
 # -*- coding: utf-8 -*-
-# → V11F4_DATASET_hap.tsv (286df1d6b860 · 616 행) · V11F4_DATASET_sample.tsv (48757fd4287a · 313 행)
-#   단계 : ⑥ 자료 대장
+# -> V11F4_DATASET_hap.tsv (286df1d6b860, 616 rows) and V11F4_DATASET_sample.tsv (48757fd4287a, 313 rows)
+#   Step 6: the data registry.
 
 # -*- coding: utf-8 -*-
-# v11 자료 대장 — 하플로타입 한 줄 · 개체 한 줄 두 벌을 만든다
-#   모든 칸은 실측이다. 모르는 것은 "?" 로 두고 추정하지 않는다.
-#   입력 (전부 읽기만)
-#     정본   08_versions\v11\02_canonical\hap_seq_node_v8.tsv              (출처·파일이름)
-#     지도   08_versions\v11\03_maps\g8canonv10\CONSENSUS_SUM_G8_full.tsv (유닛수·bp·revcomp·n_break)
-#     flank  08_versions\v11\12_flank\tests\FLANK_FINAL2.tsv            (양쪽 flank 실측)
-#     read   08_versions\v11\08_methylation\raw\METH_READUNIT_*_{ao,jx}.tsv.gz (placed reads, methylation, data source)
-#     QC     v11_readvar\02_tables\SLOT_QC.tsv                (gate·depth·eligible)
-#     HiFi   03_result_tables\2026-09-07_map_test\JXHIFI_ALL.tsv.gz        (HiFi 합의 검정 자리)
-#     HPRC   v11_readvar\09_inventory\hprc_r2_phasing_meta.csv (공개 조립본 release2)
+# The data registry: two tables, one row per haplotype and one row per individual.
+#   Every cell is measured. Anything unknown is left as "?" and never inferred.
+#   Inputs, all read-only:
+#     the canonical table 08_versions/v11/02_canonical/hap_seq_node_v8.tsv, for the source and file name;
+#     the map 08_versions/v11/03_maps/g8canonv10/CONSENSUS_SUM_G8_full.tsv, for the unit count, bp, revcomp and n_break;
+#     08_versions/v11/12_flank/tests/FLANK_FINAL2.tsv, for the measured flanks on both sides;
+#     read   08_versions/v11/08_methylation/raw/METH_READUNIT_*_{ao,jx}.tsv.gz (placed reads, methylation, data source)
+#     QC     v11_readvar/02_tables/SLOT_QC.tsv                (gate·depth·eligible)
+#     03_result_tables/2026-09-07_map_test/JXHIFI_ALL.tsv.gz, for the HiFi consensus test;
+#     v11_readvar/09_inventory/hprc_r2_phasing_meta.csv, for the public release 2 assemblies.
 import io
 import os
 import csv
@@ -21,8 +21,8 @@ import glob
 import collections
 
 V = os.environ["RDNA_V11"]
-F1 = os.environ["RDNA_V11_FIX1"]   # 정본 2 슬롯 수리 + 그 지도
-F4 = os.environ["RDNA_V11_FIX4"]   # 메틸 raw 최신 (수정2 반영 + HG008-T CpG 전용)
+F1 = os.environ["RDNA_V11_FIX1"]   # the two repaired canonical slots and their map
+F4 = os.environ["RDNA_V11_FIX4"]   # the current raw methylation, with revision 2 applied and HG008-T restricted to CpG
 RV = os.environ["RDNA_READVAR"]
 OUT = os.path.dirname(os.path.abspath(__file__))
 NL = "\n"
@@ -34,10 +34,10 @@ GIAB = {"hg001", "hg002", "hg003", "hg004"}
 SRCKO = {"arr": "HPRC public assembly", "hiarr": "our hifiasm assembly", "t1": "single spanning read",
          "c2seq": "placed read consensus", "pat": "T2T Q100"}
 
-# ── 정본 출처
+# -- the source of the canonical sequence
 src = {}
 cfile = {}
-for x in io.open(os.path.join(V, r"02_canonical\hap_seq_node_v8.tsv"), encoding="utf8"):
+for x in io.open(os.path.join(V, r"02_canonical/hap_seq_node_v8.tsv"), encoding="utf8"):
     r = x.rstrip(NL).split(TAB)
     if len(r) >= 3 and r[0] != "sample":
         b = r[2].split("__")[-1]
@@ -47,9 +47,9 @@ for x in io.open(os.path.join(V, r"02_canonical\hap_seq_node_v8.tsv"), encoding=
                 cfile[(r[0], r[1])] = r[2]
                 break
 
-# ── 지도 요약
+# -- the map summary
 SUM = {}
-f = io.open(os.path.join(F1, r"03_maps\g8canonv11f1\CONSENSUS_SUM_G8_full.tsv"), encoding="utf8")
+f = io.open(os.path.join(F1, r"03_maps/g8canonv11f1/CONSENSUS_SUM_G8_full.tsv"), encoding="utf8")
 h = f.readline().rstrip(NL).split(TAB)
 ix = {c: i for i, c in enumerate(h)}
 for L in f:
@@ -58,14 +58,14 @@ for L in f:
 
 # ── flank
 FL = {}
-f = io.open(os.path.join(V, r"12_flank\tests\FLANK_FINAL2.tsv"), encoding="utf8")
+f = io.open(os.path.join(V, r"12_flank/tests/FLANK_FINAL2.tsv"), encoding="utf8")
 h = f.readline().rstrip(NL).split(TAB)
 jx = {c: i for i, c in enumerate(h)}
 for L in f:
     r = L.rstrip(NL).split(TAB)
     FL[(r[0], r[1])] = r
 
-# ── 배치 read / 메틸 / 자료원
+# -- placed reads, methylation and data source
 reads = collections.defaultdict(lambda: collections.defaultdict(set))
 runits = collections.defaultdict(lambda: collections.Counter())
 dsrc = collections.defaultdict(collections.Counter)
@@ -84,14 +84,14 @@ for p in sorted(glob.glob(os.path.join(V, r"08_methylation\raw\METH_READUNIT_*.t
 
 # ── SLOT_QC
 QC = {}
-f = io.open(os.path.join(RV, r"02_tables\SLOT_QC.tsv"), encoding="utf8")
+f = io.open(os.path.join(RV, r"02_tables/SLOT_QC.tsv"), encoding="utf8")
 h = f.readline().rstrip(NL).split(TAB)
 qx = {c: i for i, c in enumerate(h)}
 for L in f:
     r = L.rstrip(NL).split(TAB)
     QC[(r[0], r[1])] = r
 
-# ── HiFi 검정
+# -- the HiFi test
 hifi = collections.Counter()
 hifi5 = collections.Counter()
 for L in gzip.open(os.path.join(os.environ["RDNA_RESULTS"], "2026-09-07_map_test",
@@ -103,9 +103,9 @@ for L in gzip.open(os.path.join(os.environ["RDNA_RESULTS"], "2026-09-07_map_test
     if int(r[4]) >= 5:
         hifi5[(r[0], r[1])] += 1
 
-# ── HPRC release2 공개 조립본 (개체 단위로만 쓴다 — hap 번호는 우리 slot 과 대응하지 않는다)
+# -- the public HPRC release 2 assemblies, used per individual only, because their haplotype numbers do not correspond to our slots
 HP = collections.defaultdict(list)
-with io.open(os.path.join(RV, r"09_inventory\hprc_r2_phasing_meta.csv"), encoding="utf8") as fh:
+with io.open(os.path.join(RV, r"09_inventory/hprc_r2_phasing_meta.csv"), encoding="utf8") as fh:
     for row in csv.DictReader(fh):
         HP[row["sample_id"]].append(row)
 
@@ -165,7 +165,7 @@ with io.open(p1, "w", encoding="utf8", newline=NL) as g:
         g.write(TAB.join(str(x) for x in r) + NL)
 print("하플로타입 표 %d 행 → %s" % (len(rows), os.path.basename(p1)))
 
-# ── 개체 단위
+# -- per individual
 bysmp = collections.defaultdict(list)
 for r in rows:
     bysmp[r[0]].append(r)

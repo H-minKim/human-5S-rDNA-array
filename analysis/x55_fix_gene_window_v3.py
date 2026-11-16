@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-# PERARRAY_META_v3 의 유전자 구간을 strand 보정해서 다시 계산해 고친다
-#   (x42 가 유전자 구간을 g8 틀로 뒤집지 않아, strand '-' array 묶음에서 음영이 반대쪽에 찍혔다. BAM 재스캔은 필요 없다.)
-#   유닛 안 좌표 : + array → x - unit_start + 1 · − array → unit_end - y + 1  (유전자가 유닛 끝에 오는 g8 틀)
+# Recompute the gene interval of PERARRAY_META_v3 with the strand applied, and correct it.
+#   (Without the flip into the g8 frame, the shading falls on the wrong side for a minus-strand locus. The BAMs do not need re-scanning.)
+#   The within-unit coordinate is x - unit_start + 1 for a plus-strand array and unit_end - y + 1 for a minus-strand one, which is the g8 frame with the gene at the end of the unit.
 import io, os, sys, glob, re
 import numpy as np
 import pandas as pd
@@ -14,7 +14,7 @@ def _need(k):
     v = _os_need.environ.get(k)
     if not v:
         _sys_need.exit("environment variable %s is not set (the deposited copy has no default; "
-                       "see README.md, section 'How to run it')" % k)
+                       "see README.md, section 'Environment variables')" % k)
     return v
 
 

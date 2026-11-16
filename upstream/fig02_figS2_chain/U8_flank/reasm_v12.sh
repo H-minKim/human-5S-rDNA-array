@@ -1,5 +1,5 @@
 #!/bin/bash
-# v12 reassembly, re-assemble the 112 samples of our hifiasm slots (188) while keeping the flanks (2026-09-15)
+# v12 reassembly, re-assemble the 112 samples of our hifiasm slots (188) while keeping the flanks
 #
 #   Existing outputs are never touched. Writes only to the new folder ~/reasm_v12.
 #   Same command as the original : hifiasm --ont -o <sample> -t <TH>   (a different mode would make the comparison invalid)

@@ -1,14 +1,14 @@
 #!/bin/bash
 # Reassemble the 5S array with hifiasm --ont (1kGP, GIAB, HG008, cancer)
 #
-#  verified premise (measured 2026-09-02):
+#  verified premise (measured):
 #    in 5 haplotypes of 3 HPRC individuals our hifiasm --ont assemblies
 #    matched the official HPRC assemblies at bp level (200410/88, 117677/51, 126824/55,
 #    167029/73, 185018 vs 185024/81). The method itself is valid.
 #
 #  disk protection: hifiasm uses 676 MB per individual. The node has only 43 GB, so
 #    intermediates are deleted as soon as each individual finishes, keeping only the array sequence and the summary.
-#    (there were earlier silent corruptions from OOM/disk shortage, so it always checks as it runs)
+#    (OOM or disk shortage corrupts outputs silently, so it always checks as it runs)
 #
 #  usage: hifi_queue.sh <list file> <output tag> <threads>
 set -u

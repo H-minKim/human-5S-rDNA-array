@@ -1,16 +1,16 @@
 # -*- coding: utf-8 -*-
 """
-unitdef_v11 - unit definition helpers (built **anew** from the v11 canonical reference)
+unitdef_v11 - unit definition helpers (built from the v11 canonical reference)
 
-Why rebuild
-  The old `fig_common.py` reads `canon.fa` from the old analysis folder.
-  The version has changed, so pulling files from the old folder would contaminate results.
-  Here the canonical sequence comes from **v11_io.CAN** (= the central 2,240bp of v11 `03_<map>/g8canonv10/canon_ctx.fa`).
+Source of the canonical sequence
+  The canonical sequence comes from **v11_io.CAN** (= the central 2,240bp of v11 `03_<map>/g8canonv10/canon_ctx.fa`),
+  not from the `canon.fa` that `fig_common.py` reads,
+  so that every definition here stands on the v11 reference.
 
-What was carried over (definitions from fig_common.py, verbatim)
+Definitions (those of fig_common.py, verbatim)
   ELEMENTS, element(), iscpg(), _blocks(), parse(), vclass(), zone(), ZONES
-  The logic is unchanged down to the character. Only the source of CAN changed.
-  (load_map/two_stage/figure helpers of fig_common are not used in v11, so they were not carried over.)
+  The logic is that of fig_common.py down to the character. Only the source of CAN differs.
+  (load_map/two_stage/figure helpers of fig_common are not used in v11 and are not included.)
 """
 import re
 import v11_io as _G

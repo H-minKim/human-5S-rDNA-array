@@ -2,13 +2,15 @@
 r"""Swap in a v11_io.load that uses the majority-type consensus as the reference
 
 Why: the current reference `unit_canon.fa` is the revcomp single unit of CHM13 chr1:227,887,698-227,889,937.
-     When the majority type was chosen at all 2,240 positions, CHM13 carried the minority type at 12 positions.
-     Those 12 positions produced 8.83 (56.9%) of the 15.515 variants per unit,
-     and created 11 tokens carried by more than half of the units, inflating every similarity measure.
+     When the majority type was chosen at all 2,240 positions, CHM13 carried a minority type at 11 positions, each with
+     one token carried by more than half of the units (11 tokens in all), inflating every similarity measure.
+     Using the majority type at those 11 positions removes 8.64 (55.7%) of the 15.515 variants per unit in the
+     564-haplotype set, and 8.65 (55.8%) of the 15.520 in H1 (557 haplotypes).
+     Position 1476 has a most frequent type (IB46:2, 0.42 of units, 29 alleles) but no majority, so it is not flipped.
 
 What changes: only the variant set of a unit (the 5th item of a row).
    position p not flipped        : token unchanged
-   position p flipped (12 sites) : a variant only when the unit allele differs from M(p)
+   position p flipped (11 sites) : a variant only when the unit allele differs from M(p)
         - another token t -> t          - no token (= CHM13 type) -> "REF@p"
 meta['raw'] is not touched (only EXPORT_variant_groups.py uses it, and that code must not be used with this edition)
 Protecting the canonical path: if REPRO_MIRROR is set, G.OUT is also redirected to the mirror
@@ -20,12 +22,12 @@ sys.path.insert(0, __import__("os").environ.get("V11_CODE", __import__("os").pat
 try:
     import v11_io as G
 except Exception as e:
-    sys.stderr.write("sitecustomize: v11_io import 실패 %r\n" % e); raise
+    sys.stderr.write("sitecustomize: v11_io import failed %r\n" % e); raise
 
 if MIRROR:
     G.OUT = MIRROR
     G.STAGEF = os.path.join(MIRROR, "STAGE_ALL_V11F2.tsv")
-    assert not G.OUT.startswith(("F:", "f:")), "정본 경로 방지"
+    assert not G.OUT.startswith(("F:", "f:")), "canonical path guard"
 
 BLOCKS = G.BLOCKS
 def _pos(t):
@@ -70,7 +72,7 @@ def _inv(t):
     if m: return "IB%s:%s" % (m.group(1), m.group(2))
     m = re.match(r"^IB(\d+):(\d+)$", t)
     if m: return "DB%s:%s" % (m.group(1), m.group(2))
-    raise ValueError("역토큰 못 만듦: %r" % t)
+    raise ValueError("cannot build the reverse token: %r" % t)
 
 def load(preset="primary", *a, **kw):
     U, A, M = _ORIG(preset, *a, **kw)
@@ -95,7 +97,7 @@ def load(preset="primary", *a, **kw):
             n_old += len(r[4]); n_new += len(s)
             rows.append(tuple(r[:4]) + (s,) + tuple(r[5:]))
         U[k] = rows
-    sys.stderr.write("[MAJREF] preset=%s · 뒤집은 자리 %d · 유닛당 변이 %.3f → %.3f\n"
+    sys.stderr.write("[MAJREF] preset=%s · flipped positions %d · variants per unit %.3f -> %.3f\n"
                      % (preset, len(FLIP), n_old / max(nu, 1), n_new / max(nu, 1)))
     return U, A, M
 

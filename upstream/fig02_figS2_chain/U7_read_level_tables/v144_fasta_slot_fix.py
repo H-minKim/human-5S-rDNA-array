@@ -1,10 +1,8 @@
 # -*- coding: utf-8 -*-
-# v144 (2026-09-26) bug fix: deciding the slot from the file names in flank_final2.tar gets 53.2% wrong
-#   finding: in 299 of 562 cases the slot in the file name (e.g. ..._1) and the slot of FLANK_OFFSET point to different haplotypes
-#   evidence: the length of that fasta differs from the ref_len implied by its name, and matches the ref_len of the other slot of the same individual
-#   affected: v143 (JUNCTION_SEQ_ANNOT, CpG density and Alu), qa_batch_B (CpG island statistics, 16-mer sharing), all on the sequence side
-#   not affected: methylation outputs such as v142 (JUNCTION_FINE_METH) (they use only SAM+FLANK_OFFSET, not the fasta)
-#   fix: link file to reference by sequence length, not by name. If lengths tie, resolve with the header flank5/flank3.
+# v144: link each fasta in flank_final2.tar to its reference slot by sequence length, not by file name
+#   the slot in a file name is wrong in 53.2%: in 299 of 562 cases the slot in the file name (e.g. ..._1) and the slot of FLANK_OFFSET point to different haplotypes
+#   (the length of that fasta differs from the ref_len implied by its name, and matches the ref_len of the other slot of the same individual)
+#   If lengths tie, resolve with the header flank5/flank3.
 #   output FASTA_REF_MAP.tsv in the table folder (02_*) (canonical correspondence fasta name <-> ref_name), V144_MAP.txt in the log folder (04_*)
 import io, os, tarfile
 import pandas as pd

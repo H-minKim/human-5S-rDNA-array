@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
-# — array − flank 를 정수 n_5mC 로 다시 합산 (x1 은 반올림된 frac_5mC x n_c 였음)
-#   원본 x1 표(OTHERSP_ARRAY_METH.tsv)는 그대로 두고 새 표를 낸다.
-#   두 정의를 같이 낸다 :
+# Sum array minus flank from the integer n_5mC; OTHERSP_ARRAY_METH.tsv uses a rounded frac_5mC times n_c.
+#   OTHERSP_ARRAY_METH.tsv is not overwritten; a new table is written.
+#   Both definitions are reported:
 # (a) per array, summed over samples (x1 definition; for zebra finch LIG and UL are summed) (b) per sample
-#   입력 : $ANALYSIS_ROOT/2026-09-11_5S_other_species/data_v2/09_array_vs_flank/AVF.tsv (읽기만)
-#   출력 : tables/OTHERSP_ARRAY_METH_n5mC.tsv · X16_AVF_N5MC.txt
+#   Input: 2026-09-11_5S_other_species/data_v2/09_array_vs_flank/AVF.tsv under the analysis root, read-only.
+#   Outputs: tables/OTHERSP_ARRAY_METH_n5mC.tsv and X16_AVF_N5MC.txt
 import io
 import numpy as np
 import pandas as pd
@@ -17,7 +17,7 @@ def _need(k):
     v = _os_need.environ.get(k)
     if not v:
         _sys_need.exit("environment variable %s is not set (the deposited copy has no default; "
-                       "see README.md, section 'How to run it')" % k)
+                       "see README.md, section 'Environment variables')" % k)
     return v
 
 
@@ -55,7 +55,7 @@ for (sp, aid), g in A.groupby(["species_key", "array_id"]):
     r["delta_frac"] = r["meth_frac"] - r["flank_frac"]
     r["delta_int"] = r["meth_int"] - r["flank_int"]
     r["delta_x1_table"] = (OLD.loc[aid, "meth"] - OLD.loc[aid, "flank"]) if aid in OLD.index else np.nan
-    # (나) 시료별
+    # b) per sample
     per = []
     for s, gs in g.groupby("sample"):
         a2, f2 = gs[gs.region == "array"], gs[gs.region != "array"]

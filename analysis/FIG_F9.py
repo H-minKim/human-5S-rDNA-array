@@ -5,8 +5,8 @@ All numbers are read from tables. None are typed into the code.
   A  ZM_population_carrier.tsv (super)  carriage by superpopulation, haplotypes and individuals
   B  ZM_population_carrier.tsv (sub)    subpopulations, ESN 0/41
   C  ZN_source_population.tsv           confound exclusion, the same difference after splitting by assembly source
-  D  ZN_depthset_census.tsv             carriage pattern (depth set) x population, smallest sets first (replaced 2026-10-09)
-Output : $FIGOUT\fig_F9_population.png/svg, FIG_F9_source_values.tsv
+  D  ZN_depthset_census.tsv             carriage pattern (depth set) x population, smallest sets first
+Output : $FIGOUT/fig_F9_population.png/svg, FIG_F9_source_values.tsv
 """
 import io, os
 import numpy as np
@@ -147,7 +147,7 @@ ax.text(0.98, 0.97, "조립 출처를 나눠도 집단 차이가 그대로다\n=
         transform=ax.transAxes, ha="right", va="top", fontsize=9.0, color="#c0392b")
 ax.set_title("C   교란 배제 — 조립 출처로 나눠도 같다", loc="left", fontsize=12.2)
 
-# ================= D: depth set size x population (redrawn as bars 2026-10-11) =================
+# ================= D: depth set size x population (bars) =================
 H3, R3 = read("ZN_depthset_census.tsv")
 ax = fig.add_subplot(gs[1, 1])
 D3 = []
@@ -211,7 +211,7 @@ ax.set_ylim(0, max(sum(_n(d, g) for d in D3 if d[0] == s) / TOTALL[g]
 ax.grid(axis="y"); ax.set_axisbelow(True)
 ax.set_title("D   말단형 보유 패턴의 크기 × 집단  (패턴 %d 개를 크기로 묶었다)" % len(D3),
              loc="left", fontsize=12.2)
-# the bottom text 'haplotypes with a population label %d, the 2 unlabelled ...' is removed from the figure and goes to the Legend text (values go to the value table)
+# the bottom text 'haplotypes with a population label %d, the 2 unlabelled ...' is not drawn on the figure, it is in the Legend text (values go to the value table)
 rec("D", "그림에서 뺀 글 (Legend 로)", "집단이 표기된 하플로타입 %d · 미표기 2 는 분모가 2 라 이 패널에서 뺐다 (그 둘은 array 유형 그림에 '집단 못 찾음' 으로 보인다)" % NPOP,
     "ZN_depthset_census.tsv")
 rec("D", "집단별 평균 집합 크기",

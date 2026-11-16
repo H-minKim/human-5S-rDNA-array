@@ -101,7 +101,7 @@ if not kind:
     continue          # a new source name is dropped here without a warning
 ```
 
-> **A trap.** If the updated assembly goes in under a new directory name (say `asm0911`), it
+> **Warning.** If the updated assembly goes in under a new directory name (say `asm0911`), it
 > **drops out of the index in silence**. If a new name is to be used, **add it to `PUB_D` or
 > `HIFI_D` first**, then count that the index has as many rows as there are files. A file with
 > `len(sq) < 4000` is dropped in silence as well.
@@ -110,7 +110,7 @@ if not kind:
 
 `~/cmp4d/` holds 1,516 `.fa` files from the old assembly. **If new files go into the same folder**,
 the assignment of ③ can pick an old file. Collect them in a **new folder** (say `~/cmp4d_v2/`) and
-do not delete the old one (deleting an existing backup is not allowed).
+do not delete the old one.
 
 ---
 
@@ -126,8 +126,8 @@ python3 ~/seqidx.py <number of parts> <this part>   # splits the file list by i 
 
 - The unit count is **the number of gaps between gene HSP start points that fall in 2,100 to 2,400,
   plus one** (the `UNITS` frame, the same as `hap_final2.tsv`).
-- **Never convert with `bp/2240`.** There is a precedent of being off by a factor of two on a
-  sequence whose chain was broken.
+- **Never convert with `bp/2240`.** It can be off by a factor of two on a sequence whose chain
+  is broken.
 - Sort with **Python `sorted()`** only. The `asorti` of awk sorts as text and scrambles the
   coordinates.
 - Change `D = ~/cmp4d` inside the index code to the new folder of §1-5 before running it.
@@ -175,10 +175,9 @@ of `hap_seq.tsv`, which it must reproduce exactly.
 individual when the slots are assigned again on a new assembly, every read goes onto the wrong
 haplotype.**
 
-The precedent (2026-09-06 to 08): the pairing numbers were used without being checked against the
-assembly numbers, **36.6% flipped on a coin toss and 83 individuals were discarded entirely from
-the junction placement**. In the old set too, the slot and the file suffix **do not agree** (168
-cases of slot 2 with `_1`). **Do not infer the slot from the suffix.**
+Pairing numbers must be checked against the assembly numbers before they are used. In the old
+set the slot and the file suffix **do not agree** (168 cases of slot 2 with `_1`). **Do not infer
+the slot from the suffix.**
 
 **One of the two must be done:**
 

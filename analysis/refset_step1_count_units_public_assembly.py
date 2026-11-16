@@ -1,22 +1,21 @@
 # -*- coding: utf-8 -*-
-# HPRC 공개 조립본에서 유닛 수 (노드 ~/asm_units3.py 에서 가져옴)
-#   단계 : ① array 잘라내기
+# The unit count from the public HPRC assemblies.
+#   Step 1: cut out the arrays.
 #   Method document : analysis/METHOD_CONSENSUS_MAP_G8_REBUILD.md
 
 # -*- coding: utf-8 -*-
-# HPRC release2 조립본에서 5S array 만 뽑아 flank-flank 길이와 유닛 수를 센다
+# Extract only the 5S array from the HPRC release 2 assemblies and count the flank-to-flank length and the number of units.
 #
-# 왜 v3 인가
-#  v1: 조립본 3 GB 전체를 minimap2 질의로 -> 하플로타입당 200 초. 느리다.
-#  v2: '가장 큰 contig 끝 45 Mb' 로 좁힘 -> 6 초. 그러나 조립본마다 array 가 있는
-#      contig 가 다르다 (HG01943 은 11 번째 contig JBHIIK010000077.1).
-#      contig 를 추측하면 안 된다.
-#  v3: contig 를 서열로 찾는다. 스트림을 grep 으로 훑어 5S 모티프가 있는 contig 를
-#      찾고, 그 contig 만 remote faidx 로 받아 탐침 정렬한다.
+# How the contig is found:
+#  querying the whole 3 GB assembly with minimap2 takes 200 seconds per haplotype, which is slow;
+#  narrowing to the last 45 Mb of the largest contig takes 6 seconds, but the contig holding the array
+#      differs between assemblies (in HG01943 it is the eleventh contig, JBHIIK010000077.1),
+#      so the contig must not be guessed.
+#  Instead the contig is found by sequence: the stream is scanned with grep for a 5S motif,
+#      and only that contig is fetched by remote faidx and aligned against the probes.
 #
-# 유닛 계수는 Python sorted(). awk asorti 는 인덱스를 문자열 정렬해 좌표를 뒤섞는다
-#   (2026-08-27 정정문 — 옛 "조립본 14 유닛 축약"의 원인).
-# URL 은 반드시 인덱스 CSV 에서 읽는다. 지어내지 않는다.
+# The units are counted using Python's sorted(). awk's asorti sorts indices as strings and scrambles the coordinates.
+# The URLs are always read from the index CSV and never constructed by hand.
 import io, os, sys, subprocess, collections, time
 
 W = os.path.expanduser("~/asmunits3")
@@ -29,7 +28,7 @@ TAG = os.environ.get("TAG", "x")
 NL = "\n"
 PJ, DJ = 227744884, 228025900
 
-# ---- 탐침: junction 바깥 50 kb (array 는 넣지 않는다 — 탠덤이라 아무데나 붙는다) ----
+# ---- probes: 50 kb outside the junction. The array itself is not used, because being tandem it aligns anywhere. ----
 pp = os.path.join(W, "probe.fa")
 if not os.path.exists(pp):
     with io.open(pp, "w", newline=NL) as g:
@@ -39,7 +38,7 @@ if not os.path.exists(pp):
                                capture_output=True, text=True, check=True).stdout
             g.write(">" + nm + NL + "".join(s.split(NL)[1:]) + NL)
 
-# ---- 5S 모티프: 유전자 서열에서 25-mer 몇 개 (양가닥) ----
+# ---- the 5S motif: a few 25-mers from the gene sequence, on both strands ----
 gs = "".join(x.strip() for x in io.open(GENE, encoding="utf8") if x[0] != ">")
 comp = str.maketrans("ACGT", "TGCA")
 MOT = []
@@ -62,7 +61,7 @@ for i, L in enumerate(io.open(IDX, encoding="utf8")):
 
 
 def find_contig(u, tag):
-    """스트림을 grep 으로 훑어 5S 모티프가 가장 많은 contig 를 돌려준다."""
+    """scan the stream with grep and return the contig with the most 5S motifs."""
     pat = "|".join(MOT)
     cmd = ("curl -sfL '%s' | zcat | grep -E '^>|%s'" % (u, pat))
     pr = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, text=True,

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# methylation merge (2026-09-12), collects read x unit methylation from the 3 nodes into per-position tables
+# methylation merge, collects read x unit methylation from the 3 nodes into per-position tables
 #   input: METH_READUNIT_<node>.tsv.gz (MM/ML of the placement BAM transferred to canonical coordinates)
 #   duplicate rule: if the same read is in both junction and ARRAY_ONLY (DUAL), the junction one is kept
 #                 (same rule as the merged map, the ARRAY_ONLY DUAL entries are removed)

@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
-# rebuild the read x unit methylation table from v11 data (replaces ru/ru_cmp of the old 2026-09-09_readvar)
+# build the read x unit methylation table from v11 data
 #
-# Source: METH_READUNIT_*.tsv.gz under $RDNA_DATA_ROOT, in the paper folder, subfolders 08 versions\v11\08 methylation\raw  (6 files, 1,019,408 rows)
+# Source: METH_READUNIT_*.tsv.gz under $RDNA_DATA_ROOT, in the paper folder, subfolders 08 versions/v11/08 methylation/raw  (6 files, 1,019,408 rows)
 #   columns: sample data_source cfg kind slot array_pos read_id strand n_cpg n_meth beta calls
 #   calls = list of "position in unit:ML value (0-255)"
 #
-# Coordinate frame trap (caught by measurement this time)
+# Coordinate frame
 #   the position in unit in calls is in that slot's own unit frame (not the canonical 2,240).
 #   Unit length differs by slot (2,226~2,248 ...). Matching directly to the canonical CpGs gives a hit rate of only 0.27, and
 #   shifting by one position gives 0.44. A single shift never matches, because indels accumulate within the unit.
@@ -15,20 +15,20 @@
 # MLCUT = 128 (same as the v11 node code). beta_call must agree with the v11 beta, this is checked.
 # Elements (canonical 2,240): AluY 1-318(25), NTS1 319-1178(78), GA 1179-1551(29)
 #                      NTS2 1552-2121(58, last 90bp 2032-2121 = promoter 12), gene 2122-2240(9)
-# Polarity: array_pos 1 = genomic distal. The names (proximal/distal) may be flipped relative to the old version, so
-#   here both axes ap_dj(=array_pos) and ap_pj(=N-array_pos+1) are stored and no names are attached.
+# Polarity: array_pos 1 = genomic distal.
+#   Both axes ap_dj(=array_pos) and ap_pj(=N-array_pos+1) are stored.
 import io, os, re, gzip, sys, glob, time, collections
 import numpy as np
 import pandas as pd
 
-V = __import__("os").environ["RDNA_DATA_ROOT"] + r"\for_paper\08_versions\v11"
+V = __import__("os").environ["RDNA_DATA_ROOT"] + r"/for_paper/08_versions/v11"
 OUT = __import__("os").environ["RDNA_DATA_ROOT"] + r"\v11_readvar"
-CANON = __import__("os").environ["RDNA_DATA_ROOT"] + r"\rdna_analysis\2026-08-31_lineage\canon_v2.fa"
-MAP = os.path.join(V, r"03_maps\g8canonv10\CONSENSUS_MAP_G8_full.tsv")
-RAW = os.path.join(V, r"08_methylation\raw")
+CANON = __import__("os").environ["RDNA_DATA_ROOT"] + r"/rdna_analysis/2026-08-31_lineage/canon_v2.fa"
+MAP = os.path.join(V, r"03_maps/g8canonv10/CONSENSUS_MAP_G8_full.tsv")
+RAW = os.path.join(V, r"08_methylation/raw")
 SH = os.path.join(OUT, "shard")
 os.makedirs(SH, exist_ok=True)
-LOG = io.open(os.path.join(OUT, r"04_logs\V1_BUILD.txt"), "w", encoding="utf8", newline="\n")
+LOG = io.open(os.path.join(OUT, r"04_logs/V1_BUILD.txt"), "w", encoding="utf8", newline="\n")
 MLCUT = 128
 
 
@@ -229,7 +229,7 @@ P()
 A["ap_dj"] = A.ap.astype("int32")
 A["ap_pj"] = (A.N - A.ap + 1).astype("int32")
 A.loc[A.N <= 0, "ap_pj"] = -1
-A.to_parquet(os.path.join(OUT, r"02_tables\ru_v11.parquet"), index=False)
+A.to_parquet(os.path.join(OUT, r"02_tables/ru_v11.parquet"), index=False)
 P("  저장: 02_표\\ru_v11.parquet")
 P()
 P("=" * 104)

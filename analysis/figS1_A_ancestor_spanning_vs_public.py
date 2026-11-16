@@ -1,32 +1,32 @@
 # -*- coding: utf-8 -*-
-# 관통 read ↔ 공개조립본 염기자리 비교 (mkpairs3 의 앞 판)
-#   단계 : S1 A 상류(v1)
+# Comparing array-spanning reads against the public assemblies at base-pair resolution.
+#   Step: S1 A upstream.
 
 # -*- coding: utf-8 -*-
-# 관통 read 와 공개조립본이 염기 자리 수준에서 맞는가 (2026-09-05)
+# Do the array-spanning reads and the public assemblies agree at the level of individual positions?
 #
-#  질문 (사용자)
-#    "유닛 단위로 맞는 것 말고, 특징적인 변이 등의 위치가 잘 맞아?"
+#  The question:
+#    beyond agreeing unit by unit, do the positions of the distinctive variants agree?
 #
-#  이미 아는 것
-#    minimap2 전체 동일성 : 공개조립본 vs 우리 hifiasm = 100.0000% (중앙)
-#                          공개조립본 vs 관통 read     =  99.4282% (중앙)
-#    ⇒ 관통은 ~175 bp 마다 1 개씩 어긋난다. 그 어긋남의 성질을 봐야 한다.
+#  What is already known:
+#    minimap2 overall identity: public assembly against our hifiasm assembly is 100.0000% (median),
+#                          and public assembly against an array-spanning read is 99.4282% (median).
+#    A spanning read therefore differs about once every 175 bp, and the nature of those differences is what matters.
 #
-#  방법
-#    같은 하플로타입(유닛 ±1)으로 짝지어지는 129 쌍에 대해
-#    ① 두 서열을 각각 유닛으로 분할하고 (5S 유전자 사슬, start-to-start 2,100-2,400)
-#    ② 유닛마다 표준유닛(2,240 bp) 대비 변이 목록을 만들고
-#    ③ 같은 유닛 번호끼리 변이 자리를 맞대본다.
+#  method
+#    For the 129 pairs matched as the same haplotype, to within one unit:
+#    1) each sequence is divided into units, by the chain of 5S genes, start to start within 2,100-2,400 bp;
+#    2) a variant list is built per unit against the standard 2,240 bp unit;
+#    3) the variant positions are compared between units of the same index.
 #
-#    유닛 번호는 양쪽 다 근위 junction 기준이라 위상이 같다
-#    (실측: off_prox 중앙 1,516 bp · 616 하플로타입 중 98.9% 가 ±5).
+#    The unit indices are referenced to the proximal junction on both sides, so the phase matches
+#    (measured: median off_prox 1,516 bp, and 98.9% of the 616 haplotypes within +-5).
 #
-#  치환과 indel 을 나눠서 본다.
-#    ONT 의 주된 오류는 indel 이므로 섞어 세면 치환 일치율이 가려진다.
-#  빈도로 층화한다.
-#    한 하플로타입 안에서 대부분 유닛에 있는 변이(고빈도)는 진짜 계통 표지이고,
-#    한두 유닛에만 있는 것은 오류일 수 있다. 둘을 나눠 봐야 답이 나온다.
+#  Substitutions and indels are examined separately.
+#    The dominant ONT error is the indel, so counting them together hides the substitution agreement.
+#  The variants are stratified by frequency.
+#    A variant present in most units of a haplotype is a genuine lineage marker,
+#    while one present in only one or two units may be an error. The two must be separated.
 import io
 import os
 import re
@@ -51,7 +51,7 @@ def rc(s):
 
 
 def units_of(p, tag):
-    """서열을 유닛으로 분할한다 (방향 통일 포함)."""
+    """Splits the sequence into units, the orientation unification included."""
     sq = "".join(x.strip() for x in
                  io.open(p, encoding="utf8").read().split(NL)[1:])
     for _ in range(2):
@@ -100,7 +100,7 @@ def units_of(p, tag):
 
 
 def variants(U, tag):
-    """유닛마다 표준유닛 대비 변이 — 치환과 indel 을 나눠서."""
+    """Per unit variants against the canonical unit, substitutions and indels apart."""
     q = os.path.join(W, "u_%s.fa" % tag)
     with io.open(q, "w", newline=NL) as g:
         for i, s in U:
@@ -163,7 +163,7 @@ for n, r in enumerate(mine):
     m = min(len(UA), len(UB))
     if m < 5:
         continue
-    # 빈도 층화 — 그 하플로타입 안에서 몇 개 유닛에 나오는가
+    # frequency stratification: in how many units of that haplotype the variant appears
     cntA = collections.Counter()
     cntB = collections.Counter()
     for i in range(1, m + 1):
@@ -171,10 +171,10 @@ for n, r in enumerate(mine):
             cntA[x] += 1
         for x in VB.get(i, (set(), set()))[0] | VB.get(i, (set(), set()))[1]:
             cntB[x] += 1
-    for kind, gi in (("치환", 0), ("indel", 1)):
-        for cls, lo, hi in (("고빈도(>=50% 유닛)", 0.5, 1.01),
-                            ("중간(10-50%)", 0.1, 0.5),
-                            ("저빈도(<10%)", 0.0, 0.1)):
+    for kind, gi in (("substitution", 0), ("indel", 1)):
+        for cls, lo, hi in (("high (>=50% of units)", 0.5, 1.01),
+                            ("middle (10-50%)", 0.1, 0.5),
+                            ("low (<10%)", 0.0, 0.1)):
             A = set()
             B = set()
             for i in range(1, m + 1):
@@ -189,7 +189,7 @@ for n, r in enumerate(mine):
                                  str(len(A)), str(len(B)), str(len(both)),
                                  "%.4f" % (len(both) / float(len(A))) if A else "-",
                                  "%.4f" % (len(both) / float(len(B))) if B else "-"]) + NL)
-    # 자리 단위 — 그 자리가 두 서열에서 몇 개 유닛에 나오는가
+    # per position: in how many units the position appears in each of the two sequences
     for x in set(cntA) | set(cntB):
         a = cntA.get(x, 0)
         b = cntB.get(x, 0)
@@ -197,13 +197,13 @@ for n, r in enumerate(mine):
                  if x in (VA.get(i, (set(), set()))[0] | VA.get(i, (set(), set()))[1])
                  and x in (VB.get(i, (set(), set()))[0] | VB.get(i, (set(), set()))[1]))
         fr = max(a, b) / float(m)
-        cls = ("고빈도" if fr >= 0.5 else "중간" if fr >= 0.1 else "저빈도")
+        cls = ("high" if fr >= 0.5 else "middle" if fr >= 0.1 else "low")
         SITE.write("%s\t%s\t%s\t%s\t%d\t%d\t%d%s" %
-                   (smp, x, "indel" if ("D" in x or "I" in x) else "치환",
+                   (smp, x, "indel" if ("D" in x or "I" in x) else "substitution",
                     cls, a, b, bo, NL))
     OUT.flush()
     SITE.flush()
-    sys.stderr.write("  %d/%d %s 유닛 %d\n" % (n + 1, len(mine), smp, m))
+    sys.stderr.write("  %d/%d %s units %d\n" % (n + 1, len(mine), smp, m))
     sys.stderr.flush()
 OUT.close()
 SITE.close()

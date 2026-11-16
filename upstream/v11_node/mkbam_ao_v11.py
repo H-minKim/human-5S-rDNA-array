@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
-# ARRAY_ONLY G8 자르기 SAM(~/aog8/sam/<sample>.<cfg>.sam) -> 정렬·색인 BAM (노드에서 실행)
-#   SAM 기록은 ao_g8cut.py 가 쓴 그대로 (원 read 서열 · QUAL · MM/ML 손대지 않음 · POS 는 이미 정본 좌표)
-#   붙이는 것 : 머리줄 @SQ (정본 이름 = <개체>_h<슬롯> · 길이 = ao_g8cut 과 같은 방식으로 만든 정본 길이)
-#   정본 방향 = G8v3 방향 (SUM_G8 의 뒤집기 Y 면 역상보) — 참조 서열도 ref/<sample>.fa 로 함께 저장
-#   파일 이름에 데이터 출처 : <개체>.<cfg>.<출처>.G8v3.bam
-#   출력 한 줄 = 노드 · cfg · 개체 · 출처 · 기록 수 · QUAL 있는 기록 · MM 있는 기록 · READS 표 OK read 수
+# The ARRAY_ONLY G8 cut SAM (aog8/sam/<sample>.<cfg>.sam) -> a sorted, indexed BAM, run on the node.
+#   The SAM records are exactly as ao_g8cut.py wrote them: the original read sequence, QUAL and MM/ML untouched, with POS already in canonical coordinates.
+#   What is added: the @SQ header line, with the canonical name <individual>_h<slot> and the length built the same way as in ao_g8cut.
+#   The canonical orientation is the G8v3 orientation, reverse-complemented where the SUM_G8 flip column reads Y, and the reference sequence is stored alongside as ref/<sample>.fa.
+#   The data source goes into the file name: <individual>.<cfg>.<source>.G8v3.bam
+#   One output line gives: node, cfg, individual, source, record count, records with a QUAL, records with MM, and the OK read count in the READS table.
 import io
 import os
 import sys
@@ -55,7 +55,7 @@ for sp in sorted(glob.glob(os.path.join(D, "sam", "*.sam"))):
     smp, cfg = os.path.basename(sp)[:-4].rsplit(".", 1)
     lab = LAB.get((cfg, smp), "UNKNOWN")
     recs = [L.rstrip(NL) for L in io.open(sp, encoding="utf8") if L.strip() and not L.startswith("@")]
-    # 3차 번호옮기기(ZR 태그)는 되돌렸다 (번호 = 정렬 위치) -> 표시 태그만 지운다. 서열·품질·MM/ML·정렬은 그대로
+    # the index is the alignment position, so only the marker tag (ZR) is removed; the sequence, quality, MM/ML and alignment are untouched
     nzr = sum(1 for x in recs if (TAB + "ZR:Z:") in x)
     recs = [TAB.join(f for f in x.split(TAB) if not f.startswith("ZR:Z:")) for x in recs]
     used = sorted(set(x.split(TAB, 3)[2] for x in recs))

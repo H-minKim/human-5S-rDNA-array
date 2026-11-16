@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-# 금화조 5S array 의 PacBio CpG 메틸 (제출본 v0.3 bigwig · 좌표 = GCA_048771995.1 / GCA_048772025.1)
-#   PacBio 집계값(자리마다 %)이다 — ONT read 단위가 아니다. read 단위는 pod5 재콜링(GPU) 뒤에 가능
-#   유닛 경계 = cmsearch 5S hit 시작점 (이웃 hit 시작 사이 = 유닛 하나) — bp/주기 환산 금지
-#   산출 : zfinch_5S_units_meth.tsv (유닛마다 CpG 수 · 평균 %) · zfinch_5S_array_meth_summary.tsv (array 안 vs 양옆 5 kb)
-#   인자 : 작업 폴더(~/xsp) · 최소 copy 수(기본 10)
+# PacBio CpG methylation of the zebra finch 5S arrays (the submitted v0.3 bigwig; coordinates GCA_048771995.1 / GCA_048772025.1).
+#   These are PacBio aggregates, a percentage per position, not per-read ONT values. Per-read values require re-basecalling the pod5 files on a GPU.
+#   Unit boundary = the start of a cmsearch 5S hit; one unit spans two neighbouring hit starts. Never convert bp / period.
+#   Outputs: zfinch_5S_units_meth.tsv (CpG count and mean percentage per unit) and zfinch_5S_array_meth_summary.tsv (inside the array against 5 kb on each side).
+#   Arguments: the working folder, and the minimum copy number (default 10).
 import io
 import os
 import sys

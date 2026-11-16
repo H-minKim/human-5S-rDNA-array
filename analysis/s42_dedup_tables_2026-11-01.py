@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
-#  S5 입력표 세 개를 NA21133 한 벌로 다시 낸다 (2026-11-01 사용자 ①)
-#    규칙 = 꾸러미 disp_17_prob_all.py (PROB_A4_SITE) · disp_19_a4_persite_tone.py (둘) 의 식 그대로
-#    ① 중복 그대로 돌려 꾸러미 입력표 셋을 바이트까지 재현 → <OUT>/dup/
-#    ② 한 벌만 → <OUT>/dedup/  (원본 표는 건드리지 않는다)
-#    ③ 좌위 원소 대조 : 개체×자리마다 (모든 CpG 수 · 메틸 수) 다중집합 ↔ 58 판 STRUCT_LOCI (CpG ≥ 10)
-#  쓰기 : python -B s42_dedup_tables_2026-11-01.py <OUT>
+#  Rebuild the three input tables of Supplementary panel S5 with NA21133 counted once.
+#    The rules follow disp_17_prob_all.py (PROB_A4_SITE) and disp_19_a4_persite_tone.py exactly.
+#    1) Run with the duplicate as it stands, reproducing the three input tables byte for byte, into <OUT>/dup/ .
+#    2) Run with it counted once, into <OUT>/dedup/ ; the original tables are untouched.
+#    3) Compare the loci element by element: the multiset of (total CpG count, methylated count) per individual and site against STRUCT_LOCI with CpG >= 10.
+#  Usage: python -B s42_dedup_tables_2026-11-01.py <OUT>
 import collections
 import glob
 import gzip
@@ -19,7 +19,7 @@ def _need(_v):
     """The deposited copy has no default paths. Stop when a root variable is missing."""
     _x = os.environ.get(_v)
     if not _x:
-        sys.exit("environment variable %s is not set; see README.md section Figures after 30 October 2026" % _v)
+        sys.exit("environment variable %s is not set; see README.md, section 'Environment variables'" % _v)
     return _x
 
 
@@ -67,7 +67,7 @@ def modes(v):
 
 SB = {"dup": collections.defaultdict(list), "dedup": collections.defaultdict(list)}
 ST = {"dup": collections.defaultdict(list), "dedup": collections.defaultdict(list)}
-EL = collections.defaultdict(collections.Counter)     # (sample, site) -> (n_cpg_all, 메틸 수) 다중집합 (한 벌)
+EL = collections.defaultdict(collections.Counter)     # (sample, site) -> the multiset of (n_cpg_all, methylated count), counted once
 for p in sorted(glob.glob(os.path.join(N, "*", "LOCUS_BETA_V2.tsv"))):
     node = os.path.basename(os.path.dirname(p))
     for r in rd(p):
@@ -135,7 +135,7 @@ for f in NAMES:
     print("   %-30s dup %s · 꾸러미 %s · 같음 %s · dedup %s" % (f, a[:12], b[:12], a == b, c[:12]))
 assert okall, "꾸러미 재현 실패"
 
-#  dedup ↔ dup 줄마다 무엇이 바뀌었나
+#  what changed, row by row, between the deduplicated and the duplicated run
 for f in NAMES[:2]:
     A = rd(os.path.join(OUT, "dup", f))
     B = rd(os.path.join(OUT, "dedup", f))
@@ -151,7 +151,7 @@ B = [r for r in rd(os.path.join(OUT, "dedup", NAMES[0])) if r["ruler"] == "하�
 print("   판정 바뀐 자리 :", [x["site"] for x, y in zip(A, B) if x["call_A4"] != y["call_A4"]],
       "· 빠지는 세 자리 n :", [(y["site"], x["n_loci"], y["n_loci"]) for x, y in zip(A, B) if y["site"] in ("S0285", "S0107", "S0108")])
 
-#  ③ 원소 대조
+#  3) the element-by-element comparison
 SITE = {}
 with gzip.open(os.path.join(R0, "CHM13_positions", "LOCI_SITE.tsv.gz"), "rt", encoding="utf8") as F:
     F.readline()

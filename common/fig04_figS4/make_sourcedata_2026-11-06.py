@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
-"""Source Data for Figure 4 and Supplementary Figures S4, S5, S6 (new numbering of 2026-11-06; internal names
-S4, S5, S6). One workbook per figure, English only. Built 2026-11-06.
+"""Source Data for Figure 4 and Supplementary Figures S4, S5, S6.
+One workbook per figure, English only.
 
 Every value in a data sheet is read from the file named in the Panels sheet. Two kinds of file:
-  result tables   the tables the figures read, each re-built on 2026-11-06 by its producer and found identical
+  result tables   the tables the figures read, each re-built by its producer and found identical
   panel tables    tables the CURRENT drawing scripts write while they draw (the plotted values), taken from the
-                  2026-11-06 runs of those scripts and copied to panel_tables/ with their provenance
+                  runs of those scripts and copied to panel_tables/ with their provenance
 Tables too large for a sheet (L1_READ_UNIT.parquet, P10_FRAME_ALL.tsv, P10_CPG_ALL.tsv.gz, P10_CPG_ADD3.tsv.gz)
 are named with their md5 and where they are deposited, and are not copied into the workbook.
 The script stops if any cell of any workbook still holds a Hangul syllable.
@@ -72,7 +72,7 @@ PT = [
     ("F2_EXT_SUMMARY.tsv", sandbox("mno", "F2_EXT_SUMMARY.tsv"), "fig04/fig04_M_N_O_base_resolution_transition.py"),
     ("FigS5_B_persite_tone_points.tsv", sandbox("s42b", "FigS5_B_persite_tone_5col_points.tsv"), "figS5/figS5_B_persite_tone_five_columns_dedup_2026-11-01.py"),
 ]
-# ---------------- result tables : (name, path, producer, expected body md5 measured 2026-11-06)
+# ---------------- result tables : (name, path, producer, expected body md5)
 RT = {
     "ARRAYPROF_noHG008T_2026-10-16.tsv": (os.path.join(T4, "ARRAYPROF_noHG008T_2026-10-16.tsv"), "analysis/arrayprof_noHG008T_2026-10-16.py", "a80b86bc5741"),
     "DISP_PROFILES_S42SET29_2026-10-31.tsv": (os.path.join(T4, "DISP_PROFILES_S42SET29_2026-10-31.tsv"), "analysis/f4g_profile_2026-10-31.py", "80fd540b6c55"),

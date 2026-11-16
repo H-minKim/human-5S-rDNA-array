@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
-# 애기장대 5S : CG / CHG / CHH 세 문맥을 read x 유닛으로 · 유닛 전체 / coding(5S 유전자) 따로.
-#   (동물 BAM 은 5mCG 모델이라 CHG/CHH 호출이 없다 — 애기장대만 dorado all-context)
-#   BAM 읽기·유닛·유전자 좌표는 x11_coding_readunit.py 함수를 그대로 쓴다(exec · 로그 줄만 바꿈).
-#   문맥 판정은 units_matrix_g8.py 와 같다 : 정방향 C → 다음 G=CG · 아니고 다다음 G=CHG · 그 외 CHH
-#                                         역방향(참조 G) → 앞 C=CG · 아니고 앞앞 C=CHG · 그 외 CHH
-#   MM 이 `C+m.` 이므로 생략된 C 는 비메틸 호출로 센다(x11 과 같음 · 안 세면 기존표와 안 맞음).
-#   검산 : 문맥별 유닛 전체 (n_calls, n_5mC) 가 기존 read_unit.tsv 와 같아야 한다.
-#   판정 : x10 규칙(두 번째 봉우리 >= 0.30 떨어짐 · 골 <= 그 봉우리 절반 · 그쪽 분자 >= 2%) + 이항 귀무 과분산비
-#   조건 : 호출 수 >= 그 array·문맥·구간 중앙값의 절반 (최소 3)
+# Arabidopsis 5S: the three contexts CG, CHG and CHH per read x unit, for the whole unit and for the coding part, the 5S gene, separately.
+#   (The animal BAMs use a 5mCG model and carry no CHG or CHH calls; only Arabidopsis was basecalled with dorado in all contexts.)
+#   The BAM reading and the unit and gene coordinates use the functions of x11_coding_readunit.py unchanged, loaded with exec, with only the log lines altered.
+#   The context rule matches units_matrix_g8.py: for a forward C, the next base G gives CG, otherwise the second next G gives CHG, otherwise CHH;
+#                                         for a reverse position, a reference G, the previous C gives CG, otherwise the second previous C gives CHG, otherwise CHH.
+#   The MM tag is C+m. so an omitted C counts as an unmethylated call, as in x11; without that the result does not match the existing table.
+#   Check: the whole-unit (n_calls, n_5mC) per context must equal the existing read_unit.tsv.
+#   The call follows the x10 rule (a second peak at least 0.30 away, a trough no higher than half that peak, at least 2% of molecules on its side) plus the overdispersion ratio against the binomial null.
+#   Condition: the number of calls is at least half the median for that array, context and interval, and at least 3.
 import io, os, sys, glob, struct, collections
 import numpy as np
 import pandas as pd
@@ -24,7 +24,7 @@ def _need(k):
     v = _os_need.environ.get(k)
     if not v:
         _sys_need.exit("environment variable %s is not set (the deposited copy has no default; "
-                       "see README.md, section 'How to run it')" % k)
+                       "see README.md, section 'Environment variables')" % k)
     return v
 
 
@@ -173,7 +173,7 @@ D = pd.DataFrame([(k[0], k[1], k[2], k[3], *v) for k, v in acc.items()],
 D.to_csv(OUT + "/tables/ATH_READUNIT_CONTEXT.tsv.gz", sep="\t", index=False, compression="gzip")
 P("애기장대 BAM 기록 %d · 통계 %s · 행 %d" % (STAT["rec"], dict(STAT), len(D)))
 
-# ---- 검산 : 기존 read_unit.tsv 문맥별
+# ---- check against the existing read_unit.tsv, per context
 old = pd.read_csv(glob.glob(B + "/03_reads/%s/*.read_unit.tsv*" % SP)[0], sep="\t")
 for c in ["CG", "CHG", "CHH"]:
     o = old[old.context == c]
@@ -185,7 +185,7 @@ for c in ["CG", "CHG", "CHH"]:
       % (c, len(o), len(n), len(M), same, near, (M.n_5mC_old / M.n_calls_old).mean(), (M.n_5mC / M.n_calls).mean()))
 P()
 
-# ---- array x 문맥 x 구간 판정
+# ---- the call per array, context and interval
 ST = pd.read_csv(OUT + "/tables/OTHERSP_ARRAY_STRUCT.tsv", sep="\t")
 UL = dict(zip(ST.array_id, ST.unit_len))
 NU = dict(zip(ST.array_id, ST.n_unit))
@@ -227,7 +227,7 @@ P("  판정 집계")
 for (c, part), gg in T.groupby(["context", "part"]):
     P("   %-4s %-7s : %s" % (c, part, " · ".join("%s %d" % (k, v) for k, v in gg.call.value_counts().items())))
 
-# ---- 그림 : 구간(전체/coding)마다 한 장 · 행 = array · 열 = 문맥
+# ---- figure: one page per interval, whole unit and coding, with arrays as rows and contexts as columns
 COLC = {"CG": "#7e57c2", "CHG": "#26a69a", "CHH": "#ef6c00"}
 for part in ["전체", "coding"]:
     nr = len(order)

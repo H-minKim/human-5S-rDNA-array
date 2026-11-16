@@ -3,7 +3,7 @@ r"""Main Fig 2 cell a: only panel A of FIG_UNITPOS.py, at cell size (215 x 76.5 
    Data and computation are the same lines as FIG_UNITPOS.py (v11_io.load, H1 557, 51,801 units)
    Only the appearance changed: figure size, font size, line width, axis title line breaks, no panel title (the composite removes it anyway)
    Content check: CMPART.py (old fig_unitpos_by_region axes 0 vs this figure)
-Output: $FIGOUT\cellF2_a_unitpos.png/svg, CELL_F2a_source_values.tsv
+Output: $FIGOUT/cellF2_a_unitpos.png/svg, CELL_F2a_source_values.tsv
 """
 import io, os, sys, collections
 import numpy as np
@@ -90,28 +90,27 @@ SRC.close()
 
 # ---------- cell figure (215 x 76.5 pt) ----------
 fig, ax = CS.cell_at("a")   # margins and size from the single cellstyle.ROWS table (plot frame alignment)
-# only indicators needed to know what it is in the figure, the legend only as far as 'variants outside blocks, per base' and 'variants inside repeat blocks',
-#   the bracketed explanations (number of units, drawn at block width, positions cannot be resolved) and the value marks for blocks 46, 56 and 58 go to the Legend text (values stay in the value table CELL_F2a)
-# legend text as actually counted, blue line = all substitutions (including substitutions inside blocks) + deletions and insertions outside blocks (all tokens that are not DB or IB),
-#   orange = only deletions and insertions inside blocks (DB, IB). The old 'variants outside blocks, per base' and 'variants inside repeat blocks' read as if substitutions inside blocks were orange too
+# the bracketed explanations (number of units, drawn at block width, positions cannot be resolved) and the value marks for blocks 46, 56 and 58 are in the Legend text (values are in the value table CELL_F2a)
+# legend text as counted, blue line = all substitutions (including substitutions inside blocks) + deletions and insertions outside blocks (all tokens that are not DB or IB),
+#   orange = only deletions and insertions inside blocks (DB, IB)
 ax.plot(psS, vS, "-", lw=0.55, color="#2471a3", alpha=0.95, label="반복 블록 밖 결실과 삽입, 그리고 모든 치환")
 for _a, _b2, _v, _i in BARS:
     ax.add_patch(mp.Rectangle((_a, 0.0), max(_b2 - _a, 1), _v, fc="#E8A33D", ec="none",
                               alpha=0.80, zorder=3))
 ax.plot([], [], "s", color="#E8A33D", alpha=0.80, ms=3.5, label="반복 블록 안 결실과 삽입")
-# move the unit element strip outside the axes, below the x tick labels
-#   (bottom margin of the first row in cellstyle.ROWS 17 -> 26 pt, the strip, transcription arrow, names and leader lines keep the second version's shape, positions set in pt and converted by the axes height ratio)
+# the unit element strip is outside the axes, below the x tick labels
+#   (positions set in pt and converted by the axes height ratio)
 YTOP = max(0.95, float(max(vS.max(), BARS[0][2])) * 1.30)
 AXH = ax.get_position().height * fig.get_figheight() * 72.0   # axes height in pt (cell a = 60.5)
 YBOT = -1.2 * YTOP / (AXH - 1.2)                              # only 1.2 pt so the 0 line does not touch the bottom axis line
 for _, a, b in ELEM:
     ax.axvline(b, color="#909497", lw=0.3, ls=":", zorder=0)
 ax.set_xlim(0, UL); ax.set_ylim(YBOT, YTOP)
-ax.set_yticks([0.0, 0.2, 0.4, 0.6, 0.8]); ax.set_ylim(YBOT, YTOP)   # ticks keep the old values (no negative ticks)
+ax.set_yticks([0.0, 0.2, 0.4, 0.6, 0.8]); ax.set_ylim(YBOT, YTOP)   # no negative ticks
 ax.set_xticks(range(0, UL + 1, 250))
-ax.set_ylabel(CS.L("변이율", "Variant frequency"))   # 'something like variant frequency' (old: fraction differing from the reference / Fraction != reference, meaning in the Legend)   # 2026-10-18 night: axis title on one line, short (old: fraction of units differing from the reference sequence at that position)
+ax.set_ylabel(CS.L("변이율", "Variant frequency"))   # axis title on one line (meaning in the Legend)
 _lg = ax.legend(loc="upper left", frameon=False)   # remove the legend frame
-# the legend text got longer, count whether blue line points or orange bars fall inside the legend box (must be 0)
+# count whether blue line points or orange bars fall inside the legend box (must be 0)
 fig.canvas.draw(); _lb = _lg.get_window_extent(fig.canvas.get_renderer())
 _lxy = ax.transData.transform(np.column_stack([psS, vS]))
 print("범례 상자 겹침 : 선 점 %d · 막대 %d · 상자 오른끝 %.1f / 축 오른끝 %.1f px" % (
@@ -123,10 +122,10 @@ _axb = ax.get_window_extent(_rd)
 TICK_PT = (_axb.y0 - min(t.get_window_extent(_rd).y0 for t in ax.get_xticklabels() if t.get_text())) / PXPT
 GAP_PT, BAR_PT, ARR_PT = 1.5, 6.2, 3.4                         # gap below tick labels, strip, transcription arrow row (name row below it)
 B_TOP = TICK_PT + GAP_PT; B_BOT = B_TOP + BAR_PT; Y_ARR = B_BOT + 0.70 * ARR_PT; Y_LAB = B_BOT + ARR_PT   # pt from the bottom axis line
-Y_BASE = Y_LAB + 0.95 * CS.FS_ANN + 0.8                        # common baseline of the two names below the strip (baseline of the old top alignment ~ Y_LAB + 0.95 FS, 0.8 pt below that)
+Y_BASE = Y_LAB + 0.95 * CS.FS_ANN + 0.8                        # common baseline of the two names below the strip
 fy = lambda pt: -pt / AXH                                      # pt below the bottom axis line (axes fraction)
 XT = ax.get_xaxis_transform()                                  # x = bp, y = axes fraction
-INK = "#17202a"                                                # leader line and arrow colour (grey 566573 was faint, width tied to 0.45)
+INK = "#17202a"                                                # leader line and arrow colour
 BELOW = {"promoter": 1985, "gene": UL}                        # right end (bp) of the names below the strip, so they do not overlap on one row
 LEADX = {"promoter": 2050, "gene": 2215}                      # where the 5S gene leader line meets the strip (bp, inside the box), avoiding the arrow (2122-2185)
 TSS, TSS_END = 2122, 2185                                     # 5S gene start = transcription start, arrow end
@@ -141,7 +140,7 @@ for n_, a, b in ELEM:
     if n_ not in BELOW:   # the four wide ones: name inside the strip (enlarged to FS_ANN on save, so that size from the start)
         ax.text((a + b) / 2, fy(B_TOP + BAR_PT / 2), disp(n_), transform=XT, ha="center", va="center", fontsize=CS.FS_ANN, zorder=6, clip_on=False)
     else:                 # the two narrow ones: one row below the strip, straight dark leader line
-        # "5'-flanking and 5S gene very slightly lower, same y for both": va top -> baseline (with top the ascender differs per text, so the two rows misalign), 0.8 pt lower
+        # both names on one baseline (with va top the ascender differs per text, so the two rows misalign)
         ax.text(BELOW[n_], fy(Y_BASE), disp(n_), transform=XT, ha="right", va="baseline", fontsize=CS.FS_ANN, zorder=7, clip_on=False)
         _yg = Y_BASE - 0.73 * CS.FS_ANN                        # top of the text (above the baseline by the cap and digit height)
         if n_ == "promoter":   # straight from the top right corner of the name to the centre of the box

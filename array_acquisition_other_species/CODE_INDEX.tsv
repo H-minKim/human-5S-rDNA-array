@@ -21,10 +21,8 @@ ath_stream.sh	2026-09-12	current	Streams the Arabidopsis ATRun3 pod5 tar (EBI ER
 bismark_parts_meth.py	2026-09-15	current	Splits the array into coding part, spacer and outside (flank) and reports CpG methylation for each
 bismark_read_meth.py	2026-09-15	current	Methylation per read, because the CpGs inside one read are not independent
 bismark_region_meth.py	2026-09-15	reference only (CpG level; the conclusion came from the read-level script)	Reports CpG methylation by region from a bismark BAM, for comparing the array with its flank
-build_handoff_index.py	2026-10-29	current (builds the code ledger)	Builds the ledger of the newest files and the code index of the transfer folder (HANDOFF) by measurement
 build_zf_parts.py	2026-09-15	current	Builds the region table that splits the chr18 (somatic type) and chr4 (maternal type) arrays into coding part, spacer and outside the array
 canon_units.py	2026-09-14	current	Cuts the canonical array (flank, array, flank) into units
-cmd01_apply.py	2026-09-27	current	Applies the corrections without overwriting the old files (it writes new *_2026-09-21 versions)
 cmd01_bonobo_basecaller.py	2026-09-21	current (bonobo by basecaller version)	Re-measures the bonobo 5S array methylation per caller version (, to settle the default)
 cmd01_measure.py	2026-09-21	current	measurements: array minus flank (ONT, AVF.tsv) by species and array, the array count per definition for each species, and a check of the default definition
 cmd02_extract.py	2026-09-21	current (extraction on the compute nodes)	from the ONT batch BAM (MM and ML) to a table of CpG calls by read, array and class (coding part or spacer)

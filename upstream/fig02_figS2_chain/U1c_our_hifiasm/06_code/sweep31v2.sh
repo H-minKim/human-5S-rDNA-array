@@ -1,16 +1,10 @@
 #!/bin/bash
-# sweep31 v2: data preparation from 4 passes to 1 pass (2026-09-04)
+# sweep31 v2: data preparation in one pass
 #
-#  Why v1 was slow (measured)
-#    `zcat | awk | gzip` ran four times: 1 for counting unit content + 3 ratios.
-#    Four single-threaded passes over 460~582 Mb compressed files took 1 hour just for preparation
-#    (hifiasm had not even started).
-#
-#  What v2 changed
 #    (1) parallel decompression with unpigz (zcat is single-threaded)
 #    (2) one pass writes the three sets f=2,3,4 at the same time and also counts total bases
-#    (3) no gzip, hifiasm reads plain fastq. Compression is pure waste.
-#  The subsampling method (order c%f) is kept identical to v1, changing it would break comparison with earlier results.
+#    (3) no gzip, hifiasm reads plain fastq
+#  Subsampling is by read order (c%f).
 #  As soon as two haplotypes come out, stop and delete the remaining pieces.
 set -u
 SLOT=${1:-0}; NSLOT=${2:-1}; TH=${TH:-8}

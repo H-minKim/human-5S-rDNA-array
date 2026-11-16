@@ -1,25 +1,25 @@
 # -*- coding: utf-8 -*-
-# minimap2 → JXHIFI_ALL.tsv.gz (대학 SLURM 클러스터)
-#   단계 : S1 B 상류
+# minimap2 -> JXHIFI_ALL.tsv.gz, run on a university SLURM cluster.
+#   Step: S1 B upstream.
 #   Method document : analysis/METHOD_CONSENSUS_MAP_G8_REBUILD.md
 
 # -*- coding: utf-8 -*-
-# 검정 2 — HiFi flank(junction) 배치 -> HiFi-합의 지도 -> 변이 목록 재현 검정
-#   서울대 클러스터 실행판 (2026-09-07)
+# Test 2: place HiFi reads by their flank (junction), build a HiFi consensus map, and test whether it recovers the variant list.
+#@DROP
 #
-#  무엇을 재나
-#    지도(hifiasm/공개조립본)의 유닛별 변이 목록을, HiFi read 로 만든 합의가
-#    되부르는가. 척도 = 재현율(지도 변이 중 되부른 비율) · 정밀도.
-#    단순 서열 동일성이 아니라 변이 목록 재현이다.
+#  What is measured:
+#    whether a consensus built from HiFi reads recovers the per-unit variant list of the map,
+#    which is built from our hifiasm assemblies and the public ones. The measures are recall and precision.
+#    This is recovery of the variant list, not plain sequence identity.
 #
-#  왜 HiFi 가 심판이 되나
-#    지도의 65%는 공개조립본(HiFi 포함), 23%는 우리 hifiasm(ONT 전용)이다.
-#    HiFi read 는 ONT 와 오류 특성이 독립이므로, 두 계열을 따로 검정하면
-#    "ONT 전용 조립본이 HiFi 로도 지지되는가" 를 가를 수 있다.
+#  Why HiFi can serve as the arbiter:
+#    65% of the map comes from public assemblies, which include HiFi data, and 23% from our own ONT-only hifiasm assemblies.
+#    HiFi reads have error characteristics independent of ONT, so testing the two groups separately
+#    settles whether the ONT-only assemblies are also supported by HiFi.
 #
-#  위치는 junction 앵커 — flank 서열로 고정. 지도를 참조하지 않는다.
-#  하플로타입은 정렬이 정한다 (HiFi 는 정확도가 높고, 참조 자체가 조립본이라
-#    ONT 에서 문제였던 라벨 뒤바뀜이 원리상 생기지 않는다).
+#  The position is anchored at the junction, fixed by the flank sequence, without reference to the map.
+#  The haplotype is decided by the alignment: HiFi is accurate and the reference is itself an assembly,
+#    so the label swapping that affected ONT cannot arise in principle.
 import io
 import os
 import re

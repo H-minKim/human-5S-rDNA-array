@@ -1,24 +1,21 @@
 # -*- coding: utf-8 -*-
-# Reproduction version (2026-09-11): only additions to rjfreq2_g8.py (original rjfreq2 + input environment variables). Decision rules, alignment command and filters unchanged
-#   (1) the input fastq is first reduced to the reads of the assignment table (HAP_READ_FINAL). The original also discards unassigned reads after alignment, so the result is the same
+# junction anchor placement: slot label correspondence decided per individual + token frequencies kept
+#   (1) the input fastq is first reduced to the reads of the assignment table (HAP_READ_FINAL). Unassigned reads are discarded after alignment anyway, so the result is the same
 #       (minimap2 aligns each read independently)
-#   (2) added outputs: readunit_<TAG>.tsv (read x unit, coordinates within the read, both G6 and G8v2)
+#   (2) outputs: readunit_<TAG>.tsv (read x unit, coordinates within the read, both G6 and G8v2)
 #                     <individual>.placed.sam (original alignments of accepted reads + MM/ML tags from the fastq)
 #                     rjf8_<TAG>.tsv (position table of the same reads and same alignments cut at G8v2 boundaries, the half split uses a separate random stream)
 #   (3) G8v2 cutting only for slots whose reference equals the G8v2 canonical (slots in C2SKIP have a different reference and are skipped)
-# G8v2 version (2026-09-11): differs from the original only in its inputs (placement rules, thresholds and scores unchanged)
-#   Changes: map MAPF (G8v2), orientation table RCFF/RCFCOL (G8v2 SUM revcomp = strand majority), canonical list HSN, canonical folder CMPD, work folder
-#   all are required environment variables (stops with KeyError if missing, so it never runs silently on the old G6 inputs)
+#   Inputs: map MAPF (G8v2), orientation table RCFF/RCFCOL (G8v2 SUM revcomp = strand majority), canonical list HSN, canonical folder CMPD, work folder
+#   all are required environment variables (stops with KeyError if missing)
 #   G8v2 cuts units at the end of the gene, so read units are also cut as [spacer][gene] and the gene part (2122-2240) is visible
-# junction anchor placement v3: slot label correspondence decided per individual + token frequencies kept
-#   
 #
-#  The defect being fixed
+#  Slot labels
 #    There is no guarantee that the slot numbers of the assignment table (HAP_READ_FINAL) and those of the reference assembly (hap_seq_node)
 #    point to the same molecule. Measured: in 83 of 303 individuals
-#    the two numberings were swapped wholesale and all reads were discarded (e.g. HG00099 0/75).
-#    side_hap itself was confirmed to use the existing HPRC split (hap_reads_v5) 100% unchanged.
-#    The only problem is that the numbers assigned at the pairing step were never matched to the assembly numbers.
+#    the two numberings are swapped wholesale (e.g. HG00099 0/75).
+#    side_hap itself uses the existing HPRC split (hap_reads_v5) unchanged.
+#    The numbers assigned at the pairing step are not matched to the assembly numbers.
 #
 #  How it is decided: not left to minimap2 read by read
 #    For each individual both orientations are counted and the correspondence is decided on the aggregate.

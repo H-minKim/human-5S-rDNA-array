@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-# array 단위 값이 개체 사이에 재현되는가 (제브라 ONT 6 개체 · chr4 30 array)
-#   입력 : 13_array_level_diff/ARRAY_LEVEL_TABLE.tsv (cmd02_stats.py 산출)
-#   출력 : ZF_CHR4_ARRAY_REPRO.tsv — array × 개체 array 전체 메틸(read 수) + 6 개체 평균
-#          ZF_CHR4_ARRAY_REPRO_SPEARMAN.tsv — 개체 쌍별 Spearman(두 개체 모두 read ≥ 20 인 array 만)
-#   각 개체 값은 그 개체 안에서만 잰 것 — 개체를 섞지 않고 '순위가 같은가' 만 본다
+# Does an array-level value reproduce between individuals? Zebrafish ONT, 6 individuals, the 30 chr4 arrays.
+#   Input: 13_array_level_diff/ARRAY_LEVEL_TABLE.tsv, the output of cmd02_stats.py.
+#   Outputs: ZF_CHR4_ARRAY_REPRO.tsv, the whole-array methylation per array and individual with the read count, plus the mean over the 6 individuals;
+#          ZF_CHR4_ARRAY_REPRO_SPEARMAN.tsv, a Spearman correlation per pair of individuals, over the arrays with at least 20 reads in both.
+#   Each individual's value is measured within that individual alone; the individuals are never pooled, and only whether the ranking agrees is examined.
 # MIT License · Copyright (c) 2026 Hungmin Kim
 import csv
 import io

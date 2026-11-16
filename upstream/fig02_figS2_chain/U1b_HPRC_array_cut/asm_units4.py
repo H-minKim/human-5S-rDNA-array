@@ -1,17 +1,14 @@
 # -*- coding: utf-8 -*-
 # Extract only the 5S array from HPRC release2 assemblies and count the flank-flank length and unit number
 #
-# Why v3
-#  v1: whole 3 GB assembly as the minimap2 query -> 200 s per haplotype. Too slow.
-#  v2: narrowed to 'last 45 Mb of the largest contig' -> 6 s. But the contig holding the array
-#      differs between assemblies (in HG01943 it is the 11th contig JBHIIK010000077.1).
-#      The contig must not be guessed.
-#  v3: find the contig by sequence. Scan the stream with grep to find the contig carrying the 5S motif,
-#      then fetch only that contig with remote faidx and align the probes.
+# The contig is found by sequence: the stream is scanned with grep for the contig carrying the 5S motif,
+#  then only that contig is fetched with remote faidx and the probes are aligned.
+#  The contig holding the array differs between assemblies (in HG01943 it is the 11th contig
+#  JBHIIK010000077.1), so it must not be guessed. The whole 3 GB assembly as the minimap2 query
+#  takes 200 s per haplotype.
 #
-# Unit counting uses Python sorted(). awk asorti sorts indices as strings and scrambles coordinates
-#   (2026-08-27 correction note - the cause of the old "assembly 14-unit contraction").
-# URLs are always read from the index CSV. Never made up.
+# Unit counting uses Python sorted(). awk asorti sorts indices as strings and scrambles coordinates.
+# URLs are always read from the index CSV.
 import io, os, sys, subprocess, collections, time
 
 W = os.path.expanduser("~/asmunits3")

@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 # → EXAMPLE_PROFILE.tsv
-#   단계 : S1 H 상류
+#   Step: S1 H upstream.
 #   Method document : analysis/METHOD_CONSENSUS_MAP_G8_REBUILD.md
 
 # -*- coding: utf-8 -*-
-# 그림 C 패널용 실측 예시 : 한 하플로에서 '손대지 않은 정본' vs '가운데 6 유닛 역위' 의 자리별 국소최고율
+# A measured example for panel C: the local-best rate by position for one haplotype, untouched against with the middle 6 units inverted.
 # Output : EXAMPLE_PROFILE.tsv (the figure reads this table only)
 import io, os, glob, collections
 K = os.environ["RDNA_HANDOFF_AD6468DD"]

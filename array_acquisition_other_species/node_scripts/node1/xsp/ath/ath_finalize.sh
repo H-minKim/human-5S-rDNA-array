@@ -1,9 +1,9 @@
 #!/bin/bash
 # Arabidopsis, final step: re-called BAM per machine -> merge -> modkit (CG, CHG, CHH) -> read x unit matrix -> position check against the original SUP alignment
-#   다른 노드 몫 BAM 은 미리 ~/xsp/ath/bc 로 옮겨 둔다 (참조 Col-CC md5 427863e6c8e1 세 노드 동일 확인)
-#   modkit : 식물이라 모든 맥락 (--motif CG 0 --motif CHG 0 --motif CHH 0) · CHH 는 대칭이 아니라 --combine-strands 쓰지 않음 · 5mC 5hmC
-#   유닛 행렬 : units_matrix.py (맥락은 참조 서열로 판정 · 흘려 읽기라 read_id · ref_position 순 정렬 필요)
-#   위치 대조 : 재콜링 primary 정렬 vs 같은 read 의 원 SUP 정렬(PAF 전 줄) 중 겹치는 것 — 시작점 차이 (유닛 ~500 bp)
+#   BAMs produced on the other nodes are moved into the bc folder beforehand; the Col-CC reference md5 427863e6c8e1 was confirmed identical on all three nodes.
+#   modkit: all contexts, since this is a plant (--motif CG 0 --motif CHG 0 --motif CHH 0). CHH is not symmetric, so --combine-strands is not used. 5mC and 5hmC.
+#   Unit matrix: units_matrix.py. Context is decided from the reference, and because the input is streamed it must be sorted by read_id then ref_position.
+#   Position check: the re-basecalled primary alignment against whichever of that read's original SUP alignments (all PAF rows) overlaps it, comparing start points. The unit is about 500 bp.
 # MIT License · Copyright (c) 2026 Hungmin Kim
 set -u
 H=~/xsp/ath
@@ -27,7 +27,7 @@ python3 ~/xsp/units_matrix.py --fa $A/arabidopsis_ColCC.fna --bed $H/arabidopsis
   --samples $S --bam "$F/{s}.5S.bam" --meth "$F/{s}.5S.reads.tsv" --out $F/units
 echo "== BAM read $(samtools view -c $F/$S.5S.bam) · MM $(samtools view $F/$S.5S.bam | grep -c MM:Z)"
 echo "== pileup 맥락·변형별 행 (이름 열)"; cut -f4 $F/$S.5S.allC.bed | sort | uniq -c
-# 위치 대조
+# position check
 zcat $H/sup.colcc.paf.gz | awk -F'\t' '{print $1"\t"$6"\t"$8"\t"$9}' > $F/orig_aln.tsv
 samtools view -F 0x904 $F/$S.all.bam | awk -F'\t' '{c=$6; e=$4-1; while(match(c,/[0-9]+[MDN=X]/)){e+=substr(c,RSTART,RLENGTH-1); c=substr(c,RSTART+RLENGTH)}; print $1"\t"$3"\t"$4-1"\t"e}' > $F/new_aln.tsv
 awk -F'\t' 'NR==FNR{o[$1]=o[$1] $2 "," $3 "," $4 ";"; next}

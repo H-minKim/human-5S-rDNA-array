@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""전체 hits read(배치기 안 거침) 판 — 유전자부 β 층 라벨 + 풀링 유닛 β 이봉성 요약. 노드에서 실행."""
+"""All hits reads (not passed through the placement step): gene-body β stratum label and a summary of the bimodality of pooled unit β. Runs on the node."""
 import io, os, collections
 NL = chr(10); TB = chr(9)
 D = os.path.expanduser("~/cells")

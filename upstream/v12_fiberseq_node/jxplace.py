@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
-"""junction 배치 — 슬롯이 정해진 read 의 위치(array_pos)를 flank 앵커로 정한다 (2026-09-15)
+"""Junction placement: the position (array_pos) of a read whose slot is fixed is set by the flank anchor
 
-  들어가기 전 : 슬롯은 slotvote.py 가 flank 변이 투표로 정했다(표차>=0.90 에서 정확도 99.3%).
-                그러므로 여기서는 사슬 게이트(K=12)를 쓰지 않는다 — 그 게이트는 슬롯을
-                정하려고 있던 것이고, 이미 정해졌으므로 유닛 1 개짜리 read 도 위치를 받는다.
+  Before this step : the slot is fixed by slotvote.py from a vote on flank variants (accuracy 99.3% at margin >=0.90).
+                The chain gate (K=12) is therefore not used here: that gate exists to
+                fix the slot, and with the slot fixed a read with a single unit also receives a position.
 
-  절차
-    ① read 를 자기 슬롯의 flank 붙인 정본에 정렬 (map-ont · --secondary=no)
-    ② 정렬 좌표 → 정본 좌표(− flank5) → G6 지도의 유닛 구간을 찾는다
-    ③ 유닛마다 read 서열을 잘라 정본유닛(unit_canon.fa)에 정렬해 변이를 부른다
-    ④ AOJV 형식 6 열 출력 : 개체 · read(16자) · 슬롯 · array_pos · 변이목록 · scored
+  Steps
+    (1) align the read to the canonical sequence of its slot with flanks added (map-ont, --secondary=no)
+    (2) alignment coordinate -> canonical coordinate (- flank5) -> find the unit interval in the G6 map
+    (3) per unit, cut the read sequence, align it to the canonical unit (unit_canon.fa) and call variants
+    (4) six-column AOJV output : individual, read (16 characters), slot, array_pos, variant list, scored
 
   Coordinate convention : the coordinate in the flank-added file = the canonical coordinate + flank5
 """
@@ -23,12 +23,12 @@ import re
 CIG = re.compile(r"(\d+)([MIDNSHP=X])")
 CS = re.compile(r"([:*+\-])([A-Za-z0-9]+)")
 H = os.path.expanduser
-HSN = H(os.environ.get("HSN", "~/hap_seq_node.tsv"))
-CMPD = H(os.environ.get("CMPD", "~/cmp4d_flank"))
-MAPF = H(os.environ.get("MAPF", "~/CONSENSUS_MAP_G6.tsv"))
-READS = H(os.environ.get("READS", "~/fs41/out"))
+HSN = H(os.environ["HSN"])
+CMPD = H(os.environ["CMPD"])
+MAPF = H(os.environ["MAPF"])
+READS = H(os.environ["READS"])
 CANON = H("~/s5s_tuc/ref/unit_canon.fa")
-SUMF = H(os.environ.get("SUMF", "~/CONSENSUS_SUM_G6.tsv"))
+SUMF = H(os.environ["SUMF"])
 C_TR = str.maketrans("ACGTacgtNn", "TGCAtgcaNn")
 
 
@@ -37,7 +37,7 @@ def rc(x):
 
 TH = os.environ.get("TH", "6")
 MARGIN = float(os.environ.get("MARGIN", "0.90"))
-# read 이름 길이 : ONT 16 · PacBio 는 0(전체) — 앞 16 자가 movie 라 전건 충돌
+# the read-name length: 16 for ONT and 0, the whole name, for PacBio, whose first 16 characters are the movie and would collide in every case
 RIDLEN = int(os.environ.get("RIDLEN", "16"))
 VOTE, OUT = sys.argv[1], sys.argv[2]
 NL = "\n"
@@ -48,7 +48,7 @@ for x in io.open(HSN, encoding="utf8"):
     if len(f) >= 3:
         SEQF[(f[0], f[1])] = f[2]
 
-# revcomp 표 — 열 이름으로 찾는다(G6 는 6번째, G8 계열은 5번째)
+# the revcomp table, located by column name: the 6th in G6 and the 5th in the G8 family
 RCF = {}
 for i, x in enumerate(io.open(SUMF, encoding="utf8")):
     fz = x.rstrip(NL).split("	")
@@ -60,7 +60,7 @@ for i, x in enumerate(io.open(SUMF, encoding="utf8")):
     if len(fz) > RCI:
         RCF[(fz[0], fz[1])] = (fz[RCI] == "Y")
 
-# 지도 : (개체,슬롯) -> [(array_pos, start0, end, N)]   ※ 정본 좌표(flank 없음)
+# the map: (individual, slot) -> [(array_pos, start0, end, N)], in canonical coordinates with no flank
 UB = collections.defaultdict(list)
 f = io.open(MAPF, encoding="utf8")
 h = f.readline().rstrip(NL).split("\t")
@@ -88,8 +88,8 @@ def load(p):
     return "".join(buf).upper(), int(d.get("flank5", 0))
 
 
-# 슬롯 배정 읽기
-ASSIGN = collections.defaultdict(dict)      # 개체 -> read -> 슬롯
+# reading the slot assignment
+ASSIGN = collections.defaultdict(dict)      # individual -> read -> slot
 for i, L in enumerate(io.open(VOTE, encoding="utf8")):
     if i == 0:
         continue
@@ -134,13 +134,13 @@ for smp in sorted(ASSIGN):
         if not os.path.exists(p):
             continue
         s, f5 = load(p)
-        # 극성 : 지도의 unit_start/end 는 revcomp 적용 후 좌표계다(fsplace 206-210 행과 같게).
-        #   flank 정본은 원래 방향으로 저장돼 있으므로 revcomp=Y 슬롯은 여기서 뒤집어야 한다.
-        #   안 뒤집으면 유닛 번호가 N+1-p 로 통째로 뒤집힌다(2026-09-15 실측으로 확인).
+        # Polarity: the unit_start and unit_end of the map are in the frame after revcomp has been applied, as at fsplace lines 206-210.
+        #   The flanked canonical sequence is stored in its original orientation, so a slot with revcomp = Y must be flipped here.
+        #   Without the flip the unit indices come out reversed throughout, as N + 1 - p.
         if RCF.get((smp, sl)):
             f3 = len(s) - f5 - CANLEN.get((smp, sl), 0)
             s = rc(s)
-            f5 = f3                      # 뒤집으면 5'flank 자리에 3'flank 가 온다
+            f5 = f3                      # flipping it puts the 3' flank where the 5' flank was
         ref = "/tmp/jx_%s_%s.fa" % (smp, sl)
         io.open(ref, "w", newline=NL).write(">%s_h%s%s%s%s" % (smp, sl, NL, s, NL))
         q = "/tmp/jx_%s_%s.q.fa" % (smp, sl)
@@ -148,11 +148,11 @@ for smp in sorted(ASSIGN):
             for r in ids:
                 g.write(">%s%s%s%s" % (r, NL, SEQ[r], NL))
 
-        # ① read → 자기 슬롯 참조
+        # 1) the read against its own slot's reference
         pr = subprocess.Popen(["minimap2", "-a", "-x", "map-ont", "-t", TH,
                                "--secondary=no", ref, q],
                               stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True)
-        cut = []        # (read, array_pos, 조각서열)
+        cut = []        # (read, array_pos, fragment sequence)
         for L in pr.stdout:
             if L.startswith("@"):
                 continue
@@ -163,7 +163,7 @@ for smp in sorted(ASSIGN):
                 continue
             rid = fl[0]
             seq = fl[9]
-            rpos = int(fl[3]) - 1        # 참조(= 정본+flank5) 좌표
+            rpos = int(fl[3]) - 1        # the reference coordinate, that is the canonical sequence plus flank5
             qp = 0
             m2 = {}
             for mm in CIG.finditer(fl[5]):
@@ -183,7 +183,7 @@ for smp in sorted(ASSIGN):
                     rpos += n_
             if not m2:
                 continue
-            # ② 지도 유닛 구간을 참조 좌표로 옮겨(+f5) read 가 다 덮는 유닛만
+            # 2) the map's unit intervals are carried into reference coordinates, by adding f5, and only the units the read covers entirely are kept
             for (u, s0, e0, N) in UB[key]:
                 A, B = s0 + f5, e0 + f5 - 1
                 if A in m2 and B in m2:
@@ -198,7 +198,7 @@ for smp in sorted(ASSIGN):
         if not cut:
             continue
 
-        # ③ 유닛마다 변이 호출
+        # 3) the variants are called per unit
         uq = "/tmp/jx_%s_%s.u.fa" % (smp, sl)
         with io.open(uq, "w", newline=NL) as g:
             for i, (_r, _u, sq) in enumerate(cut):

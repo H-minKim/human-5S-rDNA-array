@@ -1,20 +1,20 @@
 # -*- coding: utf-8 -*-
-# 2 단계 관문 — 유닛 하나하나에서 두 그룹이 실제로 갈리는가
+# The second-stage gate: do the two groups actually separate unit by unit?
 #
-#   1 단계 관문(unit_types_gate.py)은 array 통계로 판정했다. 그런데 array 통계가 통과해도
-#   유닛 단위로 보면 두 그룹이 안 갈릴 수 있다(사용자 지적). 그래서 유닛마다
-#   서로 독립인 두 증거를 매기고, 둘이 얼마나 맞는지로 다시 판정한다.
-#     증거 A 변이 사건 패턴 (ev_group) · 증거 B 그룹 참조 정렬 점수 (aln_group)
+#   The first-stage gate (unit_types_gate.py) judges from array-level statistics. Those can pass
+#   while the two groups still fail to separate unit by unit. So each unit is given
+#   two independent lines of evidence, and the call is remade from how well the two agree.
+#     Evidence A is the variant event pattern (ev_group); evidence B is the alignment score against the group references (aln_group).
 #
-#   G7 두 증거 일치율 >= 95%        — 유닛마다 같은 답이 나오는가
-#   G8 불일치 유닛 <= 5%
-#   G9 0 근처 빈칸 >= 0.10        — |margin_frac| 의 최소값. 진짜 두 종류면 점수차가 이봉이라
-#                                    0 근처가 비어 있다. 연속체면 0 을 가로지르는 유닛이 있다.
-#   G10 미정 유닛 <= 5%             — 어느 그룹으로도 못 간 유닛. 두 종류가 진짜면 거의 없어야 한다
-#                                    (실측 고릴라 0.0% · 수마트라오랑 0.7% vs 침팬지 10.7%)
+#   G7 the two lines of evidence agree on at least 95% of units
+#   G8 at most 5% of units disagree
+#   G9 the gap around 0 is at least 0.10, as the minimum of |margin_frac|. With two real types the score difference is bimodal
+#                                    and empty near 0; in a continuum some units straddle 0.
+#   G10 at most 5% of units are undecided, that is assigned to neither group; with two real types there should be almost none
+#                                    (measured: gorilla 0.0%, Sumatran orangutan 0.7%, against chimpanzee 10.7%).
 #
-#   떨어지면 그 array 는 한 종류로 되돌리고(그룹 참조를 groups_dropped/ 로) array 참조만 쓴다.
-#   인자 : 00_catalog 폴더 유닛판정표폴더
+#   On failure the array reverts to a single type: the group references are moved to groups_dropped/ and only the array reference is used.
+#   Arguments: the 00_catalog folder, the folder of per-unit call tables.
 # MIT License · Copyright (c) 2026 Hungmin Kim
 import io
 import os

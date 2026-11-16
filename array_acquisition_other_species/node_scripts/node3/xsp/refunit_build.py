@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
-# 타 생물종 5S : array 마다 참조(대표) 유닛을 만든다 — 사람 G8v4 방법을 종별로 환산
-#   틀 : 유닛 = 유전자 끝 +1 .. 다음 유전자 끝  (유닛이 [스페이서][유전자] 로 끝난다 · 사람 정본유닛과 같은 위상)
-#   유전자 경계 : 그 array 의 유전자 합의로 blastn 한 뒤 질의 좌표로 전체 길이까지 확장
-#                 (+ 가닥 : 시작 = sstart-(qstart-1) · 끝 = send+(L-qend) / - 가닥은 반대)
-#                 사람 실측 : HSP 는 유전자 끝 염기가 변이면 한두 염기 앞에서 멈춘다
-#   종별 환산 : PAD = 5% (최소 20) · CTX = 9% (최소 40) · LO/HI = 주기의 -6% / +7% (최소 ±30bp)
-#   대표 유닛 : 최빈 길이 유닛들의 자리별 다수결 → 유전자가 유닛 끝에 오는지 서열로 확인
-#   산출 : refunit/<array_id>.unit.fa · refunit/<array_id>.gene.fa · REFUNIT_PARAMS.tsv
-#   인자 : 종키 fasta tblout struct표 출력폴더
+# 5S in other species: build a reference (representative) unit per array, with the human G8v4 method carried across per species.
+#   Frame: a unit runs from gene end + 1 to the next gene end, so it ends as [spacer][gene], the same phase as the human canonical unit.
+#   Gene boundaries: blastn with that array's gene consensus, then extend to the full length using the query coordinates.
+#                 (plus strand: start = sstart - (qstart - 1), end = send + (L - qend); the minus strand is the reverse)
+#                 Measured in human: if the last base of the gene carries a variant, the HSP stops one or two bases short.
+#   Per species: PAD = 5% (at least 20), CTX = 9% (at least 40), LO/HI = -6% / +7% of the period (at least +-30 bp).
+#   Representative unit: a per-position majority over the units of modal length, then a check from the sequence that the gene lies at the end of the unit.
+#   Outputs: refunit/<array_id>.unit.fa, refunit/<array_id>.gene.fa, REFUNIT_PARAMS.tsv.
+#   Arguments: species key, fasta, tblout, structure table, output folder.
 # MIT License · Copyright (c) 2026 Hungmin Kim
 import io
 import os
@@ -67,7 +67,7 @@ for (c, s0, e1, strand) in ARR:
     seq = faidx("%s:%d-%d" % (c, L0, R1))
     if not seq:
         continue
-    # 1) 그 array 의 유전자 합의 (cmsearch hit 서열의 자리별 다수결 · 최빈 길이만)
+    # 1) the gene consensus of that array: a per-position majority over the cmsearch hit sequences, using the modal length only
     gs = []
     for (a, b, st) in hits:
         g = seq[a - L0:b - L0 + 1]
@@ -77,7 +77,7 @@ for (c, s0, e1, strand) in ARR:
     gene = "".join(collections.Counter(x[i] for x in same).most_common(1)[0][0] for i in range(gl))
     gp = os.path.join(OUT, "refunit", aid + ".gene.fa")
     io.open(gp, "w", encoding="utf8", newline=NL).write(">%s_gene len=%d%s%s%s" % (aid, gl, NL, gene, NL))
-    # 2) blastn 으로 유전자 HSP -> 질의 좌표로 전체 길이까지 확장
+    # 2) gene HSPs by blastn, extended to the full length using the query coordinates
     rp = os.path.join(OUT, "refunit", aid + ".region.fa")
     io.open(rp, "w", encoding="utf8", newline=NL).write(">region%s%s%s" % (NL, seq, NL))
     rb = subprocess.run("blastn -task blastn -word_size 11 -dust no -evalue 1e-5 -query %s -subject %s "
@@ -113,7 +113,7 @@ for (c, s0, e1, strand) in ARR:
     per = [gg[i + 1][1] - gg[i][1] for i in range(len(gg) - 1)]
     per.sort()
     pm = per[len(per) // 2]
-    # 사람 기준(주기 2240 에 LO 2100 · HI 2400 = -6.25% / +7.1%)을 종별로 환산하되 더 너그러운 쪽을 쓴다
+    # The human values (LO 2100 and HI 2400 for a period of 2240, that is -6.25% / +7.1%) are carried across per species, taking whichever bound is the more permissive.
     LO = min(pm - 30, int(round(pm * 0.94)))
     HI = max(pm + 30, int(round(pm * 1.07)))
     PAD = max(20, int(round(pm * 0.05)))
@@ -135,7 +135,7 @@ for (c, s0, e1, strand) in ARR:
     ref = "".join(collections.Counter(u[i] for u in pool).most_common(1)[0][0] for i in range(ml))
     up = os.path.join(OUT, "refunit", aid + ".unit.fa")
     io.open(up, "w", encoding="utf8", newline=NL).write(">%s_refunit len=%d gene_len=%d%s%s%s" % (aid, ml, gl, NL, ref, NL))
-    # 3) 검증 : 유전자가 유닛 끝에 오는가 (서열로) · 유닛들이 대표와 얼마나 같은가
+    # 3) checks: does the gene lie at the end of the unit (from the sequence), and how closely do the units match the representative
     tail = ref[-gl:]
     idp = 100.0 * sum(1 for i in range(gl) if tail[i] == gene[i]) / gl
     rb2 = subprocess.run("blastn -task blastn -word_size 11 -dust no -query %s -subject %s "
@@ -149,7 +149,7 @@ for (c, s0, e1, strand) in ARR:
             bestbs = float(bs)
             gstart = min(int(s1), int(s2))
     atend = "Y" if gstart != "NA" and abs((ml - gl + 1) - gstart) <= 2 else "N"
-    # 동질성은 정렬(blastn)로 잰다 — 자리별 직접 비교는 indel 하나에 무너진다
+    # Homogeneity is measured by alignment (blastn); a direct position-by-position comparison breaks on a single indel.
     ufp = os.path.join(OUT, "refunit", aid + ".units.fa")
     with io.open(ufp, "w", encoding="utf8", newline=NL) as g2:
         for k, u in enumerate(units):
@@ -172,7 +172,7 @@ for (c, s0, e1, strand) in ARR:
         os.remove(ufp)
     except OSError:
         pass
-    # 쓸 수 있는 대표인가 : 유닛 5 개 이상 + 유전자가 끝 + 유닛 절반 이상이 대표에 정렬
+    # Is the representative usable: at least 5 units, the gene at the end, and at least half the units aligning to the representative.
     why = []
     if len(units) < 5:
         why.append("유닛<5")

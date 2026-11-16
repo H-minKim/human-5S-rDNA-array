@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
-"""p02_pilot_bam.py 에서 검증된(표와 100% 동일) MM/ML·CIGAR 함수를 모듈로 뺀 것 — 내용 동일."""
+"""The MM/ML and CIGAR functions of p02_pilot_bam.py (verified 100% identical to the table) taken out as a module; same content."""
 COMP = {"A": "T", "C": "G", "G": "C", "T": "A", "N": "N"}
 
 
 def parse_mm(mm, ml, oseq):
-    """원본 read 좌표 -> {(base, strand, code): ({op: ML}, idx)}"""
+    """original read coordinates -> {(base, strand, code): ({op: ML}, idx)}"""
     out = {}
     k = 0
     for blk in [b for b in mm.split(";") if b]:
@@ -27,7 +27,7 @@ def parse_mm(mm, ml, oseq):
 
 
 def seq2ref(r):
-    """SEQ 좌표(0기반) -> 정본 좌표(1기반), M/=/X 만"""
+    """SEQ coordinate (0-based) -> canonical coordinate (1-based), M/=/X only"""
     s2r = {}
     rp, sp = r["pos"], 0
     for op, n in r["cigar"]:

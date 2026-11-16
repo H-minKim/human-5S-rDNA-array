@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
-"""좌위 귀속 검증 — FiberHMM footprint 안에 m6A 가 없어야 한다 (2026-10-11).
+"""Check of locus assignment: there should be no m6A inside a FiberHMM footprint.
 
-우리 M6A_READUNIT 표(배치기 산출)의 m6A 자리를 가져와,
-FiberHMM 이 부른 구간(tf·nuc·msp) 안의 m6A 밀도를 맞댄다.
-좌표 귀속이 틀렸으면 대비가 사라진다.
+The m6A positions of the M6A_READUNIT table (output of the placement step) are taken, and
+the m6A density inside the intervals called by FiberHMM (tf, nuc, msp) is compared.
+If the coordinate assignment were wrong, the contrast would vanish.
 
-좌표 : 표는 unit_pos(1-based) · FHMM 산출은 rel.  rel = unit_pos - TSSU,
-       TSSU = 유닛 서열에서 GTCTACGGC 마지막 출현 자리(1-based) — a_lib 과 같은 규칙.
+Coordinates : the table is in unit_pos (1-based), the FHMM output in rel.  rel = unit_pos - TSSU,
+       TSSU = position (1-based) of the last occurrence of GTCTACGGC in the unit sequence, the rule of a_lib.
 """
 import io
 import os

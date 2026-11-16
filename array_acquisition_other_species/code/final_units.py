@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
-# 최종 판정 : array 마다 (1) 직접 측정 주기 (2) 유닛 하나에 든 유전자 수 k (3) 지금 G8 유닛이 맞는가
-#   앞 판들의 결함 정정
-#     - 기본 주기를 "가장 작은 사다리 옵셋" 으로 고르면 부차 봉우리(240 등)에 끌려간다
-#       -> 합친 정렬량이 가장 큰 옵셋을 잡고, 그것의 약수 가운데 정렬량이 0.9 배 이상인 것이 있으면 그것으로 내린다
-#     - 간격을 부류로 나누는 방식은 넓은 분포를 잘게 쪼갠다
-#       -> k = round(직접주기 / 유전자 간격 중앙값) 으로 센다 (간격은 중앙값 2 배 이하만)
-#   산출 : UNIT_STATUS.tsv (77 행) · FIXLIST.tsv (고칠 array 만)
+# The final call: per array, 1) the directly measured period, 2) k, the number of genes in one unit, and 3) whether the current G8 unit is correct.
+#   The rules:
+#     - The base period is the offset with the greatest total aligned length, lowered to a divisor of it if that divisor carries at least 0.9 times as much.
+#       (The smallest offset in the ladder is not used: it is pulled towards a secondary peak, such as 240.)
+#     - k = round(measured period / median gene gap), with only gaps no more than twice the median counted.
+#       (The gaps are not classified into categories: that fragments a broad distribution.)
+#   Outputs: UNIT_STATUS.tsv, 77 rows, and FIXLIST.tsv, holding only the arrays to be corrected.
 # MIT License · Copyright (c) 2026 Hungmin Kim
 import io
 import os
@@ -107,8 +107,8 @@ for aid in sorted(OFF):
     uir = pp[ipr["n_units_in_range"]] if pp else "0"
     brk = pp[ipr["n_break"]] if pp else "NA"
     mid = pp[ipr["units_median_identity"]] if pp else "NA"
-    # k = 유닛 하나에 든 유전자 수 : 간격 차례의 자기상관으로 센다
-    #   단량체면 gap[i] ~ gap[i+1] · 이량체면 gap[i] != gap[i+1] 이지만 gap[i] ~ gap[i+2]
+    # k, the number of genes in one unit, counted from the autocorrelation of the gap sequence.
+    #   For a monomer gap[i] is about gap[i+1]; for a dimer gap[i] differs from gap[i+1] but is about gap[i+2].
     k, ule, agr = 0, 0, []
     for j in (1, 2, 3, 4):
         if len(gaps) <= j + 2:

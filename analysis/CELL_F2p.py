@@ -3,7 +3,7 @@ r"""Main Fig 2 cell p, only panel B of FIG_T2.py (including the overlaid right a
    Data and computation are the same lines as FIG_T2.py panel B (W2_marker_by_depth.tsv, S1_per_position_profile.tsv)
    Only the appearance changes: figure size, font size (shared by main cells), line and point sizes, axis label line breaks, text box line breaks, no panel title
    Content check: CMPART.py (old fig_T2_arrangement axes 1 and 2 <-> this figure axes 0 and 1)
-Output : $FIGOUT\cellF2_p_depth.png/svg, CELL_F2p_source_values.tsv
+Output : $FIGOUT/cellF2_p_depth.png/svg, CELL_F2p_source_values.tsv
 """
 import io, os, sys
 import numpy as np
@@ -35,7 +35,7 @@ CT, CO, CG = "#c0392b", "#2471a3", "#909497"
 # ================= B: by depth (same lines as FIG_T2.py) =================
 H, R = read("W2_marker_by_depth.tsv")
 d = [int(r[H["depth"]]) for r in R]
-fD = [float(r[H["frac_term"]]) for r in R]   # fraction of terminal-type units (10 or more of the 12 diagnostic variants, termdef), the old frac_D1096_1 is the variant D1096:1 itself
+fD = [float(r[H["frac_term"]]) for r in R]   # fraction of terminal-type units (10 or more of the 12 diagnostic variants, termdef), frac_D1096_1 is the variant D1096:1 itself
 nU = [int(r[H["n_units"]]) for r in R]
 for r in R:
     rec("B", "깊이 %s" % r[H["depth"]], "말단형 %s · D1096:1 %s · 635CT %s · 1096TG %s · 1164GA %s (하플로 %s)"
@@ -43,15 +43,15 @@ for r in R:
         "W2_marker_by_depth.tsv")
 fig, ax = CS.cell_at("p")   # margins and sizes from the single cellstyle.ROWS table (graph frame alignment)
 ax.bar(d, fD, width=0.66, color=[CT if x > 0.10 else "#e59866" for x in fD], zorder=3)
-# value text removed (values go to the value table) (old: '%.3f' for depths above 0.10 and for depth 1)
-# 'depth 1 = %s (%d of %s)' belongs in the Results text, removed from the figure (values go to the value table)
+# no value text on the figure (values go to the value table)
+# 'depth 1 = %s (%d of %s)' is not drawn on the figure, it belongs in the Results text (values go to the value table)
 rec("B", "깊이 1 (그림에서 뺀 글 · Result 로)", "깊이 1 = %s (%s 중 %d)" % (R[0][H["frac_term"]], R[0][H["n_units"]], round(fD[0] * nU[0])),
     "W2_marker_by_depth.tsv")
 ax.set_xticks(d)
-ax.tick_params(axis="x", labelrotation=90, pad=1.0)   # 15 ticks, written vertically because the cell is narrow (all numbers unchanged)
-ax.set_xlabel(CS.L("원위 깊이 (유닛)", "Distal depth (units)"))   # axis label on one line, shorter (old: depth from the distal junction (units))
-ax.set_ylabel(CS.L("말단형 보유 몫", "Frac. with terminal unit"))   # axis label on one line, shorter (old: fraction of haplotypes with a terminal-type unit at that depth)
-ax.set_yticks([0.0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35])     # original ticks as is
+ax.tick_params(axis="x", labelrotation=90, pad=1.0)   # 15 ticks, written vertically because the cell is narrow
+ax.set_xlabel(CS.L("원위 깊이 (유닛)", "Distal depth (units)"))   # axis label on one line
+ax.set_ylabel(CS.L("말단형 보유 몫", "Frac. with terminal unit"))   # axis label on one line
+ax.set_yticks([0.0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35])     # fixed ticks
 ax.set_ylim(0, 0.35)
 _SP = os.path.join(TAB, "S1_per_position_profile.tsv")
 _H2, _R2 = None, []
@@ -72,12 +72,12 @@ ax2.fill_between(_dk, [_D2[x][1] for x in _dk], [_D2[x][2] for x in _dk], color=
 ax2.plot(_dk, _y, "-o", color="#2471a3", ms=1.4, lw=0.6, zorder=5)
 _pk = [x for x in _dk[1:-1] if _D2[x][0] > _D2[x - 1][0] and _D2[x][0] > _D2[x + 1][0]]
 _pk = sorted(sorted(_pk, key=lambda x: -_D2[x][0])[:3])
-# remove the blue inverted triangles (peak markers) (peak depths go to the value table)
+# no peak markers on the figure (peak depths go to the value table)
 for _x in _pk:
     rec("B", "변이 봉우리 깊이 %d" % _x, "유닛당 %.4f [%.4f, %.4f]" % _D2[_x], "S1_per_position_profile.tsv")
-ax2.set_ylabel("유닛당 변이 수 (선)", color="#2471a3", labelpad=0.8)   # 1.5 -> 0.8 (Helvetica, the right axis label of the Korean edition is 1 pt inside the cell edge)
+ax2.set_ylabel("유닛당 변이 수 (선)", color="#2471a3", labelpad=0.8)   # labelpad 0.8 (Helvetica, the right axis label of the Korean edition is 1 pt inside the cell edge)
 ax2.tick_params(axis="y", labelcolor="#2471a3")
-ax2.set_yticks([6.0, 6.5, 7.0, 7.5, 8.0, 8.5, 9.0, 9.5, 10.0])   # original ticks as is (range from the original formula below)
+ax2.set_yticks([6.0, 6.5, 7.0, 7.5, 8.0, 8.5, 9.0, 9.5, 10.0])   # fixed ticks (the range is set below)
 ax2.set_ylim(min(_y) - 0.35, max(_y) + 1.15)
 ax2.set_zorder(ax.get_zorder() + 1); ax.patch.set_visible(True); ax2.patch.set_visible(False)
 rec("B", "변위 봉우리 깊이 (전부)", ",".join(str(x) for x in _pk), "S1_per_position_profile.tsv")

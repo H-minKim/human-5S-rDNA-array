@@ -1,20 +1,20 @@
 # -*- coding: utf-8 -*-
-"""뉴클레오솜 없는 분자만으로 flank/core 를 다시 (2026-10-13 · 사용자 질문).
+"""flank/core again, on the molecules without a nucleosome only.
 
-왜
-  본표의 flank/core (MAIN f) 는 모든 분자를 풀링한다.
-  그런데 한 분자에서 그 자리에 뉴클레오솜이 있으면 TF 는 못 붙는다 - 둘은 배타다.
-  그러니 "ICR 비 2.08 이 뉴클레오솜 때문인가" 는 뉴클레오솜 없는 분자만 놓고
-  다시 재면 바로 갈린다. (SUPP (h)(i) 의 호출기 비사용 판이다)
+Why
+  The flank/core of the main table (MAIN f) pools every molecule.
+  On one molecule a nucleosome at that position excludes a TF: the two are exclusive.
+  Whether the ICR ratio is due to nucleosomes is therefore decided by measuring it again
+  on the molecules without a nucleosome. (The caller-free version of SUPP (h)(i).)
 
-내는 것 : nucfree_flankcore_span.npz + 화면 표
-  nA/nM  (자리 2 · 층 2 · 뉴클없음 2 · rel 401)
-  nmol   (자리 2 · 층 2 · 뉴클없음 2)
-  ntf    (자리 2 · 층 2 · 뉴클없음 2)   ← 그 무리 안의 점유 (천장 계산용)
+Written : nucfree_flankcore_span.npz and a table on screen
+  nA/nM  (site 2, stratum 2, nucleosome-free 2, rel 401)
+  nmol   (site 2, stratum 2, nucleosome-free 2)
+  ntf    (site 2, stratum 2, nucleosome-free 2)   <- occupancy inside that group (for the ceiling)
 
-정의 (zzab 과 같게 맞춘다)
-  '뉴클레오솜 없음' = core 창에 겹치는 `nuc` 분절이 하나도 없음
-  '점유'            = 중심이 구역 창 안 + 크기 범위인 `tf` 호출이 있음
+Definitions (those of zzab)
+  'no nucleosome' = no `nuc` segment overlaps the core window
+  'occupied'      = a `tf` call whose centre is inside the zone window and whose size is in range
 """
 import io
 import os
@@ -34,7 +34,7 @@ def _need(k):
         raise SystemExit(
             "environment variable %s is not set; it is required by %s." % (k, _SELF)
             + chr(10)
-            + "The deposited copy has no default; see README.md section 2")
+            + "The deposited copy has no default; see README.md, section 'Environment variables'")
     return v
 
 
@@ -52,7 +52,7 @@ SHIFT = {("HG02559", "2"), ("HG03672", "1")}
 LO, HI = -200, 200
 NR = HI - LO + 1
 
-# 자리 : (중심, 구역창, TF 크기범위)  ← 본표와 같은 값
+# the positions: (centre, zone window, TF size range), the same values as the main table
 SITE = [("TFIIIB", -11, (-28, -10), (30, 59)),
         ("ICR", 58, (57, 68), (20, 49))]
 NS = len(SITE)
@@ -111,20 +111,20 @@ for node in ("w3", "iB", "iA"):
         si = 0 if b < CUT else 1
         nu = NUC.get(k, ())
         tf = TFS.get(k, ())
-        # 자리마다 뉴클 유무 / TF 유무
+        # nucleosome present or absent, and TF present or absent, per position
         flag = []
         for _, c0, zw, szr in SITE:
-            # 대칭 조건 : core 만 걸면 flank 가 안 걸려 비가 아래로 기울어진다.
-            #   core 와 flank 둘 다 덮는 구간(c0-35 .. c0+27) 전체를 걷는다.
+            # The symmetry condition: gating on the core alone leaves the flank ungated and tilts the ratio downwards,
+            #   so the whole interval covering both the core and the flank, c0-35 to c0+27, is walked.
             a0, a1 = c0 - 35, c0 + 27
             cov = any(e >= a0 and s <= a1 for s, e in nu)
             hit = any(szr[0] <= sz <= szr[1] and zw[0] <= (s + e) // 2 <= zw[1]
                       for s, e, sz in tf)
-            flag.append((0 if cov else 1, hit))     # 0=구간에 뉴클있음 · 1=구간 전체 깨끗
+            flag.append((0 if cov else 1, hit))     # 0 = a nucleosome lies in the interval; 1 = the whole interval is clear
         for j, (fr, hit) in enumerate(flag):
             nmol[j, si, fr] += 1
             ntf[j, si, fr] += hit
-        # m6A 쌓기
+        # accumulating m6A
         for blk in blocks:
             for t in blk.split(","):
                 if not t:

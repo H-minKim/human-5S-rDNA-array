@@ -19,7 +19,7 @@ import origin_filter as OF
 
 OUT = os.path.join((os.environ.get("OUTDIR") or os.environ["RDNA_OUT_DIR"]), "REPRO")
 iscpg = iscpg_factory(G.CAN)
-# to use the layers of the common cohort rule, the two axes are taken separately (defaults are the same as the old behavior)
+# to use the layers of the common cohort rule, the two axes are set separately
 #   V11_PRESET   : slot cohort that enters the panel           (primary 564, h1 557, h3 490)
 #   V11_FPRESET  : cohort on which origin f is counted (same as V11_PRESET if not given)
 #   => stage 2 (methylation only H3) = V11_PRESET=h3, V11_FPRESET=primary, f is not touched

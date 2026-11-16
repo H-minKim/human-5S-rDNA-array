@@ -4,7 +4,7 @@ r"""Main Fig 2 cell c - only panel a of the P08_FIG.py fig2, at cell size (101 x
    Only the look changed: figure size, font size (shared by main-text cells), font (Malgun Gothic also in the English edition), no panel letter, ticks pinned to the original values
    English text is the EN dictionary of the P08 code as is (English run = when env var EN_DICT is set)
    Content check: CMPART.py (old FIG_P08_2_distance axis 0 ↔ this figure)
-Output: $FIGOUT\cellF2_c_distance.png/svg, CELL_F2c_source_values.tsv
+Output: $FIGOUT/cellF2_c_distance.png/svg, CELL_F2c_source_values.tsv
 """
 import os, sys, io
 import numpy as np
@@ -40,12 +40,12 @@ ax.plot(BA["KS"], BA["obs"], "-o", color=BLUE, ms=1.4, lw=0.7, zorder=4, label=T
 ax.plot(BN["KS"], BN["obs"], "-o", color=ORANGE, ms=1.4, lw=0.7, zorder=4, label=T("발산 사분위 제외"))
 ax.set_xlabel(T("유닛 거리 (copy)"))
 ax.set_ylabel(T("쌍별 평균 차이 (bp)"))
-ax.set_xticks([0.0, 2.5, 5.0, 7.5, 10.0, 12.5, 15.0, 17.5])          # original ticks as is (visible ones are 2.5 to 15.0)
-ax.set_yticks([4.0, 6.0, 8.0, 10.0, 12.0, 14.0])                    # original ticks as is (visible ones are 6 to 12)
+ax.set_xticks([0.0, 2.5, 5.0, 7.5, 10.0, 12.5, 15.0, 17.5])          # fixed ticks (visible ones are 2.5 to 15.0)
+ax.set_yticks([4.0, 6.0, 8.0, 10.0, 12.0, 14.0])                    # fixed ticks (visible ones are 6 to 12)
 ax.set_xlim(0.4, 15.6)
 ax.set_ylim(5.4, 12.8)
 ax.legend(frameon=False, loc="center right", handlelength=1.0, borderpad=0.1)
-# horizontal grid lines removed (old: ax.grid(axis="y", color="#dddddd", linewidth=0.3))
+# no horizontal grid lines
 ax.set_axisbelow(True)
 CS.save(fig, OUT, "cellF2_c_distance")
 print("관측 거리 1 %.3f · 15 %.3f" % (BA["obs"][0], BA["obs"][-1]))

@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-# 각 array 에서 직접 반복을 확인한다 (갭 허용 정렬)
-#   대표 유닛을 자로 array 조각에 정렬해 : 몇 번 나오는가 · array 의 몇 %를 덮는가 ·
-#   연속 출현 시작점 사이 간격(= 주기, 인델 있어도 흔들리지 않음) · 유닛끼리 일치도
-#   공개 반복단위가 있는 계통은 그것으로도 같이 재서 내 유닛과 대조한다
-#   산출 : TILE_CHECK.tsv
+# Confirm the tandem repeat directly in each array, by gapped alignment.
+#   The representative unit is used as a ruler against the array fragment to give: how many times it occurs, what percentage of the array it covers,
+#   the gap between the starts of successive occurrences, which is the period and is unaffected by indels, and the identity between units.
+#   For the lineages with a published repeat unit, the same measurement is made with that unit and compared with ours.
+#   Output: TILE_CHECK.tsv
 # MIT License · Copyright (c) 2026 Hungmin Kim
 import io
 import os

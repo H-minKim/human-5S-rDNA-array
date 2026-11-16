@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
-# 07 합본 요약 + 체계적 불일치 진단
+# The summary of stage 07, with a diagnostic for systematic disagreement.
 #
-#   read 합의가 조립본과 다를 때 두 가지를 갈라야 한다.
-#     · 흩어진 불일치 = 잡음 (자리마다 몇 유닛에서만 불린다)
-#     · 체계적 불일치 = 조립본(또는 참조 유닛)이 그 자리에서 틀렸거나 read 가 다른 계통이다
-#       → 같은 자리가 거의 모든 유닛에서 불린다
-#   지표 : read 전용 변이 자리마다 "몇 유닛에서 불렸나 / 전체 유닛" 의 중앙값 = systematic_frac
-#          0.5 이상이면 체계적으로 본다 (실측 : 시아망 0.9 · 고릴라 0.08)
-#   인자 : 07 폴더 출력파일
+#   Where the read consensus differs from the assembly, two cases must be separated:
+#     · scattered disagreement is noise, called in only a few units at any one position;
+#     · systematic disagreement means the assembly, or the reference unit, is wrong at that position, or the reads are from a different lineage,
+#       and the same position is then called in almost every unit.
+#   The measure: per read-only variant position, the median of the number of units it was called in over the total number of units, as systematic_frac.
+#          At 0.5 or above it counts as systematic (measured: 0.9 for the siamang, 0.08 for the gorilla).
+#   Arguments: the stage 07 folder and the output file.
 # MIT License · Copyright (c) 2026 Hungmin Kim
 import io
 import os
@@ -53,7 +53,7 @@ for f in sorted(glob.glob(os.path.join(D, "*.unit_consensus.tsv"))):
             units.add((r["array_id"], r["array_pos"]))
             if r["called"] == "Y" and r["in_assembly"] == "N":
                 per[(r["array_id"], r["pos_in_refunit"])].add(r["array_pos"])
-    # array 마다 유닛 수
+    # the number of units per array
     uc = collections.Counter(a for a, _p in units)
     fr = sorted((len(v) / float(uc[k[0]])) for k, v in per.items() if uc.get(k[0]))
     med = fr[len(fr) // 2] if fr else 0.0

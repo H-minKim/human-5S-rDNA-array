@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-# array 구간 + 유전자(코딩부) 구간 표 — 금화조 · 제브라(ONT 배치에 쓴 array 만)
-#   array  : 5S_array_structure.tsv(좌표) ∩ AVF 에서 잰 array
-#   코딩부 : cms_tbl 의 cmsearch 히트(inc '!') 중 array 안 · 겹치면 합침
-#   출력   : data_v2/13_array_level_diff/REGIONS_<species>.tsv  (array_id chrom start end strand gene_intervals)
+# A table of the array intervals and the gene, that is coding, intervals, for the zebra finch and the zebrafish, covering only the arrays used in the ONT placement.
+#   Array: the coordinates from 5S_array_structure.tsv, intersected with the arrays measured in AVF.
+#   Coding: the cmsearch hits of cms_tbl marked inc '!' that fall inside the array, merged where they overlap.
+#   Output: data_v2/13_array_level_diff/REGIONS_<species>.tsv, holding array_id, chrom, start, end, strand and gene_intervals.
 # MIT License · Copyright (c) 2026 Hungmin Kim
 import collections
 import csv

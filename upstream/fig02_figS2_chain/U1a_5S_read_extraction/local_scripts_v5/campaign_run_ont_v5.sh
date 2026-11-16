@@ -1,16 +1,16 @@
 #!/bin/bash
-# ONT campaign runner v5, BBDuk single gate plus TUC tandem map (CHM13 alignment and tRNA removed)
+# ONT campaign runner v5, BBDuk single gate plus TUC tandem map (no CHM13 alignment, no tRNA step)
 #
 # Basis (all measured)
-#  (1) Gate replacement: taking the 2,262 reads that the current pipeline called ARRAY and kept as the truth,
-#     BBDuk k31 hdist1 (NTS) 188MB/s recall 1.0000, blastn ws16 8MB/s recall 1.0000 (first measurement used to choose the gate, one 383MB input. The value actually run is k=25 hdist=2 = line 53, ONT tandem span>500 recall k31h1 0.9158, k25h2 1.0000)
-#     and megablast 14MB/s recall 0.9881. -> 23 times faster with no loss of recall.
-#     End-to-end check on the full HG00117 BAM: of 283 current ARRAY reads, v5 recovers 283, misses 0.
-#  (2) CHM13 alignment (44-54% of per-sample time) replaced by the tandem map. Hits are only 0.036%, so
-#     the downstream shrinks from 37GB to 360MB and becomes practically free.
+#  (1) Gate: on 2,262 reads called ARRAY and taken as the truth (one 383MB input),
+#     BBDuk k31 hdist1 (NTS) 188MB/s recall 1.0000, blastn ws16 8MB/s recall 1.0000
+#     and megablast 14MB/s recall 0.9881.
+#     The value run is k=25 hdist=2 (ONT tandem span>500 recall k31h1 0.9158, k25h2 1.0000).
+#     End-to-end check on the full HG00117 BAM: of 283 ARRAY reads, v5 recovers 283, misses 0.
+#  (2) Reads are aligned to the tandem map, not to CHM13. Hits are only 0.036%, so
+#     the downstream is 360MB and practically free.
 #  (3) tRNA excluded. BBDuk runs on the 5S discriminating segment, so no separate step is needed.
 #  (4) All hit reads are kept, about 360MB per sample (gz about 150MB), 34GB for 228 samples.
-#     The old pipeline kept only ARRAY, but v5 is already selective enough that keeping everything is feasible.
 #
 # Usage: bash campaign_run_ont_v5.sh <sample_list>
 set -u
@@ -74,7 +74,7 @@ while read -r S; do
   [ "$nr" -gt 0 ] || { echo "  $S 히트 0"; echo "$S" >> log/zero_hits.txt; continue; }
   { echo -e "read_id\tread_len\tn_hsp\tn_gene\tbest_pid\tspacings\thas_MM"; cat "tmp/${S}.5s.body"; } > "tmp/${S}.5s.tsv"
 
-  # tandem map alignment, the reference is 90kb so no lock or slot is needed (CHM13 needed serialization because of its 7GB index)
+  # tandem map alignment, the reference is 90kb so no lock or slot is needed
   awk 'NR%4==1{sub(/^@/,">"); print $1} NR%4==2{print}' "tmp/${S}.hits.fastq" > "tmp/${S}.fa"
   minimap2 -x map-ont -t "$THR" -c --secondary=no tandem40.fa "tmp/${S}.fa" > "tmp/${S}.paf" 2>/dev/null
   [ -s "tmp/${S}.paf" ] || { echo "  $S PAF 빈파일"; echo "$S" >> log/empty_paf.txt; continue; }

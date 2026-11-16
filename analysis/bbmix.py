@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
-# 베타-이항 1 성분 / 2 성분 혼합 — 가중 우도 판(같은 (k,n) 을 묶어 한 번만 계산)
-#   xa1_mixture_lrt.py 의 적합과 수학적으로 같다. 유닛 수가 많아도 (k,n) 가짓수만큼만 계산하므로 빠르다
-#   (예: 유닛 93,323 개라도 CpG 가 15~20 이면 (k,n) 가짓수는 수백 개).
-#   대조는 xa4_bbmix_check.py 에서 xa1 과 같은 값이 나오는지 실측한다.
+# Beta-binomial one-component / two-component mixture - weighted-likelihood version (identical (k,n) pairs are grouped and computed once)
+#   Mathematically the same fit as xa1_mixture_lrt.py. It stays fast with many units because it computes only once per distinct (k,n)
+#   (for example, with 93,323 units and 15-20 CpG per unit there are only a few hundred distinct (k,n)).
+#   The check is in xa4_bbmix_check.py, which measures whether it gives the same values as xa1.
 import numpy as np
 from scipy import optimize
 from scipy.special import betaln, gammaln
 
 
 def pack(k, n):
-    """(k,n) 을 묶어 (k_u, n_u, 개수) 로 — 가중 우도용"""
+    """group (k,n) into (k_u, n_u, count), for the weighted likelihood"""
     k = np.asarray(k, dtype=np.int64); n = np.asarray(n, dtype=np.int64)
     key = np.stack([k, n], 1)
     uq, cnt = np.unique(key, axis=0, return_counts=True)
@@ -43,7 +43,7 @@ def fit2(k, n, c, starts=3, seed=0):
     order = np.argsort(pb)
     cw = np.cumsum(c[order]) / c.sum()
 
-    def q(x):      # 가중 분위수
+    def q(x):      # Weighted quantile
         return float(pb[order][np.searchsorted(cw, x, side="left").clip(0, len(pb) - 1)])
     for s in range(starts):
         q0, q1 = (0.25, 0.80) if s == 0 else (q(0.15 + 0.1 * s), q(0.80 + 0.05 * s))
@@ -81,13 +81,13 @@ def lr_stat(k, n, c=None, starts=3, seed=0):
 
 
 def boot_null(n_units, a, b, rng):
-    """적합된 1 성분에서 같은 깊이로 한 벌 모의 → (k,n,개수)"""
+    """simulate one set at the same depths from the fitted single component -> (k,n,count)"""
     ks = rng.binomial(n_units.astype(int), rng.beta(a, b, size=len(n_units)))
     return pack(ks, n_units)
 
 
 def mixture_peaks(pr, grid=None):
-    """적합된 혼합이 만드는 분자 수준 p 분포 의 봉우리 수·자리·골깊이비"""
+    """number of peaks, their positions and the valley depth ratio of the molecule-level p distribution given by the fitted mixture"""
     from scipy import stats as _st
     if grid is None:
         grid = np.linspace(1e-4, 1 - 1e-4, 2001)

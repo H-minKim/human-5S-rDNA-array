@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
-# P10 배치 BAM → CpG 단위 (5S · D4Z4 4q/10q 만) : read × 유닛 × CHM13 유닛 좌표 c × 메틸 × ML
-# 유닛 틀·랜드마크·극성 규칙은 p10_08_extract_frame.py 와 똑같다 (그 파일을 복사해 출력만 바꿈).
-# 목적 : read 단위 전이 비교 (5S 원위 끝 vs D4Z4 근위 끝), CpG 조각성, ML 확신도.
+# P10 batch BAM -> per-CpG table (5S and D4Z4 4q/10q only): read x unit x CHM13 unit coordinate c x methylation x ML.
+# The unit frame, the landmarks and the polarity rule are identical to p10_08_extract_frame.py; only the output differs.
+# Purpose: compare the transition at the read level (the 5S distal end against the D4Z4 proximal end), the sparsity of CpG sites, and the ML confidence.
 import sys, io, os, glob, gzip, hashlib, bisect, collections, statistics
 import pysam
 
 def _need(_v):
     """No defaults are set: the script stops if a variable is missing.
-    이 글이 읽는 자료의 뿌리는 README.md 의
-    "Running this code" 절에 적혀 있다."""
+    The roots of the data this script reads are listed in the
+    "Running this code" section of README.md."""
     import os as _o, sys as _s
     _x = _o.environ.get(_v)
     if not _x:
@@ -27,9 +27,9 @@ OUTD = os.path.join(_need("RDNA_WORK_ROOT"), "out", "P10")
 K, BIN = 31, 40
 FAM_UNIT = {"5S": "5S", "D4Z4_4q": "D4Z4_4q", "D4Z4_10q": "D4Z4_10q", "DXZ4": "DXZ4",
             "RNU2": "RNU2", "SST1": "SST1_a"}
-# 기준 유닛 길이 = CHM13 유닛 서열의 실측 주기 (31-mer 자기일치 최다 오프셋).
-#   문헌값(RNU2 6100·D4Z4 3300·DXZ4 3000·SST1 2523)을 쓰면 긴 유닛은 끝이 잘린다
-#   (RNU2 71 bp = 다음 U2 상류 프로모터 자리가 빠졌었다).
+# The reference unit length is the measured period of the CHM13 unit sequence (the most frequent offset of 31-mer self-matches).
+#   Using the published lengths (RNU2 6100, D4Z4 3300, DXZ4 3000, SST1 2523) truncates the end of the longer units
+#   (for RNU2 this cut 71 bp, which removed the upstream promoter region of the next U2 copy).
 ULEN = {"5S": 2240, "D4Z4_4q": 3298, "D4Z4_10q": 3323, "DXZ4": 2972, "RNU2": 6171, "SST1": 2527}
 want = sys.argv[1] if len(sys.argv) > 1 else "ALL"
 tag = sys.argv[2] if len(sys.argv) > 2 else "ALL"
@@ -52,7 +52,7 @@ KM = {}                                        # fam -> {kmer: (strand, i)}
 for fam, un in FAM_UNIT.items():
     L = ULEN[fam]
     u = UN[un][:L]
-    circ = u + u[:K - 1]                       # 유닛은 원형
+    circ = u + u[:K - 1]                       # the unit is circular
     cnt = collections.Counter(circ[i:i + K] for i in range(L))
     d = {}
     for i in range(L):
@@ -82,8 +82,8 @@ for i, L in enumerate(io.open(P + "/out/P10_PLACED_CLEAN.tsv", encoding="utf8"))
 
 
 def landmarks(seq, fam):
-    """랜드마크마다 가닥을 따로 (한 조각 안에 반대 방향 하위 array 가 있을 수 있다 — SST1).
-    반환 : 유닛 구간 목록 [(a, b, strand)] (조각 좌표, a<=rp<b), fwd/rev 적중 수"""
+    """Strand is decided per landmark (one piece can hold a sub-array in the opposite orientation, as in SST1).
+    Returns : list of unit intervals [(a, b, strand)] (piece coordinates, a<=rp<b), and the fwd/rev hit counts"""
     d, L = KM[fam], ULEN[fam]
     est = {"+": [], "-": []}
     nf = nr = 0
@@ -118,7 +118,7 @@ def landmarks(seq, fam):
             else:
                 units.append((lm[k] + 1, lm[k + 1] + 1, "-"))   # c = (b-1) - rp
     units.sort()
-    # 겹치는 유닛(반대 방향 경계) 은 버린다
+    # overlapping units (boundaries in opposite orientation) are discarded
     clean = []
     for u in units:
         if clean and u[0] < clean[-1][1]:
@@ -194,15 +194,15 @@ for fd in folders:
         if len(units) < 2:
             continue
         sp = sorted(b - a for a, b, _s in units)
-        # 조각 방향 = 적중의 95% 이상이 한 방향이면 그 방향 (D4Z4_4q 는 반대 적중 0.5% 로 mix 가 됐었다)
+        # A block's orientation is set when at least 95% of the hits agree; D4Z4_4q has 0.5% of hits in the other orientation and was otherwise classified as mixed.
         tot = float(nf + nr)
         if tot and max(nf, nr) / tot >= 0.95:
             st = "+" if nf >= nr else "-"
         else:
             st = "mix"
         pol = POL.get((smp, md), "?")
-        # 극성 : flank 판정 우선. flank 가 '?' 이고 조각이 한 방향이면 유닛 가닥으로 채운다
-        #        (파일럿 : 한 방향 조각 24/24 에서 유닛 가닥 == flank 극성)
+        # Polarity: the flank call wins. If the flank is '?' and the block is in one orientation, fill it in from the unit strand.
+        #        (In the pilot, the unit strand equalled the flank polarity in 24 of 24 single-orientation blocks.)
         if pol in ("+", "-"):
             pol_used = pol if (st == "mix" or st == pol) else "CONFLICT"
         else:

@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
-# L2 = 하플로타입 x 자리 통합표.
-#   같은 (sample, slot, array_pos) 를 덮은 read 들의 L1 값을 이봉성을 잃지 않게 요약한다.
-#   평균·분산만 내면 "저메틸 40% + 고메틸 60%" 와 "전부 중간" 이 구별되지 않는다.
-#   -> f_hi(섞임 비율) 와 상태별 값(b_lo_mean / b_hi_mean) 을 따로 낸다.
+# L2, the combined haplotype x position table.
+#   The L1 values of the reads covering one (sample, slot, array_pos) are summarised without losing the bimodality.
+#   A mean and a variance alone cannot distinguish 40% hypomethylated plus 60% highly methylated from everything being intermediate,
+#   so f_hi, the mixing fraction, and the per-state values b_lo_mean and b_hi_mean are reported separately.
 #
-#   (C) 하플로타입 상수 · (D) 같은 개체 반대쪽 슬롯(p_ 접두) 까지 붙인다.
+#   It also attaches (C) the haplotype constants and (D) the other slot of the same individual, prefixed p_.
 import io, os
 import numpy as np
 import pandas as pd
@@ -40,14 +40,14 @@ P("  관문 통과한 read-유닛만 쓴다 : %s 행 (%.4f)"
   % (format(len(L1), ","), len(L1) / 787885))
 P()
 
-L1["lo"] = (L1.b_call < LO).astype("float32")      # 하드콜
-L1["mid"] = ((L1.b_call >= LO) & (L1.b_call <= HI)).astype("float32")   # 하드콜
-L1["hi"] = (L1.b_call > HI).astype("float32")      # 하드콜
+L1["lo"] = (L1.b_call < LO).astype("float32")      # hard call
+L1["mid"] = ((L1.b_call >= LO) & (L1.b_call <= HI)).astype("float32")   # hard call
+L1["hi"] = (L1.b_call > HI).astype("float32")      # hard call
 L1["noise_split"] = ((L1.bA - L1.bB) ** 2 / 4.0).astype("float32")
-L1["noise_binom"] = (L1.b_call * (1 - L1.b_call) / np.maximum(L1.n_canon, 1)).astype("float32")  # 하드콜
+L1["noise_binom"] = (L1.b_call * (1 - L1.b_call) / np.maximum(L1.n_canon, 1)).astype("float32")  # hard call
 L1["switch_next"] = np.where(L1.st_next.notna(), (L1.st != L1.st_next).astype(float), np.nan)
 
-# 반분할 : read_id 해시 parity (재현 가능)
+# the half split: by the parity of a hash of the read id, which is reproducible
 L1["half"] = (pd.util.hash_pandas_object(L1.read_id, index=False) % 2).astype("int8")
 
 K = ["sample", "slot", "array_pos"]
@@ -62,8 +62,8 @@ agg = G.agg(
     f_lo=("lo", "mean"),
     f_mid=("mid", "mean"),
     f_hi=("hi", "mean"),
-    b_mean=("b_call", "mean"),          # 하드콜
-    b_sd=("b_call", "std"),             # 하드콜
+    b_mean=("b_call", "mean"),          # hard call
+    b_sd=("b_call", "std"),             # hard call
     b_call_mean=("b_call", "mean"),
     noise_split=("noise_split", "mean"),
     noise_binom=("noise_binom", "mean"),
@@ -84,27 +84,27 @@ agg = G.agg(
 agg["b_var"] = agg.b_sd ** 2
 agg["b_var_true"] = np.maximum(agg.b_var - agg.noise_split, 0.0)
 
-# 상태별 값 (이봉성 보존의 핵심)
+# the per-state values, which is what preserves the bimodality
 LOW = L1[L1.st == 0].groupby(K, observed=True, sort=False).agg(
-    n_lo=("b_call", "size"), b_lo_mean=("b_call", "mean"), b_lo_sd=("b_call", "std"),   # 하드콜
+    n_lo=("b_call", "size"), b_lo_mean=("b_call", "mean"), b_lo_sd=("b_call", "std"),   # hard call
     b_lo_gene=("b_gene", "mean"), b_lo_sp=("b_sp", "mean"),
     b_lo_ups=("b_ups", "mean"), b_lo_alu=("b_alu", "mean")).reset_index()
 HIG = L1[L1.st == 1].groupby(K, observed=True, sort=False).agg(
-    n_hi=("b_call", "size"), b_hi_mean=("b_call", "mean"), b_hi_sd=("b_call", "std"),   # 하드콜
+    n_hi=("b_call", "size"), b_hi_mean=("b_call", "mean"), b_hi_sd=("b_call", "std"),   # hard call
     b_hi_gene=("b_gene", "mean"), b_hi_sp=("b_sp", "mean"),
     b_hi_ups=("b_ups", "mean"), b_hi_alu=("b_alu", "mean")).reset_index()
 agg = agg.merge(LOW, on=K, how="left").merge(HIG, on=K, how="left")
 agg["r_lo_gene_sp"] = agg.b_lo_gene / agg.b_lo_sp.replace(0, np.nan)
 agg["r_hi_gene_sp"] = agg.b_hi_gene / agg.b_hi_sp.replace(0, np.nan)
 
-# 반분할 재현도
+# the half-split reproducibility
 HA = L1[L1.half == 0].groupby(K, observed=True, sort=False).agg(
     n_A=("st", "size"), f_A=("st", "mean")).reset_index()
 HB = L1[L1.half == 1].groupby(K, observed=True, sort=False).agg(
     n_B=("st", "size"), f_B=("st", "mean")).reset_index()
 agg = agg.merge(HA, on=K, how="left").merge(HB, on=K, how="left")
 
-# 자리·유닛 고정값 (read 와 무관)
+# values fixed per position and unit, independent of the reads
 FIX = L1.drop_duplicates(K)[
     K + ["ap", "ad", "side", "ord_near", "pos_label", "rel", "N",
          "unit_len", "n_var", "n_var_gene", "varlist",
@@ -116,7 +116,7 @@ FIX = L1.drop_duplicates(K)[
          "data_source", "pop", "super_pop"]]
 L2 = FIX.merge(agg, on=K, how="left")
 
-# (C) 하플로타입 상수 : 경계·저메틸 유닛 수
+# (C) the haplotype constants: the boundaries and the number of hypomethylated units
 HB2 = pd.read_csv(os.path.join(T, "HAP_LENGTH_BOUNDARY.tsv"), sep="\t",
                   dtype={"sample": str, "slot": str})
 HB2 = HB2.rename(columns={"f": "f_hap"})[["sample", "slot", "f_hap", "Bp", "Bd", "n_low"]]
@@ -124,7 +124,7 @@ L2 = L2.merge(HB2, on=["sample", "slot"], how="left")
 P("  하플로타입 상수(f_hap·Bp·Bd·n_low) 붙은 비율 %.4f" % L2.f_hap.notna().mean())
 P()
 
-# ---------------------------------------------------------------- (D) 반대쪽 슬롯
+# ---------------------------------------------------------------- (D) the other slot
 PCOLS = ["n_read", "f_hi", "f_lo", "f_mid", "b_mean", "b_var", "b_var_true",
          "b_lo_mean", "b_hi_mean", "b_gene_mean", "b_sp_mean",
          "r_lo_gene_sp", "r_hi_gene_sp", "agree_next", "p_switch",
@@ -133,15 +133,15 @@ OTH = {"1": "2", "2": "1"}
 Pt = L2[["sample", "slot", "ap", "ad", "rel"] + PCOLS].copy()
 Pt["slot"] = Pt.slot.astype(str).map(OTH)
 
-# (D-1) 같은 근위 순번(ap) 으로 맞춤
+# (D-1) matched on the same proximal index (ap)
 p_ap = Pt.drop(columns=["ad", "rel"]).rename(
     columns={c: "p_" + c for c in PCOLS})
 L2 = L2.merge(p_ap, on=["sample", "slot", "ap"], how="left")
-# (D-2) 같은 원위 순번(ad) 으로도 f_hi 만
+# (D-2) f_hi only, also matched on the same distal index (ad)
 p_ad = Pt[["sample", "slot", "ad", "f_hi", "b_mean"]].rename(
     columns={"f_hi": "pd_f_hi", "b_mean": "pd_b_mean"})
 L2 = L2.merge(p_ad, on=["sample", "slot", "ad"], how="left")
-# (D-3) 개체 수준 : N_other · dN
+# (D-3) at the individual level: N_other and dN
 NT = L2.drop_duplicates(["sample", "slot"])[["sample", "slot", "N"]].copy()
 NT["slot"] = NT.slot.astype(str).map(OTH)
 NT = NT.rename(columns={"N": "N_other"})
@@ -160,7 +160,7 @@ P("  저장 : 02_tables/L2_HAP_UNIT.parquet  %s 행 x %d 열"
   % (format(len(L2), ","), L2.shape[1]))
 P()
 
-# ---------------------------------------------------------------- L3 하플로타입
+# ---------------------------------------------------------------- L3, the haplotype
 L3 = L2.groupby(["sample", "slot"], observed=True).agg(
     N=("N", "first"), n_pos=("array_pos", "size"),
     n_read_slot=("n_read_slot", "first"),
@@ -185,7 +185,7 @@ L3.to_csv(os.path.join(T, "L3_HAP.tsv"), sep="\t", index=False, float_format="%.
 P("  저장 : 02_tables/L3_HAP.tsv  %d 슬롯 x %d 열" % (len(L3), L3.shape[1]))
 P()
 
-# ---------------------------------------------------------------- 검산
+# ---------------------------------------------------------------- the checks
 P("=" * 100)
 P("검산 — 이 표가 옛 결론을 그대로 담고 있는가")
 P("=" * 100)

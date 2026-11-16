@@ -1,30 +1,30 @@
 # -*- coding: utf-8 -*-
 # The script that ran the trimming test for Fig. S1 E on the compute node
 #
-#   이 글은 AWS 노드에서 돌았고 로컬에 사본이 없었다.
-#   본문은 한 글자도 바꾸지 않았다 — 이 머릿글만 더했다.
+#   This script ran on the compute node; the read data is there.
+#@DROP
 #
-#   이 글이 낸 것 : `ctrl.log` · `t45.log` · `goctrl_*.log` · `go45_*.log`
-#     → 그 로그를 `analysis/figS1_E_trim_gate_table.py` 가 읽어 `FIG_data_table.tsv` 를 만든다.
+#   It produces ctrl.log, t45.log, goctrl_*.log and go45_*.log,
+#     which analysis/figS1_E_trim_gate_table.py reads to build FIG_data_table.tsv.
 #
-#   쓰는 도구 — `blastn` 은 쓰지 않는다
-#     · `minimap2 -x map-ont -t <n> --secondary=no`  (flank 판정 · 노드 기록 `2.26-r1175`)
-#     · `hifiasm --ont -o <smp> -t <n>`              (재조립 · `0.25.0-r726`)
+#   Tools used; blastn is not one of them:
+#     · minimap2 -x map-ont -t <n> --secondary=no, for the flank call (2.26-r1175 on the node)
+#     · hifiasm --ont -o <smp> -t <n>, for the reassembly (0.25.0-r726)
 #
-#   난수 — 씨앗이 박혀 있다 : `random.Random(20260928)` (135 행)
-#     array 만 있는 read 는 양 끝 중 한쪽을 무작위로 고르므로 씨앗이 없으면 재현이 안 된다.
+#   Random numbers: the seed is fixed, random.Random(20260928) at line 135.
+#     An array-only read has one of its two ends chosen at random, so without the seed the result would not reproduce.
 #
-#   다시 돌리려면 노드가 필요하다 (read 원본이 거기 있다) — 로컬에서는 안 돌아간다.
+#   Re-running it requires the compute node, where the reads are; it will not run locally.
 
 # -*- coding: utf-8 -*-
-# 자르기 파일럿 — read 를 빼지 않고 길이를 자른다 (깊이 유지 · 장거리 연결만 제거)
-#   규칙 (사용자 지정)
-#     · 한도 L = THR * 2240 * c_max   (THR 기본 0.45)
-#     · L 을 넘는 read 만 자른다
-#     · flank 가 붙은 read 는 flank 가 아닌 끝을 자른다 (flank 쪽 L bp 를 남긴다)
-#     · array only read 는 양 끝 중 무작위로 한쪽을 골라 자른다 (시드 고정)
-#   flank 판정 : CHM13 근위·원위 flank 50 kb 탐침에 minimap2 정렬 → read 좌표 어느 쪽에 붙나
-#   사용 : python3 trimpilot.py <목록(개체 c_max)> <THR>
+# The trimming pilot: reads are shortened rather than removed, which preserves depth and takes away only the long-range links.
+#   The rules:
+#     · the limit is L = THR * 2240 * c_max, with THR defaulting to 0.45
+#     · only reads longer than L are trimmed
+#     · a read carrying flank is trimmed at the non-flank end, keeping L bp from the flank side
+#     · an array-only read is trimmed at one end chosen at random, with the seed fixed
+#   The flank call: minimap2 alignment against 50 kb proximal and distal CHM13 flank probes, and which end of the read they attach to.
+#   Usage: python3 trimpilot.py <list of individual and c_max> <THR>
 import io, os, sys, gzip, random, subprocess, shutil, tempfile, collections
 
 H = os.path.expanduser("~")
@@ -48,7 +48,7 @@ if not os.path.exists(PROBE):
             p = os.path.join(FL, "FLANK_%s_50000.fa" % nm)
             seq = "".join(x.strip() for x in io.open(p) if not x.startswith(">"))
             g.write(">%s\n%s\n" % (nm, seq))
-    print("탐침 만듦 : %s" % PROBE, flush=True)
+    print("probe built : %s" % PROBE, flush=True)
 
 
 def find_reads(s):
@@ -62,7 +62,7 @@ def find_reads(s):
 
 
 def flank_side(fq, tmp):
-    """read 이름 -> 'L'(read 앞쪽에 flank) / 'R' / None"""
+    """Read name -> 'L' (flank at the front of the read) / 'R' / None"""
     paf = os.path.join(tmp, "fl.paf")
     with io.open(paf, "w") as g:
         subprocess.call(["minimap2", "-x", "map-ont", "-t", TH, "--secondary=no", PROBE, fq],
@@ -74,7 +74,7 @@ def flank_side(fq, tmp):
             continue
         q, ql, qs, qe = f[0], int(f[1]), int(f[2]), int(f[3])
         bl, mq = int(f[10]), int(f[11])
-        if bl < 2000:                      # 2 kb 이상 붙은 것만 flank 로 본다
+        if bl < 2000:                      # only an alignment of at least 2 kb counts as flank
             continue
         if q not in best or bl > best[q][0]:
             best[q] = (bl, (qs + qe) // 2, ql)
@@ -105,9 +105,9 @@ def trim_fastq(src, dst, lim, side, seed):
                     cut_rand += 1
                 else:
                     cut_flank += 1
-                if s == "L":               # flank 가 앞 -> 앞 L bp 를 남기고 뒤를 자름
+                if s == "L":               # flank at the start: keep the first L bp and trim the tail
                     sq, ql = sq[:lim], ql[:lim]
-                else:                      # flank 가 뒤 -> 뒤 L bp 를 남김
+                else:                      # flank at the end: keep the last L bp
                     sq, ql = sq[-lim:], ql[-lim:]
                 ntr += 1
             g.write(h); g.write(sq + "\n"); g.write(pl); g.write(ql + "\n")
@@ -151,7 +151,7 @@ for Ln in io.open(LIST):
         shutil.rmtree(tmp, ignore_errors=True)
     sub = os.path.join(W, "%s.trim.fastq.gz" % smp)
     n, ntr, cf, cr = trim_fastq(fq, sub, lim, side, 20260928)
-    print("%s\tread %d\tc_max %d\t한도 %d bp\t자른 read %d (%.2f%%)\tflank기준 %d\t무작위 %d\tflank붙은 read %d"
+    print("%s\tread %d\tc_max %d\tlimit %d bp\ttrimmed read %d (%.2f%%)\tby flank %d\trandom %d\tread with flank %d"
           % (smp, n, cmax, lim, ntr, 100.0 * ntr / max(1, n), cf, cr, len(side)), flush=True)
     res = run_asm(smp, "trim", sub)
     os.remove(sub)

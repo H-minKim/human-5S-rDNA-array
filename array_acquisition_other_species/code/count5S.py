@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-# 공개 RNA-seq read 를 앞부분만 흘려받아 모계형(chr4)·체세포형(chr18) 5S 를 센다.
-#   두 유형은 9 자리(22–53)가 다르다. 유형 고유 k-mer(k=15)만 남겨 read(양가닥)에 대조한다.
-#   한 read 에 두 유형 고유 k-mer 가 다 있으면 '모호' 로 따로 센다.
-#   인자 : 최대read수  run:라벨:url [run:라벨:url ...]
+# Stream the first part of a public RNA-seq run and count the maternal-type (chr4) and somatic-type (chr18) 5S transcripts.
+#   The two types differ at 9 positions, 22 to 53. Only the k-mers unique to one type (k = 15) are kept and matched against the read on both strands.
+#   A read carrying unique k-mers of both types is counted separately as ambiguous.
+#   Arguments: the maximum number of reads, then run:label:url [run:label:url ...]
 # MIT License · Copyright (c) 2026 Hungmin Kim
 import gzip
 import io

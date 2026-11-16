@@ -1,0 +1,50 @@
+# The compute-node environment of this analysis.
+#
+# The external tool releases below are pinned exactly as Supplementary Table S1
+# (second sheet) of the paper records them for the compute nodes. The Python
+# package releases were not recorded and therefore carry no version; see
+# `requirements.txt` for why.
+#
+# Steps that ran elsewhere, with different builds, and so are NOT in this file:
+#   - upstream junction scan (a cluster): minimap2 2.28-r1209, SAMtools 1.9,
+#     BLAST+ 2.16.0
+#   - references assembled here: hifiasm 0.25.0-r726 (--ont)
+#   - public references: hifiasm 0.19.7-0.19.9 (392), verkko 2.2.1 (8)
+#   - basecalling: guppy 6.5.7 (R9.4.1, 143 individuals), dorado 0.6.0
+#     (R10.4.1, 41 individuals), dorado 0.9.0 with model v5.0.0 (1kGP set)
+#   - PacBio m6A: jasmine 2.3.0 (19), 2.7.99 (19), 26.1.3 (10)
+#   - segments: FiberHMM 2.16.8 (--enzyme hia5); fibertools-rs 0.13.0
+#     (ft add-nucleosomes), 0.1.4 (ft predict), 0.3.8 (ft fire)
+# Each of those releases is a record, not a recommendation: a different release
+# may give different numbers.
+
+name: human-5S-rDNA-array
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  # Python. The exact release was not recorded; the code needs no syntax
+  # newer than Python 3.
+  - python=3
+
+  # Aligners and read handling, as recorded for the compute nodes.
+  - minimap2=2.26
+  - samtools=1.19.2
+  - blast=2.12.0
+
+  # Python packages. Unpinned: the releases used were not recorded.
+  - numpy
+  - pandas
+  - scipy
+  - matplotlib
+  - pysam
+  - openpyxl
+  - scikit-learn
+  - pymupdf
+  - biopython
+  - pypdf
+  - statsmodels
+  - pillow
+  - pip
+  - pip:
+      - parasail

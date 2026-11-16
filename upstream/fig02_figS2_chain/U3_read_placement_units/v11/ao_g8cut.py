@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-# Cut ARRAY_ONLY placed reads in the G8 frame (2026-09-11), run on local WSL
+# Cut ARRAY_ONLY placed reads in the G8 frame, run on local WSL
 #   No re-placement: read, slot and unit numbers are from the saved v7 placement (AOJV)
 #   ① raw reads: fastq pulled from the nodes (header MM/ML, sequence and quality as is)
 #   ② alignment: to the canonical sequence of its own slot, in the saved unit range (shrunk into the canonical) +-250bp window (minimap2 -a -x map-ont --secondary=no -y)
-#            (fixed) the old +-3 unit window let reads slip by 1~3 units in arrays of consecutive similar units (ARRAY_ONLY 11%)
+#            (a +-3 unit window lets reads slip by 1~3 units in arrays of consecutive similar units, ARRAY_ONLY 11%)
 #            saved placement check: per read, compare spacer variants with saved number g+d, and if clearly off (same number <0.6, neighbouring number >=0.8)
 #            realign to the whole-read footprint window (+-300bp) moved to the saved position, and accept if it matches the saved number (recorded in READS column 11)
 #            with -y the MM/ML of the fastq header follow into the SAM, and since the input is FASTQ, QUAL is kept as well
@@ -34,7 +34,7 @@ CMP = str.maketrans("ACGTNacgtn", "TGCANtgcan")
 CS = re.compile(r"([:*+\-=])([A-Za-z0-9]+)")
 CIG = re.compile(r"(\d+)([MIDNSHP=X])")
 NUM = re.compile(r"\d+")
-WIN = 3            # (old value, not used) 2026-09-11 with a +-3 unit window reads slipped by 1~3 units (ARRAY_ONLY 8%) -> replaced by PADBP
+WIN = 3            # not used; the window is set by PADBP
 PADBP = 250        # window = saved G6 unit range (min~max) in canonical coordinates +- 250bp: removes the room to slip by one unit (2,240bp)
 SHIFTMAX = 3       # range (+-units) for checking per-read number differences against the saved placement
 

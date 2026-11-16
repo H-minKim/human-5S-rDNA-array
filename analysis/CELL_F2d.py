@@ -4,7 +4,7 @@ r"""Main Fig 2 cell d, only panel b of P08_FIG.py fig4, at cell size (96 x 82 pt
    Only the appearance changes: figure size, font size (shared by main cells), font (Malgun Gothic also for the English edition), no panel letter, ticks pinned to the original values
    English text is the EN dictionary of the P08 code as is (English run = when the environment variable EN_DICT is set)
    Content check: CMPART.py (old FIG_P08_4_tract axis 1 <-> this figure)
-Output : $FIGOUT\cellF2_d_tract.png/svg, CELL_F2d_source_values.tsv
+Output : $FIGOUT/cellF2_d_tract.png/svg, CELL_F2d_source_values.tsv
 """
 import os, sys, io
 import numpy as np
@@ -63,11 +63,11 @@ ax.set_ylabel(T("패치 길이 추정 (bp)"))
 if flo:
     ax.axhline(flo, color=GREY, lw=0.5, ls=(0, (3, 2)), zorder=3)
     ax.text(25, flo - 22, T("교환 없는 바닥 (무관 개체)"), ha="right", va="top", fontsize=CS.FS_ANN, color="#333333")
-ax.set_xticks([-5.0, 0.0, 5.0, 10.0, 15.0, 20.0, 25.0, 30.0])        # original ticks as is (visible range 0 to 25)
+ax.set_xticks([-5.0, 0.0, 5.0, 10.0, 15.0, 20.0, 25.0, 30.0])        # fixed ticks (visible range 0 to 25)
 ax.set_yticks([0.0, 100.0, 200.0, 300.0, 400.0, 500.0, 600.0, 700.0])
 ax.set_xlim(-0.2, 26.2)
 ax.set_ylim(0, 660)
-# horizontal grid removed (old ax.grid(axis="y", color="#dddddd", linewidth=0.3)), the dashed no-exchange floor is data and is kept
+# no horizontal grid lines, the dashed no-exchange floor is data and is drawn
 ax.set_axisbelow(True)
 CS.save(fig, OUT, "cellF2_d_tract")
 print("패치 길이 거리 1 %.1f · 바닥 %s" % (pm[0], flo))

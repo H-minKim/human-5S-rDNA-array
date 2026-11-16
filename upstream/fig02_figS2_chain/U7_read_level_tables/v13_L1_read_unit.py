@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-# L1 = read x unit integrated table.  requests 1-10 + extra (A) read-level control variables.
+# L1 = read x unit integrated table, plus (A) read-level control variables.
 #
-#  all paths use forward slashes (avoids the heredoc backslash mangling trap)
-#  carry both beta definitions: b_call (threshold ML>=128), b_prob (mean probability, old version and paper definition)
+#  all paths use forward slashes
+#  carry both beta definitions: b_call (threshold ML>=128), b_prob (mean probability, the paper definition)
 #  the threshold is the measured valley 0.508 (on b_prob)
 #  polarity: array_pos 1 = genomic distal (DJ).  ap = proximal rank (ap_pj), ad = distal rank (ap_dj)
 import io, os
@@ -66,7 +66,7 @@ A["ad"] = A.ap_dj.astype("int32")            # distal rank
 A["ap"] = A.ap_pj.astype("int32")            # proximal rank
 A = A[(A.ap >= 1) & (A.ad >= 1)].copy()
 
-# --- requests 2, 3 : position
+# --- position
 A["side"] = np.where(A.ap.values <= A.ad.values, "prox", "dist")
 A["ord_near"] = np.minimum(A.ap.values, A.ad.values).astype("int32")
 A["pos_label"] = np.where(A.side.values == "prox",
@@ -74,7 +74,7 @@ A["pos_label"] = np.where(A.side.values == "prox",
                           ["원위%d" % v for v in A.ord_near.values])
 A["rel"] = ((A.ap - 1) / np.maximum(A.N - 1, 1)).astype("float32")
 
-# --- requests 6-9 : methylation
+# --- methylation
 A = A.rename(columns={"b": "b_call"})
 A["st"] = (A.b_call > THR).astype("int8")          # hard call (threshold THR as is)
 A["st3"] = np.where(A.b_call < LO, "L", np.where(A.b_call > HI, "H", "M"))  # hard call
@@ -108,7 +108,7 @@ lo_read = bg["unit_in_read"].transform("min") == 1
 hi_read = bg["dist_to_read_end"].transform("min") == 1
 A["blk_trunc"] = ((lo_read & (blk_a0 != 1)) | (hi_read & (blk_a1 != A.N))).astype("int8")
 
-# --- request 10 : both neighbours (neighbours only when position numbers are consecutive)
+# --- both neighbours (neighbours only when position numbers are consecutive)
 key = A[["read_id", "array_pos", "b_prob", "b_call", "st", "b_gene", "b_sp"]].copy()
 for shift, tag in ((1, "prev"), (-1, "next")):
     k = key.copy()

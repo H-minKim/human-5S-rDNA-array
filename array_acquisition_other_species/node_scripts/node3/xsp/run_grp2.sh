@@ -1,5 +1,5 @@
 #!/bin/bash
-# array 안 유닛 종류 판정 2 판 — 전 종
+# The second-stage call on unit types within an array, over all species.
 cd ~/xsp
 mkdir -p grp2
 for d in mapcur/*/; do

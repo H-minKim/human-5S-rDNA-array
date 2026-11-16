@@ -1,18 +1,18 @@
 # -*- coding: utf-8 -*-
-"""뉴클레오솜 제거 판 + 10 bp 양분 (2026-10-12).
+"""Nucleosome-free version and the 10 bp two-way split.
 
-둘을 한 패스로 낸다.
- ① fhmm_peaks_bin10.npz  : 10 bp 크기 무리 x 자리 · 양분(β 0.508) - Fig5Fa/Fb 용
- ② nucfree_bin.npz       : 자리마다 뉴클레오솜이 없는 분자만 추려 TF 점유를 다시 센다
-      NCOV   그 자리를 덮는 분자 수
-      NNONUC 그 자리에 뉴클레오솜이 없는 분자 수
-      NTF    TF 콜이 그 자리를 덮는 분자 수
-      NTFNN  뉴클레오솜이 없으면서 TF 콜이 덮는 분자 수
-    -> 생판 점유 = NTF/NCOV · 뉴클 제거 점유 = NTFNN/NNONUC
- ③ 표S7 : 두 자리의 생판 ↔ 뉴클 제거 (zzb 정의 : 중심이 창 안 + 크기 범위)
+Both are written in one pass.
+ (1) fhmm_peaks_bin10.npz  : 10 bp size classes x positions, two-way split (β 0.508), for Fig5Fa/Fb
+ (2) nucfree_bin.npz       : per position, TF occupancy counted again on the molecules without a nucleosome
+      NCOV   molecules covering the position
+      NNONUC molecules with no nucleosome at the position
+      NTF    molecules with a TF call covering the position
+      NTFNN  molecules with no nucleosome and a TF call covering the position
+    -> raw occupancy = NTF/NCOV; nucleosome-free occupancy = NTFNN/NNONUC
+ (3) table S7 : the two sites, raw against nucleosome-free (definition of zzb : centre inside the window and size in range)
 
-왜 : 저메틸 분자가 더 '열려' 있으면 TF 콜 기회 자체가 많다. 뉴클레오솜이 없는 분자만
-  놓고 다시 세면 그 기회 차이를 걷어낸 값이 된다.
+Why : if low-methylation molecules are more 'open', the opportunity for a TF call is itself larger. Counting again on
+  the molecules without a nucleosome removes that difference in opportunity.
 """
 import io
 import os
@@ -31,7 +31,7 @@ def _need(k):
         raise SystemExit(
             "environment variable %s is not set; it is required by %s." % (k, _SELF)
             + chr(10)
-            + "The deposited copy has no default; see README.md section 2")
+            + "The deposited copy has no default; see README.md, section 'Environment variables'")
     return v
 
 
@@ -90,7 +90,7 @@ for p in sorted(glob.glob(os.path.join(FD, "FHMM_READCOV_*.tsv"))):
             si = 0 if b < CUT else 1
             sg = SEG.get(k, [])
             NMOL[si] += 1
-            # ① 10 bp 봉우리
+            # 1) the 10 bp peak
             cen, cls = [], []
             for (c, s0, e0, sz) in sg:
                 if c == "msp":
@@ -110,7 +110,7 @@ for p in sorted(glob.glob(os.path.join(FD, "FHMM_READCOV_*.tsv"))):
                 d = rng.integers(0, PER, NB)
                 for t in range(NB):
                     np.add.at(NUL[si], (cls, (cen + d[t]) % PER), 1)
-            # ② 자리마다 뉴클레오솜 유무 x TF 유무
+            # 2) per position, nucleosome present or absent against TF present or absent
             nuc = np.zeros(NP, bool)
             tf = np.zeros(NP, bool)
             for (c, s0, e0, sz) in sg:
@@ -126,7 +126,7 @@ for p in sorted(glob.glob(os.path.join(FD, "FHMM_READCOV_*.tsv"))):
             NNONUC[si] += ~nuc
             NTF[si] += tf
             NTFNN[si] += (tf & ~nuc)
-            # ③ 자리별 (zzb 정의)
+            # 3) per position, on the zzb definition
             for nm, ((a0, a1), (z0, z1)) in SITE.items():
                 hit = any(c == "tf" and z0 <= sz <= z1 and a0 <= (s0 + e0) // 2 <= a1
                           for c, s0, e0, sz in sg)

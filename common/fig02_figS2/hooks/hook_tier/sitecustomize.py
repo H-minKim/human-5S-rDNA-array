@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # ============================================================================
-# hook_tier = hook_majref + cohort tier swap  (2026-10-05, for stage 3)
-#   copied hook_majref as is and added only the one thing below
+# hook_tier = hook_majref + cohort tier swap
+#   the same as hook_majref except for the one thing below
 #   if V11_TIER = h1 | h3, G.load("primary") is replaced by loading that preset.
 #   => the tier is applied without editing the 73 scripts that hardcode "primary".
 #   If V11_TIER is not set, nothing changes (= identical to hook_majref).
@@ -10,13 +10,15 @@
 r"""Replaces v11_io.load so that the majority-form consensus is used as the reference
 
 Why: the current reference `unit_canon.fa` = the revcomp single unit of CHM13 chr1:227,887,698-227,889,937.
-     When the majority form was chosen at all 2,240 positions, CHM13 carried the minority form at 12 positions.
-     Those 12 positions made 8.83 (56.9%) of the 15.515 variants per unit,
-     and made 11 tokens carried by more than half of the units, inflating every similarity measure.
+     When the majority form was chosen at all 2,240 positions, CHM13 carried a minority form at 11 positions, each with
+     one token carried by more than half of the units (11 tokens in all), inflating every similarity measure.
+     Using the majority form at those 11 positions removes 8.64 (55.7%) of the 15.515 variants per unit in the
+     564-haplotype set, and 8.65 (55.8%) of the 15.520 in H1 (557 haplotypes).
+     Position 1476 has a most frequent form (IB46:2, 0.42 of units, 29 alleles) but no majority, so it is not flipped.
 
 What changes: only the variant set of a unit (the 5th item of a row).
    position p not flipped      : tokens unchanged
-   position p flipped (12)     : a variant only when the unit allele differs from M(p)
+   position p flipped (11)     : a variant only when the unit allele differs from M(p)
         - a different token t -> t          - no token (= CHM13 form) -> "REF@p"
 meta['raw'] is not touched (used only by EXPORT_variant_groups.py, do not use that script with this version)
 Canonical path protection: if REPRO_MIRROR is set, G.OUT is also redirected to the mirror
@@ -28,12 +30,12 @@ sys.path.insert(0, __import__("os").environ.get("V11_CODE", __import__("os").pat
 try:
     import v11_io as G
 except Exception as e:
-    sys.stderr.write("sitecustomize: v11_io import 실패 %r\n" % e); raise
+    sys.stderr.write("sitecustomize: v11_io import failed %r\n" % e); raise
 
 if MIRROR:
     G.OUT = MIRROR
     G.STAGEF = os.path.join(MIRROR, "STAGE_ALL_V11F2.tsv")
-    assert not G.OUT.startswith(("F:", "f:")), "정본 경로 방지"
+    assert not G.OUT.startswith(("F:", "f:")), "canonical path guard"
 
 BLOCKS = G.BLOCKS
 def _pos(t):
@@ -78,13 +80,13 @@ def _inv(t):
     if m: return "IB%s:%s" % (m.group(1), m.group(2))
     m = re.match(r"^IB(\d+):(\d+)$", t)
     if m: return "DB%s:%s" % (m.group(1), m.group(2))
-    raise ValueError("역토큰 못 만듦: %r" % t)
+    raise ValueError("cannot build the reverse token: %r" % t)
 
 _TIER = os.environ.get("V11_TIER", "").strip()
 if _TIER:
-    sys.stderr.write("[TIER] V11_TIER=%s — G.load('primary') 를 이 preset 으로 싣는다\n" % _TIER)
-    assert _TIER in G.PRESETS, "모르는 preset %r" % _TIER
-    assert MIRROR, "V11_TIER 를 쓸 때는 REPRO_MIRROR 가 있어야 한다(정본 보호)"
+    sys.stderr.write("[TIER] V11_TIER=%s — G.load('primary') is loaded as this preset\n" % _TIER)
+    assert _TIER in G.PRESETS, "unknown preset %r" % _TIER
+    assert MIRROR, "REPRO_MIRROR must be set when V11_TIER is used (canonical path protection)"
 
 def load(preset="primary", *a, **kw):
     if _TIER and preset == "primary":
@@ -111,13 +113,13 @@ def load(preset="primary", *a, **kw):
             n_old += len(r[4]); n_new += len(s)
             rows.append(tuple(r[:4]) + (s,) + tuple(r[5:]))
         U[k] = rows
-    sys.stderr.write("[MAJREF] preset=%s · 뒤집은 자리 %d · 유닛당 변이 %.3f → %.3f\n"
+    sys.stderr.write("[MAJREF] preset=%s · flipped positions %d · variants per unit %.3f -> %.3f\n"
                      % (preset, len(FLIP), n_old / max(nu, 1), n_new / max(nu, 1)))
     return U, A, M
 
 G.load = load
 
-# ---- 2026-11-05 Fig 2 and S2 on one set: keep only the (sample, slot) pairs that V11_SUBSET points to ----
+# ---- Fig 2 and S2 on one set: keep only the (sample, slot) pairs that V11_SUBSET points to ----
 # The majority reference (FLIP) is set from the cohort before filtering, so the reference is unchanged. Without the environment variable nothing happens.
 _SUBF = os.environ.get("V11_SUBSET")
 if _SUBF:
@@ -130,7 +132,7 @@ if _SUBF:
         U, A, M = _LOAD0(*a, **kw)
         U2 = {k: v for k, v in U.items() if (str(k[0]), str(k[1])) in _KEEP}
         if len(U2) != len(_KEEP):
-            raise SystemExit("V11_SUBSET 이 load 결과 안에 없다 %d %d" % (len(U2), len(_KEEP)))
+            raise SystemExit("V11_SUBSET is not inside the load result %d %d" % (len(U2), len(_KEEP)))
         sys.stderr.write("[SUBSET] %d -> %d\n" % (len(U), len(U2)))
         return U2, A, M
     G.load = _load_sub

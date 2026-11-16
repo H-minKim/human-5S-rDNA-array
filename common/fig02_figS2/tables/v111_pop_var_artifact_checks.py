@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# v111 (2026-09-23) two artifact checks on the per-population variant results
+# v111: two artifact checks on the per-population variant results
 #   (1) sample size: AFR has the most haplotypes (153), so 'tokens found only in that population' become many by themselves
 #      -> downsample the five populations to the same number (smallest population size) 200 times and recount 'private token count' and 'q<0.05 token count'.
 #   (2) lineage: the top tokens have almost the same number of carrier haplotypes -> group them by Jaccard to see whether they are one lineage carried together on the same haplotypes.

@@ -1,8 +1,8 @@
 #!/bin/bash
-# 금화조 : 재콜링 read 가 원 fastq 정렬과 같은 array 에 붙었나 (유닛 번호보다 먼저 array 배정부터)
-#   array 계열 = chr2_A · chr2_B · chr4 · chr9 (mat·pat 는 같은 계열로 본다)
-#   입력 : final/orig_aln.tsv (원 PAF 전 줄, pat chr2 는 mat 좌표로 옮김) · final/new_aln.tsv (재콜링 primary)
-#   분류 : 같은 array · 다른 array · 새 정렬이 array 밖 · 원 정렬이 array 밖
+# Zebra finch: did the re-basecalled read land on the same array as the original fastq alignment? The array assignment is checked before the unit index.
+#   Array families: chr2_A, chr2_B, chr4, chr9; the maternal and paternal copies count as the same family.
+#   Inputs: final/orig_aln.tsv (all original PAF rows, with paternal chr2 shifted into maternal coordinates) and final/new_aln.tsv (the re-basecalled primary alignments).
+#   Categories: same array, different array, the new alignment lies outside any array, the original alignment lies outside any array.
 set -u
 Z=~/xsp/zfont
 F=$Z/final
@@ -13,6 +13,6 @@ awk -F'\t' 'FILENAME==ARGV[1]{n++; c[n]=$1; s[n]=$2; e[n]=$3; nm=$4; sub(/^(mat|
    k[cls]++; kk[nf "\t" cls]++}
   END{for(x in k) print k[x] "\t" x; print "--- 새 정렬 array 계열별"; for(x in kk) print kk[x] "\t" x}' \
   $Z/zfinch_v03_5S_arrays.bed $F/orig_aln.tsv $F/new_aln.tsv | sort -k2,2 -k1,1nr
-# 같은 array 안에서 시작점 차이 (유닛 368 bp 배수 분포)
+# The difference in start point within the same array, as a distribution over multiples of the 368 bp unit.
 echo "--- 같은 array 안 시작점 차이 (poscmp best, 유닛=368bp)"
 awk -F'\t' '$4>=0 {u=int($4/368); if(u>5)u=">5"; h[u]++} END{for(x in h) print h[x] "\t" x " 유닛"}' $F/poscmp.tsv | sort -k2,2n

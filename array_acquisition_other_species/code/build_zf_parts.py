@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-# chr18(체세포형)·chr4(모계형) array 를 코딩부 / 스페이서 / array 바깥 으로 나눈 구역표를 만든다.
-#   코딩부  : cmsearch 로 잡은 5S 유전자 히트(119 bp) 구간
-#   스페이서: array 안에서 코딩부를 뺀 나머지
-#   바깥    : 기존 flankL/flankR 100 kb (경계 5 kb 띄움)
-# 출력은 bismark_region_meth.py 가 받는 4 칸 형식이라 구간이 여러 조각이면 조각마다 한 줄이다.
+# Build a region table dividing the chr18 somatic-type array and the chr4 maternal-type arrays into coding, spacer and outside the array.
+#   Coding: the 119 bp 5S gene hit intervals found by cmsearch.
+#   Spacer: what remains inside the array once the coding part is removed.
+#   Outside: the existing 100 kb flankL and flankR, held 5 kb clear of the boundary.
+# The output is in the four-column form bismark_region_meth.py accepts, so an interval made of several pieces is written as one row per piece.
 import io
 import sys
 import collections
@@ -15,7 +15,7 @@ HITS = BASE + "00_catalog/zebrafish_gene_types/zfgt.gene_hits.tsv"
 REG = BASE + "00_catalog/zf_regions.tsv"
 OUT = sys.argv[1]
 
-# 1) 기존 구역표에서 array 와 flank 를 읽는다
+# 1) read the array and the flanks from the existing region table
 arrays = {}
 flanks = []
 for L in io.open(REG, encoding="utf8"):
@@ -29,7 +29,7 @@ for L in io.open(REG, encoding="utf8"):
     else:
         flanks.append((base + "__바깥_" + kind, ch, s, e))
 
-# 2) 유전자 히트를 array 별로 모은다
+# 2) collect the gene hits per array
 genes = collections.defaultdict(list)
 for L in io.open(HITS, encoding="utf8"):
     f = L.rstrip(NL).split(TAB)
@@ -45,7 +45,7 @@ rep = []
 for base in sorted(arrays):
     ch, as_, ae = arrays[base]
     g = sorted(genes.get(base, []))
-    # 겹침 병합
+    # merge overlaps
     mg = []
     for gs, ge in g:
         if mg and gs <= mg[-1][1]:
@@ -55,7 +55,7 @@ for base in sorted(arrays):
     cod = sum(e - s + 1 for s, e in mg)
     for gs, ge in mg:
         o.write(TAB.join([base + "__코딩부", ch, str(gs), str(ge)]) + NL)
-    # 스페이서 = array 에서 코딩부를 뺀 나머지
+    # the spacer is the array with the coding part removed
     p = as_
     sp = 0
     for gs, ge in mg:

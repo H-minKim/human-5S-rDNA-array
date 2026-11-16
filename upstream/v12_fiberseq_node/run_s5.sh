@@ -1,15 +1,14 @@
 #!/bin/bash
-# Re-run at threshold 5; the earlier outputs aog8v12fs2, fsfinal_v12b, aog8v12pb and pbfinal_v12 are not touched
-#   명령은 옛 실행과 같고 바뀐 것 : MINSITE=5 · 출력 폴더 이름
+# Run at threshold MINSITE = 5; the outputs aog8v12fs2, fsfinal_v12b, aog8v12pb and pbfinal_v12 are not touched
 cd ~; H=$(hostname)
 for d in ~/aog8v12fs3 ~/fsfinal_v12c ~/aog8v12pb2 ~/pbfinal_v12b; do [ -e $d ] && { echo "이미 있음 $d"; exit 1; }; done
-# ── 1. 합치기
+# -- 1. the merge
 cat ~/fsv12_run/fsjv_*.tsv > /tmp/ont_ao_s5.tsv
 MINSITE=5 KEYLEN=16 python3 ~/merge_aojv_v2.py /tmp/ont_ao_s5.tsv --jx ~/jxplace_all.tsv --vote ~/slotvote_qc2.tsv --out ~/AOJV_FS_merged_s5.tsv --log ~/AOJV_FS_merge_s5.log
 cat ~/pbv12_run/pfjv_*.tsv 2>/dev/null | cut -f1-6 > /tmp/pb_ao_s5.tsv
 MINSITE=5 KEYLEN=0 python3 ~/merge_aojv_v2.py /tmp/pb_ao_s5.tsv --jx ~/jxplace_pb2.tsv --vote ~/slotvote_pb.tsv --out ~/AOJV_PB_merged_s5.tsv --log ~/AOJV_PB_merge_s5.log
 echo "MERGE_DONE"
-# ── 2. ONT 작업폴더 (aog8v12fs2 와 같은 구성)
+# -- 2. the ONT working folder, laid out as aog8v12fs2
 W=~/aog8v12fs3; mkdir -p $W/g8in $W/aoreads $W/tmp
 cp -r ~/aog8v12fs/cmp4d_v7 $W/; cp -r ~/aog8v12fs/s5s_tuc $W/
 for f in MAP_G8.tsv SUM_G8.tsv MAP_G6C2.tsv; do cp -f ~/aog8v12fs/$f $W/; done
@@ -18,7 +17,7 @@ cp -f ~/AOJV_FS_merged_s5.tsv $W/AOJV_FS.tsv
 for f in AOJV3 AOJV5 AOJV8 AOJV_GIAB AOJV_PB; do : > $W/$f.tsv; done
 cut -f1 $W/AOJV_FS.tsv | sort -u > $W/samples.txt
 for f in ~/aog8v12fs/aoreads/*.fastq.gz; do ln -sf "$f" $W/aoreads/ 2>/dev/null; done
-# ── 3. PacBio 작업폴더 (aog8v12pb 와 같은 구성 · aoreads 는 새 합본으로 다시 뽑음)
+# -- 3. the PacBio working folder, laid out as aog8v12pb, with aoreads extracted from this merge
 P=~/aog8v12pb2; mkdir -p $P/g8in $P/aoreads $P/tmp
 cp -r ~/aog8v12fs/cmp4d_v7 $P/
 cp -f ~/MAP_V11.tsv $P/MAP_G8.tsv; cp -f ~/SUM_V11.tsv $P/SUM_G8.tsv
@@ -35,7 +34,7 @@ while read -r s; do
      if(a[1] in K){print h; print sq; print p; print q}}' $P/AOJV_PB.tsv "$src" | gzip -c > "$out"
 done < $P/samples.txt
 echo "SETUP_DONE ONT개체 $(wc -l < $W/samples.txt) aoreads $(ls $W/aoreads | wc -l) · PB개체 $(wc -l < $P/samples.txt) aoreads $(ls $P/aoreads | wc -l)"
-# ── 4. 절단·재호출 (옛 실행과 같은 명령)
+# -- 4. the cut and the recall
 sed "s|~/aog8v10/sam|~/aog8v12fs3/sam|" ~/recall_edge_v10.py > ~/recall_edge_fs3.py
 sed "s|~/aog8v10/sam|~/aog8v12fs3/sam|" ~/recall_mid_v10.py  > ~/recall_mid_fs3.py
 sed "s|~/aog8v10/sam|~/aog8v12fs3/sam|" ~/recall_pad2_v10.py > ~/recall_pad2_fs3.py

@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-# v11-fix1 step 1 (version 2): from consensus reads, the segment [start of front anchor unit to end of back anchor unit], located by unit-level DP
+# v11-fix1 step 1: from consensus reads, the segment [start of front anchor unit to end of back anchor unit], located by unit-level DP
 #
-#   Version 1 (seg_anchor.py) failed: aligning 6-unit blocks to reads with minimap2 gave a 0.7% primary/secondary score difference,
-#                            and the primary alignments of the front and back blocks landed at the same read position -> ONT errors exceed inter-unit variation, so base alignment cannot place tandem positions.
-#   Version 2: calls the functions of uindel2.py, which chose the consensus reads with their bodies unchanged.
+#   Base alignment cannot place tandem positions: aligning 6-unit blocks to reads with minimap2 gives a 0.7% primary/secondary score difference,
+#                            and the primary alignments of the front and back blocks land at the same read position (ONT errors exceed inter-unit variation).
+#   Calls the functions of uindel2.py, which chose the consensus reads, with their bodies unchanged.
 #         read gene ends (blastn) -> unit chain -> unit variant fingerprint (asm20 --cs) -> unit DP against the map -> read unit <-> map array_pos
 #         segment = start of the read unit paired with map unit aL to end of the read unit paired with aR (read orientation = majority gene strand)
 #   Unchanged: gene_hits, gene_ends, chain_from, call_vars, score, dp, load_map of uindel2 (only the functions extracted with ast)

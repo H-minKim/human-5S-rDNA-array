@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-# [v11-fix1 copy 2026-09-16: map g8canonv10, canonical cmp4d_v11, positions = anchors given directly (HG00133 h2 119/129, HG03270 h1 40/47). Otherwise unchanged]
-# Backbone polishing consensus (2026-09-12), replaces the mafft MSA version, which made chimeras in tandem arrays.
+# [v11-fix1: map g8canonv10, canonical cmp4d_v11, positions = anchors given directly (HG00133 h2 119/129, HG03270 h1 40/47)]
+# Backbone polishing consensus (a mafft MSA makes chimeras in tandem arrays).
 #   Method (same principle as racon, implemented directly because racon/medaka are not on the node)
 #     (1) pick the read of median length among the fragments as the backbone
 #     (2) map the other fragments to the backbone with minimap2 (map-ont, no secondary alignments)
@@ -18,7 +18,7 @@ import subprocess
 import collections
 import statistics
 
-H = "/home/ubuntu"
+H = os.environ["NODE_HOME"]   # the compute node's home directory
 NL = chr(10)
 TAB = chr(9)
 CIG = re.compile(r"(\d+)([MIDNSHP=X])")
@@ -91,7 +91,7 @@ def gene_ends(seq, tag):
             s_, e_ = b - (GLEN - qe), a + (qs - 1)
         hits.append((max(1, s_), min(len(seq), e_), int(g[2]),
                      (qs - 1) + (GLEN - qe)))   # fourth = extension length
-    # F method: interval overlap plus fragment calls, in place of a 1 kb grid
+    # F method: interval overlap plus fragment calls
     FRAG = 5
     LOx = 2100
     keep = []

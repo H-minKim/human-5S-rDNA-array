@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
-"""패널 블록을 원본 그림 코드에서 그대로 빌려 온다 (2026-10-09).
+"""Borrow a panel block as it is from the original figure code.
 
-왜 : 새 그림(fig5)은 기존 패널을 모아 만드는 것이다.
-     베껴 쓰면 ⑴ 전사 오류가 생기고 ⑵ 원본이 고쳐져도 따라오지 않는다
-     (기억 `staleness-must-follow-the-chain`).
-     ⇒ 원본 파일에서 블록을 떠서 그 자리에서 실행한다. 사슬이 끊기지 않는다.
+Why : the figure is assembled from existing panels.
+     A copy (1) introduces transcription errors and
+     (2) does not follow when the original is corrected.
+     So the block is lifted from the original file and executed in place.
 
-블록의 경계 : `ax = SUB("<글자>")` 로 시작해 `tag(ax, "<글자>"` 로 시작하는 줄까지(포함).
-              `tag(` 가 여러 줄이면 괄호가 닫히는 줄까지 더 먹는다.
+Block boundary : from `ax = SUB("<letter>")` to the line starting with `tag(ax, "<letter>"` (inclusive).
+              If `tag(` spans several lines, lines are taken until the parenthesis closes.
 """
 import io
 import os
@@ -24,7 +24,7 @@ def _src(fn):
 
 
 def grab(fn, letter):
-    """원본 파일 fn 에서 패널 <letter> 블록의 소스 글자를 돌려준다."""
+    """return the source text of the block of panel <letter> in the original file fn."""
     L = _src(fn)
     start = None
     pat_s = 'ax = SUB("%s")' % letter
@@ -38,7 +38,7 @@ def grab(fn, letter):
     end = None
     for j in range(start, len(L)):
         if L[j].lstrip().startswith(pat_t):
-            # tag(...) 가 여러 줄일 수 있다 — 괄호가 닫히는 줄까지
+            # a tag(...) call can span several lines, up to the line where the bracket closes
             depth = 0
             for k in range(j, len(L)):
                 depth += L[k].count("(") - L[k].count(")")
@@ -49,15 +49,15 @@ def grab(fn, letter):
     if end is None:
         raise KeyError("%s : 패널 %s 의 끝(%s)을 못 찾았다" % (fn, letter, pat_t))
     import textwrap
-    # 원본에서 `if ... :` 안에 들어가 있을 수 있다(F1 의 e3) ⇒ 들여쓰기를 푼다
+    # in the original it may sit inside an if block (e3 of F1), so the indentation is removed
     return textwrap.dedent(chr(10).join(L[start:end + 1]))
 
 
 def borrow(fn, letter, ax, ns, subst=None):
-    """블록을 ax 에 그린다. ns = 실행에 쓸 이름 공간(보통 globals()).
+    """Draw the block on ax. ns = the namespace to execute in (usually globals()).
 
-    `ax = SUB("x")` 줄은 넘겨받은 ax 를 쓰도록 바꾼다.
-    subst = [(옛글자, 새글자), ...] 로 블록 안 글자를 더 고칠 수 있다(조심해서 쓸 것).
+    The `ax = SUB("x")` line is changed to use the ax passed in.
+    subst = [(old text, new text), ...] can alter text inside the block further (use with care).
     """
     code = grab(fn, letter)
     code = re.sub(r'^ax = SUB\("%s"\)' % re.escape(letter),

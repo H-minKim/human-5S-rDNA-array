@@ -1,6 +1,6 @@
 #!/bin/bash
-# 유인원 산출물을 통일 규격으로 D 에 가져온다 (03_reads · 04_bam · 05_bedmethyl · 06_aux)
-#   표에는 species_key · sample 열을 앞에 붙인다 (sample = 종키와 같음 : 종마다 개체 1 명)
+# Bring the ape outputs into the common layout on the D drive (03_reads, 04_bam, 05_bedmethyl, 06_aux).
+#   The tables gain species_key and sample as their leading columns; the sample equals the species key, there being one individual per species.
 # MIT License · Copyright (c) 2026 Hungmin Kim
 set -u
 K=$NODE_KEY

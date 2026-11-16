@@ -2,7 +2,7 @@
 r"""n and filter notation for paper figures. Builds a one-line text and places it at the bottom of the figure
 Format (paper convention):
    n = <unit> (<individuals>), inclusion: <filter>, cohort: <source composition>
-All numbers are measured values (`NCOUNT_by_result.tsv`, 2026-10-01).
+All numbers are measured values (`NCOUNT_by_result.tsv`).
 """
 
 # ---- measured denominators (output of code/NCOUNT_hprc.py) ----

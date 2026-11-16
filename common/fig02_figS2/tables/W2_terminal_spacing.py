@@ -11,7 +11,7 @@ What is measured
   3. Cassette test: when terminal-type units are at depths d and d+g, how similar are the normal unit in between (d+1) and the next position (d+g+1),
      compared with random normal pairs in the same depth range.
   4. Control: the same calculation on middle units (>30 on both sides).
-Output: $OUTDIR\W2_*.tsv and log
+Output: $OUTDIR/W2_*.tsv and log
 """
 import io, os, sys, collections
 import numpy as np

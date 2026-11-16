@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-# 00_catalog/5S_unit_status.tsv : array 77 개의 대표 유닛 상태를 한 표로 (2026-09-13 직접 검산 결과 반영)
-#   status : CONFIRMED(직접 주기 = 유닛) · FIXED(재산출) · MIXED(두 구역) · SPARSE(유닛 맞으나 반복 드묾)
-#            LOW_QUALITY(유닛 동질성 낮음) · NO_UNIT(일정한 주기 없음) · NON_5S(5S 아닌 반복) · EXCLUDED(G8 부적격)
+# 00_catalog/5S_unit_status.tsv: the status of the representative unit of all 77 arrays in one table, reflecting the direct checks.
+#   The status values: CONFIRMED, where the measured period equals the unit; FIXED, recomputed; MIXED, two zones; SPARSE, the unit is right but the repeat is sparse;
+#            LOW_QUALITY, the units are not homogeneous; NO_UNIT, there is no consistent period; NON_5S, the repeat is not 5S; EXCLUDED, not eligible for G8.
 # MIT License · Copyright (c) 2026 Hungmin Kim
 import io
 import os

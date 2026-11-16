@@ -3,15 +3,15 @@ r"""The rulers, as a function instead of a paragraph.
 
 Why this file exists
 --------------------
-`CONVENTIONS.md` has carried a table of rulers since the archive was started, as its very
-That is the lesson this file is the answer to: a ruler that lives in prose is followed when
-somebody remembers to look it up, and a ruler that lives in a function is followed by anyone
+`CONVENTIONS.md` carries a table of rulers. A ruler that lives in prose is followed
+when somebody remembers to look it up,
+and a ruler that lives in a function is followed by anyone
 who calls the function. `CONVENTIONS.md` keeps the reasons; this keeps the rulers.
 
     from rulers import content_md5, same          # checks/ is on sys.path when run from here
 
 Each ruler below states the false conclusion it prevents. That sentence is the point of the
-ruler, not decoration: every one of them was written after a real wrong answer.
+ruler, not decoration.
 """
 import gzip
 import hashlib
@@ -26,7 +26,7 @@ class RulerError(Exception):
     """Raised instead of returning a sentinel.
 
     A checker that turns an unreadable file into the string `err` will later compare `err`
-    with `err` and report a match. That happened here on 2026-10-22: two failures were
+    with `err` and report a match, so that two failures are
     counted as an agreement. Never return a value that can equal another failure.
     """
 
@@ -43,8 +43,8 @@ def _ruler_gz(path):
 
     False conclusion prevented: "the table changed". gzip writes the current time into its
     header, so compressing identical bytes twice gives two different file md5s. Measured
-    2026-10-01 on `MODEL_SITE_V11.tsv.gz` (0071d1a855e9 against 00111bc77a0f, same content)
-    and again 2026-10-23 on three P10 tables of 12 to 14 million lines.
+    on `MODEL_SITE_V11.tsv.gz` (0071d1a855e9 against 00111bc77a0f, same content)
+    and on three P10 tables of 12 to 14 million lines.
     """
     h = hashlib.md5()
     with gzip.open(path, 'rb') as f:
@@ -74,7 +74,7 @@ def _ruler_parquet(path):
     writer version all change the bytes while the table is the same.
 
 
-    1. "the table changed between my machine and the node". `to_csv` defaults its line
+    1. "the table changed between a Windows machine and the node". `to_csv` defaults its line
        terminator to `os.linesep`, so the same frame hashes differently on Windows
        (`\r\n`) and on Linux (`\n`). A ruler that depends on the operating system
        cannot compare a local copy with a node copy, which is most of what this ruler
@@ -264,9 +264,8 @@ def _selftest():
         io.open(t2, 'wb').write(b'# built\nx\ty\n1\t3\n')
         ok.append(('tsv: ruler separates changed body', not same(t1, t2)))
 
-        #  ⑶ markdown -- headings begin with # and must survive the ruler. This is the case
-        #     that the text ruler failed for three weeks: two documents differing only in
-        #     their section headings hashed identically and same() returned True.
+        #  ⑶ markdown -- headings begin with # and must survive the ruler: two documents
+        #     differing only in their section headings must not hash identically.
         m1, m2 = os.path.join(d, 'a.md'), os.path.join(d, 'b.md')
         io.open(m1, 'wb').write(b'# Methods\n\nThe cut is 0.508.\n')
         io.open(m2, 'wb').write(b'# Data availability\n\nThe cut is 0.508.\n')

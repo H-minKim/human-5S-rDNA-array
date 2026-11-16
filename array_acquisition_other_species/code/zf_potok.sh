@@ -1,12 +1,12 @@
 #!/bin/bash
-# 알의 생물학적 반복 — Potok 2013(PRJNA193544) 계열을 정렬한다
-#   우리가 쓴 Jiang 2013(PRJNA188516)과 같은 호 Cell 에 실린 자매 논문이고,
-#   알 BioSample 이 SAMN01991170 로 다르다(우리 것 SAMN02117044).
-#   → 다른 연구실·다른 알 풀·다른 라이브러리 = 진짜 생물학적 반복.
-#   같은 연구 안에 정자·2~16세포·64·256·sphere·근육 이 다 있어 계열째 대조가 된다.
+# A biological replicate for the eggs: the Potok 2013 series (PRJNA193544) is aligned.
+#   It is the companion paper to Jiang 2013 (PRJNA188516), published in the same issue of Cell,
+#   and its egg BioSample is SAMN01991170, different from SAMN02117044.
+#   A different laboratory, a different pool of eggs and a different library, so a genuine biological replicate.
+#   The same study holds sperm, 2-16 cell, 64, 256, sphere and muscle, so the whole series serves as a control.
 #
-#   변환 검사(zf_qc_eggs2.sh) 통과한 것만 돌린다.
-#   8M read 쌍씩 하나하나 · 매번 임시 삭제 · 디스크 25GB 미만이면 중단.
+#   Only runs that pass the conversion check (zf_qc_eggs2.sh) are processed.
+#   8M read pairs at a time, temporary files deleted after each, stopping if less than 25 GB of disk is free.
 set -u
 cd ~/zfwgbs || exit 1
 export PATH=$HOME/zfwgbs/Bismark-0.24.2:$PATH
@@ -24,7 +24,7 @@ one () {
   guard
   [ -f sra/${R}_1.fastq.gz ] || fastq-dump -X $N --split-files --gzip -O sra "$R" > logs/${R}.dl.log 2>&1
   [ -f sra/${R}_1.fastq.gz ] || { echo "DL_FAIL $R"; return; }
-  # 2013 자료라 단일말단으로 올라온 run 이 섞여 있다 — 짝 파일이 없으면 건너뛴다
+  # These are 2013 data and some runs were submitted single-end, so a run with no mate file is skipped.
   [ -f sra/${R}_2.fastq.gz ] || { echo "SINGLE_END $R ($D) — 건너뜀"; rm -f sra/${R}_*.fastq.gz; return; }
   echo "정렬 시작 $R ($D) $(date -u +%H:%M)"
   bismark --genome ref --parallel 2 -p 3 --bam --temp_dir tmp -o bam \
@@ -40,7 +40,7 @@ one () {
   df -h / | tail -1
 }
 
-# 중요한 순서대로 — 알이 본 목적, 근육·정자가 같은 연구 안 대조
+# In order of importance: the eggs are the target, with muscle and sperm as controls within the same study.
 one SRR800059 알_Potok2013
 one SRR800081 근육성체_Potok2013
 one SRR800056 정자_Potok2013

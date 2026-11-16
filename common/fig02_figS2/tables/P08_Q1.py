@@ -2,7 +2,7 @@
 r"""P08 §2 - Q1 : how different and how alike are the units of two haplotypes
    ruler = number of profile column mismatches (bp) fixed in Q0-1, identical = fully identical sequence
    three layers T1(within array) / T2(homolog) / T3(unrelated) x four quantities ①median ②identity ③identical partner ④f/φ
-   CI is a haplotype-level cluster bootstrap (Field & Welsh 2007). The pair-level CI of P04 was wrong
+   CI is a haplotype-level cluster bootstrap (Field & Welsh 2007)
    Ohta C2 is tested by individual label permutation
    A9 : size distribution of fully identical classes (same form as the EHH formula)"""
 import os, sys, io, time, collections, pickle, itertools
@@ -195,7 +195,7 @@ bs_h, bs_f, bs_u = map(np.array, (bs_h, bs_f, bs_u))
 ciH = np.percentile(bs_h, [2.5, 97.5])
 ciF = np.percentile(bs_f, [2.5, 97.5])
 ciU = np.percentile(bs_u, [2.5, 97.5])
-# the (wrong) binomial CI of P04
+# the binomial CI of P04
 from statsmodels.stats.proportion import proportion_confint
 p04H = proportion_confint(nh, dh, 0.05, "wilson")
 p04U = proportion_confint(npU, dpU, 0.05, "wilson")

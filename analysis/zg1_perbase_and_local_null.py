@@ -1,19 +1,19 @@
 # -*- coding: utf-8 -*-
-"""자리별 집계 한 번 + 제자리 음성대조(sliding) + 두 플랫폼 합쳐 판정 (2026-10-09).
+"""Per-position tally in one pass, local negative controls (sliding), and a verdict over both platforms.
 
-`zf6` 이 틀린 곳 (사용자 지적으로 적발)
-  ① 4 조합을 독립 반복처럼 다뤘다. 그런데 ONT·유닛β 와 ONT·유전자부β 는
-     같은 read(91,819 ↔ 91,774) 다 ⇒ 독립은 ONT · PacBio 둘뿐이다.
-  ② ○× 로만 봤다(5% 밖인가). 두 플랫폼이 모두 하위 15% 라는 사실을 버렸다.
-  ③ 대조를 NTS(유전자에서 400~2,000bp 떨어진 곳) 에 깔았다.
-     그런데 A-box·IE·C-box 는 유전자 안에 있다. 유전자는 전사되는 곳이라 NTS 와 애초에 다르다
-     ⇒ 요소가 특별한지 보려면 대조도 유전자 안이어야 한다.
+Design
+  (1) The four combinations are not independent replicates: ONT with unit β and ONT with gene-body β
+     are the same reads (91,819 against 91,774), so only ONT and PacBio are independent.
+  (2) A pass/fail at 5% alone would discard the fact that both platforms fall in the lowest 15%.
+  (3) The elements A-box, IE and C-box lie inside the gene. The gene is transcribed and differs
+     from the NTS (400 to 2,000 bp away from the gene) to begin with,
+     so a control for the elements must also lie inside the gene.
 
-이 글이 하는 것
-  · 한 패스에 자리별(rel) nA·nM 을 층마다 쌓는다 (이 배열 하나로 뒤의 모든 계산을 한다)
-  · 대조를 세 구역에서 각각 sliding 으로 만든다
-      유전자안(요소 뺀) / 상류90 / 먼 NTS
-  · 두 플랫폼을 합쳐 판정한다 (한쪽 백분위 곱이 아니라 양쪽 모두 같은 꼬리인지)
+What this script does
+  - one pass stacks per-position (rel) nA and nM for each stratum (every later calculation uses this one array)
+  - the control is built by sliding in each of three regions
+      inside the gene (elements excluded) / upstream 90 / far NTS
+  - the verdict combines the two platforms (both in the same tail, not a product of one-sided percentiles)
 """
 import io
 import os
@@ -32,7 +32,7 @@ def _need(k):
         raise SystemExit(
             "environment variable %s is not set; it is required by %s." % (k, _SELF)
             + chr(10)
-            + "The deposited copy has no default; see README.md section 2")
+            + "The deposited copy has no default; see README.md, section 'Environment variables'")
     return v
 
 
@@ -54,7 +54,7 @@ NW = HI - LO + 1
 SRCS = [("UCSC_ONT_FIBERSEQ", "ONT"), ("PACBIO_FIBERSEQ", "PacBio")]
 ELEM = [("TFIIIB", -30, -10), ("A-box", 49, 63), ("IE", 66, 71),
         ("C-box", 79, 96), ("ICR", 49, 96), ("유전자", 0, 118)]
-# 대조 구역 : (이름, 시작, 끝, 요소 겹침 허용 안 하는 창)
+# control regions: (name, start, end, and the window within which no element may overlap)
 CTLZ = [("유전자안", 0, 118), ("상류90", -90, -1), ("먼 NTS", -2000, -400)]
 
 if os.path.exists(NPZ) and os.environ.get("REBUILD", "") != "1":
@@ -64,7 +64,7 @@ if os.path.exists(NPZ) and os.environ.get("REBUILD", "") != "1":
 else:
     UNIT, _ = L.load_units()
     TSSU = {k: (v[2] - v[0] + 1) for k, v in UNIT.items()}
-    NAr = np.zeros((2, 2, 3, NW))          # 플랫폼 x 층화축 x 층 x 자리
+    NAr = np.zeros((2, 2, 3, NW))          # platform x stratification axis x stratum x position
     NMr = np.zeros((2, 2, 3, NW))
     NU = np.zeros((2, 2, 3))
     CUT = np.zeros((2, 2, 2))
@@ -139,7 +139,7 @@ else:
 
 
 def inter(pi, ax, a, b):
-    """창 [a,b] 의 교호작용 = [rate(고)/rate(저)] / [바탕 rate(고)/rate(저)] · A 관측 최소값"""
+    """interaction of window [a,b] = [rate(high)/rate(low)] / [background rate(high)/rate(low)], and the minimum observed A"""
     i0, i1 = a - LO, b - LO + 1
     A = NAr[pi, ax, :, i0:i1].sum(1)
     M = NMr[pi, ax, :, i0:i1].sum(1)
@@ -154,7 +154,7 @@ def inter(pi, ax, a, b):
 
 
 def nulls(pi, ax, size, zname, z0, z1, excl):
-    """구역 [z0,z1] 을 size 창으로 쓸어가며 교호작용 분포 · excl 과 겹치는 창은 뺀다"""
+    """slide a window of size over region [z0,z1] and give the distribution of the interaction; windows overlapping excl are left out"""
     out = []
     for s in range(z0, z1 - size + 2):
         e = s + size - 1
@@ -166,7 +166,7 @@ def nulls(pi, ax, size, zname, z0, z1, excl):
     return np.array(out)
 
 
-EXCL = [(-30, -10), (49, 96)]        # 요소가 든 자리는 대조에서 뺀다
+EXCL = [(-30, -10), (49, 96)]        # positions carrying an element are excluded from the control
 print()
 print("=== 요소 교호작용과 제자리 음성대조 (sliding · 두 플랫폼 · 층화축 2)")
 rows = []

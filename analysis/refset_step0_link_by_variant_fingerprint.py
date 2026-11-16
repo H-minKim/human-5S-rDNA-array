@@ -1,31 +1,31 @@
 # -*- coding: utf-8 -*-
-# 남은 72 개체를 변이 지문 사슬로 잇는다
-#   단계 : ① 하플로타입 확정
+# Link the remaining 72 individuals by a chain of variant fingerprints.
+#   Step 1: fix the haplotypes.
 
 # -*- coding: utf-8 -*-
-# 남은 72 개체의 prox <-> dist 연결 — 변이 지문 사슬 (2026-09-06)
+# Linking the proximal and distal haplotypes of the remaining 72 individuals, by a chain of variant fingerprints.
 #
-#  문제는 작다.
-#    72 개체도 side 별 하플로타입 분리는 이미 끝나 있다 (hap_reads_v5.tsv,
-#    네 군 prox1/prox2/dist1/dist2 가 72/72 전부 존재, 군 read 수 균형 중앙 0.80).
-#    없는 것은 오직 prox 무리와 dist 무리를 잇는 것 —
-#    개체마다 (prox1-dist1) 인가 (prox1-dist2) 인가, 두 경우 중 하나를 고르는 문제다.
-#    read 를 다시 배치하는 문제가 아니다.
+#  The problem is a narrow one.
+#    For all 72, the haplotypes are already separated within each side (hap_reads_v5.tsv:
+#    all four groups prox1, prox2, dist1 and dist2 exist in 72 of 72, with a median read-count balance of 0.80).
+#    What is missing is only the link between the proximal and the distal groups:
+#    per individual, whether it is prox1-dist1 or prox1-dist2, a choice between two options.
+#    It is not a problem of re-placing the reads.
 #
-#  방법은 이 프로젝트가 이미 검증한 것을 그대로 쓴다 (chainplace.py / loo2.py)
-#    점수 = |S∩V| − |S−V|   ("일치−결측")
-#    S = 지도의 그 유닛 변이집합 · V = read 의 그 유닛 변이집합
-#    연속 K 유닛 사슬. LOO 실측: k=1 49% · k=2 70% · k=4 94% · k=8 100%
-#    minimap2 는 쓰지 않는다 — 실측상 하플로타입 배정 도구가 아니다
-#      (관통 read 로 잰 정확도 MAPQ 1-19 에서 42.1%, 근위 flank read 의 44%가 MAPQ<20)
+#  The method is the one already validated here, in chainplace.py and loo2.py:
+#    the score is |S intersect V| - |S - V|, that is matches minus misses,
+#    where S is the map's variant set for that unit and V the read's,
+#    over a chain of K consecutive units. Leave-one-out accuracy measured at 49% for k = 1, 70% for k = 2, 94% for k = 4 and 100% for k = 8.
+#    minimap2 is not used: measured, it is not a tool for assigning haplotypes
+#      (accuracy measured against spanning reads is 42.1% at MAPQ 1-19, and 44% of proximal flank reads fall below MAPQ 20).
 #
-#  지도 varlist 를 지문으로 쓴다 (chainplace.py 와 동일).
-#    맵은 여러 read 의 합의라 '공통 변이' 역할을 한다.
+#  The map's variant list serves as the fingerprint, as in chainplace.py.
+#    The map is a consensus over many reads, so it plays the part of the shared variants.
 #
-#  공통 지문은 정보를 버린다(사용자 지적). 그래서 2 단계로 간다:
-#    1 단계 — 군의 공통 변이(그 군 read 의 다수가 갖는 것)로 판정
-#    2 단계 — 1 단계에서 margin 이 안 나오면 read 개별 점수를 다 합산해 판정
-#             (개별 정보를 버리지 않는다)
+#  A shared fingerprint throws information away, so this proceeds in two stages:
+#    stage 1 decides from the group's shared variants, those carried by a majority of its reads;
+#    stage 2, where stage 1 leaves no margin, sums the scores of the individual reads
+#             and so discards nothing.
 import io
 import os
 import sys
@@ -53,7 +53,7 @@ def score(S, V):
     return len(S & V) - len(S - V)
 
 
-# ---- 지도: (개체,슬롯) -> {유닛번호: 변이집합} ----
+# ---- the map: (individual, slot) -> {unit index: variant set} ----
 MAP = collections.defaultdict(dict)
 for i, L in enumerate(io.open(os.path.expanduser("~/CONSENSUS_MAP_G6.tsv"), encoding="utf8")):
     if i == 0:
@@ -67,7 +67,7 @@ for i, L in enumerate(io.open(os.path.expanduser("~/CONSENSUS_MAP_G6.tsv"), enco
             vs.add(v)
     MAP[(f[0], f[1])][int(f[3])] = vs
 
-# ---- read 의 side 라벨 ----
+# ---- the side label of each read ----
 SIDE = collections.defaultdict(dict)
 for i, L in enumerate(io.open(os.path.expanduser("~/hap_reads_v5.tsv"), encoding="utf8")):
     if i == 0:
@@ -91,7 +91,7 @@ def find_reads(s):
 
 
 def unit_chain(seq, tag):
-    """read 를 유닛으로 자르고 유닛마다 표준유닛 대비 변이집합을 낸다."""
+    """cut the read into units and give, for each unit, its variant set against the standard unit."""
     fa = os.path.join(W, "r_%s.fa" % tag)
     io.open(fa, "w", newline=NL).write(">r" + NL + seq + NL)
     db = os.path.join(W, "rd_%s" % tag)
@@ -171,7 +171,7 @@ def variants(units, tag):
 
 
 def place(chain, smp, slot):
-    """사슬을 그 슬롯 지도에 붙여 (최고점, 마진) 반환."""
+    """place the chain on the map of that slot and return (best score, margin)."""
     M = MAP.get((smp, slot))
     if not M or len(chain) < K:
         return None
@@ -217,7 +217,7 @@ for smp in smps:
                 rid = L[1:].split()[0]
             elif m == 1 and rid in want:
                 seqs[rid] = L.strip()
-    # 군별 점수 합
+    # the score summed per group
     SC = collections.defaultdict(lambda: collections.Counter())
     NR = collections.Counter()
     for (rid, sd), h in sorted(SIDE.get(smp, {}).items()):
@@ -236,7 +236,7 @@ for smp in smps:
             p = place(ch, smp, slot)
             if p:
                 SC[(sd, h)][slot] += p[0]
-    # 군 -> 슬롯
+    # group -> slot
     call = {}
     for k in SC:
         c = SC[k]

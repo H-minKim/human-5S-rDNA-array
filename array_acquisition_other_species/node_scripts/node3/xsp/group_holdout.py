@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
-# '여러 종류' 판정의 독립 검증 — 블록 변이를 사건 단위로 홀/짝 두 묶음으로 갈라
-#   각각 따로 유닛을 나누고 두 분할이 일치하는지 본다.
-#   · 진짜 하위 종류(하플로타입)면 변이 절반만으로도 같은 분할이 나온다
-#   · 잡음이면 두 분할이 어긋난다
-#   일치도 = Adjusted Rand Index (0 = 무작위, 1 = 완전 일치) + 유닛쌍 일치 비율
-#   덤 : 그룹 대표 서열끼리 실제로 몇 자리 다른지(자리 수)와 그룹 안/밖 변이 빈도
-#   인자 : 지도폴더 [EVGAP=20]
+# An independent check on the call that several types are present: the block variants are split as events into an odd and an even half,
+#   the units are partitioned separately from each half, and the two partitions are compared.
+#   · If the subtypes (haplotypes) are real, half the variants still produce the same partition.
+#   · If it is noise, the two partitions disagree.
+#   Agreement is the Adjusted Rand Index (0 = chance, 1 = identical) plus the fraction of unit pairs that agree.
+#   Also reported: how many positions the group representative sequences actually differ at, and the variant frequency within and outside each group.
+#   Arguments: the map folder, [EVGAP = 20].
 # MIT License · Copyright (c) 2026 Hungmin Kim
 import io
 import os
@@ -66,7 +66,7 @@ def comps(cols, n, thr=0.8):
 
 
 def ari(a, b):
-    # Adjusted Rand Index — None 라벨은 각각 고유 라벨로 둔다
+    # Adjusted Rand Index; a None label is treated as its own unique label.
     A = [x if x is not None else ("a", i) for i, x in enumerate(a)]
     B = [x if x is not None else ("b", i) for i, x in enumerate(b)]
     ct = collections.Counter(zip(A, B))

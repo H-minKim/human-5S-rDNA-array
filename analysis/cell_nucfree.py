@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-"""뉴클레오솜을 걷어낸 판 — 세포주 전체 풀 · 유전자부 저/고 (2026-10-14)
+"""Nucleosome-free version: the whole pool of a cell line, gene body low/high
 The definitions are those used for the nucleosome-free HMM figure.
- (나) 자리 단위 : 구역창에 nuc 가 겹치지 않는 유닛만 · hit = 중심이 창 안 + 크기 범위(TFIIIB 30~59 · ICR 20~49)
- (다) 구간 대칭 : flank/core 는 core + flank 를 다 덮는 구간(c0-35..c0+27)에 nuc 가 없는 유닛만 · 유닛째 제외
- f = 그 깨끗한 유닛의 HMM 점유 · 천장 1/(1-f)
+ (b) per site : only units where no nuc overlaps the zone window; hit = centre inside the window and size in range (TFIIIB 30-59, ICR 20-49)
+ (c) symmetric span : flank/core uses only units with no nuc in the span covering core and flank (c0-35..c0+27); otherwise the whole unit is left out
+ f = HMM occupancy of those clean units; ceiling 1/(1-f)
 Also : whether the nucleosome-free occupancy exceeds a background window (same width, same size range, units without a nucleosome), and the low versus high difference (Fisher plus a read-cluster bootstrap)
 usage: python cell_nucfree.py HepG2|K562all|GM12878all
 """
@@ -29,7 +29,7 @@ def _need(k):
         raise SystemExit(
             "environment variable %s is not set; it is required by %s." % (k, _SELF)
             + chr(10)
-            + "The deposited copy has no default; see README.md section 2")
+            + "The deposited copy has no default; see README.md, section 'Environment variables'")
     return v
 
 
@@ -103,7 +103,7 @@ CT = {s: np.concatenate([np.zeros((N, 1), np.int32), np.cumsum(TF[s], 1, dtype=n
 
 
 def window_arrays(s_idx, W, site):
-    """각 유닛에서 창(s_idx..s_idx+W-1) : (뉴클 없음, hit)"""
+    """for each unit, at the window (s_idx..s_idx+W-1) : (no nucleosome, hit)"""
     nonuc = (CN[:, s_idx + W] - CN[:, s_idx]) == 0
     hit = (CT[site][:, s_idx + W] - CT[site][:, s_idx]) > 0
     return nonuc, hit
@@ -119,7 +119,7 @@ for site, d in SITE.items():
     nonuc, hit = window_arrays(s0, W, site)
     hit_nn = hit & nonuc
     res = {"W": W, "sets": {}}
-    # 배경 창 : 같은 폭 · 같은 크기 범위 · 뉴클 없는 유닛 · 두 자리 근처는 뺀다
+    # Background windows: same width, same size range, units with no nucleosome, the two positions' neighbourhoods excluded
     bg_s = [s for s in range(0, NP - W + 1)
             if not any((s + LO <= bb + 10 and s + LO + W - 1 >= aa - 10) for aa, bb in (SITE["TFIIIB"]["win"], SITE["ICR"]["win"]))]
     BG = {k: [] for k in SETS}
@@ -134,7 +134,7 @@ for site, d in SITE.items():
         occ_nn = h_nn / max(n_nn, 1)
         bg = np.array([v for v in BG[k] if v == v])
         p_bg = (float((bg >= occ_nn).sum()) + 1) / (len(bg) + 1) if len(bg) else None
-        # (다) 구간 대칭 : flank/core
+        # (c) segment symmetry: flank / core
         c0 = d["c0"]
         lo_i, hi_i = max(LO, c0 - 35) - LO, min(HI, c0 + 27) - LO
         clean = ((CN[:, hi_i + 1] - CN[:, lo_i]) == 0) & m
@@ -149,7 +149,7 @@ for site, d in SITE.items():
                               fold_vs_bg=(occ_nn / float(np.median(bg))) if len(bg) and np.median(bg) > 0 else None, p_bg=p_bg,
                               n_clean=n_clean, hit_clean=h_clean, f=f, ceil=1.0 / (1.0 - f) if f < 1 else None,
                               dub_clean=S.dub_paper(sA, sM, c0), dub_raw=S.dub_paper(sA_all, sM_all, c0))
-    # 저/고 차이
+    # Low-high difference
     L, Hh = SETS["low"], SETS["high"]
     out = {}
     for tag, cond in (("raw", None), ("nn", nonuc)):
@@ -181,7 +181,7 @@ for site, d in SITE.items():
                         boot_p_le1=(float((bsv <= 1.0).sum()) + 1) / (len(bsv) + 1) if len(bsv) else None,
                         boot_n=int(len(bsv)))
     res["diff"] = out
-    # 깨끗한 유닛만의 호출기 없음 확인검정 (자리별 · 전체 유닛)
+    # Caller-free confirmation on clean units only (per position and over all units)
     c0 = d["c0"]
     lo_i, hi_i = max(LO, c0 - 35) - LO, min(HI, c0 + 27) - LO
     cl = (CN[:, hi_i + 1] - CN[:, lo_i]) == 0
@@ -189,7 +189,7 @@ for site, d in SITE.items():
     if okm.sum() >= 100:
         cf = S.confirm(A[okm], M[okm], 1000, rng)
         res["confirm_clean"] = dict(n=int(okm.sum()), **cf[site])
-    # 군집 치환 검정용 : read 안에서 저/고 라벨만 섞는다 (read 효과를 보존)
+    # For the cluster permutation test: only the low/high labels are shuffled within a read (the read effect is preserved)
     labi = np.where(lab == "low", 0, np.where(lab == "high", 1, -1)).astype(np.int8)
     ARR[site + "_nonuc"] = nonuc; ARR[site + "_hit"] = hit
     ARR["lab"] = labi; ARR["read"] = read_i

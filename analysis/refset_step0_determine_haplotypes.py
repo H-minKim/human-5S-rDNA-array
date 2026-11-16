@@ -1,45 +1,43 @@
 # -*- coding: utf-8 -*-
-# 개체당 2 개 확정 → hap_final2.tsv (③ 단계가 읽는다)
-#   단계 : ① 하플로타입 확정
+# Fix exactly 2 per individual, writing hap_final2.tsv, which stage 3 reads.
+#   Step 1: fix the haplotypes.
 
 # -*- coding: utf-8 -*-
-# 1단계 v2. 하플로타입 확정 — 개체당 정확히 2 개 (2026-09-05)
+# Stage 1: fix the haplotypes, exactly 2 per individual.
 #
-#  v1 에서 실측으로 찾아낸 결함 세 가지
+#  Three things the inputs require:
 #
-#  ① 신규추출 44 개체가 통째로 빠졌다 (270 개체만 나왔다).
-#     원인은 "1kGP 필터" 가 아니다 — 실측하니 ex44 ∩ L_kgp = NA18879 단 1 명이다.
-#     진짜 원인은 이들의 공개조립본 표 파일명이 `asm44_all.tsv` 로 달라
-#     v1 이 그 파일을 아예 읽지 않은 것이다.  -> 270 + 44 = 314
-#     ※ 이 44 개체는 공개조립본만 있다 (hifiasm·관통·재조합관통 자료 0).
+#  1) The public-assembly table of 44 individuals has a different file name, asm44_all.tsv,
+#     and is read as well: 270 + 44 = 314.
+#     Note: these 44 have a public assembly only, with no hifiasm, spanning or recombined-spanning data.
 #
-#  ② 유닛 수 프레임이 두 개였다 (인접 군집이 사방에서 갈라진 원인).
-#     원표(pub_all·asm44_all·asm_units_all·hisum_v2·refseq_headers)의 유닛 컬럼은
-#     "2,100-2,400 bp 정상 간격의 개수" 다.  cmp4 는 "간격 + 1 = 진짜 유닛 수" 다.
-#     실측 대조 : pub 595/610 · hifi 708/728 · 관통 178/210 이 정확히 +1 차이.
-#     ⇒ 원표 값은 전부 GAPS 프레임이므로 +1 해서 UNITS 프레임으로 바꾼다.
-#       변환은 이 파일 안 add_units() 한 곳에서만 한다 (프레임 사고 재발 방지).
+#  2) There are two frames for the unit count.
+#     The unit column of the source tables (pub_all, asm44_all, asm_units_all, hisum_v2, refseq_headers)
+#     counts normal gaps of 2,100-2,400 bp, whereas cmp4 reports gaps + 1, the true number of units.
+#     Measured: 595 of 610 public, 708 of 728 hifiasm and 178 of 210 spanning differ by exactly 1.
+#     The source values are therefore all in the gap frame and are converted to the unit frame by adding 1.
+#       The conversion happens in add_units() in this file alone.
 #
-#  ③ 관통 read 계수 잡음을 두 번째 하플로타입으로 오인했다.
-#     한 개체 안 강한 관통 read 들의 인접 간격 분포를 재니 뚜렷한 이봉이다:
-#       간격 0:194  1:21  2:8  ||  3:3  4:2  5:1  6:2 ... (평평한 꼬리)
-#     간격 <=2 는 같은 분자의 계수 잡음, >=3 부터가 진짜 다른 하플로타입이다.
-#     ⇒ 강한 관통 read 는 간격 2 이하 단일연결로 먼저 묶고 중앙값 하나로 쓴다.
+#  3) Counting noise in the spanning reads must not be taken for a second haplotype.
+#     The distribution of gaps between the strong spanning reads within an individual is clearly bimodal:
+#       gap 0: 194, 1: 21, 2: 8, then 3: 3, 4: 2, 5: 1, 6: 2 and a flat tail.
+#     A gap of 2 or less is counting noise on the same molecule; 3 or more is a genuinely different haplotype.
+#     So the strong spanning reads are first clustered by single linkage at a gap of 2 or less and reduced to one median.
 #
-#  정정된 우선순위 ("관통 read 가 있다면 관통 read 가 정답이야")
-#    관통 read 는 한 분자가 flank-to-flank 를 물리적으로 지난 직접 증거다.
-#    다만 관통 단독도 틀리는 일이 있으므로, 다른 방법의 지지를 받을 때 최우선으로 둔다.
-#      1) 강한 관통(양쪽 flank 확인) + 다른 방법 지지   -> 최우선
-#      2) 공개조립본
-#      3) 강한 관통 단독
-#      4) 그 외 — 교차지지 많은 것 -> hifiasm -> 관통 -> 재조합관통
+#  The priority: where an array-spanning read exists, it is the answer.
+#    An array-spanning read is direct evidence that one molecule physically crossed from flank to flank.
+#    A spanning read alone can still be wrong, so it ranks first only when another method supports it.
+#      1) a strong spanning read, with both flanks confirmed, supported by another method: first
+#      2) the public assembly
+#      3) a strong spanning read alone
+#      4) otherwise, by the most cross-support, then hifiasm, then spanning, then recombined-spanning
 #
-#    공개조립본을 절대 우선으로 두지 않는 근거: 공개조립본이 밀린 12 건을 실측하니
-#    관통 read 는 전부 반대편을 지지했고(공개조립본 지지 0 건),
-#    HG00128 의 공개조립본 81 유닛 array 에는 44,784 bp 구멍이 있었다.
+#    Why the public assembly is not given absolute priority: of the 12 cases where it lost,
+#    the spanning reads supported the other answer in every one, and
+#    HG00128's 81-unit public assembly array carries a 44,784 bp gap.
 #
-#  강한 관통의 정의 (verify3_all.tsv)
-#    kind=="SPAN" · PROX50k>0 · DIST50k>0 (양쪽 flank) · 사슬연속 >=95% · 정상간격 >=19
+#  A strong spanning read is defined as:
+#    kind == "SPAN", with hits in both the proximal and distal 50 kb flanks, chain continuity of at least 95%, and at least 19 normal gaps.
 import io
 import os
 import re
@@ -50,22 +48,22 @@ S = os.environ["RDNA_S"]
 D = os.environ["RDNA_ASM_COMPARE"]
 U = os.environ["RDNA_UNIFIED_REFMAP"]
 NL = "\n"
-TOL = 1          # 같은 하플로타입으로 볼 유닛 차이 (군집)
-SNOISE = 2       # 관통 read 계수 잡음 폭 (실측 이봉 경계)
+TOL = 1          # the difference in unit count within which two values count as the same haplotype
+SNOISE = 2       # the width of the counting noise in spanning reads, the boundary measured in the bimodal distribution
 PRI = {"공개조립본": 0, "우리hifiasm": 1, "관통": 2, "재조합관통": 3}
 
 UNITS = collections.defaultdict(lambda: collections.defaultdict(set))
-PUBCTG = collections.defaultdict(dict)      # smp -> contig -> 유닛수 (조립본 contig 단위)
+PUBCTG = collections.defaultdict(dict)      # sample -> contig -> unit count, per assembly contig
 
 
 def add_units(smp, method, value, frame):
-    """유닛 수 프레임 변환 — 이 함수 한 곳에서만 한다.
-       frame='GAPS'  : 정상 간격 수      -> 유닛 = 간격 + 1
-       frame='UNITS' : 이미 유닛 수      -> 그대로"""
+    """Conversion of the unit-count frame, done only in this function.
+       frame='GAPS'  : number of regular intervals -> units = intervals + 1
+       frame='UNITS' : already a unit count        -> as is"""
     UNITS[smp][method].add(value + 1 if frame == "GAPS" else value)
 
 
-# ㉮ 공개조립본 — asm44_all.tsv 포함 (v1 누락분) · 프레임 GAPS
+# a) the public assemblies, including asm44_all.tsv, in the gap frame
 for p in (os.path.join(D, "asm_units_all.tsv"),
           os.path.join(S, "pub_all.tsv"),
           os.path.join(S, "asm44_all.tsv")):
@@ -76,15 +74,15 @@ for p in (os.path.join(D, "asm_units_all.tsv"),
         if len(f) >= 9 and f[8] == "OK":
             try:
                 add_units(f[0], "공개조립본", int(f[7]), "GAPS")
-                PUBCTG[f[0]][f[3]] = int(f[7]) + 1      # contig 별로도 남긴다
+                PUBCTG[f[0]][f[3]] = int(f[7]) + 1      # also kept per contig
             except ValueError:
                 pass
 
-# ㉯ 우리 hifiasm — 프레임 GAPS
+# b) our hifiasm assemblies, in the gap frame
 for L in io.open(os.path.join(S, "hisum_v2.tsv"), encoding="utf8"):
     f = L.rstrip(NL).split("\t")
     if len(f) >= 6 and f[1] == "OK":
-        s = re.sub(r"_\d+$", "", f[0])                    # _N 을 먼저 뗀다
+        s = re.sub(r"_\d+$", "", f[0])                    # strip the trailing _N first
         for pat in (r"_(sw|f)[2-6]$", r"_l0$", r"_sub250$", r"_noSPAN$"):
             s = re.sub(pat, "", s)
         try:
@@ -92,7 +90,7 @@ for L in io.open(os.path.join(S, "hisum_v2.tsv"), encoding="utf8"):
         except ValueError:
             pass
 
-# ㉰ 관통 + ㉱ 재조합관통 (옛 refseq 헤더) — 프레임 GAPS
+# c) spanning and d) recombined-spanning reads, from the refseq headers, in the gap frame
 for L in io.open(os.path.join(S, "refseq_headers.txt"), encoding="utf8"):
     f = L.strip().split("|")
     if len(f) < 4:
@@ -104,7 +102,7 @@ for L in io.open(os.path.join(S, "refseq_headers.txt"), encoding="utf8"):
     if k:
         add_units(f[0], k, int(m.group(1)), "GAPS")
 
-# cmp4 가 서열에서 직접 잰 값 — 프레임 UNITS
+# the value cmp4 measured directly from the sequence, in the unit frame
 KN = {"pub": "공개조립본", "hifi": "우리hifiasm", "span": "관통"}
 for L in io.open(os.path.join(S, "cmp4_all.tsv"), encoding="utf8"):
     f = L.rstrip(NL).split("\t")
@@ -118,7 +116,7 @@ for L in io.open(os.path.join(S, "cmp4_all.tsv"), encoding="utf8"):
         except ValueError:
             pass
 
-# ---- 강한 관통 (양쪽 flank 확인) — 프레임 GAPS, 잡음 병합 ----
+# ---- strong spanning reads, both flanks confirmed, in the gap frame, with the noise merged ----
 RAW = collections.defaultdict(list)
 for L in io.open(os.path.join(S, "verify3_all.tsv"), encoding="utf8"):
     f = L.rstrip(NL).split("\t")
@@ -137,7 +135,7 @@ for s, vs in RAW.items():
     vs.sort()
     grp = [[vs[0]]]
     for v in vs[1:]:
-        if v - grp[-1][-1] <= SNOISE:      # 간격 <=2 는 같은 분자의 계수 잡음
+        if v - grp[-1][-1] <= SNOISE:      # a gap of 2 or less is counting noise on the same molecule
             grp[-1].append(v)
         else:
             grp.append([v])
@@ -147,7 +145,7 @@ for s, vs in RAW.items():
     for r in reps:
         add_units(s, "관통", r, "UNITS")
 
-# ---- 코호트 ----
+# ---- cohort ----
 hprc = set()
 for p in glob.glob(os.path.join(U, "refmap_hap_ip-*.tsv")):
     for i, L in enumerate(io.open(p, encoding="utf8")):
@@ -158,7 +156,7 @@ for p in glob.glob(os.path.join(U, "refmap_hap_ip-*.tsv")):
             hprc.add(f[0])
 EX44 = set(x.strip() for x in io.open(os.path.join(S, "ex44.txt"), encoding="utf8") if x.strip())
 kgp = set(x.strip() for x in io.open(os.path.join(S, "L_kgp.txt"), encoding="utf8") if x.strip())
-kgp -= (hprc | EX44)          # 두 코호트에 걸친 개체는 제외 대상이 아니다
+kgp -= (hprc | EX44)          # an individual present in both cohorts is not excluded
 TEST = ("PARAM_", "D5_", "D50_", "D200_")
 smps = sorted(s for s in UNITS if s not in kgp and not s.startswith(TEST))
 
@@ -192,9 +190,9 @@ def cluster(smp):
         c["n"] = len(c["m"])
         c["pri"] = min(PRI[x] for x in c["m"])
         c["strong"] = False
-    # 강한 관통 대표값 하나는 가장 가까운 군집 하나에만 붙인다.
-    #   허용오차(2)만으로 표식하면 2 유닛 떨어진 두 군집이 둘 다 강한관통이 되어
-    #   같은 분자가 하플로타입 두 개를 차지한다 (HG03193 69/67 사례).
+    # One representative value from the strong spanning reads attaches to the single nearest cluster.
+    #   Marking by the tolerance of 2 alone would make two clusters 2 units apart both count as strongly spanned,
+    #   letting one molecule occupy both haplotypes (as in HG03193 at 69 and 67).
     for x in STRONG.get(smp, set()):
         near = min(cl, key=lambda c: abs(c["u"] - x))
         if abs(near["u"] - x) <= SNOISE:
@@ -204,14 +202,14 @@ def cluster(smp):
 
 
 def pick(smp):
-    """두 슬롯을 고른다.
+    """Choose the two slots.
 
-    쌍둥이 예외 — 정답지 실측상 진짜 하플로타입 쌍의 4.4% 가 1 유닛 이내다.
-    이런 쌍은 군집(TOL=1)이 하나로 합쳐버려 두 번째 슬롯을 엉뚱한 값이 채웠다
-    (실측 3 건: HG02040 정답 70,71 -> 71,83 / NA20805 75,76 -> 45,76 /
+    Twin exception: in the truth set 4.4% of true haplotype pairs are within 1 unit of each other.
+    Clustering (TOL=1) merges such a pair into one cluster, and the second slot would be filled by an unrelated value
+    (3 measured cases: HG02040 truth 70,71 -> 71,83 / NA20805 75,76 -> 45,76 /
      HG01258 74,75 -> 72,74).
-    공개 조립본이 서로 다른 contig 2 개를 냈다는 것은 분자가 2 개라는 직접 증거이므로,
-    두 contig 가 같은 군집에 들어갈 만큼 가까우면 그 두 값으로 두 슬롯을 채운다."""
+    Two different contigs in the public assembly are direct evidence of two molecules,
+    so when the two contigs are close enough to fall in one cluster, their two values fill the two slots."""
     cl = cluster(smp)
     v = sorted(PUBCTG.get(smp, {}).values())
     if len(v) == 2 and v[1] - v[0] <= TOL and v[1] != v[0]:
@@ -286,7 +284,7 @@ for k, v in one.most_common():
     print("     %-12s %d" % (k, v))
 print()
 
-# ---- 공개조립본이 밀린 건 ----
+# ---- cases where the public assembly lost ----
 print("  === 공개조립본이 밀린 건 (관통이 이긴 경우) ===")
 print("  %-11s %-14s %-14s %s" % ("개체", "채택", "버린 공개조립본", "강한관통(read수)"))
 print("  " + "-" * 76)
@@ -309,7 +307,7 @@ for s in smps:
 print("  공개조립본이 밀린 개체 : %d" % lost)
 print()
 
-# ---- 관통과 hifiasm 이 정면충돌한 건 (사람이 볼 것) ----
+# ---- cases where the spanning read and hifiasm disagree outright, for inspection by hand ----
 print("  === 관통 단독이 hifiasm+재조합관통 을 이긴 건 (검토 필요) ===")
 flag = 0
 for s in smps:

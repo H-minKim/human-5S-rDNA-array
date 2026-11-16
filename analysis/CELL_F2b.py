@@ -4,7 +4,7 @@ r"""Main Fig 2 cell b: only panel a of P08_FIG_4bars.py fig1, at cell size (177.
    Only the appearance changed: figure size, font size (common to main-text cells), font (Malgun Gothic in the English version too, so cells match), no panel letter (the composite removes it anyway)
    English text is the EN dictionary of the P08 code as is (English run = when the environment variable EN_DICT is set)
    Content check: CMPART.py (old FIG_P08_1_scope axes 0 vs this figure)
-Output: $FIGOUT\cellF2_b_scope.png/svg, CELL_F2b_source_values.tsv
+Output: $FIGOUT/cellF2_b_scope.png/svg, CELL_F2b_source_values.tsv
 """
 import os, sys, io
 import numpy as np
@@ -66,7 +66,7 @@ ax.set_ylim(0, 112)
 ax.set_yticks([0, 25, 50, 75, 100])
 ax.set_ylabel(T("닮은 상대 보유") + " (%)")
 ax.legend(frameon=False, loc="upper right", handlelength=1.0, borderpad=0.1)
-# removed the old ax.grid(axis="y", color="#dddddd", linewidth=0.3, zorder=0)
+# no horizontal grid lines
 ax.set_axisbelow(True)
 CS.save(fig, OUT, "cellF2_b_scope")
 print("완전 동일 %s · 5 변이 이내 %s" % (["%.1f" % v for v in f0], ["%.1f" % v for v in f5]))

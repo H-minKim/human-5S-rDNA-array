@@ -1,6 +1,6 @@
 #!/bin/bash
-# v11-fix1 ARRAY_ONLY resume run, the first run missed the s5s_tuc link in the work folder and ao_g8cut failed.
-#   Add the s5s_tuc link as in setup_v10cut.sh and rerun only ao_g8cut -> build_ao_final_g -> recall (blastcut uses the first-run output as is)
+# v11-fix1 ARRAY_ONLY: ao_g8cut -> build_ao_final_g -> recall. ao_g8cut needs the s5s_tuc link in the work folder.
+#   Adds the s5s_tuc link as in setup_v10cut.sh. The ao_blastcut output must already exist and is used as is.
 set -eu
 S="${1:?개체}"; NP="${2:-4}"
 cd ~

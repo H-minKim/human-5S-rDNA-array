@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-# Fig 8 자료 — 자료원을 맞춘 두 짝 대조
-#   (1) 암 : 같은 환자 · 같은 자료원 (종양 vs 그 환자의 정상)          7 짝
-#   (2) 불멸화 : 같은 사람 · 같은 코호트(HPRC Year7) (LCL vs PBMC)   10 짝
-#   지표 : 고메틸(ON) 유닛 안 ① 유전자부 β ② 스페이서 β ③ gene - sp
+# Figure 8 data: two paired comparisons matched on data source.
+#   1) Cancer: the same patient and the same data source, tumour against that patient's normal, 7 pairs.
+#   2) Immortalisation: the same individual and the same cohort (HPRC Year 7), LCL against PBMC, 10 pairs.
+#   The measures, within a highly methylated (ON) unit: 1) the gene-region beta, 2) the spacer beta, 3) gene minus spacer.
 import io, os, sys
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 import numpy as np, pandas as pd
@@ -16,8 +16,8 @@ S = pd.read_csv(os.path.join(HERE, "ZSS_SAMPLE.tsv"), sep="\t")
 R["군"] = R["sample"].map(dict(zip(S["sample"], S["군"])))
 PW = pd.read_csv(os.path.join(HERE, "FIGX18_PAIRS.tsv"), sep="\t")
 
-# ---------- (1) 암 짝 ----------
-C = PW[PW.정상 != "HG008-N-D"].copy()      # HG008 은 정상이 둘이라 췌장(N-P)만
+# ---------- 1) the cancer pairs ----------
+C = PW[PW.정상 != "HG008-N-D"].copy()      # HG008 has two normals, so only the pancreas (N-P) is used
 C["짝이름"] = C.짝
 C["대조"] = "암"
 C["a_이름"] = C.정상; C["b_이름"] = C.종양
@@ -26,7 +26,7 @@ for k in ("gene", "sp", "gene_sp"):
 P("[1] 암 짝 %d (같은 환자 · 같은 자료원)" % len(C))
 P(C[["짝이름", "자료원", "호출방식", "a_gene", "b_gene", "a_gene_sp", "b_gene_sp"]].to_string(index=False))
 
-# ---------- (2) 불멸화 짝 ----------
+# ---------- 2) the immortalisation pairs ----------
 Y = R[R.군.isin(["정상 1차세포(PBMC)", "비암 세포주(LCL)"])].copy()
 Y["person"] = Y["sample"].str.replace(r"_(LCL|PBMC)$", "", regex=True)
 Y["t"] = np.where(Y["sample"].str.endswith("LCL"), "LCL", "PBMC")
@@ -49,7 +49,7 @@ PAIR = pd.concat([C[["짝이름", "대조", "자료원", "호출방식", "a_이�
                  ignore_index=True)
 PAIR.to_csv(os.path.join(HERE, "FIG8_PAIRS.tsv"), sep="\t", index=False, float_format="%.5f")
 
-# ---------- 검정 ----------
+# ---------- the tests ----------
 P()
 P("[검정] 짝마다 b - a (암 = 종양 - 정상 · 불멸화 = LCL - PBMC)")
 rows = []
@@ -66,7 +66,7 @@ for nm, g in PAIR.groupby("대조"):
 T = pd.DataFrame(rows)
 T.to_csv(os.path.join(HERE, "FIG8_TESTS.tsv"), sep="\t", index=False, float_format="%.6g")
 
-# ---------- 호출방식 같은 것만 (암 6 짝) ----------
+# ---------- only pairs with the same calling mode, 6 cancer pairs ----------
 P()
 P("[민감도] 암에서 호출방식까지 같은 6 짝만")
 c6 = PAIR[(PAIR.대조 == "암") & (PAIR.호출방식 == "같음")]
@@ -75,7 +75,7 @@ for k, lab in (("gene", "유전자부"), ("gene_sp", "gene - sp")):
     P("   %-8s n %d · 중앙 Δ %+.4f · 내려간 %d/%d · 윌콕슨 p %.4f"
       % (lab, len(d), np.median(d), int((d < 0).sum()), len(d), stats.wilcoxon(d).pvalue))
 
-# ---------- 자료원 차이(참고선) ----------
+# ---------- the difference between data sources, as a reference line ----------
 P()
 P("[참고] 자료원 차이 — Y7 LCL 10 vs HPRC 본 코호트 280 (둘 다 LCL 유래)")
 H = pd.read_csv(os.path.join(HERE, "HPRC280_SAMPLE.tsv"), sep="\t")

@@ -1,5 +1,5 @@
 #!/bin/bash
-# 제브라피시 WGBS 정렬 — 난자부터
+# Zebrafish WGBS alignment, starting with the oocytes.
 cd ~/zfwgbs
 export PATH=$HOME/zfwgbs/Bismark-0.24.2:$PATH
 mkdir -p bam logs

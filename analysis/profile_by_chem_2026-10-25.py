@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
-#  사용자 물음 (2026-10-25) : `Fig 4 a-c` 가 전부 H2(화학 섞임)인데 어떻게 하나.
-#  이미 잰 것 : 밀도(b)의 두 봉우리·골·컷 띠 — 층마다 같았다.
-#  아직 안 잰 것 : `a` 는 **위치별 프로파일**이다. 모양 자체를 층별로 재야 한다.
-#  자 : `L1_READ_UNIT.parquet` 의 하드콜 β(`b_call`)를 `ap`(근위 1 부터) 띠로 묶어
-#        층별 평균·저메틸 몫을 견준다. gate==1(H2)만.
+#  Panels a to c of Figure 4 all use H2, in which the chemistries are mixed.
+#  Panel a is a profile by position, so its shape is measured here per stratum.
+#  The ruler: the hard-call beta (b_call) from L1_READ_UNIT.parquet is binned by ap, counting from the proximal end,
+#        and the mean and the hypomethylated fraction compared between strata. gate == 1 (H2) only.
 # The HPRC release 2 ONT sequencing index this script reads is not part of this archive.
 # Set RDNA_HPRC_R2_ONT_INDEX to a local copy; without it the script falls back to a file of
 # that name beside itself. The README says where the index comes from and gives its md5.

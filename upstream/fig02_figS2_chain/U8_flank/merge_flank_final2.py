@@ -116,7 +116,7 @@ for (smp, slot), fn in sorted(SEQF.items()):
 
     def score(side, seq):
         """Measure all four reference options (FD/FP x forward/reverse complement) and use the best.
-           Inferring the reference correspondence from FLIP is wrong (2026-09-15 measurement: 514/515 misjudged)."""
+           Inferring the reference correspondence from FLIP is wrong (measured: 514/515 misjudged)."""
         if len(seq) < MINLEN:
             return None
         q = seq[-5000:] if side == "5" else seq[:5000]

@@ -2,15 +2,12 @@
 # Build the majority-allele-reference variant table. Rewrites the L2 (haplotype x unit) variants against the majority allele
 #
 #   Why : the reference unit unit_canon.fa is a single unit of the single individual CHM13, so it carries the minor allele at 11 positions
-#        (alert : the PROMPT_5S_ reference-unit CHM13-single-unit alert .md file in $RDNA_DATA_ROOT\rDNA_registry, 2026-09-29)
 #   Rule : exactly the rule of the hook (hook_majref_sitecustomize.py), flip only positions where the majority allele exceeds half,
 #          and at such a position a unit carrying the majority allele has no variant, a unit carrying the CHM13 allele gets the inverse token
-#   Pilot test passed : the 11 positions computed independently from my data match the alert, variants per unit 15.516→6.966
+#   Check : 11 positions are flipped, variants per unit 15.516→6.966
 #
-#   Version separation (user rule) : nothing is deleted
-#     previous  the 2026-10-01 CHM13-reference folder under $RDNA_DATA_ROOT\v11_readvar (figure folder 03)
-#     latest    the 2026-10-01 majority-reference folder under the same figure folder (NEW below)
-#   Nothing is written to the canonical table folder (T2 below), the new version goes only to the latest folder
+#   Output : the 2026-10-01 majority-reference folder under $RDNA_DATA_ROOT/v11_readvar, figure folder 03 (NEW below)
+#   Nothing is written to the canonical table folder (T2 below)
 import io, os, re, sys, collections, datetime
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 import numpy as np, pandas as pd
@@ -137,8 +134,8 @@ for x in newlist:
     sig = []
     fmin = 1.0
     for t in tk:
-        # Keep the definition : unmatched = a token not in the group table (same meaning as the previous version).
-        #   Frequencies were recounted against the majority allele, so every token has a frequency →
+        # unmatched = a token not in the group table.
+        #   Frequencies are recounted against the majority allele, so every token has a frequency →
         #   judging unmatched by frequency would change its meaning.
         look0 = INV2FWD.get(t, t)
         if look0 not in MATCHED:

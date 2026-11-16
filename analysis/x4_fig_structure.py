@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-# 타 생물종 5S array — 유닛 구조 (길이 · 개수 · 변이)
-#  메틸 그림과 같은 형식 : 종을 줄로, array 를 점으로.
-#  matplotlib 글리프 함정: ASCII 만.
+# 5S arrays in the other species: the unit structure, its length, its copy number and its variants.
+#  The same form as the methylation figure: one row per species, one point per array.
+#  ASCII only in the figure text.
 import io, os
 import numpy as np
 import pandas as pd
@@ -23,7 +23,7 @@ def _need(k):
     v = _os_need.environ.get(k)
     if not v:
         _sys_need.exit("environment variable %s is not set (the deposited copy has no default; "
-                       "see README.md, section 'How to run it')" % k)
+                       "see README.md, section 'Environment variables')" % k)
     return v
 
 
@@ -47,7 +47,7 @@ P("유닛 구조 — 유닛 %s · array %d · 종 %d"
 P("=" * 104)
 P()
 
-# array 한 줄로 접기 (시료 여럿이면 시료 평균)
+# collapse each array to one row, averaging over samples where there are several
 AG = M.groupby(["종", "species_key", "array_id"]).agg(
     n_unit=("array_pos", "max"),
     unit_len=("unit_len", "median"),
@@ -142,7 +142,7 @@ for s in ORDER:
          g.n_ins.median(), g.n_del.median(), g.depth.median()))
 P()
 
-# (e) 유닛 길이 vs 유닛 수
+# (e) unit length against unit count
 ax = fig.add_subplot(gs[1, 1])
 for s, g in AG.groupby("종"):
     ax.scatter(g.unit_len, g.n_unit, s=34, color=COL.get(s, "#888"),
@@ -162,7 +162,7 @@ rz = stats.spearmanr(np.log10(gz.unit_len), np.log10(gz.n_unit))
 P("     제브라피시 안에서만 : %+.3f (p=%.3g · array %d)"
   % (rz.statistic, rz.pvalue, len(gz)))
 
-# (f) 변이 vs 메틸
+# (f) variants against methylation
 ax = fig.add_subplot(gs[1, 2])
 D = AG.dropna(subset=["n_var", "meth"])
 for s, g in D.groupby("종"):
@@ -203,7 +203,7 @@ fig.suptitle("타 생물종 5S array 의 유닛 구조 — array %d · 종 %d "
 fig.text(0.085, 0.012,
          "유닛 길이는 종 사이에서 19 배 다르다. 금화조는 array 8 개가 368-372 bp(변동계수 0.005)로 한 값이지만, "
          "제브라피시는 177 bp(모계형 27) · 298 bp(3) · 1,978 bp(체세포형 chr18) 로 갈린다." + chr(10) +
-         "시아망 유닛 3,294 bp 는 다른 유인원(2,2xx)과 크게 다르다 — 인계문이 경고한 "
+         "시아망 유닛 3,294 bp 는 다른 유인원(2,2xx)과 크게 다르다 — "
          "'조립본↔read 일치도 0.088' 과 같은 문제일 수 있다. 시아망 유닛 값은 쓰지 말 것.",
          fontsize=8.6, color="#444")
 fig.savefig(OUT + "/figures/Fig_othersp_unit_struct.png")

@@ -1,28 +1,28 @@
 # -*- coding: utf-8 -*-
-# 2 층 메틸 맵 (집계 + read 별 원본)
-#   단계 : 배치·메틸
+# A two-layer methylation map: the aggregate, and the per-read values.
+#   Step: placement and methylation.
 #   Method document : analysis/METHOD_CONSENSUS_MAP_G8_REBUILD.md
 
 # -*- coding: utf-8 -*-
-# 하플로타입 참조에 array read 를 붙여 메틸 맵을 만든다 (2 층 구조)
+# Build the methylation map by aligning array reads to the haplotype references, in two layers.
 #
-#  참조 = 그 개체의 하플로타입별 array 서열
-#     tier1 : 관통 read 의 array 구간
-#     tier2 : hifiasm 재조립 array   (HG002 에서 T2T Q100 과 100.0000% 일치 검증)
+#  The reference is that individual's array sequence per haplotype:
+#     tier 1 is the array interval of an array-spanning read;
+#     tier 2 is a hifiasm reassembly of the array, verified at 100.0000% identity against T2T Q100 in HG002.
 #
-#  두 하플로타입을 한 참조에 함께 넣고 붙인다.
-#    그래야 read 가 자기 하플로타입으로 간다 (일차 정렬이 곧 배정이다).
-#    한쪽씩 따로 붙이면 반대쪽 read 도 억지로 붙는다.
+#  Both haplotypes are put in one reference and aligned together,
+#    so that each read goes to its own haplotype: the primary alignment is the assignment.
+#    Aligning to one at a time forces the other haplotype's reads onto it as well.
 #
-#  MAPQ 로 거르지 않는다. 탠덤 array 에서 -q 20 은 array 창을 통째로 지운다
-#    (2026-08 실측: read 63% 가 NO_ARRAY 로 오판됐다). 일차 정렬만 쓴다(-F 0x900).
+#  No MAPQ filter. In a tandem array, -q 20 erases the array window entirely
+#    (measured: 63% of reads were misclassified as NO_ARRAY). Primary alignments only, with -F 0x900.
 #
-#  MM/ML 은 pysam 의 modified_bases 로 읽는다. 역방향 정렬일 때 좌표를 스스로
-#    바로잡아 준다. 직접 파싱하면 가닥을 틀리기 쉽다(이 프로젝트에서 2 회 사고).
+#  MM/ML is read through pysam's modified_bases, which corrects the coordinates itself
+#    for a reverse alignment. Parsing the tag by hand makes the strand easy to get wrong.
 #
-#  산출 2 층
-#    ① 집계층 methmap_agg  : 하플로타입 · 유닛마다 read 평균 β 와 표준편차
-#    ② 개별층 methmap_read : read 하나하나의 유닛별 β (원본 메틸을 그대로 본다)
+#  The two layers:
+#    1) the aggregate layer methmap_agg, with the mean beta over reads and its standard deviation per haplotype and unit;
+#    2) the per-read layer methmap_read, with the beta per unit for every single read, which shows the methylation as it came off the read.
 import io
 import os
 import sys
@@ -58,7 +58,7 @@ def read_fa(p):
 
 
 def unit_bounds(seq, tag):
-    """참조 array 를 유닛으로 자른다 -> [(start,end), ...]"""
+    """cut the reference array into units -> [(start,end), ...]"""
     fa = os.path.join(W, "b_%s.fa" % tag)
     io.open(fa, "w", newline=NL).write(">x" + NL + seq + NL)
     db = os.path.join(W, "bd_%s" % tag)
@@ -100,7 +100,7 @@ RDL = io.open(os.path.join(W, "methmap_read_%s.tsv" % TAG), "a",
               encoding="utf8", newline=NL)
 
 for spec in sys.argv[1:]:
-    # spec = "sample:ref1.fa[:ref2.fa]"  참조는 하플로타입별 array 서열
+    # spec = "sample:ref1.fa[:ref2.fa]"; the references are the array sequences, one per haplotype
     parts = spec.split(":")
     smp = parts[0]
     refs = [p for p in parts[1:] if os.path.exists(p)]
@@ -112,7 +112,7 @@ for spec in sys.argv[1:]:
         sys.stderr.write("  read 없음 %s\n" % smp)
         continue
 
-    # 두 하플로타입을 한 참조로 합친다
+    # the two haplotypes are merged into one reference
     ref = os.path.join(W, "ref_%s.fa" % smp)
     UB = {}
     with io.open(ref, "w", newline=NL) as g:
@@ -126,7 +126,7 @@ for spec in sys.argv[1:]:
         sys.stderr.write("  참조 %s : %d bp · 유닛 %d  [%s]\n" % (name, L, len(ub), nm0[:50]))
 
     bam = os.path.join(W, "%s.bam" % smp)
-    # -y 로 fastq 주석의 MM/ML 을 SAM 태그로 옮긴다 (minimap2 2.26 확인)
+    # -y moves MM/ML from the fastq comment into SAM tags, confirmed on minimap2 2.26
     p1 = subprocess.Popen(["minimap2", "-y", "-ax", "map-ont", "-t", TH,
                            "--secondary=no", ref, q], stdout=subprocess.PIPE,
                           stderr=subprocess.DEVNULL)
@@ -151,14 +151,14 @@ for spec in sys.argv[1:]:
             mb = None
         if not mb:
             continue
-        # 5mC 만 (C+m). 값은 0-255 확률.
+        # 5mC only (C+m); the value is a probability on 0-255
         calls = []
         for k, v in mb.items():
             if len(k) >= 3 and (k[2] == "m" or k[2] == 77):
                 calls.extend(v)
         if not calls:
             continue
-        # read 좌표 -> 참조 좌표
+        # read coordinate -> reference coordinate
         r2t = dict(a.get_aligned_pairs(matches_only=True))
         ub = UB[hap][0]
         bypos = collections.defaultdict(list)
@@ -169,7 +169,7 @@ for spec in sys.argv[1:]:
             bypos[tp].append(ql / 255.0)
         if not bypos:
             continue
-        # 유닛별로 모은다
+        # collected per unit
         import bisect
         starts = [x[0] for x in ub]
         acc = collections.defaultdict(list)

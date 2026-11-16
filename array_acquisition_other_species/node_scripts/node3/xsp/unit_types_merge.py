@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-# 종별 UNIT_TYPES_*.tsv 를 한 표로 합치고, 그룹을 가르는 사건이 유전자부인지 스페이서부인지 적는다
-#   G8 틀에서 유닛 = [스페이서][유전자] 이고 유전자가 끝에 온다 → 자리 > 유닛길이-120 이면 유전자부
-#   그룹 대표 서열끼리의 길이차도 함께 적는다
-#   인자 : 00_catalog 폴더
+# The per-species UNIT_TYPES_*.tsv files are merged into one table, recording whether the events separating the groups lie in the gene or in the spacer.
+#   In the G8 frame a unit is [spacer][gene] with the gene at the end, so a position beyond unit_length - 120 lies in the gene.
+#   The length difference between the group representative sequences is recorded as well.
+#   Argument: the 00_catalog folder.
 # MIT License · Copyright (c) 2026 Hungmin Kim
 import io
 import os

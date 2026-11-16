@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# read unit recall: cut with slack (+-PAD) and align to the canonical unit with context attached (2026-09-12 user design)
+# read unit recall: cut with slack (+-PAD) and align to the canonical unit with context attached
 #   reference = [canonical unit end CTX bp][canonical unit 2,240bp][canonical unit start CTX bp]
 #     in a tandem array the units before and after are the end and start of the same canonical unit. With context attached, the slack sits on both sides,
 #     and the middle unit is freed from alignment edge problems. Joining the canonical unit twice is not used, since it splits which copy the read attaches to.

@@ -1,18 +1,18 @@
 # -*- coding: utf-8 -*-
-# array 를 유닛으로 나눌 때 유닛마다 먼저 그룹을 따진다 — 유닛 한 줄짜리 판정표
+# When an array is divided into units, each unit's group is determined first; this writes one row per unit.
 #
-# 유닛마다 서로 독립인 두 증거를 나란히 놓는다
-#   증거 A (변이 사건) : 그룹을 가르는 사건들을 이 유닛이 가졌는가 → 비트 패턴 · ev_group
-#   증거 B (정렬 점수) : 그룹 참조 둘에 각각 정렬한 점수 차 → aln_group · margin_frac
-#   두 증거가 같으면 확정, 다르거나 약하면 미정 으로 두고 array 참조(공통 프레임)를 쓴다
+# Two mutually independent lines of evidence are placed side by side for each unit.
+#   Evidence A (variant events): does this unit carry the events that separate the groups, as a bit pattern and ev_group.
+#   Evidence B (alignment score): the score difference between aligning to each of the two group references, as aln_group and margin_frac.
+#   If the two agree the unit is assigned; if they disagree or are weak it is left undecided and the array reference (the common frame) is used.
 #
-# 두 그룹이 진짜인지도 이 표로 검사한다
-#   진짜 두 종류면 점수 차 d = score(grp1) - score(grp2) 가 이봉이고 0 근처가 비어 있다.
-#   연속체(사실은 한 종류)면 d 가 0 을 중심으로 한 덩어리다.
-#   그래서 |d| < 0.2*Dmax 인 '가운데 구역' 유닛 비율을 센다 — 높으면 두 그룹 주장을 접어야 한다.
-#   덤 : 사건 패턴이 두 그룹 패턴 중 어느 것도 아닌(섞인) 유닛 수도 센다.
+# This table also tests whether the two groups are real.
+#   If there really are two types, the score difference d = score(grp1) - score(grp2) is bimodal and empty around 0.
+#   If it is a continuum, that is really one type, d forms a single mass centred on 0.
+#   So the fraction of units in the middle zone, |d| < 0.2*Dmax, is counted; a high fraction means the claim of two groups must be withdrawn.
+#   Also counted: units whose event pattern matches neither group pattern, that is mixed ones.
 #
-# 인자 : array_id 지도(g8mr.tsv) 그룹멤버(members.tsv) 종키 출력폴더
+# Arguments: array_id, map (g8mr.tsv), group members (members.tsv), species key, output folder.
 # MIT License · Copyright (c) 2026 Hungmin Kim
 import io
 import os
@@ -75,7 +75,7 @@ def comps(cols, n, thr=0.8):
 rows = list(csv.DictReader(io.open(MAPF, encoding="utf8"), delimiter=TAB))
 ok = [r for r in rows if r["verify"] == "OK"]
 n = len(ok)
-# 사건은 공통 프레임(array 참조) 변이로 뽑는다 — 그래야 유닛끼리 자리가 같다
+# The events are taken from variants in the common frame (the array reference), so that positions are comparable between units.
 V = [set() if r["varlist_arrayref"] in ("-", "NOALN", "") else set(r["varlist_arrayref"].split(","))
      for r in ok]
 cnt = collections.Counter()

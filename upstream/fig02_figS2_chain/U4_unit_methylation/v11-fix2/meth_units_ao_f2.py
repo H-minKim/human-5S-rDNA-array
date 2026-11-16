@@ -6,7 +6,7 @@
 #     - MM refers to the original read direction. For reverse-aligned records the SAM SEQ is reversed, so
 #       original coordinate op is converted back to SEQ coordinate sp = len(SEQ)-1-op and then moved to reference coordinates with CIGAR.
 #     - the C of a reverse read falls on the G position of the canonical forward -> subtract 1 to match the C of the CpG.
-#       (without the correction the hit rate falls to 0.65, the same spot as the past 64% wrong-coordinate incident)
+#       (without the correction the hit rate falls to 0.65)
 #     - the junction BAM uses the [flank5000][canonical][flank5000] frame, so reference coordinate -5000, ARRAY_ONLY unchanged.
 #   Outputs (gzip)
 #     METH_READUNIT_<node>.tsv.gz : individual, source, config, slot, unit number, read, strand, CpG count, methylated count, beta, calls
@@ -23,7 +23,7 @@ import bisect
 import subprocess
 import collections
 
-H = "/home/ubuntu"
+H = os.environ["NODE_HOME"]   # the compute node's home directory
 NL = chr(10)
 TAB = chr(9)
 CIG = re.compile(r"(\d+)([MIDNSHP=X])")

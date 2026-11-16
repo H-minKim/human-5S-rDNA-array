@@ -1,20 +1,20 @@
 # -*- coding: utf-8 -*-
-"""read 의 하플로타입을 정본 변이 자리에서만 투표로 정한다 (2026-09-15 사용자 설계)
+"""Assign the haplotype of a read by a vote at canonical variant sites only
 
-  원리 : read 의 나머지 불일치는 오류로 본다. 정본 두 슬롯이 서로 다른 자리만 진짜 변이로 쓰고,
-          그 자리에서 read 가 어느 슬롯 염기를 갖는지 센다.
-          (array 배치의 |S∩V|-|S-V| 와 같은 원리 — 정체율 비교는 ONT 5% 오류에 묻힌다)
+  Principle : other mismatches of the read are treated as errors. Only positions where the two canonical slots differ count as true variants,
+          and at those positions the slot whose base the read carries is counted.
+          (the principle of |S∩V|-|S-V| in array placement; an identity comparison is buried under the 5% ONT error)
 
-  flank 만 쓴다 : array 는 탠덤이라 두 슬롯이 같은 자리에 다 붙어 판별력이 없다
-                   (조각 합산 실험에서 정확도 100% -> 84.7% 로 떨어졌다)
+  Flank only : the array is tandem, so both slots align everywhere and nothing discriminates
+                   (adding array pieces lowered the accuracy from 100% to 84.7%)
 
-  절차
-    ① 슬롯1 flank <-> 슬롯2 flank 를 정렬해 다른 자리(판별 자리)를 뽑는다
-    ② read 를 두 슬롯에 정렬해, 판별 자리에서 read 염기를 읽는다
-    ③ 슬롯1 염기와 같으면 1표, 슬롯2 염기와 같으면 2표. 둘 다 아니면 오류로 버린다
-    ④ 표차가 크면 배정, 아니면 미배정
+  Steps
+    (1) align slot 1 flank <-> slot 2 flank and take the positions that differ (discriminating sites)
+    (2) align the read to both slots and read its base at the discriminating sites
+    (3) one vote for slot 1 if it equals the slot 1 base, one for slot 2 if it equals the slot 2 base; otherwise discarded as an error
+    (4) assigned if the margin is large, unassigned otherwise
 
-  출력 : sample read units flank n_site v1 v2 margin verdict
+  Output : sample read units flank n_site v1 v2 margin verdict
 """
 import io
 import os
@@ -24,12 +24,12 @@ import collections
 import re
 
 CS = re.compile(r"([:*+\-~])([A-Za-z0-9\[\]]+)")
-HSN = os.path.expanduser(os.environ.get("HSN", "~/hap_seq_node.tsv"))
-CMPD = os.path.expanduser(os.environ.get("CMPD", "~/cmp4d_flank"))
-BOUND = os.path.expanduser(os.environ.get("BOUND", "~/fs41/out"))
-READS = os.path.expanduser(os.environ.get("READS", "~/fs41/out"))
+HSN = os.path.expanduser(os.environ["HSN"])
+CMPD = os.path.expanduser(os.environ["CMPD"])
+BOUND = os.path.expanduser(os.environ["BOUND"])
+READS = os.path.expanduser(os.environ["READS"])
 TH = os.environ.get("TH", "6")
-MINV = int(os.environ.get("MINV", "3"))        # 최소 판별 자리 수
+MINV = int(os.environ.get("MINV", "3"))        # the minimum number of discriminating positions
 OUT = sys.argv[2] if len(sys.argv) > 2 else "/tmp/slotvote.tsv"
 
 SEQF = {}
@@ -68,19 +68,19 @@ for smp in [x.strip() for x in io.open(sys.argv[1], encoding="utf8") if x.strip(
     except Exception:
         continue
 
-    # ── ① 판별 자리 : 두 슬롯 flank 를 서로 정렬해 다른 자리를 뽑는다
+    # -- 1) discriminating positions: the flanks of the two slots are aligned to each other and the differing positions taken
     fa = "/tmp/%s.f1.fa" % smp
     fb = "/tmp/%s.f2.fa" % smp
     io.open(fa, "w", newline="\n").write(">s1_5\n%s\n>s1_3\n%s\n" % (s1[:a5], s1[len(s1) - a3:]))
     io.open(fb, "w", newline="\n").write(">s2_5\n%s\n>s2_3\n%s\n" % (s2[:b5], s2[len(s2) - b3:]))
-    # 판별 자리를 (슬롯1 전체좌표, 염기1, 슬롯2 전체좌표, 염기2) 로 모은다
+    # the discriminating positions are collected as (slot 1 global coordinate, base 1, slot 2 global coordinate, base 2)
     SITE = []
     for L in paf(fa, fb, "asm20", ("--secondary=no",)):
         f = L.split("\t")
         if len(f) < 12:
             continue
         qn, tn = f[0], f[5]
-        if qn[3:] != tn[3:]:                     # 5'는 5'끼리, 3'는 3'끼리만
+        if qn[3:] != tn[3:]:                     # 5' is compared only with 5', and 3' only with 3'
             continue
         cs = ""
         for x in f[12:]:
@@ -90,7 +90,7 @@ for smp in [x.strip() for x in io.open(sys.argv[1], encoding="utf8") if x.strip(
         qp = int(f[2])
         rev = (f[4] == "-")
         if rev:
-            continue                             # 방향 뒤집힌 정렬은 쓰지 않는다
+            continue                             # an alignment in the opposite orientation is not used
         for g_ in CS.finditer(cs):
             op, v = g_.group(1), g_.group(2)
             if op == ":":
@@ -98,7 +98,7 @@ for smp in [x.strip() for x in io.open(sys.argv[1], encoding="utf8") if x.strip(
                 tp += n_
                 qp += n_
             elif op == "*":
-                # v = "ab" : a=참조(슬롯1) 염기, b=질의(슬롯2) 염기
+                # v = "ab", where a is the reference (slot 1) base and b the query (slot 2) base
                 t_abs = tp if tn.endswith("_5") else (len(s1) - a3 + tp)
                 q_abs = qp if qn.endswith("_5") else (len(s2) - b3 + qp)
                 SITE.append((t_abs, v[0].upper(), q_abs, v[1].upper()))
@@ -119,7 +119,7 @@ for smp in [x.strip() for x in io.open(sys.argv[1], encoding="utf8") if x.strip(
     S1 = dict((t, (b1, b2)) for (t, b1, _q, b2) in SITE)
     S2 = dict((q, (b1, b2)) for (_t, b1, q, b2) in SITE)
 
-    # ── ② read 를 두 슬롯에 정렬
+    # -- 2) align the read to both slots
     ref = "/tmp/%s.two.fa" % smp
     io.open(ref, "w", newline="\n").write(">%s_h1\n%s\n>%s_h2\n%s\n" % (smp, s1, smp, s2))
     bp = os.path.join(BOUND, "%s.bound.tsv" % smp)
@@ -153,7 +153,7 @@ for smp in [x.strip() for x in io.open(sys.argv[1], encoding="utf8") if x.strip(
     if n == 0:
         continue
 
-    V = collections.defaultdict(lambda: [0, 0, 0])     # read -> [자리수, 1표, 2표]
+    V = collections.defaultdict(lambda: [0, 0, 0])     # read -> [number of positions, votes for slot 1, votes for slot 2]
     for L in paf(ref, sub, "map-ont", ("-N", "5", "-p", "0.1")):
         f = L.split("\t")
         if len(f) < 12:
@@ -173,14 +173,14 @@ for smp in [x.strip() for x in io.open(sys.argv[1], encoding="utf8") if x.strip(
                 for t in range(tp, tp + n_):
                     hit = TAB.get(t)
                     if hit:
-                        base = hit[0] if sl == "1" else hit[1]   # 그 슬롯의 염기와 같다
+                        base = hit[0] if sl == "1" else hit[1]   # matches that slot's base
                         V[rid][0] += 1
                         V[rid][1 if base == hit[0] else 2] += 1
                 tp += n_
             elif op == "*":
                 hit = TAB.get(tp)
                 if hit:
-                    rb = v[1].upper()                            # read 염기
+                    rb = v[1].upper()                            # the read's base
                     V[rid][0] += 1
                     if rb == hit[0]:
                         V[rid][1] += 1

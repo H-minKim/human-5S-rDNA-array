@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# v110 (2026-09-23) array features by ancestry (population): (3) unit variants, population-specific and frequency differences
+# v110 array features by ancestry (population): (3) unit variants, population-specific and frequency differences
 #   data: varlist (variant tokens per unit) of L2_HAP_UNIT.parquet in the table folder (02_*), population labels from POP_COHORT.tsv of v109
 #   two metrics: (1) carrier = whether the token is present in at least one unit of that haplotype array
 #                  (2) within-array frequency = units carrying the token / units of that haplotype   (as a ratio, since copy numbers differ)

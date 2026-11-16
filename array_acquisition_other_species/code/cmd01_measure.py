@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-# 실측 : ① array−flank(ONT, AVF.tsv) 종·array 별 ② 종별 array 수 정의별 ③ 기본값 정의 확인
-# 결과 : data_v2/00_catalog/CMD01_*.tsv (새 파일만 씀)
+# Measurements: 1) array minus flank from the ONT data in AVF.tsv, per species and array; 2) the array count per species under each definition; 3) a check of the default definitions.
+# Results: data_v2/00_catalog/CMD01_*.tsv; only new files are written.
 # MIT License · Copyright (c) 2026 Hungmin Kim
 import collections
 import csv
@@ -50,7 +50,7 @@ for sp, v in sorted(per_sp.items()):
     vals = [x[2] for x in v]
     print("  %-26s array %2d · 행 %3d · 범위 %+.3f ~ %+.3f · 중앙 %+.3f" % (sp, len(arrays), len(v), min(vals), max(vals), statistics.median(vals)))
 
-# ── ② array 수 정의별 ───────────────────────────────────────────────
+# -- 2) the array count under each definition ───────────────────────────────
 cnt = collections.defaultdict(dict)
 
 

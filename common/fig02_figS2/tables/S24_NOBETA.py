@@ -6,7 +6,7 @@ r"""Can i and j be reconciled? Reruns j (S24) without methylation beta.
         and the top feature of distal zone 1 is `beta_meth-1.4`, so beta may be pulling that boundary.
    => Run the same procedure without beta and see whether the distal boundary moves toward the mode of i (7).
 
-   The original code is not modified. A copy is made and run, and outputs stay only in my folder."""
+   The original code is not modified. A copy is made and run, and outputs stay only in the working folder."""
 import io, os, sys, re, shutil, subprocess, time
 sys.stdout.reconfigure(encoding="utf-8")
 HERE = os.path.dirname(os.path.abspath(__file__))

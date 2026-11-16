@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# ARRAY_ONLY actual placement, using only the gates fixed by testing (2026-09-09)
+# ARRAY_ONLY actual placement, using only the gates fixed by testing
 #
 #  gate (fixed in testing, no post hoc adjustment)
 #      K = 16  ·  Δ >= 10
@@ -13,7 +13,7 @@
 #    Δ, which asks "does it attach confidently only in its own individual", is the real discriminating axis.
 #
 #  units are cut by alignment coordinates (no blastn)
-#    the cause that broke chain placement was blastn cutting (unit count agreement 70.8%).
+#    blastn cutting breaks chain placement (unit count agreement 70.8%).
 #
 #  targets = reads that TUC judged to bite the array, without flanks
 #    arr_span >= 36000 (16 units = K satisfied)  ,  flankL,flankR < 500
@@ -27,7 +27,7 @@ import random
 import subprocess
 import collections
 
-W = os.path.expanduser(os.environ.get("WDIR", "~/aojx5"))
+W = os.path.expanduser(os.environ["WDIR"])
 os.makedirs(W, exist_ok=True)
 R = os.path.expanduser("~/s5s_tuc/ref")
 NL = "\n"
@@ -85,7 +85,7 @@ CS = re.compile(r"([:*+-])([A-Za-z0-9]+)")
 def tuc_targets(smp):
     """Select reads from the TUC call that have no flank and bite enough of the array"""
     out = set()
-    # giab_tuc was missing, so 4 GIAB individuals were silently skipped (fixed).
+    # giab_tuc must be in the list, or the 4 GIAB individuals are silently skipped.
     #   If even one TUC call table directory is missing, tuc_targets returns an empty set and
     #   "if not want: continue" makes it vanish without error. Always check the directory list.
     for d in ("s5s_ont_tuc", "new44_tuc", "kgp_tuc", "giab_tuc", "s5s_tuc"):
@@ -324,10 +324,10 @@ for smp in [x.strip() for x in io.open(sys.argv[1], encoding="utf8") if x.strip(
         npass += 1
         # placement succeeded, record the units this read covers
         N = UB[(smp, ctg)][0][3]
-        # unit records are not cut at K (fixed)
+        # unit records are not cut at K
         #   positions are already fixed by the first K units, and the remaining units are contiguous, so
-        #   their positions follow automatically as r0[0]+t. But originally they were discarded.
-        #   measured: reads actually spanned a median of 23.6 units but only 16 were recorded, a 35.9% loss.
+        #   their positions follow automatically as r0[0]+t.
+        #   measured: reads span a median of 23.6 units; recording only 16 would lose 35.9%.
         #   However, units after the K-th are a segment not used in the placement score, so
         #     they are marked separately in the scored column (so they are not mixed in before testing).
         for t, (u, _s) in enumerate(seg):

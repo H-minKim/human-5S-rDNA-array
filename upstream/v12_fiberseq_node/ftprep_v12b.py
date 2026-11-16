@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
 # m6A called afresh from PacBio kinetics and stored separately
-#   대상 : 원자료에 m6A 호출이 없는 개체 (HG03672 · HG02624 = Y5 제출분 jasmine 2.2.0, 5mC 만)
-#   다른 개체의 m6A 는 기기 jasmine 2.7.x -> 호출기가 다르므로 본 분석과 합치지 않는다 (출처 PACBIO_FIBERSEQ_FT)
-#   순서
-#     1. 배치 SAM(~/aog8v12pb/sam/<sample>.AOJV_PB.sam) 의 주 정렬 기록을 원본 read 방향 비정렬 기록으로 되돌림
-#        (역정렬이면 SEQ 역상보·QUAL 뒤집기; kinetics fi/fp/ri/rp/fn/rn 과 MM/ML 은 원본 방향 그대로라 손대지 않음)
-#        @RG = 원자료 BAM 머리줄(movie 별) · 각 read 에 RG:Z 붙임
-#     2. ft predict-m6a (fibertools-rs v0.13.0 · 기본값)
-#     3. 새 MM/ML 을 원래 정렬 기록에 넣은 새 SAM (~/pbft_v12/sam) — 다른 열·태그는 그대로
-#     검정 : read 마다 ft 전후 C+m 블록(자리·값) 동일 · SEQ 동일
-#   인자 : 개체
+#   The targets: the individuals whose raw data carries no m6A calls (HG03672 and HG02624, the Year 5 submission from jasmine 2.2.0, 5mC only).
+#   The m6A of the other individuals comes from the instrument's jasmine 2.7.x, a different caller, and is not pooled with this analysis (source PACBIO_FIBERSEQ_FT).
+#   The steps:
+#     1. The primary alignment records of the placement SAM (aog8v12pb/sam/<sample>.AOJV_PB.sam) are reverted to unaligned records in the original read orientation
+#        (for a reverse alignment the SEQ is reverse-complemented and the QUAL reversed; the kinetics tags fi/fp/ri/rp/fn/rn and MM/ML are already in the original orientation and are untouched).
+#        @RG comes from the raw BAM header, per movie, and an RG:Z tag is attached to each read.
+#     2. ft predict-m6a (fibertools-rs v0.13.0, default settings).
+#     3. A new SAM with the new MM/ML inserted back into the original alignment records (pbft_v12/sam); every other field and tag is unchanged.
+#     The test: per read, the C+m block, its positions and values, and the SEQ must be identical before and after ft.
+#   Argument: the individual.
 import io
 import os
 import sys
@@ -21,8 +21,8 @@ NL = chr(10)
 TAB = chr(9)
 H = os.path.expanduser
 S = sys.argv[1]
-SRC = H(os.environ.get("SRCD", "~/aog8v12pb/sam") + "/%s.AOJV_PB.sam" % S)   # v12b : SAM 폴더·작업폴더 환경변수 (기본값 = 옛 동작)
-W = H(os.environ.get("FTW", "~/pbft_v12"))
+SRC = H(os.environ["SRCD"] + "/%s.AOJV_PB.sam" % S)   # the SAM folder and the working folder come from environment variables
+W = H(os.environ["FTW"])
 FT = H("~/bin/ft")
 os.makedirs(os.path.join(W, "sam"), exist_ok=True)
 os.makedirs(os.path.join(W, "ft"), exist_ok=True)
@@ -35,7 +35,7 @@ def rc(s):
 
 
 def blocks(mm, ml):
-    """{블록머리: (deltas 문자열, 값 목록)}"""
+    """{block header: (deltas string, list of values)}"""
     vals = ml.split(",")[1:] if ml else []
     out = {}
     base = 0
@@ -54,7 +54,7 @@ def tag(fields, pre):
     return None
 
 
-# ── 1. 비정렬 BAM
+# -- 1. the unaligned BAM
 RG = {}
 hdr = ["@HD" + TAB + "VN:1.6" + TAB + "SO:unknown"]
 for fp in sorted(glob.glob(os.path.join(W, "rg", "*.hdr"))):
@@ -90,7 +90,7 @@ io.open(os.path.join(W, "ft", "%s.ft.log" % S), "w", encoding="utf8").write(p.st
 if p.returncode:
     sys.exit("ft 실패 " + p.stderr[-500:])
 
-# ── 3. 새 MM/ML + 검정
+# -- 3. the new MM/ML, and the test
 T = collections.Counter()
 NEW = {}
 heads = collections.Counter()

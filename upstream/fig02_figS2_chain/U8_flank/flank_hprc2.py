@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# flank restoration round 2, retry of failures plus the anchor method (2026-09-14)
+# flank restoration round 2, retry of failures plus the anchor method
 #
 #   two classes not done in round 1
 #     (a) contig not downloaded: network, simply download again

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-r"""Fig 2 N: permutation test of the excess of AFR-private tokens (2026-10-28 user question 'can it not be tested? check it' and 2026-10-29 'put it in the figure and legend')
+r"""Fig 2 N: permutation test of the excess of AFR-private tokens
    (1) Reproduction: rerun [1] of v111_pop_var_artifact_checks.py with the same random seed (20260923) and compare row by row with X12_POP_VAR_DOWNSAMPLE that the figure reads
    (2) Test: null = population labels are unrelated to variants. Labels are shuffled per individual (the two haplotypes of a person stay together, the number of individuals per population is preserved)
       statistics = median AFR-private token count over K(50) equal-size downsamples, and the median of (AFR - max of the other four populations)

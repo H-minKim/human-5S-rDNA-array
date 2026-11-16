@@ -1,18 +1,17 @@
 # -*- coding: utf-8 -*-
-# — 보노보를 guppy 6.3.8 read 만으로 다시 계산 (+ 6.3.7 만 · 혼합)
-#   read 판본 대리 표지 = BAM MM 태그 머리 : "C+m?..." 만 = 6.3.8 · "C+h?...;C+m?..." = 6.3.7
-# counted again here
-# Metric, with the original definition
-#     A1 array − flank : AVF 정의(array_vs_flank.py) — MM 의 모든 m 호출 · 정렬 일치 자리 · ML >= 128 ·
-#                        구간 = AVF.tsv 의 reg_start..reg_end (1기반 양끝 포함). 혼합판이 AVF n_c · n_5mC 를 재현해야 함.
-#     read_unit 층 (03_reads 보노보 read_unit · CG · x10 거름 : n_calls >= array 중앙값 절반)
-#       A7 평균 β · OFF(<0.35) · x10 이봉 판정 · A8 과분산비(x8 정의)
-#       A4 끝 섞임비율(§5-C 인라인 계산을 코드로 옮김) : 끝거리 = min(pos, N−pos+1) · 끝 1–5 vs 안쪽 21+ OFF 비율 · ON(β>0.65) 평균
-#       A3 끝 − 안쪽(read_unit 판) : 유닛별 호출가중 β → 끝 1–5 평균 − 안쪽 20+ 평균
-#          (원 A3 값 −0.474 는 자리별 bedMethyl 합산판 x5/x6 — 판본별로는 bedMethyl 을 못 나눠 read_unit 판으로 비교)
-#     A9 coding : OTHERSP_READUNIT_CODING.tsv.gz (x11) · x12 거름 · coding OFF · 판정
-#   부수 : §5-C 끝 섞임비율 표(유인원 6 종 · 혼합)를 코드 파일로 재현
-#   출력 : tables/BONOBO_BY_BASECALLER.tsv · tables/APE_END_MIXING.tsv · X17_BONOBO_BY_BASECALLER.txt
+# Recompute the bonobo from the guppy 6.3.8 reads alone, and also from 6.3.7 alone and from the mixture.
+#   The basecaller release is inferred from the head of the BAM MM tag: "C+m?..." alone means 6.3.8, while "C+h?...;C+m?..." means 6.3.7.
+# Metrics and their definitions:
+#     A1, array minus flank, on the AVF definition from array_vs_flank.py: every m call in MM, at positions matching the alignment, at ML >= 128,
+#                        over the interval reg_start..reg_end of AVF.tsv, 1-based and inclusive. The mixed run must reproduce the n_c and n_5mC of AVF.
+#     The read-unit layer, from the bonobo read_unit tables, CG context, with the x10 filter n_calls >= half the array median:
+#       A7 the mean beta, the OFF fraction below 0.35, the x10 bimodality call, and A8 the overdispersion ratio on the x8 definition.
+#       A4 the end-mixing fraction: the distance to the end is min(pos, N - pos + 1), and the OFF fraction over ends 1-5 against the interior from 21 on, with the mean over ON units above 0.65.
+#       A3 end minus interior on the read-unit measure: the call-weighted beta per unit, then the mean over ends 1-5 minus the mean over the interior from 20 on.
+#          (The A3 value of -0.474 comes from the per-position bedMethyl sum in x5 and x6; bedMethyl cannot be split by basecaller release, so the comparison is made on the read-unit measure.)
+#     A9 coding, from OTHERSP_READUNIT_CODING.tsv.gz with the x12 filter, the coding OFF fraction and the call.
+#   Also: the end-mixing table for the six great ape species, on the mixture.
+#   Outputs: tables/BONOBO_BY_BASECALLER.tsv, tables/APE_END_MIXING.tsv and X17_BONOBO_BY_BASECALLER.txt
 import io, struct, collections
 import numpy as np
 import pandas as pd
@@ -25,7 +24,7 @@ def _need(k):
     v = _os_need.environ.get(k)
     if not v:
         _sys_need.exit("environment variable %s is not set (the deposited copy has no default; "
-                       "see README.md, section 'How to run it')" % k)
+                       "see README.md, section 'Environment variables')" % k)
     return v
 
 
@@ -59,7 +58,7 @@ AVF = AVF[AVF.species_key == SP]
 REG = [(r.region, r.chrom, int(r.reg_start), int(r.reg_end), int(r.n_c), int(r.n_5mC)) for r in AVF.itertuples()]
 NIBCOMP = G["NIBCOMP"]
 
-# ---------------------------------------------------------------- BAM : read 판본 + AVF 구간 호출
+# ---------------------------------------------------------------- the BAM: basecaller release and the calls over the AVF interval
 sig = {}
 cnt = collections.defaultdict(lambda: np.zeros(2, dtype=np.int64))   # (grp, region) -> n, m
 for refs, r in G["bam_records"](BAM):
@@ -116,7 +115,7 @@ for refs, r in G["bam_records"](BAM):
                     best[q_] = max(best.get(q_, 0), v)
             elif c == "h":
                 for q_ in idx.tolist():
-                    best.setdefault(q_, 0)          # AVF 는 h 만 있는 자리도 호출 1 개로 센다(pm=0)
+                    best.setdefault(q_, 0)          # AVF counts a position carrying only h as one call, with pm = 0
     if not best:
         continue
     qi = np.fromiter(best.keys(), dtype=np.int64); mv = np.fromiter(best.values(), dtype=np.int64)
@@ -145,7 +144,7 @@ for gname in ("혼합", "6.3.8", "6.3.7"):
     ROWS.append(dict(grp=gname, metric="A1 flank β (L+R)", value=fl[1] / fl[0], n=int(fl[0])))
     ROWS.append(dict(grp=gname, metric="A1 array − flank", value=a[1] / a[0] - fl[1] / fl[0], n=int(a[0])))
 
-# ---------------------------------------------------------------- read_unit 층
+# ---------------------------------------------------------------- the read-unit layer
 RU = pd.read_csv(B + "/03_reads/%s/%s__%s.read_unit.tsv" % (SP, SP, SP), sep="\t")
 RU = RU[RU.context == "CG"].drop_duplicates(["read_id", "array_id", "array_pos"]).copy()
 RU["grp"] = RU.read_id.map(sig).fillna("BAM에없음")
@@ -203,7 +202,7 @@ for m in T.metric.unique():
         v.append(rr.note if isinstance(rr.get("note"), str) and rr.value != rr.value else ("%+.4f" % rr.value if "−" in m or "- " in m else "%.4f" % rr.value))
     P("%-52s %10s %10s %10s" % (m, *v))
 
-# ---------------------------------------------------------------- §5-C 끝 섞임비율 (유인원 6 종 · 혼합) 코드판
+# ---------------------------------------------------------------- the end-mixing fraction for the six great ape species, on the mixture
 NM = {"bonobo_mPanPan1": "보노보", "chimp_mPanTro3": "침팬지", "gorilla_mGorGor1": "고릴라",
       "orang_bornean_mPonPyg2": "보르네오오랑", "orang_sumatran_mPonAbe1": "수마트라오랑", "siamang_mSymSyn1": "시아망"}
 D = pd.concat([pd.read_csv(B + "/03_reads/%s/%s__%s.read_unit.tsv" % (k, k, k), sep="\t") for k in NM])

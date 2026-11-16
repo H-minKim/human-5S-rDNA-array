@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
-r"""Source data Excel files (English) for Figure 2 and Supplementary Figure 2. of 2026-10-20:
-   'put the result part of the summary table into Excel form (in English), and when submitting the paper, provide the source Excel of every data item'
+r"""Source data Excel files (English) for Figure 2 and Supplementary Figure S2.
+   The result part of the summary table in Excel form (in English), one source workbook per figure
    - Values: the values actually drawn by the published panel figures (English edition), i.e. the JSON that srcdata.py read from the Figure just before saving (SRCDATA/<panel>__en.json)
    - Panel letter, panel content, denominator, aggregation unit and cut: from the Fig 2 layout table (Korean-named file, in Korean), translated to English with the dictionary below (stops if a term is missing from the dictionary, and the multiset of numbers in the original and in the English must be the same)
-   - Output: <OUTD>/Fig2_SourceData.xlsx , FigS2a_SourceData.xlsx , FigS2b_SourceData.xlsx (a README sheet plus one sheet per panel), with a check that no Korean is left
-   - the supplement is split in two (layout table SFig2 a-i -> FigS2a, j-s -> FigS2b, sheet names FigS2aA ... FigS2bS)
+   - Output: <OUTD>/Fig2_SourceData.xlsx , FigS2_SourceData.xlsx (a README sheet plus one sheet per panel), with a check that no Korean is left
+   - the supplement is one figure over two pages (Supplementary Figure S2, panels A-Q), sheets FigS2A ... FigS2Q
      - the location of the drawn-value JSON can be changed with the environment variable SRCDATA_DIR (default HERE/SRCDATA)
-   - 2026-11-01 user 'make the S2 naming a single S2': the supplement is one figure over two pages (Supplementary Figure S2, panels A-Q) =>
-     output = Fig2_SourceData.xlsx , FigS2_SourceData.xlsx (sheets FigS2A ... FigS2Q). The page split (a-g = page 1) appears only in the README sheet"""
+   - the page split of the supplement (a-g = page 1)
+     appears only in the README sheet"""
 import io, os, re, sys, json, glob, hashlib, collections, datetime
 sys.stdout.reconfigure(encoding="utf-8")
 from openpyxl import Workbook
@@ -21,12 +21,12 @@ os.makedirs(OUTD, exist_ok=True)
 md5 = lambda q: hashlib.md5(open(q, "rb").read()).hexdigest()
 HAN = re.compile("[가-힣]")
 
-# ---------------- Korean to English dictionary for the layout table (2026-10-20, moved by ) ----------------
+# ---------------- Korean to English dictionary for the layout table ----------------
 TR = {
- # (second) main Fig 2 A: blue line = all substitutions plus deletions and insertions outside blocks, orange = deletions and insertions inside blocks (old keys are kept to reproduce old editions)
+ # main Fig 2 A: blue line = all substitutions plus deletions and insertions outside blocks, orange = deletions and insertions inside blocks (keys of other editions of the layout table are also in this dictionary)
  "개별 자리(bp)마다, 배열 전체 평균 — 치환과 블록 밖 결실 삽입은 염기 단위, 반복 블록 안 결실 삽입은 블록 폭": "Per position (bp), averaged over the whole array; substitutions, and insertions or deletions outside repeat blocks, per base; insertions or deletions within repeat blocks drawn as block width",
  "유닛 (치환과 블록 밖 결실 삽입은 자리별 · 블록 안 결실 삽입은 블록별 · 한 유닛은 한 번만)": "Unit (per position for substitutions and for insertions or deletions outside repeat blocks, per block for insertions or deletions within them; each unit counted once)",
- # layout table text after the terminal-type definition (10 or more of 12 diagnostic variants) (old keys are kept to reproduce old editions)
+ # layout table text under the terminal-type definition (10 or more of 12 diagnostic variants)
  "말단형 사이 간격 분포 (간격 1 은 3 건뿐, 0.0071)": "Distribution of gaps between terminal-type units (gap 1 occurs only 3 times, 0.0071)",
  "말단형 보유 패턴 × 집단, 패턴 69 개 전부": "Terminal-unit carrier pattern by population, all 69 patterns",
  "집단 표기 하플로타입 188 (미표기 2 제외)": "188 haplotypes with a population label (2 unlabelled excluded)",
@@ -85,7 +85,7 @@ TR = {
  "하플로 542 (S18 basis B · pen 1.0) ‖ 구역은 깊이 프로파일 (MINHAP 100 · DMAX 40)": "542 haplotypes (table S18, criterion B, penalty 1.0); zones from the depth profile (minimum 100 haplotypes, maximum depth 40)",
  "하플로타입 510 · 개체 280 (무리 30 · 하플로타입 5 개 이상 13 을 그림)": "510 haplotypes, 280 individuals (30 clusters; the 13 with 5 or more haplotypes are drawn)",
  "하플로타입 534 · 유닛 30,268 (가운데 창 0.2–0.8)": "534 haplotypes, 30,268 units (central window 0.2 to 0.8)",
- # denominator text revised in the layout table on 2026-10-21 (supplement B)
+ # denominator text (supplement B)
  "하플로타입 534 (가운데 창 0.2–0.8 · Q2b·XB2) · 거리마다 유닛쌍 22,280~29,756 (XB2 · 거리 1–15) ‖ 2026-10-21 : 옛 판 '유닛 30,268' 은 X5·X6(하플로타입 533)의 수라 지웠다 · XB2 쌍 수로 거꾸로 세면 30,290 (쌍 세는 법 가정 · 미확정)":
      "534 haplotypes (central window 0.2 to 0.8; tables Q2b and XB2); 22,280 to 29,756 unit pairs per separation (XB2; separations 1 to 15); counting back from the XB2 pair numbers gives 30,290 units, which assumes a pair-counting rule and is not confirmed",
  "거리마다 유닛쌍 4,000 · 사건 13,727~16,016 (X4 · 거리 1·2·3·5·8·12·18·25 · 최소는 거리 2) · 바닥은 무관 쌍 4,000 · 사건 19,384 (X9) ‖ 2026-10-21 : 옛 판 14,144 는 거리 1 값이었다":
@@ -189,7 +189,7 @@ for r in R:
         PANELS[g].append(r)
 for k in PANELS: PANELS[k].sort(key=lambda r: r[H["칸"]])
 assert [len(PANELS[k]) for k in ("Fig2", "SFig2")] == [14, 17], {k: len(v) for k, v in PANELS.items()}
-# supplement is one figure S2, pages = two composites (page 1 a-g = fig2_suppa, page 2 h-q = fig2_suppb, new layout of 2026-10-29)
+# supplement is one figure S2, pages = two composites (page 1 a-g = fig2_suppa, page 2 h-q = fig2_suppb)
 PAGE1 = [r[H["칸"]].upper() for r in PANELS["SFig2"] if r[H["칸"]] <= "g"]
 PAGE2 = [r[H["칸"]].upper() for r in PANELS["SFig2"] if r[H["칸"]] > "g"]
 assert (len(PAGE1), len(PAGE2)) == (7, 10), (PAGE1, PAGE2)

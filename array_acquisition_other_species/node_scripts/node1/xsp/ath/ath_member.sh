@@ -1,7 +1,7 @@
 #!/bin/bash
-# tar --to-command 가 멤버마다 부른다 (표준입력 = 멤버 내용 · TAR_FILENAME = 멤버 이름)
-#   pod5 멤버 : 임시로 받아 IDS 에 있는 read 만 sub/ 에 남기고 원본은 지운다 -> 디스크에는 고른 read 만
-#   members.tsv : 이름 · 크기 · pod5 filter 종료코드 · 멤버 안 read 수 · 남긴 read 수
+# tar --to-command calls this once per member: stdin is the member's content and TAR_FILENAME is its name.
+#   For a pod5 member: take it temporarily, keep only the reads listed in IDS under sub/, then delete the original, so only the selected reads reach disk.
+#   members.tsv: name, size, pod5 filter exit code, reads in the member, reads kept.
 set -u
 H=~/xsp/ath
 mkdir -p /tmp/athm "$H/sub"

@@ -1,36 +1,36 @@
 # -*- coding: utf-8 -*-
-# 단계 ③ 슬롯 배정 (하플로타입마다 파일 1 개)
-#   단계 : ③ — hap_final2.tsv + seqidx_all.tsv → hap_seq.tsv → hap_seq_node_v8.tsv
-#   이 글이 슬롯 번호를 정한다 — 방법 문서가 *"가장 위험한 곳"* 이라 적은 단계다.
+# Stage 3: slot assignment, one file per haplotype.
+#   Step 3: hap_final2.tsv plus seqidx_all.tsv -> hap_seq.tsv -> hap_seq_node_v8.tsv.
+#   This script fixes the slot numbers.
 
 # -*- coding: utf-8 -*-
-# 2단계. 확정 하플로타입에 실제 서열을 배정한다 (2026-09-05)
+# Assign an actual sequence to each fixed haplotype.
 #
-#  입력
-#    hap_final2.tsv  — 314 개체 × 슬롯 (유닛 수 · 채택 근거)   프레임 UNITS
-#    seqidx_all.tsv  — cmp4d 의 .fa 1,516 개 전수 색인          프레임 UNITS
+#  Inputs:
+#    hap_final2.tsv, 314 individuals by slot with the unit count and the basis of the choice, in the unit frame;
+#    seqidx_all.tsv, an exhaustive index of the 1,516 .fa files in cmp4d, in the unit frame.
 #
-#  배정 규칙
-#    ① 유닛 수가 확정값과 ±1 안에 드는 .fa 만 후보로 본다.
-#       (하플로타입을 고른 근거는 이미 1단계에서 정했다. 여기서는 그 유닛 수를 가진
-#        서열 중 가장 정확한 것을 고르는 문제만 남는다.)
-#    ② 서열 정확도 순으로 고른다:  공개조립본 > 우리 hifiasm > 관통 read
-#       조립본은 다듬어진 서열(~99.9%+)이고 관통 read 는 ONT 원시 read(~99%)다.
-#       관통이 유닛 수 싸움에서 이겼더라도, 같은 유닛 수를 내는 조립 서열이 있으면
-#         그 서열을 쓴다 (유닛 수는 관통이, 염기는 조립본이 정확하다).
-#    ③ 같은 등급 안에서는 사슬연속 % 높은 것 -> bp 큰 것.
-#    ④ 한 개체의 두 슬롯에 같은 파일을 배정하지 않는다.
+#  The assignment rules:
+#    1) Only a .fa whose unit count is within 1 of the fixed value is a candidate.
+#       (The basis for choosing the haplotype was settled at stage 1; what remains here is only
+#        choosing the most accurate sequence among those with that unit count.)
+#    2) Choose in order of sequence accuracy: public assembly, then our hifiasm, then a spanning read.
+#       An assembly is a polished sequence at about 99.9% or better, while a spanning read is a raw ONT read at about 99%.
+#       Even where the spanning read won on unit count, if an assembled sequence gives the same count
+#         that sequence is used: the spanning read is right about the count, the assembly about the bases.
+#    3) Within a grade, the higher chain continuity wins, then the greater bp.
+#    4) The same file is never assigned to both slots of one individual.
 #
-#  슬롯은 실제 서열로 뒷받침돼야 한다 (2026-09-05 정정).
-#    1 단계가 1·2 위로 뽑은 군집에 대응하는 .fa 가 없으면 다음 순위 군집으로 내려간다.
-#    실측으로 이것이 두 건을 바로잡았다:
-#      NA19120  91(관통 read 사슬계수) -> 171 : 91 유닛짜리 서열이 아예 없고
-#               t1 조립 서열은 96, hifiasm 은 171 이다. 91 은 96 의 사슬 저계수였다.
-#      HG01028  45 -> 40 : 같은 관통 read 로 만든 t1 참조 서열이 40 유닛이다.
-#    끝까지 서열이 없으면 그 슬롯은 유닛 수만 남기고 서열 없음으로 표시한다
-#    (재조합관통 단독 군집 — 합성 서열이라 쓸 수 없다).
+#  A slot must be backed by an actual sequence.
+#    Where no .fa corresponds to the cluster stage 1 ranked first or second, the next cluster is taken.
+#    This applies in two cases:
+#      NA19120 takes 171 in place of 91, the spanning read's chain count: no 91-unit sequence exists at all,
+#               the tier 1 sequence has 96 and hifiasm 171, so 91 is an undercount of the 96.
+#      HG01028 takes 40 in place of 45: the tier 1 reference built from that same spanning read holds 40 units.
+#    Where no sequence is found at all, the slot keeps its unit count and is marked as having no sequence
+#    (a cluster supported only by a recombined-spanning read, whose sequence is synthetic and cannot be used).
 #
-#  재조합관통(옛 refseq_*.fa)은 합성 서열(정확히 N x 2240)이라 서열로 쓰지 않는다.
+#  A recombined-spanning sequence is synthetic, exactly N x 2240 bp, and is never used as a sequence.
 import io
 import os
 import collections
@@ -71,7 +71,7 @@ for s in sorted(HAP):
     used = set()
     got = []
     left = sorted(HAP[s], key=lambda x: x["rank"])
-    # ① 서열이 있는 군집을 순위대로 채운다
+    # 1) fill the slots from the clusters that have a sequence, in rank order
     for h in left:
         if len(got) >= 2:
             break
@@ -85,7 +85,7 @@ for s in sorted(HAP):
         got.append((h, b))
         if h["rank"] > 2:
             demoted.append((s, h, b))
-    # ② 그래도 2 개가 안 차면 서열 없는 상위 군집을 유닛 수만으로 남긴다
+    # 2) if that leaves fewer than 2, a higher-ranked cluster with no sequence is kept on its unit count alone
     if len(got) < 2:
         for h in left:
             if len(got) >= 2:

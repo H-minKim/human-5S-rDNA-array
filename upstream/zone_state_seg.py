@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-# 군 × array 구역 × 유닛 상태(저/고) × 구획(스페이서·유전자부·차) 한 표로
+# One table of group x array zone x unit state (low or high) x segment (spacer, gene region, and the difference).
 # zone = the canonical zone definition, the zone() of 01_code/v36_cancer_by_zone.py
-#   군   = 정상 조직(환자) · 정상 1차세포(PBMC) · 비암 세포주(LCL·GM12878·짝지은 정상) · 암 조직 · 암 세포주
-#   묻는 것 : 암 조직과 암 세포주가 함께 정상과 다른 자리가 있나
+#   The groups: normal tissue (patient), normal primary cells (PBMC), non-cancer cell lines (LCL, GM12878 and the paired normals), cancer tissue, and cancer cell lines.
+#   The question: is there any position at which the cancer tissues and the cancer cell lines together differ from the normals?
 import io, os, sys
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 import numpy as np, pandas as pd
@@ -31,8 +31,8 @@ D = D[D["sample"].isin(GRP)].copy()
 D["군"] = D["sample"].map(GRP)
 D["state"] = np.where(D.b_call >= THR, "고메틸", "저메틸")
 D["apx"] = D.N - D.ad + 1 if "ad" in D.columns else D.N - D.ap + 1
-D["adx"] = D.ap            # array_pos 1 = 원위 (정본 규칙)
-D["apx"] = D.N - D.ap + 1  # 근위 index
+D["adx"] = D.ap            # array_pos 1 is the distal end, by the canonical convention
+D["apx"] = D.N - D.ap + 1  # the proximal index
 
 def zone(ap, ad):
     if ap <= ad:
@@ -57,7 +57,7 @@ def wb(x, k):
     n = x["n_" + k].sum()
     return ((x["b_" + k] * x["n_" + k]).sum() / n) if n else np.nan
 
-# ---------------- 시료 × 구역 × 상태 ----------------
+# ---------------- sample x zone x state ----------------
 rows = []
 for (s, z, st), g in D.groupby(["sample", "Z", "state"]):
     if len(g) < 20: continue
@@ -67,7 +67,7 @@ for (s, z, st), g in D.groupby(["sample", "Z", "state"]):
 S = pd.DataFrame(rows)
 S.to_csv(os.path.join(HERE, "ZSS_SAMPLE.tsv"), sep="\t", index=False, float_format="%.5f")
 
-# ---------------- 군 요약 (시료 중앙값) ----------------
+# ---------------- the group summary, the median over samples ----------------
 P()
 P("[표] 군 × 구역 × 상태 — 값은 시료 중앙값 (n = 그 칸에 들어간 시료 수)")
 for st in ("저메틸", "고메틸"):
@@ -82,7 +82,7 @@ for st in ("저메틸", "고메틸"):
               % (z, g, len(v), v.sp.median(), v.gene.median(), v.gene_sp.median()))
         P("-" * 62)
 
-# ---------------- 암 공통 : 두 암 군이 함께 정상과 다른가 ----------------
+# ---------------- shared by the cancers: do the two cancer groups together differ from the normals? ----------------
 P()
 P("[검정] 암 조직(환자) 과 암 세포주 가 함께 정상 쪽과 다른 자리")
 P("   정상 쪽 = 정상 조직(환자) + 정상 1차세포(PBMC) + 비암 세포주(LCL) + 비암 세포주")
@@ -102,7 +102,7 @@ for st in ("저메틸", "고메틸"):
                             Δ암세포주=c.median() - n.median(), 암조직z=zt, p세포주=u.pvalue))
 R = pd.DataFrame(res)
 R["q"] = np.minimum(1, R.p세포주 * len(R))
-# 같은 방향 + 세포주 유의 + 조직도 |z|>1
+# the same direction, significant in the cell lines, and |z| above 1 in the tissues as well
 R["암공통"] = ((R.p세포주 < 0.05) & (np.sign(R.Δ암세포주) == np.sign(R.암조직z)) & (R.암조직z.abs() > 1))
 R = R.sort_values("p세포주")
 P()
@@ -118,7 +118,7 @@ else:
     P("   없음")
 P("   (검정 %d 칸 · Bonferroni q 열 참고 — q<0.05 인 칸 %d)" % (len(R), int((R.q < 0.05).sum())))
 
-# ---------------- 조직 비교 (같은 사람 LCL vs PBMC) ----------------
+# ---------------- the tissue comparison, LCL against PBMC in the same individual ----------------
 P()
 P("[tissue] LCL and PBMC of the same 10 individuals : paired test")
 T = TI.copy()

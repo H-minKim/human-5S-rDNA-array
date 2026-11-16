@@ -1,14 +1,13 @@
 # -*- coding: utf-8 -*-
-# 번호 옮기기(relabel) 되돌림 — 옛 build_ao_final.py 와 같은 규칙 (2026-09-13)
-#   왜 : ao_g8cut 은 저장 배치와 어긋나 보이는 read 를 저장 번호로 '옮겨' 준다(relabeled_d).
+# Undo the relabelling, by the same rule as build_ao_final.py.
+#   Why: ao_g8cut moves a read that appears to disagree with the stored placement onto the stored index, as relabeled_d.
 # The number is the real position; forcing the stored value is wrong (measured over 66 individuals, 48 against 19).
-#        옛 파이프라인은 build_ao_final.py 에서 이 옮김을 되돌렸다 :
+#        The move is undone as in build_ao_final.py:
 #            r[7] = r[7] - d   (array_pos)
-#            r[8] = r[8] - d   (G6 번호)
-#        내가 이 단계를 빠뜨려 새 판에 57 read 의 번호가 옮겨진 채 들어갔다.
-#   같이 하는 것 : 수리 슬롯 2 곳의 좌표틀 보정(fix_shift2 와 같은 규칙) — 둘은 서로 다른 원인이라 함께 적용한다.
-#   원본은 덮지 않는다.
-#   인자 : 원 유닛표(ao_g8cut 산출) · AO_G8_READS.tsv · 출력
+#            r[8] = r[8] - d, on the G6 index.
+#   Also applied: the coordinate-frame correction for the two repaired slots, by the same rule as fix_shift2.
+#   The original is not overwritten.
+#   Arguments: the source unit table from ao_g8cut, AO_G8_READS.tsv, and the output.
 import io
 import re
 import sys

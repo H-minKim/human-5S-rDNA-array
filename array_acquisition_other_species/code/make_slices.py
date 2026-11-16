@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-# array 가운데 최대 150 kb 조각을 뽑아 낸다 (노드에서 갭 허용 정렬로 직접 반복을 확인하기 위한 입력)
-#   머리줄에 원래 array 좌표와 조각 시작 옵셋을 적어 되짚을 수 있게 한다
+# Cut a fragment of up to 150 kb from the middle of the array, as the input for confirming the tandem repeat directly on the node by gapped alignment.
+#   The header records the original array coordinates and the fragment's start offset, so that it can be traced back.
 # MIT License · Copyright (c) 2026 Hungmin Kim
 import io
 import os

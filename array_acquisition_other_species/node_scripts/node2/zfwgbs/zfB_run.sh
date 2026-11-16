@@ -1,6 +1,6 @@
 #!/bin/bash
 # node2: builds the bisulfite index and aligns the egg WGBS
-#   입력 fastq 를 미리 800 만 spot 으로 줄여 놓았으므로 bismark 임시파일도 작다.
+#   The input fastq has already been cut to 8 million spots, so the bismark temporary files are small as well.
 # Checks the free disk at every step and stops below 25 GB, to protect other data.
 set -u
 cd ~/zfwgbs

@@ -1,24 +1,24 @@
 # -*- coding: utf-8 -*-
-# 사용자 주장 검정 (2026-09-28) :
-#   "5S 는 이봉화된 저메틸/고메틸 유닛의 비율이 바뀌며 전이한다.
-#    DXZ4 는 메틸 수준 자체가 유닛 수준에서 0.3 씩 계단처럼 오른다."
+# A test of the claim:
+#   5S makes its transition by changing the proportion of bimodally separated weakly and highly methylated units,
+#    whereas in DXZ4 the methylation level itself rises in steps of about 0.3 at the level of the unit.
 #
-# 이것을 가르는 검정은 이미 이 프로젝트에 있다 — p10_17_model_test.py 의 M vs S 다.
-#     M : 두 성분(μ0·μ1 고정) + 구간마다 섞임 비율 w_b      = "비율이 바뀐다"
-#     S : 한 성분 + 구간마다 평균 μ_b                        = "수준이 옮겨간다"
-#     둘 다 베타-이항(과분산 ρ 공통). ΔBIC = BIC_S − BIC_M, 양수면 M 이 낫다.
-#   그런데 그 코드는 염기단위 P10_CPG_ALL.tsv.gz 를 읽고, 그 파일에는 5S·D4Z4 밖에 없다.
-#     ⇒ DXZ4 · RNU2 · SST1 은 한 번도 이 검정을 받은 적이 없다.
-#   fit() 은 유닛마다 (k, n) 만 쓴다. 그 둘은 P10_FRAME_ALL.tsv 의 n_meth · n_cpg 와 같다.
-#     ⇒ 같은 함수를 그대로 가져와 여섯 array 전부에 돌릴 수 있다.
+# The test that separates these already exists here: M against S in p10_17_model_test.py.
+#     M: two components with mu0 and mu1 fixed, and a mixing fraction w_b per band = the proportion changes.
+#     S: one component with a mean mu_b per band = the level shifts.
+#     Both are beta-binomial with a shared overdispersion rho. delta BIC = BIC_S - BIC_M, and a positive value favours M.
+#   That code reads the per-base P10_CPG_ALL.tsv.gz, which holds only 5S and D4Z4,
+#     so it cannot test DXZ4, RNU2 and SST1.
+#   fit() uses only (k, n) per unit, and those are n_meth and n_cpg in P10_FRAME_ALL.tsv,
+#     so the same function can be imported unchanged and run on all six arrays.
 #
-# 두 가지를 따로 묻는다 :
-#   [A] array 안 (위치 구간이 band)  — array 를 따라가며 바뀌는 방식
-#   [B] 염색체 사이 (염색체가 band)  — 염색체마다 수준이 다른 그 차이의 방식
-#       DXZ4 의 "전체적인 메틸화가 계단처럼 오름" 은 [B] 에 해당한다.
-#   DXZ4 는 여성의 두 X 를 합치면 그 자체가 가짜 혼합이 되므로, 성별표로 상태를 갈라 따로도 돌린다.
+# Two questions are asked separately:
+#   [A] within an array, with the position band as the band: how the change proceeds along the array.
+#   [B] between chromosomes, with the chromosome as the band: the form of the difference in level between chromosomes.
+#       The claim that DXZ4's overall methylation rises in steps belongs to [B].
+#   Pooling a female's two X chromosomes would itself create a spurious mixture in DXZ4, so the state is split using the sex table and run separately as well.
 #
-# 정본 표를 건드리지 않는다 — 02_output_tables\claim_test_MvsS\ 로만 쓴다.
+# The canonical tables are not touched; output goes only to 02_output_tables/claim_test_MvsS/ .
 import io, os, math, json, collections, statistics
 import numpy as np
 from scipy.optimize import minimize
@@ -26,8 +26,8 @@ from scipy.special import gammaln, expit, logit
 
 def _need(_v):
     """No defaults are set: the script stops if a variable is missing.
-    이 글이 읽는 자료의 뿌리는 README.md 의
-    "Running this code" 절에 적혀 있다."""
+    The roots of the data this script reads are listed in the
+    "Running this code" section of README.md."""
     import os as _o, sys as _s
     _x = _o.environ.get(_v)
     if not _x:
@@ -49,10 +49,10 @@ os.makedirs(OUT, exist_ok=True)
 FAMS = ("5S", "D4Z4_4q", "D4Z4_10q", "DXZ4", "RNU2", "SST1")
 DIRN = {"5S": "distal", "D4Z4_4q": "proximal", "D4Z4_10q": "proximal",
         "DXZ4": "proximal", "RNU2": "proximal", "SST1": "proximal"}
-MINCPG = 8   # 이후 쓰지 않는다 — 여과가 _complete() 로 바뀌었다(옛 값으로만 남김)
+MINCPG = 8   # not used; the filter is _complete()
 
 
-# ---------------- 원 코드에서 그대로 가져온 부분 (한 글자도 바꾸지 않는다)
+# ---------------- taken from the original code unchanged
 def lbb(k, n, mu, rho):
     a = mu * (1 - rho) / rho
     b = (1 - mu) * (1 - rho) / rho
@@ -100,7 +100,7 @@ def fit(k, n, bi, B):
             [expit(x) for x in rM.x[3:3 + B]], (expit(rM.x[0]) > expit(rM.x[1])))
 
 
-MINC, COVMIN = 20, 0.9          # 완전유닛 (2026-10-04 · fig39·fig43·fig47 과 같은 규칙)
+MINC, COVMIN = 20, 0.9          # complete units, by the same rule as fig39, fig43 and fig47
 _TOTB = collections.defaultdict(collections.Counter)
 with io.open(os.path.join(SRC, "P10_FRAME_ALL.tsv"), encoding="utf8") as _f:
     _h = _f.readline().rstrip(chr(10)).split(chr(9))
@@ -126,7 +126,7 @@ def _complete(g, ix):
     return bool(cp) and len(bs & cp) / float(len(cp)) >= COVMIN
 
 
-# ---------------- 자료 : 유닛마다 (k, n, 위치, 염색체)
+# ---------------- data: (k, n, position, chromosome) per unit
 SEX = {}
 for i, L in enumerate(io.open(SEXP, encoding="utf8")):
     if i:
@@ -144,7 +144,7 @@ with io.open(os.path.join(SRC, "P10_FRAME_ALL.tsv"), encoding="utf8") as f:
         if not u.lstrip("-").isdigit() or not nu.isdigit():
             continue
         n = int(g[ix["n_cpg"]])
-        if not _complete(g, ix):      # 완전유닛만 (MINCPG 8 대신)
+        if not _complete(g, ix):      # complete units only
             continue
         d, N = int(u), int(nu)
         if d > N:
@@ -153,7 +153,7 @@ with io.open(os.path.join(SRC, "P10_FRAME_ALL.tsv"), encoding="utf8") as f:
 for fam in FAMS:
     print("  %-9s 유닛 %s" % (fam, format(len(U[fam]), ",")))
 
-# ---------------- DXZ4 염색체 상태 (성별표로 — 자료의 문턱이 아니다)
+# ---------------- the DXZ4 chromosome state, taken from the sex table and not from a threshold on the data
 mn = collections.defaultdict(lambda: [0, 0])
 for k, n, pp, pd, s, h in U["DXZ4"]:
     a = mn[(s, h)]; a[0] += k; a[1] += n

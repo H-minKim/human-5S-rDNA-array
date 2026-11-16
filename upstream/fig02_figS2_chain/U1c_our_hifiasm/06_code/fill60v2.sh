@@ -1,9 +1,7 @@
 #!/bin/bash
-# fill60 v2, shortened with parallel runs and an adaptive sweep (2026-09-04)
+# fill60 v2, with parallel runs and an adaptive sweep
 #
-#  v1 measured: median 10.8 min per individual. Remaining assemblies node58 39 runs (7.0h), 32 29 runs, 57 22 runs
-#
-#  Two ways to cut it
+#  Two ways the run time is cut
 #   (1) run in parallel to match the node cores
 #      extraction of 1 individual = 3-4 cores, 2 extractions per node need 6-8 cores left free.
 #      32-core node : 2 hifiasm x -t 12 = 24 cores (+extraction 8) = 32  -> 2 in parallel

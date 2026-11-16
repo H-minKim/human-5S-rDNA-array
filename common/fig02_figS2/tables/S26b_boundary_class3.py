@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-S26b (new 3-way split) - split variants into 'inherited' and 'newly arisen', look at their distribution within the array,
+S26b (3-way split) - split variants into 'inherited' and 'newly arisen', look at their distribution within the array,
       and measure which side the variants that make the boundaries found per array (S20 change points) belong to. (v11, primary)
 
 (haplotype, variant) origin classes, called from V11_ORIGIN_CALL.tsv (lineage test) and carrier extent
@@ -10,7 +10,7 @@ S26b (new 3-way split) - split variants into 'inherited' and 'newly arisen', loo
   private spread   only in this haplotype in the cohort and >=2 units in the array (arose in that lineage and then spread to neighbours)
   rare private (1 unit)   1 unit in the array, only in this haplotype in the cohort (proxy for the most recent events)
   rare shared (1 unit)    1 unit in the array, also present in other haplotypes, not ancestral/inherited (recurrence or a remnant of an old variant)
-  'Rare (1 unit)' is not de novo. In 5 trio pairs on 2026-09-20, 97% of the rare variants of this class were also in the transmitting parent.
+  'Rare (1 unit)' is not de novo. In 5 trio pairs, 97% of the rare variants of this class were also in the transmitting parent.
   How to read: not 'newly arisen variants' but 'where rare variants remain'.
 
 (1) Position distribution: count per unit by class, proximal 1-30 | middle (>30 on both sides) | distal 30-1, two-stage aggregation, ratio to middle
@@ -23,7 +23,7 @@ S26b (new 3-way split) - split variants into 'inherited' and 'newly arisen', loo
       for inherited (carrier table), other shared and rare (1 unit) (counts of 12 characters) each, number of change points vs shuffle null, junction enrichment (observed/uniform expectation)
 (4) Character by zone: best zones (proximal 1-3, 4-17, interior, distal 1-8) x 16 characters, multi-individual shared type vs single-unit type
       compute log2(zone/interior) per class and check whether the zone deviations of the two classes are alike (correlation).
-Output: primary\S26_*.tsv, log
+Output: primary/S26_*.tsv, log
 """
 import sys, io, os, collections, math
 import numpy as np
@@ -49,7 +49,7 @@ for h in range(NH):
     hapcnt.update(s)
 arrcnt = [collections.Counter() for _ in range(NH)]
 for i, vs in enumerate(units): arrcnt[hid[i]].update(vs)
-# new 3-way split (definition of fork 4815ef09, reproduced with code/V2_apply.py)
+# 3-way split (same definition as code/V2_apply.py)
 #   cohort = haplotypes with >= 30 units, f = carrier fraction within that cohort, fT = 0.10
 FT3 = 0.10; MINU3 = 30
 _big = [h for h in range(NH) if int((hid == h).sum()) >= MINU3]
@@ -131,7 +131,6 @@ def window_stats(h, t, lo_b, hi_b):
     return comp, np.abs(dens)
 # split boundary positions into the 4 cohort zones (proximal 1-3, 4-17, middle, distal 1-10)
 #   for boundary t, units on the proximal side = t and on the distal side = n - t. If it spans two zones, take the shallower one (same rule as VTZONE.py zone_of). Every boundary falls in one bin
-#   (old: proximal junction 1-6 (t <= 6), distal junction 4-10 (4 <= n-t <= 10), interior (>=15 on both sides), the remaining 'in between' was not in the figure)
 def loc_of(t, n):
     dp, dd = t, n - t
     pz = "근위 1-3" if dp <= 3 else ("근위 4-17" if dp <= 17 else None)

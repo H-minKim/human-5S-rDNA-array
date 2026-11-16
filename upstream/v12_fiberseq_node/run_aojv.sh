@@ -1,12 +1,12 @@
 #!/bin/bash
-# Fiber-seq 배치 -> AOJV 표 (v11 aoplace 와 완전히 같은 조건)
-#   지도  ~/CONSENSUS_MAP_G6.tsv · 요약 ~/CONSENSUS_SUM_G6.tsv
-#   정본  ~/hap_seq_node.tsv + ~/cmp4d
-#   → 배치는 G6 틀로만 정하고, 좌표틀 정합은 ao_g8cut_v12 가 한다.
+# Fiber-seq placement -> the AOJV table, under exactly the same conditions as the v11 placement.
+#   The map is CONSENSUS_MAP_G6.tsv with the summary CONSENSUS_SUM_G6.tsv.
+#   The canonical sequences are hap_seq_node.tsv plus cmp4d.
+#   The placement is decided in the G6 frame alone, and the coordinate-frame reconciliation is done by ao_g8cut_v12.
 #
-#   $1 = FS | PB      $2 = 병렬 수      $3 = 태그 접두
-#   FS : ONT Fiber-seq  K=12 Δ>=10 MINARR=26880 MAXFL=무제한 · read 이름 16 자
-#   PB : PacBio        K=4  Δ>=5  MINARR=8960  MAXFL=무제한 · read 이름 전체
+#   $1 = FS or PB, $2 = the number of parallel jobs, $3 = the tag prefix.
+#   FS, ONT Fiber-seq: K = 12, margin >= 10, MINARR = 26880, MAXFL unlimited, read names truncated to 16 characters.
+#   PB, PacBio: K = 4, margin >= 5, MINARR = 8960, MAXFL unlimited, full read names.
 set -e
 KIND="$1"; NP="${2:-4}"; PFX="${3:-n}"
 

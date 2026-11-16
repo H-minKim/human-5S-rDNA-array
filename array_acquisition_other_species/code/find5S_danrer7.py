@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-# danRer7 염색체에서 모계형(chr4)·체세포형(chr18) 5S 유전자를 서열로 찾는다(좌표 옮기기 대신 서열 검색).
-#   두 유형 119 bp 를 양가닥으로 미끄러뜨려 불일치 ≤12 인 자리를 모으고, 더 가까운 유형으로 배정한다.
-#   빠르게 : 두 유형이 공유하는 뒤쪽 60 bp(54–119, 차이 없음) 의 16-mer 씨앗으로 후보만 본다.
-#   인자 : chr.fa.gz 출력.tsv
+# Find the maternal-type (chr4) and somatic-type (chr18) 5S genes in the danRer7 chromosomes by sequence search, rather than by lifting coordinates.
+#   The 119 bp of each type is slid along both strands, positions with at most 12 mismatches are collected, and each is assigned to the nearer type.
+#   For speed, only candidates are examined, found by a 16-mer seed from the last 60 bp the two types share, positions 54-119, where they do not differ.
+#   Arguments: chr.fa.gz out.tsv
 import gzip
 import io
 import sys
@@ -47,12 +47,12 @@ for strand in "+-":
     s = g if strand == "+" else g.translate(RC)[::-1]
     i = 0
     while True:
-        # 씨앗 하나(가장 보존된 곳)만으로 빠르게 찾는다
+        # the search uses a single seed, from the most conserved stretch, for speed
         j = s.find("GGGAGACCGCCTGGGA", i)
         if j < 0:
             break
         i = j + 1
-        # 씨앗 위치는 서열에서 직접 계산한다(가정 금지 — 처음 87 로 넣어 전부 탈락했다)
+        # the seed position is computed from the sequence, not assumed
         st = j - SEEDPOS
         if st < 0 or st + 119 > len(s):
             continue

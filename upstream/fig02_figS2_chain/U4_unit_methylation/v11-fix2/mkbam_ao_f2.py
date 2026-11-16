@@ -55,7 +55,7 @@ for sp in sorted(glob.glob(os.path.join(D, "sam", "*.sam"))):
     smp, cfg = os.path.basename(sp)[:-4].rsplit(".", 1)
     lab = LAB.get((cfg, smp), "UNKNOWN")
     recs = [L.rstrip(NL) for L in io.open(sp, encoding="utf8") if L.strip() and not L.startswith("@")]
-    # the third renumbering (ZR tag) was reverted (number = alignment position) -> only the marker tag is removed. Sequence, quality, MM/ML and alignment unchanged
+    # the renumbering marker tag (ZR) is removed (number = alignment position). Sequence, quality, MM/ML and alignment unchanged
     nzr = sum(1 for x in recs if (TAB + "ZR:Z:") in x)
     recs = [TAB.join(f for f in x.split(TAB) if not f.startswith("ZR:Z:")) for x in recs]
     used = sorted(set(x.split(TAB, 3)[2] for x in recs))

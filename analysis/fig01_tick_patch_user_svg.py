@@ -1,23 +1,23 @@
 # -*- coding: utf-8 -*-
-# 사용자 정본 SVG 에 빠진 유닛 눈금을 넣는다 (2026-10-19)
+# Add the missing unit ticks to the hand-made master SVG.
 #
-# 무엇이 빠졌나 : 왼쪽 보라 read 2·3 번째 줄의 눈금이 x 86.4 에서 멈췄다.
-#   막대는 104.9 · 119.5 까지 가므로 18.5 pt · 33.1 pt 가 민둥이었다.
-# 까닭(제 코드) : 눈금을 그린 뒤에 라벨 덮어쓰기가 `graphics` 인자 없이 돌아
-#   닿은 밑그림(= 그 눈금)을 같이 지웠다. 로그는 21·26 개를 그렸다고 적는데
-#   결과물엔 17 개뿐이었다 — 그린 뒤에 지워진 것이다.
-# 좌표는 고친 PDF 에서 그대로 가져왔다(짐작이 아니다). 간격 3.08 pt.
-# 사용자 판의 꼴을 그대로 따른다 : `<path class="st53" d="M{x},{y}v2.9"/>` · 소수 1 자리.
+# What is missing: on the second and third purple reads on the left, the ticks stop at x 86.4.
+#   The bars run to 104.9 and 119.5, leaving 18.5 pt and 33.1 pt bare.
+# Cause: after the ticks were drawn, the label overwrite ran without a graphics argument and
+#   erased the artwork its box touched, that is those ticks. The log records 21 and 26 ticks drawn
+#   while only 17 survived in the output.
+# The coordinates are taken from the corrected PDF rather than assumed; the spacing is 3.08 pt.
+# The form of the master file is followed exactly: <path class="st53" d="M{x},{y}v2.9"/>, to one decimal place.
 import io, os, re, sys, hashlib
 sys.stdout.reconfigure(encoding="utf-8")
 # -- (repo) paths come from the environment --------------------------------
-#   저장소판에서 더한 줄 (2026-10-21). 전에는 돌리는 폴더의 상대 이름이었다 — 뜻은 같다.
+#@DROP
 SRC = os.environ.get("USER_SVG", "USER_Fig1.svg")
 OUT = os.environ.get("PATCHED_SVG", "Fig1_tickfix.svg")
 
 NEW = {
-    "229.5": [89.5, 92.6, 95.7, 98.7, 101.8],                       # 막대 끝 104.9
-    "231.8": [89.5, 92.6, 95.7, 98.7, 101.8, 104.9, 108.0, 111.1, 114.2, 117.2],  # 막대 끝 119.5
+    "229.5": [89.5, 92.6, 95.7, 98.7, 101.8],                       # the bar ends at 104.9
+    "231.8": [89.5, 92.6, 95.7, 98.7, 101.8, 104.9, 108.0, 111.1, 114.2, 117.2],  # the bar ends at 119.5
 }
 
 s0 = io.open(SRC, encoding="utf8", errors="replace").read()
@@ -38,7 +38,7 @@ print("넣은 눈금 : %d 개" % added)
 print("%s  %s -> %s" % (OUT, hashlib.md5(s0.encode("utf8")).hexdigest()[:12],
                          hashlib.md5(s.encode("utf8")).hexdigest()[:12]))
 
-# 검산 — 줄마다 눈금이 막대 끝까지 가나
+# Check: do the ticks reach the end of the bar on every row?
 import collections
 BAR = {"229.5": 104.9, "231.8": 119.5, "227.0": 87.3, "234.2": 133.2, "236.6": 123.4}
 rows = collections.defaultdict(list)

@@ -1,22 +1,22 @@
 # -*- coding: utf-8 -*-
-# FigX19 자료 — 근위 변이집합이 유닛 메틸에 미치는 영향 (유닛 단위)
-# 같은 이름의 앞판 이 저장소에 하나 더 있다 (2026-10-22 확인)
-#   `analysis/producers_v11_2026-10-11/figx19_prep.py` (2026-10-11 판).
-#   이름은 같고 내는 표가 다르다 — 이 글의 `FIGX19_F_SEG.tsv` 는 15 줄 · 9 열(`n_hap` 있음) 이고
-#   그쪽 것은 9 줄 · 8 열(`n_hap` 없음) 이다. 줄 수와 열로 가른다 (md5 는 계산법이 달라도 다르게 나온다).
-#   ⇒ `Fig 3`·`S3` 가 읽는 것은 이 글이 내는 쪽 이다.
-#   자료 : L2_HAP_UNIT.parquet (하플로타입 × 유닛 · HPRC_ONT_submissions)
-#   규칙 : ap = 근위 끝에서 센 자리(ap 1 = 근위 말단) · ad = 원위 끝에서 센 자리 (실측 확인함)
-#   위치가 메틸을 지배하므로 모든 비교는 위치 띠 안에서 · 개체 색조는 하플로타입 안에서 지운다
+# FigX19 data: the effect of the proximal variant set on unit methylation, per unit.
+# A script of the same name is also in the repository:
+#   analysis/producers_v11_2026-10-11/figx19_prep.py.
+#   The name is the same but the table differs: FIGX19_F_SEG.tsv from this script has 15 rows and 9 columns including n_hap,
+#   while the other has 9 rows and 8 columns without n_hap. They are told apart by row and column count, not by md5.
+#   Figure 3 and Supplementary Figure 3 read the table this script writes.
+#   Data: L2_HAP_UNIT.parquet (haplotype x unit, HPRC_ONT_submissions).
+#   Convention: ap is the position counted from the proximal end (ap 1 = the proximal terminus) and ad is counted from the distal end; both confirmed by measurement.
+#   Position dominates methylation, so every comparison is made within a position band, and the individual offset is removed within haplotype.
 import io, os, sys, itertools
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 import itertools
 import numpy as np, pandas as pd
 from scipy import stats
-# 자료 뿌리는 환경변수 하나로 (2026-10-21 · 저장소 공개 준비)
-#   안 주면 지금까지 쓰던 자리를 그대로 쓴다 — 돌아가는 것이 달라지지 않는다.
+# The data roots come from environment variables.
+#   They have no default: the script stops with a message if one is not set.
 DATA_ROOT = os.environ["DATA_ROOT"]
-# 표를 읽고 쓰는 자리 — 저장소에서는 표가 코드 옆에 없으므로 환경변수로 받는다 (2026-10-21)
+# Where the tables are read and written. The tables are not deposited next to the code, so these paths come from the environment.
 HERE = os.environ.get("TABLE_DIR", os.path.dirname(os.path.abspath(__file__)))
 LOG = io.open(os.path.join(HERE, "FIGX19_PREP.txt"), "w", encoding="utf8", newline="\n")
 def P(s=""): print(s, flush=True); LOG.write(str(s) + "\n"); LOG.flush()
@@ -41,7 +41,7 @@ PROV = [dict(항목="바탕 자료", 자료="L2_HAP_UNIT.parquet", 자료원="HP
              개체=L["sample"].nunique(), 하플로=L.hap.nunique(), 유닛=len(L),
              비고="read>=%d 인 유닛만" % MINREAD)]
 
-# ---------- A : 위치가 먼저다 ----------
+# ---------- A: position comes first ----------
 P()
 P("[A] 위치가 메틸을 지배한다 — 근위 자리별 f_hi (그래서 아래 비교는 전부 위치 띠 안에서 한다)")
 A = (L[L.ap <= 20].groupby("ap")
@@ -50,11 +50,10 @@ A = (L[L.ap <= 20].groupby("ap")
 P(A.to_string(index=False))
 A.to_csv(os.path.join(HERE, "FIGX19_A_POS.tsv"), sep="\t", index=False, float_format="%.4f")
 
-# 위치 구역 : 공통 5 구역 (2026-10-16 통일)
-#   근위 1-3 · 근위 4-17 · 내부 · 원위 11-22 · 원위 1-10
-#   = 정본 8 구역(zone_state_seg.py:37)을 묶은 것 — Z1 / Z2+Z3 / ZI / Z4 / Z5+Z6+Z7.
-#   새 경계를 만들지 않았다. 짧은 array 에서 한 유닛이 양 끝에 걸리므로 ap<=ad 로 가른다.
-#   (옛 판은 근위 1-3 / 4-10 / 11-30 세 띠뿐이었고 원위·내부를 안 봤다.)
+# Positional zones: the common five.
+#   proximal 1-3, proximal 4-17, interior, distal 11-22, distal 1-10
+#   They group the canonical eight zones (zone_state_seg.py:37): Z1 / Z2+Z3 / ZI / Z4 / Z5+Z6+Z7.
+#   No new boundary is introduced. In a short array one unit can fall at both ends, so the split is made on ap <= ad.
 def band(ap, ad):
     if ap <= ad:
         if ap <= 3:  return "근위 1-3"
@@ -66,16 +65,16 @@ def band(ap, ad):
 ZORD = ["근위 1-3", "근위 4-17", "내부", "원위 11-22", "원위 1-10"]
 L["띠"] = [band(a, d) for a, d in zip(L.ap.values, L.ad.values)]
 assert L.띠.isin(ZORD).all(), "구역 배정에서 빠진 유닛이 있다"
-ZU = L.copy()                      # 구역 유닛 — 이제 근위만이 아니다 (옛 이름 ZU 를 버렸다)
-# 추가 : 띠마다 관측 유닛이 있는 하플로타입 수 (분모를 표에서 바로 읽게)
-#   새 계산이 아니라 ZU 안에서 세는 것뿐이다. 다른 열은 건드리지 않는다.
+ZU = L.copy()                      # the zone units, which cover more than the proximal end
+# Also reported: the number of haplotypes with an observed unit in each band, so the denominator can be read straight from the table.
+#   This is a count within the same set.
 NHAP = ZU.groupby("띠").hap.nunique().to_dict()
 P("   구역별 하플로타입 : " + " · ".join("%s %d" % (k, NHAP[k]) for k in sorted(NHAP)))
 P()
 P("   5 구역 전부 : 유닛 %s · 하플로 %d · 개체 %d"
   % (format(len(ZU), ","), ZU.hap.nunique(), ZU["sample"].nunique()))
 
-# ---------- B : 변이 개수 ↔ 메틸 (위치 통제 전/후) ----------
+# ---------- B: variant count against methylation, before and after controlling for position ----------
 P()
 P("[B] 변이 개수 와 f_hi — 통제 전/후")
 rows = []
@@ -86,7 +85,7 @@ for b, g in ZU.groupby("띠"):
     r, p = stats.spearmanr(g.n_var, g.f_hi)
     rows.append(dict(구분="위치 띠 안 : " + b, n=len(g), rho=r, p=p))
     P("   %-12s rho %+.3f (p %.3g · 유닛 %d · 하플로 %d)" % (b, r, p, len(g), g.hap.nunique()))
-# 하플로타입 안에서 (개체 색조 제거) : 하플로마다 rho 를 구해 부호검정
+# Within haplotype, removing the individual offset: rho is computed per haplotype and a sign test applied.
 hr = []
 for h, g in ZU.groupby("hap"):
     if g.n_var.nunique() > 2 and len(g) >= 15:
@@ -102,7 +101,7 @@ PROV.append(dict(항목="B 변이 개수↔메틸", 자료="L2_HAP_UNIT", 자료
                  개체=ZU["sample"].nunique(), 하플로=len(hr), 유닛=len(ZU),
                  비고="5 구역 전부 · 하플로 안 rho 는 유닛 15 개 이상인 하플로만"))
 
-# ---------- C : 토큰 하나하나 (같은 하플로 · 같은 띠 안) ----------
+# ---------- C: token by token, within the same haplotype and the same band ----------
 P()
 P("[C] 변이 토큰마다 — 같은 하플로타입·같은 위치 띠 안에서 '가진 유닛 vs 안 가진 유닛'")
 ex = ZU[["hap", "띠", "ap", "f_hi", "vl"]].copy()
@@ -139,7 +138,7 @@ PROV.append(dict(항목="C 토큰별 효과", 자료="L2_HAP_UNIT", 자료원="H
                  개체=ZU["sample"].nunique(), 하플로=ZU.hap.nunique(), 유닛=len(ZU),
                  비고="5 구역 · 토큰 %d 종 검정 · 짝=하플로×구역" % len(C)))
 
-# ---------- D : 변이집합(유형) 단위 ----------
+# ---------- D: per variant set (haplotype type) ----------
 P()
 P("[D] 변이집합(유형) 단위 — 같은 띠 안에서 유형마다 f_hi 가 다른가")
 rows = []
@@ -162,11 +161,11 @@ PROV.append(dict(항목="D 변이집합 유형", 자료="L2_HAP_UNIT", 자료원
                  개체=ZU["sample"].nunique(), 하플로=ZU.hap.nunique(), 유닛=int(D.유닛.sum()),
                  비고="구역마다 상위 10 유형(유닛 30 이상)"))
 
-# ---------- E : 같은 집합이면 메틸도 닮는가 (다른 하플로타입끼리) ----------
+# ---------- E: do units with the same variant set also resemble each other in methylation, across haplotypes ----------
 P()
 P("[E] 같은 변이집합을 가진 유닛은 메틸도 닮는가 — 같은 띠 · 다른 하플로타입 유닛쌍")
-# 자를 둘로 낸다 — 본표는 f_hi_thr (컷 0.508), 대조는 f_hi (컷 0.65).
-#   까닭 : Fig4 묶음이 0.508 로 통일돼 있다.
+# Two rulers are reported: the main table uses f_hi_thr (cut 0.508) and the control uses f_hi (cut 0.65).
+#   The Figure 4 set uses 0.508 throughout.
 def _epair(col, seed=19):
     _rng = np.random.default_rng(seed)
     rows = []
@@ -214,7 +213,7 @@ PROV.append(dict(항목="E 같은 집합끼리 닮는가", 자료="L2_HAP_UNIT",
                  개체=ZU["sample"].nunique(), 하플로=ZU.hap.nunique(), 유닛=len(ZU),
                  비고="다른 하플로타입끼리만 짝지음 · 같은 위치 띠"))
 
-# ---------- F : 변이가 어디에 있나 (구획) ----------
+# ---------- F: where the variants lie (compartment) ----------
 P()
 P("[F] 변이가 유전자부에 있을 때 — 같은 띠 안에서 b_gene / b_sp")
 rows = []
@@ -235,8 +234,8 @@ F = pd.DataFrame(rows)
 F.to_csv(os.path.join(HERE, "FIGX19_F_SEG.tsv"), sep="\t", index=False, float_format="%.6g")
 PROV.append(dict(항목="F 변이 위치(구획)", 자료="L2_HAP_UNIT", 자료원="HPRC_ONT_submissions",
                  개체=ZU["sample"].nunique(), 하플로=ZU.hap.nunique(),
-                 # 고침 : 지표 3 종이 같은 유닛을 세 줄로 내므로 합하면 3 배가 된다
-                 # (전에는 44,835 로 적혔다 — 실제는 14,945)
+                 # The three measures emit the same unit on three rows, so summing them would treble the count.
+                 # (44,835 against the correct 14,945.)
                  유닛=int(F[F.지표 == "유전자부 β"].유전자부변이있음.sum()
                         + F[F.지표 == "유전자부 β"].없음.sum()) if len(F) else 0,
                  비고="b_gene_mean·b_sp_mean 이 있는 유닛만"))

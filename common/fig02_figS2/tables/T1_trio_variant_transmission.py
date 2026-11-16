@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 r"""
 T1 - parent-to-child transmission of unit variants, tested with trios.
-     (data = v11-addition2 trio version, 2026-09-20 combined handover note section 3)
+     (data = v11-addition2 trio version)
 
 What is examined
   (A) Find the transmitted haplotype - match the **per-unit variant sets** of child haplotypes against parent haplotypes.
@@ -18,7 +18,7 @@ Data and frame
   Child values come from the v11 cohort rows, parent values from the trio rows, **the same G8 frame**, so they can be matched by array_pos.
   Matching: shift the units of two haplotypes by -5..+5 anchored at the distal end (array_pos 1) and at the proximal end,
         and choose the offset with the largest mean per-unit variant Jaccard (unit counts may differ).
-Limits (handover note section 5-2)
+Limits
   - hg003 (father) -> hg002 is **excluded** because its canonical version is inferred. Output only as a control.
   - The child uses the v11-revision2 placement and the parent the chain AO placement. Only **variants of the canonical assembly** are used here, so the placement method does not matter.
   - Assembly errors may be present on both sides (mismatch = upper bound on de novo events).
@@ -31,8 +31,8 @@ sys.path.insert(0, V11CODE)
 import v11_io as G
 import unitdef_v11 as FC
 
-OUT = (__import__("os").environ["RDNA_DATA_ROOT"] + r"\5S_position_variant_work\2026-09-20_trio")
-MAPF = (__import__("os").environ["RDNA_DATA_ROOT"] + r"\for_paper\08_versions\v11-add2_trio\03_maps\G8MAP_trio.tsv")
+OUT = (__import__("os").environ["RDNA_DATA_ROOT"] + r"/5S_position_variant_work/2026-09-20_trio")
+MAPF = (__import__("os").environ["RDNA_DATA_ROOT"] + r"/for_paper/08_versions/v11-add2_trio/03_maps/G8MAP_trio.tsv")
 print("지도 :", MAPF, "md5", G.md5(MAPF))
 
 # ---------- read the map ----------

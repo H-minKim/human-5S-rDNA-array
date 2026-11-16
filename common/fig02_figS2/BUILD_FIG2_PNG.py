@@ -60,12 +60,12 @@ def build(figdir, which, out):
             shutil.copyfile(loc, out); time.sleep(0.3)
             if hashlib.md5(open(out, "rb").read()).hexdigest() == h: break
         except OSError as e:
-            if getattr(e, 'errno', None) == 22:                 # absolute rule: Errno 22 = USB hub fault -> stop at once, no retry (2026-10-18 night)
+            if getattr(e, 'errno', None) == 22:                 # Errno 22 = USB hub fault -> stop at once, no retry
                 raise SystemExit('Errno 22 — 즉시 중단 (재시도 안 함) : %s' % e)
             print("      %s 복사 시도 %d : %s" % (os.path.basename(out), att + 1, e)); time.sleep(3.0)
     else:
         raise OSError("%s 를 F: 에 못 썼다 (네 번)" % os.path.basename(out))
-    # request 'vector pdf for NAR submission, in the same call as the png': print-to-pdf of the same svg with the same Chrome (page size = svg size in pt, margin 0)
+    # vector pdf for NAR submission, made in the same call as the png: print-to-pdf of the same svg with the same Chrome (page size = svg size in pt, margin 0)
     #   the pdf contains its creation time, so its md5 changes every time -> judge versions by the png
     body = io.open(svg, encoding="utf8").read()
     body = re.sub(r"^\s*<\?xml[^>]*\?>", "", body)

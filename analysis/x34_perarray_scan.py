@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
-# array 마다 두 가지를 BAM 한 번 훑기로 같이 모은다 (시아망 제외 53 array)
-#   (1) 유닛 안 위치별 메틸 프로파일 — 분자 등급(ALL / HIGH β>=0.70 / LOW β<0.35) 별   → 대주제 G (사람 예시 패널 e 형식)
-#   (2) array 경계에서의 거리별 메틸 — 안/밖 · 게놈 좌표 쪽(낮은 좌표 / 높은 좌표)   → 대주제 E 지형 지도
+# Per array, two things are collected in a single pass over the BAM, for the 53 arrays excluding the siamang:
+#   1) the methylation profile by position within the unit, by molecule class (ALL, HIGH at beta >= 0.70, LOW at beta < 0.35), for topic G, in the format of the human example panel e;
+#   2) the methylation by distance from the array boundary, inside and outside, on each side in genome coordinates, for the landscape map of topic E.
 # Calling rules : 5mC = ML>=128, flag&0x904 excluded, mapq unfiltered, reference CpG positions only
-#       잘 덮인 read-유닛만(n_calls >= array 중앙값 x 0.5 · 중앙값은 모든 read 에서) · 보노보 guppy 6.3.8 만
-#   방향 : 유닛 안 좌표는 g8 틀(유전자가 유닛 끝) · array 지형은 게놈 좌표 로 모은다
-#           (열 이름이 아니라 실제 좌표로 — 낮은 좌표 쪽 / 높은 좌표 쪽)
-#   산출 : tables/PERARRAY_WITHIN_UNIT.tsv.gz · tables/PERARRAY_LANDSCAPE.tsv.gz · tables/PERARRAY_META.tsv
-#   ※ 그림은 x35(G) · x36(E) 가 이 표만 읽어 그린다 — 그림을 고칠 때 BAM 을 다시 읽지 않게.
+#       Only well-covered read-units are used, n_calls >= 0.5 times the array median, with the median taken over all the reads, and the bonobo on guppy 6.3.8 alone.
+#   Orientation: the within-unit coordinate is in the g8 frame, with the gene at the end of the unit, while the array landscape is collected in genome coordinates,
+#           taken from the actual coordinates rather than from a column name, as the lower-coordinate side and the higher-coordinate side.
+#   Outputs: tables/PERARRAY_WITHIN_UNIT.tsv.gz, tables/PERARRAY_LANDSCAPE.tsv.gz and tables/PERARRAY_META.tsv
+#   The figures are drawn by x35 for topic G and x36 for topic E, which read only these tables, so that changing a figure does not require reading the BAMs again.
 import io, os, sys, glob, re, struct, collections
 import numpy as np
 import pandas as pd
@@ -20,7 +20,7 @@ def _need(k):
     v = _os_need.environ.get(k)
     if not v:
         _sys_need.exit("environment variable %s is not set (the deposited copy has no default; "
-                       "see README.md, section 'How to run it')" % k)
+                       "see README.md, section 'Environment variables')" % k)
     return v
 
 
@@ -177,7 +177,7 @@ for ko, sp in SPK:
                     continue
                 call = (vv >= CUT).astype(float)
                 st = ST[aid]
-                # ---------- (2) 경계 거리별 (게놈 좌표 쪽)
+                # ---------- 2) by distance from the boundary, in genome coordinates
                 a0, a1 = st["a0"], st["a1"]
                 ins_mask = (rp >= a0) & (rp <= a1)
                 for side, d_in, d_out in (("낮은 좌표", rp - a0, a0 - rp), ("높은 좌표", a1 - rp, rp - a1)):
@@ -190,7 +190,7 @@ for ko, sp in SPK:
                         bi = np.clip(np.searchsorted(e, dd[m], side="right") - 1, 0, len(e) - 1)
                         np.add.at(LW[aid][(side, inside)][0], bi, 1.0)
                         np.add.at(LW[aid][(side, inside)][1], bi, call[m])
-                # ---------- (1) 유닛 안 프로파일
+                # ---------- 1) the profile within the unit
                 ui = np.searchsorted(v["us"], rp, side="right") - 1
                 good = (ui >= 0) & (rp <= v["ue"][np.clip(ui, 0, None)])
                 if not good.any():
@@ -240,7 +240,7 @@ for ko, sp in SPK:
                 if n[j] > 0:
                     LS.append((ko, aid, LAB[aid], side, "array 안" if inside else "flank", float(e[j]),
                                int(n[j]), int(mth[j]), round(mth[j] / n[j], 6)))
-        # 유전자 구간(유닛 좌표) · 부분 유닛 · 유닛 수
+        # the gene interval in unit coordinates, the partial units and the unit count
         gw = []
         for i in range(len(v["us"])):
             for (x, y) in v["genes"][i]:

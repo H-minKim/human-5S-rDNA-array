@@ -4,7 +4,7 @@
 #   (1) middle units of a read (not the min or max unit index covered by that read, with units before and after in coordinates)
 #        -> write the shortfall as deletion tokens, OK_MIDDEL  (start shortfall s -> "1Ds", end shortfall e -> "(2241-e)De", same tokens as rule B)
 #   (2) units at either end of a read -> NO_FULL_READEND (discarded, as now)
-#   Measured together (user question "what is the state of the neighbouring unit on that side?"): for each neighbour unit on the side short by more than 10bp,
+#   Measured together: for each neighbour unit on the side short by more than 10bp,
 #        the neighbour's check status, read gap between the two units (overlap is negative), extra bases the neighbour has beyond the canonical on the facing side, and the neighbour's own shortfall
 #   Unit sequence = taken from the saved SAM SEQ with the saved read coordinates (same as recall_edge.py, no re-cutting or realignment)
 #   Arguments: JX|AO, input table (.edge.tsv), output table (.mid.tsv)   ->  output table + output table.nb.tsv (neighbour unit diagnostics)

@@ -1,10 +1,9 @@
 # The part of the K562 / GM12878 chain that comes before `cell_fhmm_units.py`
 
-Run `` (the run that made the cell-line tables). Written 2026-10-22.
 Covers the chain under Fig. 6 G-J and Suppl. Fig. S9 C-F.
 
-Everything below was read from the compute node and from the `@PG` headers of
-the BAMs, read-only. Nothing was recomputed. The scripts cannot be run again from
+The values below come from the compute node and from the `@PG` headers of
+the BAMs. The scripts cannot be run again from
 this deposit, because the reads and the node-made inputs are on the node.
 
 ## 1. The chain, step by step
@@ -25,7 +24,7 @@ this deposit, because the reads and the node-made inputs are on the node.
 (i) fig06/fig06_G-J_cell_lines.py , figS9/figS9_C-F_cell_lines_onerow.py
 ```
 
-`<L>` is `K562all` or `GM12878all`. Step (a) was made by another run (see section 4); (b)-(d) are ours.
+`<L>` is `K562all` or `GM12878all`. Step (a) was made by another run; (b)-(d) belong to this stage.
 The hits fastq in (a) are named `K562r` and `GM12878FS` on the node; `fq2ubam.py` was run on them with the
 output names `all/K562all.u.bam` and `all/GM12878all.u.bam`.
 
@@ -43,18 +42,18 @@ output names `all/K562all.u.bam` and `all/GM12878all.u.bam`.
 The command lines of all four BAMs are in `fiberhmm_call_records.tsv`.
 
 There is no saved script for the whole-pool calls. The command exists only as the `@PG CL` field of the
-two BAMs and as a shell command typed on the node. The earlier set (`K562r`, `GM12878FS`, placed reads) is
+two BAMs and as a shell command typed on the node. The placed-read set (`K562r`, `GM12878FS`) is
 not used by these panels.
 
 ## 5. The scripts of this stage, in `analysis/`
 
-These are byte-for-byte copies of the files that ran on the compute node, paths
-included, so they read the node's folders rather than paths on a local machine.
+These scripts ran on the compute node, so they read the node's folders rather
+than paths on a local machine.
 
 | File | md5 | Makes |
 |---|---|---|
-| `fq2ubam.py` | `59b721baa51e` | `all/<L>.u.bam` from the hits fastq |
-| `build_gene_all.py` | `09573f21c40a` | gene-part strata labels for the whole pool |
-| `cell_sig_run_all.py` | `3888eb6ab8a9` | `cells/sig_K562all.*`, `cells/sig_GM12878all.*` |
-| `cell_strata_all.py` | `485d16c453c3` | `cells/strata_K562all_gene.*`, `cells/strata_GM12878all_gene.*` |
-| `cell_nucfree.py` | `69d5c315c2db` | `cells/nucfree_K562all.json`, `cells/nucfree_GM12878all.json` |
+| `fq2ubam.py` | `f7b745901e5a` | `all/<L>.u.bam` from the hits fastq |
+| `build_gene_all.py` | `bb6343f38346` | gene-part strata labels for the whole pool |
+| `cell_sig_run_all.py` | `8ea47618a8fd` | `cells/sig_K562all.*`, `cells/sig_GM12878all.*` |
+| `cell_strata_all.py` | `f1792520e59b` | `cells/strata_K562all_gene.*`, `cells/strata_GM12878all_gene.*` |
+| `cell_nucfree.py` | `fe1019096bcf` | `cells/nucfree_K562all.json`, `cells/nucfree_GM12878all.json` |

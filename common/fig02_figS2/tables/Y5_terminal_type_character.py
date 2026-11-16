@@ -8,7 +8,7 @@ What is measured
   3. Variant counts per element: AluY(1-318), NTS1(319-1178), GA-rich(1179-1551), NTS2(1552-2031), promoter(2032-2121), gene(2122-2240)
      -> are the gene and promoter intact
   4. Unit length (sum of indels), methylation beta (compared with ordinary units at the same depth)
-Output: $OUTDIR\Y5_terminal_defining_variants.tsv, Y5_terminal_by_element.tsv
+Output: $OUTDIR/Y5_terminal_defining_variants.tsv, Y5_terminal_by_element.tsv
 """
 import io, os, sys, collections
 import numpy as np

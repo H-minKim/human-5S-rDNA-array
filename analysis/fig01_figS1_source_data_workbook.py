@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-# 제출용 원본 데이터 엑셀 (2026-10-20)
-#   그림이 실제로 읽는 그 표에서 뽑는다 — 다른 데서 베끼면 그림과 어긋난다.
-#   언어는 영어. README 시트에 출처 파일과 md5 를 적는다.
+# The Source Data workbook for submission.
+#   The values are taken from the very table the figure reads; copying them from elsewhere would let them drift from the figure.
+#   In English. The README sheet records the source file and its md5.
 import io, os, sys, hashlib, collections, statistics, datetime
 import openpyxl
 from openpyxl.styles import Font, Alignment
@@ -9,25 +9,24 @@ from openpyxl.utils import get_column_letter
 sys.stdout.reconfigure(encoding="utf-8")
 
 # -- (repo) paths come from the environment --------------------------------
-#   기본값이 분석 때 쓴 경로와 같다 ⇒ 작업 폴더에서는 전과 똑같이 돈다.
-#   그림 내용은 한 글자도 바뀜이 없다 — png 화소로 맞대어 확인한다.
+#   The roots are required; the output and table directories fall back to this file's folder.
+#@DROP
 WORK_ROOT = os.environ["WORK_ROOT"]
 DATA_ROOT = os.environ["DATA_ROOT"]
 REGISTRY_DIR = os.environ["REGISTRY_DIR"]
-TABLE_DIR = os.environ.get("TABLE_DIR",
-                           os.path.join(WORK_ROOT, "04_figures", "_tidy_2026-09-30"))
-# `P10_DIR` 은 더 쓰지 않는다 — `1kGP (P10)` 줄을 뺐다(아래).
-#   그림 (B) 의 표는 `From HPRC samples` 와 `From GIAB samples` 두 블록뿐이고
-#   `P10`·`1kGP`·`18` 은 한 번도 그려지지 않는다(실측 2026-11-02).
-V11 = os.path.join(WORK_ROOT, "00_handover", "handover_v11_data_ledger_2026-10-04",
-                   "V11F4_DATASET_hap_flags_v2.tsv")
+TABLE_DIR = os.environ.get(
+    "TABLE_DIR",
+    os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "tables"))
+# P10_DIR is no longer used: the 1kGP (P10) row is dropped below.
+#   The table in panel B holds only the two blocks "From HPRC samples" and "From GIAB samples";
+#   P10, 1kGP and 18 are never drawn (measured).
+V11 = os.path.join(TABLE_DIR, "V11F4_DATASET_hap_flags_v2.tsv")
 REG = os.path.join(REGISTRY_DIR, "cohort_tiers_Fig1_2026-10-08.tsv")
 POPC = os.path.join(DATA_ROOT, "02_tables", "POP_COHORT.tsv")
 PED = os.path.join(DATA_ROOT, "05_reference",
                    "1kGP_3202_ped_population_2026-09-23.txt")
-S5 = os.path.join(TABLE_DIR, "FIG5_cut_test")
-S6 = os.path.join(TABLE_DIR, "FIG6_canonical_test_table", "rawdata")
-S7 = os.path.join(TABLE_DIR, "FIG7_structure_detection", "rawdata")
+#   The deposited tables sit side by side in tables/, so the three groups share one directory.
+S5 = S6 = S7 = TABLE_DIR
 OUT = os.path.join(os.environ.get("SOURCEDATA_DIR",
                                   os.path.join(WORK_ROOT, "04_figures",
                                                "paper_figures_final_2026-10-07")),
@@ -45,7 +44,7 @@ def tsv(p):
 
 wb = openpyxl.Workbook()
 wb.remove(wb.active)
-SRC = []          # README 용 (sheet, source file, md5, rows)
+SRC = []          # for the README sheet: (sheet, source file, md5, rows)
 BOLD = Font(bold=True)
 
 
@@ -71,13 +70,13 @@ H, R = tsv(V11)
 hp = [r for r in R if r[H["cohort"]] == "HPRC" and r[H["N_units"]].isdigit()]
 # CANCER samples are excluded from the main cohort.
 # Read from the registry, do not hard-code: 4 haplotypes / 3 samples / 2 people.
-CANCER = set(r[H["sample"]].strip().lower() for r in R if r[H["cohort"]] == "암")
+CANCER = set(r[H["sample"]].strip().lower() for r in R if r[H["cohort"]] == "cancer")
 
 # Fig 1C — cohort table
 Hr, Rr = tsv(REG)
 T = dict((r[Hr["name"]], r) for r in Rr)
 coh = {}
-for key, lab in (("HPRC", "HPRC"), ("GIAB", "GIAB"), ("암", "Cancer")):
+for key, lab in (("HPRC", "HPRC"), ("GIAB", "GIAB"), ("cancer", "Cancer")):
     rows = [r for r in R if r[H["cohort"]] == key]
     coh[lab] = (len(set(r[H["sample"]] for r in rows)), len(rows))
 rows = [
@@ -158,7 +157,7 @@ sheet("FigS1B_variant_recall",
       os.path.join(S6, "FIG2_data_hifi.tsv"),
       "The figure shows the MAJ (majority-allele) rows.")
 
-Hd, Rd = tsv(os.path.join(S5, "rawdata", "DC_TABLE.tsv"))
+Hd, Rd = tsv(os.path.join(S5, "DC_TABLE.tsv"))
 Rd = [r for r in Rd if r[Hd["sample"]].strip().lower() not in CANCER]   # cancer excluded
 rows = [(r[Hd["sample"]], r[Hd["slot"]], r[Hd["source"]], int(r[Hd["c_units"]]),
          int(r[Hd["d_longest_read_units"]]), float(r[Hd["d_over_c"]]),
@@ -166,15 +165,15 @@ rows = [(r[Hd["sample"]], r[Hd["slot"]], r[Hd["source"]], int(r[Hd["c_units"]]),
 sheet("FigS1D_longest_read_span",
       ["Sample", "Slot", "Source", "Complete_units", "Units_in_longest_read",
        "Span_ratio", "Reads"], sorted(rows),
-      os.path.join(S5, "rawdata", "DC_TABLE.tsv"),
+      os.path.join(S5, "DC_TABLE.tsv"),
       "5th percentile of Span_ratio = 0.4454, which is where the 0.45 threshold comes from.")
 
-Ht, Rt = tsv(os.path.join(S5, "rawdata", "FIG_data_table.tsv"))
+Ht, Rt = tsv(os.path.join(S5, "FIG_data_table.tsv"))
 rows = [(r[Ht["sample"]], int(r[Ht["n_hap"]]), int(r[Ht["n_avail"]]), int(r[Ht["n_ok"]]))
         for r in Rt]
 sheet("FigS1E_trimming_result",
       ["Sample", "Haplotypes", "Contig_of_correct_length", "Contig_selected"],
-      sorted(rows), os.path.join(S5, "rawdata", "FIG_data_table.tsv"),
+      sorted(rows), os.path.join(S5, "FIG_data_table.tsv"),
       "Assembled = sum(Contig_of_correct_length)/sum(Haplotypes); "
       "Selected = sum(Contig_selected)/sum(Contig_of_correct_length).")
 
@@ -185,17 +184,19 @@ sheet("FigS1H_worked_examples", list(Hp2), rows,
       "The three panels of (H): positive control, HG00133 haplotype B, HG03270 haplotype A.")
 
 # `NA21133` slot 2 is excluded.
-#   그 자리는 독립 read 재집계가 read 를 하나도 돌려주지 않아 확인도 반박도 못 한 자리이고,
-#   그 하플로는 열넷 가운데 read 가 가장 안 붙는다(median local-best 0.571).
-#   ⇒ 분자와 분모에서 모두 뺀다. 실측 : 자리 14 -> 13 · 하플로 13 -> 12.
+#   At that site the independent read recount returned no reads at all, so it could be neither confirmed nor refuted,
+#   and that haplotype attracts reads least well of the fourteen (median local-best 0.571).
+#   It is therefore dropped from both numerator and denominator: sites 14 -> 13, haplotypes 13 -> 12.
+#   The input table was reduced to 13 rows on 14 Nov 2026, so this filter now removes
+#   nothing. It is kept so the sheet stays at 13 rows if a 14-row table is ever restored.
 DROPPED = ("na21133", "2")       # (sample, slot), lower-cased sample
-Hs, Rs = tsv(os.path.join(S7, "INTEGRATED_14SITES.tsv"))
+Hs, Rs = tsv(os.path.join(S7, "INTEGRATED_13SITES.tsv"))
 Rs = [r for r in Rs
       if (r[Hs["sample"]].strip().lower(), r[Hs["slot"]].strip()) != DROPPED]
-# — 이 장은 원본 줄을 그대로 실어 한글 값 38 칸이 제출본에 들어갔다.
-#   내는 자리에서 옮긴다 (입력 표는  것이라 건드리지 않는다).
-#   `class` 는 아래 요약이 쓰는 말과 맞추되, 요약이 Mosaic 로 합치는 셋은
-#     이 장에서는 구별을 지킨다 (합치면 이 장의 뜻이 사라진다).
+# -- This sheet carried the source rows verbatim, which put 38 Korean cells into the submitted workbook.
+#   They are translated at the point of writing; the input table is left untouched.
+#   The class wording follows the summary below, except that the three the summary merges into Mosaic
+#     are kept distinct on this sheet; merging them would destroy its purpose.
 S1I_EN = {
     "source": {"앵커": "anchor scan"},
     "class": {"read 동의": "True deletion / insertion",
@@ -211,13 +212,13 @@ _S1I_IX = dict((Hs[c], S1I_EN[c]) for c in S1I_EN if c in Hs)
 rows = [tuple(_S1I_IX[j][v] if (j in _S1I_IX and v in _S1I_IX[j]) else v
               for j, v in enumerate(r)) for r in Rs]
 sheet("FigS1I_known_sites", list(Hs), rows,
-      os.path.join(S7, "INTEGRATED_14SITES.tsv"),
+      os.path.join(S7, "INTEGRATED_13SITES.tsv"),
       "%d candidate structural sites in %d haplotypes, flagged by the two tests of this work. "
       "The NA21133 slot 2 site is excluded, from the numerator and the "
       "denominator alike." % (len(rows), len(set((r[Hs["sample"]], r[Hs["slot"]])
                                                  for r in Rs))))
 
-POS_ALL = 56846   # 레퍼런스 유닛 자리의 총수 — 분모는 한 자리에만 적는다
+POS_ALL = 56846   # The total number of reference-unit sites; the denominator is written in one place only.
 Ha, Ra = tsv(os.path.join(S7, "ALIGNED_POS_RATE.tsv"))
 Ra = [r for r in Ra if r[Ha["sample"]].strip().lower() not in CANCER]   # cancer excluded
 Ra = [r for r in Ra                                                    # NA21133 slot 2, v142
@@ -227,23 +228,32 @@ rows = [("Haplotypes examined", len(hapset)),
         ("Reference unit positions tested", len(Ra))]
 cls = collections.Counter()
 hapcls = {}
-PRI = ["read 동의", "모자이크", "반박", "재현 안 됨"]
+# The class names, in the priority order of S1I_EN above.
+#   CLS accepts either spelling, so the sheet is the same whether the table carries the
+#   English names of the deposited copy or the Korean names of the upstream copy.
+#   A name in neither raises here instead of being counted as zero.
+PRI = list(S1I_EN["class"].values())
+CLS = dict(S1I_EN["class"])
+CLS.update((v, v) for v in PRI)
 for r in Rs:
     hapcls.setdefault((r[Hs["sample"]], r[Hs["slot"]]), set()).add(r[Hs["class"]])
 # `Contradicted` and `Not reproduced` are merged into `Mosaic`.
-#   까닭 셋이 실측으로 합치라고 했다 — 일곱 자리의 `decision` 이 모두 같고(수리 안 함),
-#   정본 다수 여부로 두 갈래를 가를 수 없고(62.5% 대 62.5% · 10 대 10 무승부),
-#   합치면 두 틀이 닫힌다 : 자리 6+7=13 · 하플로 6+6=12 · 579+12=591.
-EN = {"read 동의": "True deletion / insertion", "모자이크": "Mosaic",
-      "반박": "Mosaic", "재현 안 됨": "Mosaic"}
+#   Three measurements require them to be merged: the decision is the same at all seven sites (no repair),
+#   a canonical majority cannot separate the two branches (62.5% against 62.5%, 10 against 10),
+#   and merged, the two frames close: sites 6 + 7 = 13, haplotypes 6 + 6 = 12, 579 + 12 = 591.
+EN = {"True deletion / insertion": "True deletion / insertion",
+      "Mosaic": "Mosaic",
+      "Contradicted, counted as Mosaic in the summary": "Mosaic",
+      "Not reproduced, counted as Mosaic in the summary": "Mosaic"}
 for k, v in hapcls.items():
+    seen = set(CLS[c] for c in v)
     for p in PRI:
-        if p in v:
+        if p in seen:
             cls[EN[p]] += 1
             break
 for k, v in sorted(cls.items()):
     rows.append((k, v))
-rows.append(("Inversion, block move, duplication", 0))   # 그림이 적는 글자와 같게
+rows.append(("Inversion, block move, duplication", 0))   # matching the wording the figure prints
 sheet("FigS1I_classification_summary", ["Category", "Haplotypes"], rows,
       os.path.join(S7, "ALIGNED_POS_RATE.tsv"),
       "Counts behind panel (I). The reference set is 612 (HPRC 604 + GIAB 8) out of the "
@@ -279,8 +289,8 @@ ws = wb.create_sheet("README", 0)
 ws.append(["Source data for Figure 1 and Supplementary Figure 1"])
 ws["A1"].font = Font(bold=True, size=13)
 ws.append([])
-# 년월일을 박아 남기지 않는다 — 돌린 날이 저론로 적힐다.
-#   예전에 내는 바이트가 현재 시각 때문에 흔들리므로, 판은 대장(밖)에 적는다(기억 §2-16).
+# No date is written into the file; the run date would be recorded by itself.
+#   The output bytes would then shift with the clock, so the version is recorded in the registry instead, outside the file.
 ws.append(["Generated", datetime.date.today().isoformat()])
 ws.append(["Figures", "Fig1_pipeline_EN.pdf / .svg / .png, SFig1_EN and SFig1_KO"])
 ws.append([])

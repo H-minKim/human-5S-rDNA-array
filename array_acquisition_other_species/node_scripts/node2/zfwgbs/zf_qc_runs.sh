@@ -1,10 +1,10 @@
 #!/bin/bash
-# 바이설파이트 자료 선별 검사 — 본 작업 전에 소량으로 변환 여부만 본다
-#   실패 경험 : PRJNA734348 난자 시료는 'Bisulfite-Seq' 로 등록돼 있으나
-#   실제로는 read 의 78~86% 가 변환되지 않은 유전체 DNA 였다(매핑률 1.2~2.1%).
-#   그래서 후보마다 20 만 spot 만 받아 C 비율로 변환 여부를 먼저 판정한다.
-#     제대로 변환된 read : C 가 2~5% (대부분 T 로 바뀜)
-#     변환 안 된 read    : C 가 20% 안팎(정상 유전체 조성)
+# A screening check on bisulfite data: conversion alone is tested on a small subset before the main run.
+#   Measured: the PRJNA734348 oocyte samples are registered as Bisulfite-Seq, but
+#   78-86% of their reads are in fact unconverted genomic DNA (mapping rate 1.2-2.1%).
+#   So for each candidate only 200,000 spots are fetched and conversion is judged first from the C fraction.
+#     A properly converted read carries 2-5% C, most having become T.
+#     An unconverted read carries about 20% C, the normal genomic composition.
 cd ~/zfwgbs
 mkdir -p qc logs
 echo -e "run\tdesc\tR1_C_pct\tR1_T_pct\tconverted_read_pct\t판정"

@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-# 재절단 번호 검산 — 전 슬롯에서 read 유닛 번호가 지도와 어긋난 곳을 찾는다 (2026-09-13)
-#   방법 : 슬롯마다 read 유닛 변이 토큰을 지도의 array_pos + k (k=-3..3) 와 비교(자카드 평균).
-#          제대로면 k=0 이 최고여야 한다. 다른 k 가 더 높으면 그만큼 번호가 밀린 것이다.
-#   조건 : read 유닛 20 개 이상인 슬롯만 · 최고 k 가 0 이 아니고 차이가 0.02 이상일 때 보고
-#   인자 : 유닛표 · 지도 · 출력   (예: aog8v10/AO_G8_UNITS.tsv  g8canonv10/...  SHIFT_v10.tsv)
+# Check the indices after the re-cut: find, across every slot, where the read unit index disagrees with the map.
+#   The method: per slot, the read unit's variant tokens are compared with the map's array_pos + k for k from -3 to 3, by mean Jaccard.
+#          If all is well k = 0 scores highest; a higher score at another k means the index is shifted by that much.
+#   Conditions: slots with at least 20 read units only, reported where the best k is not 0 and the difference is at least 0.02.
+#   Arguments: the unit table, the map, the output (for example aog8v10/AO_G8_UNITS.tsv, g8canonv10/..., SHIFT_v10.tsv).
 import io
 import sys
 import socket

@@ -1,23 +1,23 @@
 # -*- coding: utf-8 -*-
-# Fig1-2 자료 — 주황선을 검정선과 같은 자(Σ메틸 / Σ호출) 로 다시 낸다 2026-10-08
-#   사용자 선택 ⒜ : 두 선을 같은 통계로 맞춘다. 결과(값)는 새 표 로만 내고 옛 표는 그대로 둔다.
-#   관문 ① : 옛 표(중앙값·단순평균)를 그대로 재현 한 뒤에만 새 칸을 더한다.
-#   같은 여과 : `gate == 1` · `HPRC_ONT_submissions` (fig1_v4_prep 와 같다)
-#   가중치 = `n_canon` (그 read-유닛의 CpG 호출 수).
-#   정정 — 이 줄에 있던 "검정선의 `sum_p / n_call` 과 같은 뜻이다" 는 틀렸다.
-#     가중치는 같지만 평균하는 대상이 다르다 : 여기(유닛 축)는 하드콜 `b_call` 을 평균하고,
-#     검정선(`fig1_v5_prep.py` · `FIG1_V5_A_bp.tsv`)은 확률 합 `sum_p` 를 평균한다.
-#     가리는 법 : `b_call × n_canon` 은 정수(하드콜) · `sum_p` 는 정수가 아니다(확률 합).
-#     크기 : 같은 read×유닛에서 원위 유닛1 하드콜 0.028 ↔ 확률평균 0.149(+0.121) ·
-#              근위 유닛10 0.724 ↔ 0.720(−0.004). β 가 0 에 가까운 자리에서만 크게 벌어진다.
-#     ⇒ 두 선을 한 그림에 겹치면 원위에서 체계적으로 어긋난다 (실측 차 중앙 +0.103).
-#       `Fig 3 (A)` 의 legend 가 이 사실을 적고 있다.
+# Fig 1-2 data: the orange line is recomputed on the same ruler as the black one, sum(methylated) / sum(calls).
+#   The two lines are put on the same statistic. The values go into a new table and the existing table is left alone.
+#   Gate: the new columns are added only after the existing table (median and unweighted mean) has been reproduced exactly.
+#   The same filter as fig1_v4_prep: gate == 1 and HPRC_ONT_submissions.
+#   The weight is n_canon, the number of CpG calls in that read-unit.
+#   This is not the same quantity as the black line's sum_p / n_call.
+#     The weight is the same but the quantity averaged differs: on the unit axis here the hard call b_call is averaged,
+#     while the black line (fig1_v5_prep.py, FIG1_V5_A_bp.tsv) averages the probability sum sum_p.
+#     They can be told apart: b_call * n_canon is an integer, being a hard call, while sum_p is not.
+#     Size of the difference, over the same read x unit: at distal unit 1 the hard call gives 0.028 against 0.149 for the probability mean (+0.121),
+#              and at proximal unit 10, 0.724 against 0.720 (-0.004). The gap opens only where beta is near 0.
+#     Overlaying the two lines therefore leaves a systematic offset at the distal end; the measured median difference is +0.103.
+#       The legend of Figure 3A records this.
 import io, os, sys, hashlib
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 import numpy as np, pandas as pd
 
 HERE = os.environ.get("TABLE_DIR", os.path.dirname(os.path.abspath(__file__)))   # 
-S = os.environ["DATA_ROOT"].rstrip("/") + "/"   # 환경변수로 열었다 — 기본값은 전과 같다
+S = os.environ["DATA_ROOT"].rstrip("/") + "/"   # required; no default
 md5 = lambda p: hashlib.md5(io.open(p, "rb").read()).hexdigest()
 NED, MIDB = 20, 12
 
@@ -27,7 +27,7 @@ D = pd.read_parquet(S + "02_tables/L1_READ_UNIT.parquet",
 D = D[(D.gate == 1) & (D.data_source.astype(str) == "HPRC_ONT_submissions")].copy()
 print("read-유닛 %d · 하플로 %d" % (len(D), D.groupby(["sample", "slot"]).ngroups))
 
-# ---------- 가운데 12 칸 ----------
+# ---------- the 12 interior bins ----------
 d = D[D.N >= 2 * NED + MIDB].copy()
 mid = d[(d.ap > NED) & (d.ad > NED)].copy()
 u = (mid.ap - NED - 1) / np.maximum(mid.N - 2 * NED - 1, 1)
@@ -48,7 +48,7 @@ if max(d1, d2) > 1e-9:
 print("   ⇒ 그대로 재현된다")
 gm.to_csv(HERE + "/FIG1_2_MID.tsv", sep="\t", index=False, float_format="%.5f")
 
-# ---------- 끝 20 유닛 ----------
+# ---------- the 20 units at each end ----------
 rows = []
 for side, col in (("근위", "ap"), ("원위", "ad")):
     g = D[D[col] <= NED]

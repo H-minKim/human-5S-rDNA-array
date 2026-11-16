@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-# ARRAY_ONLY G8v3 final unit table (stage before deletion marking), local, only merges tables (2026-09-12)
+# ARRAY_ONLY G8v3 final unit table (stage before deletion marking), local, only merges tables
 #   base = 3rd-round cut (window alignment transfers canonical G8v3 boundaries onto the read, same as for junction), number = alignment position
 #     - the 20 relabeled reads are reverted (the number is the real position. Forcing stored values is wrong, 66-sample measurement 48 vs 19)
 #   supplement = blastn cut pieces that do not overlap 3rd-round pieces: numbered by the number difference to the nearest paired piece in the read,
-#          and included if within the 3rd-round number range of that read (bnd = BLASTN). Read-end pieces outside the range are set aside (decision pending)
+#          and included if within the 3rd-round number range of that read (bnd = BLASTN). Read-end pieces outside the range are set aside
 #   flag = reads where 3rd-round and blastn numbers disagree -> numbering column after the 17 columns 'UNCERTAIN' (others 'OK')
 #   Output: per node AO_G8_UNITS_<node>.final0.tsv (same 17 columns as the 3rd-round table plus numbering), AO_READEND_EXTRA.tsv, summary
 #   Arguments: cmp folder, local_blast folder
@@ -62,7 +62,7 @@ for p in sorted(glob.glob(os.path.join(C, "g8cut_mid", "run3", "AO_G8_UNITS_*.ra
         unc = False
         for i, x in enumerate(b):
             f0, f1 = int(x[9]), int(x[10])
-            m = [y for y in t if y[8].lstrip("-").isdigit() and abs(int(y[9]) - f0) <= 3 and abs(int(y[10]) - f1) <= 3]   # repaired spans have no G6 counterpart, so g6=None -> excluded from pair candidates (old data had 0 such rows, so results unchanged)
+            m = [y for y in t if y[8].lstrip("-").isdigit() and abs(int(y[9]) - f0) <= 3 and abs(int(y[10]) - f1) <= 3]   # repaired spans have no G6 counterpart, so g6=None -> excluded from pair candidates
             if m:
                 off[i] = int(m[0][8]) - int(x[8])
                 if int(m[0][8]) != int(x[8]):

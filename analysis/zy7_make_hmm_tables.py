@@ -1,29 +1,29 @@
 # -*- coding: utf-8 -*-
-r"""FiberHMM 판 표를 한 패스로 다 낸다.
+r"""Writes all the FiberHMM-based tables in one pass.
 
- : *"hmm 으로 해도 괜찮은 내용을 철저히 따져보고, 가능한 것들은 hmm 으로 바꿔줘"*
+Each panel is taken from the FiberHMM calls where that is sound.
 
-따진 결과 — 칸마다 답이 다르다
-   본문 (a)③ · (b) · (d)(e) · 보충 (a)  : 호출기를 안 쓴다 (m6A·CpG·깊이) -> 해당 없음
-   본문 (c) 자리별 large MSP            : 바꾼다 (염기 피복 비율)
-   본문 (f) large MSP 짝                : 바꾼다
-   본문 (g)(h) 점유 짝                  : 바꾼다 (이미 HMM 이었으나 안 자른 판이었다)
-   보충 (c) 날것 vs 짝 (점유)           : 바꾼다
-   보충 (d) 구역별 large MSP            : 바꾼다
-   보충 (b) 유닛당 뉴클레오솜 개수      : 안 바꾼다 — 아래 까닭
-     FiberHMM 분절은 이웃을 묶는다(평균 283 · 95분위 786 · 최대 58,204 bp).
-     중점 배정이라 한 분절이 26 유닛을 가로지르며 한 유닛에 통째로 들어간다.
-     `ft` 는 분절 중앙 143 bp 로 뉴클레오솜 하나(147)와 맞는다.
-     ⇒ "개수" 는 ft 분절에서만 물리적 뜻이 선다. 그 칸만 ft 로 두고 legend 에 적는다.
+Per panel
+   main (a)(3), (b), (d)(e), supplementary (a) : no caller is used (m6A, CpG, depth) -> not applicable
+   main (c) large MSP per position             : FiberHMM (fraction of bases covered)
+   main (f) large MSP pairs                    : FiberHMM
+   main (g)(h) occupancy pairs                 : FiberHMM (the cut version)
+   supplementary (c) raw against paired (occupancy) : FiberHMM
+   supplementary (d) large MSP per zone        : FiberHMM
+   supplementary (b) nucleosomes per unit      : ft, for the reason below
+     FiberHMM segments merge neighbours (mean 283, 95th percentile 786, maximum 58,204 bp).
+     With midpoint assignment one segment spanning 26 units falls into a single unit as a whole.
+     The median `ft` segment is 143 bp, which fits one nucleosome (147).
+     So a "count" has a physical meaning only on ft segments. That panel stays on ft and the legend says so.
 
-규칙은 발행 코드를 그대로 베낀다
-   칸 배정 `slot_cell` (E=20 절대 · NB=10 상대) · LARGE=150 · DINUC=210      <- zg1
-   large MSP 마스크 : 양 옆이 호출된 >150bp                                  <- zr9
-   구역 : far(-1500..-1000) mid(-900..-400) up(-300..-1) gene(0..118)        <- zn1b
-   개체 단위 Wilcoxon · 구역마다 상태마다 호출 염기 >= 500                    <- zn1b
-   유닛 여과 : 호출 염기 >= 1800                                              <- zr7/zr9
-상태 : beta <= 0.508
-원본 표는 덮지 않는다 — 새 이름(`HMM_*`)으로 낸다.
+The rules are copied from the published code
+   bin assignment `slot_cell` (E=20 absolute, NB=10 relative), LARGE=150, DINUC=210     <- zg1
+   large MSP mask : called on both sides, >150bp                                         <- zr9
+   zones : far(-1500..-1000) mid(-900..-400) up(-300..-1) gene(0..118)                   <- zn1b
+   Wilcoxon per individual; called bases >= 500 per zone and per state                   <- zn1b
+   unit filter : called bases >= 1800                                                    <- zr7/zr9
+State : beta <= 0.508
+The original tables are not overwritten; the output takes new names (`HMM_*`).
 """
 import io
 import os
@@ -35,8 +35,8 @@ import numpy as np
 from scipy.stats import wilcoxon
 
 # The data and output roots are environment variables with no default (CONVENTIONS, "the deposited copy wins").
-#  저장소 안 파일로 가는 길은 `__file__` 에서 상대로 푼다 — `a_lib`·`bamlite`·`p02_lib` 가 이 폴더에 같이 예치돼 있다.
-#  변수 표는 `README.md` §2 에 있다.
+#  Paths to files inside the repository are resolved relative to __file__: a_lib, bamlite and p02_lib are deposited in this folder.
+#  The table of variables is in README.md, section 'Environment variables'.
 _HERE = os.path.dirname(os.path.abspath(__file__))
 
 
@@ -46,12 +46,12 @@ def _need(k):
     except KeyError:
         raise SystemExit(
             "environment variable %s is not set; it is required by %s. "
-            "The deposited copy has no default; see README.md section 2."
+            "The deposited copy has no default; see README.md, section 'Environment variables'."
             % (k, os.path.basename(__file__)))
 
 MY = _need("RDNA_FHMM_DIR")
 FH = os.path.join(MY, "data", "fhmm")
-#  쓰는 폴더다 — 발행 입력 폴더를 가리키면 그 표를 덮는다.
+#  This is written to: if it points at the published input folder, those tables are overwritten.
 HF = _need("RDNA_FIBERSEQ_DIR")
 R = os.path.join(HF, "01_latest_results")
 NL = chr(10)
@@ -114,8 +114,8 @@ n_din = collections.Counter(); n_patch = collections.Counter()
 nunit_c = collections.Counter()
 PAIRL = collections.defaultdict(lambda: {"L": [], "H": []})   # (plat,smp,rid) -> largeMSP
 PAIRO = collections.defaultdict(lambda: {"L": [], "H": []})   # (plat,smp,rid) -> occ
-ALLL = collections.defaultdict(list)       # (plat,state) -> largeMSP (날것)
-ALLO = collections.defaultdict(list)       # (plat,state) -> occ (날것)
+ALLL = collections.defaultdict(list)       # (platform, state) -> largeMSP, raw
+ALLO = collections.defaultdict(list)       # (platform, state) -> occupancy, raw
 RG = collections.defaultdict(lambda: np.zeros(2))   # (plat,smp,state,reg)->[big,cov]
 nread = nohmm = 0
 
@@ -166,7 +166,7 @@ for smp, src, rid, slot, arr, lo, us in L.iter_reads(UNIT, 0, 0):
             cc = slot_cell(int(cm), n)
             if cc is not None:
                 (n_din if c == 1 else n_patch)[(src, cc)] += 1
-    # ── 칸별 누적 (본문 (c))
+    # -- accumulated per bin, for main panel c
     if n >= 2 * E + 4:
         ok = (cod > 0) & (own >= 0)
         idx = np.flatnonzero(ok)
@@ -183,7 +183,7 @@ for smp, src, rid, slot, arr, lo, us in L.iter_reads(UNIT, 0, 0):
                     din_bp[(src, int(cc))] += 1
             for cc in set(int(c) for c in cells[m2]):
                 n_mol[(src, cc)] += 1
-    # ── 유닛별
+    # -- per unit
     for ap, _t in us:
         s_, e_, _t2 = UNIT[(smp, slot, str(ap))]
         a0, b0 = s_ - 1 - lo, e_ - lo
@@ -201,7 +201,7 @@ for smp, src, rid, slot, arr, lo, us in L.iter_reads(UNIT, 0, 0):
         PAIRO[(plat, smp, rid[:30])][st].append(occ)
         PAIRL[(plat, smp, rid[:30])][st].append(lm)
         ALLO[(plat, st)].append(occ); ALLL[(plat, st)].append(lm)
-        # 구역 (TSS 기준)
+        # the zone, relative to the TSS
         t0 = tss[int(ap)]
         for nm, ra, rb in REG:
             i0, i1 = t0 + ra, t0 + rb + 1
@@ -233,7 +233,7 @@ def pair(D, plat):
     return dl, dh, p, keys
 
 
-# ══ ① 본문 (c) 칸별 프로파일 — 원본 스키마 그대로, beta 는 원본에서 가져온다
+# == 1) main panel c, the profile by bin, on the original schema, with beta taken from the original
 SRCP = os.path.join(R, "REF2_20261010c_merged_profile.tsv")
 BETA = {}
 ZON = {}
@@ -271,7 +271,7 @@ with io.open(O1, "w", encoding="utf8", newline=NL) as g:
                 str(cv), str(n_mol.get((src, c), 0))]) + NL)
 print("① 적었다 ->", os.path.basename(O1))
 
-# ══ ② 본문 (f) large MSP 짝
+# == 2) main panel f, the large MSP pairing
 O2 = os.path.join(R, "HMM_20261014_largeMSP_pair_comparison.tsv")
 with io.open(O2, "w", encoding="utf8", newline=NL) as g:
     g.write("# FiberHMM 판 — large MSP(>150bp) 덮은 염기 / 호출 염기 · 같은 분자 안 짝" + NL)
@@ -294,7 +294,7 @@ with io.open(O2, "w", encoding="utf8", newline=NL) as g:
                              str(len(uH)), "%.6f" % uH.mean()]) + NL)
 print("② 적었다 ->", os.path.basename(O2))
 
-# ══ ③ 본문 (g)(h) 점 — read 마다 (저,고)
+# == 3) main panels g and h, one point per read as (low, high)
 O3 = os.path.join(R, "HMM_20261014_occupancy_pair_points.tsv")
 with io.open(O3, "w", encoding="utf8", newline=NL) as g:
     g.write("# FiberHMM 판 — read 마다 저메틸 유닛 점유 평균 · 고메틸 유닛 점유 평균" + NL)
@@ -312,7 +312,7 @@ with io.open(O3, "w", encoding="utf8", newline=NL) as g:
             g.write(chr(9).join([pl, smp, rid, "%.6f" % vl, "%.6f" % vh]) + NL)
 print("③ 적었다 ->", os.path.basename(O3))
 
-# ══ ④ 보충 (c) 날것 vs 짝
+# == 4) supplementary panel c, raw against paired
 O4 = os.path.join(R, "HMM_20261014_raw_vs_paired.tsv")
 with io.open(O4, "w", encoding="utf8", newline=NL) as g:
     g.write("# FiberHMM 판 — 점유 저메틸-고메틸 · 짝 안 지은 판 vs 짝 지은 판" + NL)
@@ -329,7 +329,7 @@ with io.open(O4, "w", encoding="utf8", newline=NL) as g:
                              str(len(aL)), str(len(aH)), "%.3e" % p]) + NL)
 print("④ 적었다 ->", os.path.basename(O4))
 
-# ══ ⑤ 보충 (d) 구역별 — 개체 단위 Wilcoxon
+# == 5) supplementary panel d, per zone, with a Wilcoxon over individuals
 O5 = os.path.join(R, "HMM_20261014_by_zone.tsv")
 with io.open(O5, "w", encoding="utf8", newline=NL) as g:
     g.write("# FiberHMM 판 — 구역별 large MSP(>150bp) 덮은 염기 · 개체 단위 Wilcoxon" + NL)

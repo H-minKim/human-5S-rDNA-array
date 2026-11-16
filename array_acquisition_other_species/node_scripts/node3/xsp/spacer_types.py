@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-# array 끼리 스페이서만 비교해 종류를 묶는다 (유전자 119 bp 는 모든 종에 공통이라 묶기에 쓰면 안 된다)
-#   유닛은 "스페이서 + 유전자" 로 끝나므로 스페이서 = 유닛[:-유전자길이]
-#   같은 종류 = blastn 일치도 >= ID 이고 정렬이 긴 쪽 스페이서의 COV 이상 (기본 80% · 0.50)
-#   더불어 array 마다 유전자 끝 사이 간격(주기) 분포를 내어 "유닛 하나인가 여러 개가 한 덩어리인가" 를 본다
-#   산출 : SPACER_TYPES.tsv · PERIOD_DIST.tsv
+# Arrays are grouped into types by comparing spacers only; the 119 bp gene is shared across all species and must not be used for grouping.
+#   A unit ends as spacer then gene, so the spacer is unit[:-gene_length].
+#   Same type means blastn identity >= ID and the alignment covering at least COV of the longer spacer (defaults 80% and 0.50).
+#   The distribution of gaps between gene ends (the period) is also reported per array, to show whether one unit or several were taken as one.
+#   Outputs: SPACER_TYPES.tsv, PERIOD_DIST.tsv.
 # MIT License · Copyright (c) 2026 Hungmin Kim
 import io
 import os
@@ -102,7 +102,7 @@ for sp in sorted(BYSP):
             rep.write(TAB.join([sp, z, rr[ix["copies"]], rr[ix["period_med"]], str(len(UNIT[z])),
                                 str(len(SPACER[z])), rr[ix["gc_spacer"]], str(i), str(len(t)), str(cps), pid, af]) + NL)
 rep.close()
-# 주기 분포 : 유닛 하나인가 여러 개가 한 덩어리로 잡혔나
+# The period distribution: was one unit taken, or several as one?
 pd = io.open(os.path.join(OUT, "PERIOD_DIST.tsv"), "w", encoding="utf8", newline=NL)
 pd.write(TAB.join(["array_id", "n_gap", "p10", "median", "p90", "min", "max", "modal_bin", "bins"]) + NL)
 HIT = collections.defaultdict(list)

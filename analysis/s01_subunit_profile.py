@@ -1,30 +1,30 @@
 # -*- coding: utf-8 -*-
-"""S01 — 유닛 안 위치별(서브유닛) A 자리당 m6A 프로파일을 저메틸/고메틸 따로 만든다.
+"""S01: per-position (sub-unit) profile of m6A per A site inside the unit, separately for low and high methylation.
 
-왜
-  Figure 1 의 구획별 막대는 '평균'이라 구획 안 모양을 못 보여 준다. 원자료 calls(unit_pos:ML)를 그대로 세서
-  유닛 좌표(실제 bp)에서의 윤곽을 L·H 따로 낸다.
+Why
+  A bar per zone is a mean and does not show the shape inside the zone. The raw calls (unit_pos:ML) are counted as they are
+  to give the profile in unit coordinates (real bp), separately for L and H.
 
-입력 (읽기만)
-  <RDNA_V12_CANON_DIR>/08_methylation_s6/<노드>/s6/{ont_meth,pb_meth}/M6A_READUNIT_*.tsv.gz
-      calls 열 = "unit_pos:ML,..." (unit_pos = 유닛 안 1기반 · 두 가닥 A 자리 모두) · in_final=Y 만
-  유닛 좌표·TSS : a_lib.load_units()  (MAP_V11 + 정본 서열 · TSS = 유닛 안 마지막 GTCTACGGC)
-  유닛 상태 : s6 판 a13_unit_state_gmm.tsv.gz (L P>=0.9 · H P<=0.1 · U 제외)
+Input (read only)
+  <RDNA_V12_CANON_DIR>/08_methylation_s6/<node>/s6/{ont_meth,pb_meth}/M6A_READUNIT_*.tsv.gz
+      calls column = "unit_pos:ML,..." (unit_pos = 1-based inside the unit, A sites of both strands), in_final=Y only
+  unit coordinates and TSS : a_lib.load_units()  (MAP_V11 and the canonical sequence; TSS = the last GTCTACGGC in the unit)
+  unit state : a13_unit_state_gmm.tsv.gz of the s6 version (L P>=0.9, H P<=0.1, U left out)
 
-방법
-  tx = unit_pos - tss_u  (tss_u = 유닛 안 TSS 1기반 위치) → 유전자 tx 0..118 · AluY 는 tx 약 -2120..-1800
-  BIN bp 칸마다 개체별 sum(m6a)/sum(A) → 개체 평균 ± 95% CI (개체 안에서 A>=30 인 칸만)
-출력
-  s01_subunit_profile.tsv     (src·state·tx_bin·n_sample·mean·ci95·n_a)
-  s01_element_bounds.tsv      (구획 경계 중앙값 · 그림 x축 눈금용)
-사용 : python s01_subunit_profile.py [BIN]      기본 BIN=20
+Method
+  tx = unit_pos - tss_u  (tss_u = 1-based TSS position inside the unit) -> gene tx 0..118; AluY is about tx -2120..-1800
+  per BIN bp bin, sum(m6a)/sum(A) per individual -> mean over individuals ± 95% CI (only bins with A>=30 within the individual)
+Output
+  s01_subunit_profile.tsv     (src, state, tx_bin, n_sample, mean, ci95, n_a)
+  s01_element_bounds.tsv      (median zone boundaries, for the x-axis ticks of the figure)
+usage : python s01_subunit_profile.py [BIN]      default BIN=20
 """
 import io, os, sys, gzip, collections
 import numpy as np
 
 # The data and output roots are environment variables with no default (CONVENTIONS, "the deposited copy wins").
-#  저장소 안 파일로 가는 길은 `__file__` 에서 상대로 푼다 — `a_lib`·`bamlite`·`p02_lib` 가 이 폴더에 같이 예치돼 있다.
-#  변수 표는 `README.md` §2 에 있다.
+#  Paths to files inside the repository are resolved relative to __file__: a_lib, bamlite and p02_lib are deposited in this folder.
+#  The table of variables is in README.md, section 'Environment variables'.
 _HERE = os.path.dirname(os.path.abspath(__file__))
 
 
@@ -34,24 +34,24 @@ def _need(k):
     except KeyError:
         raise SystemExit(
             "environment variable %s is not set; it is required by %s. "
-            "The deposited copy has no default; see README.md section 2."
+            "The deposited copy has no default; see README.md, section 'Environment variables'."
             % (k, os.path.basename(__file__)))
 
 sys.path.insert(0, _HERE)
 import a_lib as L
 
 BIN = int(sys.argv[1]) if len(sys.argv) > 1 else 20
-#  쓰는 폴더다 — 발행 입력 폴더를 가리키면 그 표를 덮는다.
+#  This is written to: if it points at the published input folder, those tables are overwritten.
 OUT = _need("RDNA_RESULTMAP_DIR")
 S6 = os.path.join(L.R, "08_methylation_s6")
 MDIR = {"UCSC_ONT_FIBERSEQ": "ont_meth", "PACBIO_FIBERSEQ": "pb_meth"}
-# PacBio 코호트 = jasmine 48 : ft0.4.2 2 명(HG02630·hg002) + m6A 없는 jasmine2.2.0 2 명(HG02624·HG03672) 제외
+# The PacBio cohort is the 48 jasmine samples, excluding two called with fibertools 0.4.2 (HG02630, hg002) and two from jasmine 2.2.0 with no m6A (HG02624, HG03672).
 EXCL = {"PACBIO_FIBERSEQ": {"HG02630", "hg002", "HG02624", "HG03672"}, "UCSC_ONT_FIBERSEQ": set()}
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace", line_buffering=True)
 
 print("정본 유닛·TSS 적재")
 UNIT, _SEQ = L.load_units()
-TSSU = {}                      # (sample, slot, apos) -> 유닛 안 TSS 1기반 · 유닛 길이
+TSSU = {}                      # (sample, slot, array position) -> the TSS within the unit, 1-based, and the unit length
 for k, (us, ue, tss) in UNIT.items():
     TSSU[k] = (tss - us + 1, ue - us + 1)
 print("  유닛 %d 개 · 유닛 안 TSS 중앙 %d · 유닛 길이 중앙 %d"
@@ -112,7 +112,7 @@ for src, sub in MDIR.items():
         print("  %s %s 끝 (누적 read×유닛 %d)" % (src, node, chk["used"]))
 print("점검 :", chk)
 
-# 개체 평균 ± 95% CI
+# the mean over individuals with a 95% confidence interval
 per = collections.defaultdict(dict)
 for (src, st, smp, b), (na, nm) in acc.items():
     if na >= 30:
@@ -133,7 +133,7 @@ with io.open(os.path.join(OUT, "s01_subunit_profile.tsv"), "w", encoding="utf8",
         g.write("%s\t%s\t%d\t%d\t%d\t%.4f\t%.4f\t%.4f\t%d\n"
                 % (src, st, b, BIN, len(v), v.mean(), ci, nm / float(na), na))
 
-# 구획 경계 (유닛 안 좌표 · tx 로 환산 · 중앙값)
+# the segment boundaries, in within-unit coordinates converted to the transcription frame, as medians
 tss_med = int(np.median([v[0] for v in TSSU.values()]))
 bounds = [("AluY", 1, 318), ("NTS1", 319, 1178), ("GA", 1179, tss_med - 571),
           ("NTS2", tss_med - 570, tss_med - 91), ("상류90", tss_med - 90, tss_med - 1),

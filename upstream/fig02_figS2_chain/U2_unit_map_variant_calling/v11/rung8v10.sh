@@ -1,6 +1,6 @@
 #!/bin/bash
-# G8v5 map, canonical v10 (surgical repair at 7 sites), full run, 2026-09-13
-#   code : consmapG8v4_fixdedup.py (version with the gene HSP dedup F fixed)
+# G8v5 map, canonical v10 (surgical repair at 7 sites), full run
+#   code : consmapG8v4_fixdedup.py
 #   canonical : ~/cmp4d_v10  (v8 + 7 break sites repaired as [assembly anchor][read consensus][assembly anchor])
 #   output : ~/g8canonv10  (existing folder is not overwritten)
 set -u

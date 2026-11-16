@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
-"""레퍼런스 Figure 5 규칙을 FiberHMM 콜 위에 (2026-10-11).
+"""The rule of the reference Figure 5 applied to the FiberHMM calls.
 
-Tullius 2024 Data S4 cell 47 (5S) 그대로
+Tullius 2024 Data S4 cell 47 (5S), as it is
   find_fp_starts(track, 20, 180, -55+250, -45+250)
-  = 크기 20~180 인 footprint 의 경계(시작 또는 끝)가 diff 인덱스 196..204
+  = a boundary (start or end) of a footprint of size 20-180 at diff index 196..204
 
-track 은 레퍼런스 nc_df 와 같은 꼴 :
-  한 줄 = read x 유닛 · 열 = rel -250..+249
-  값 = 그 자리를 덮는 footprint 크기 · 2 = read 가 안 덮음 · 0 = 덮지만 footprint 없음
-footprint = FiberHMM 의 tf + nuc (MSP 는 열린 구간이라 제외)
+track has the shape of the reference nc_df :
+  one row = read x unit, columns = rel -250..+249
+  value = size of the footprint covering that position; 2 = the read does not cover it; 0 = covered but no footprint
+footprint = tf + nuc of FiberHMM (MSP is an open interval and is excluded)
 """
 import io
 import os
@@ -40,8 +40,8 @@ for L in f:
     x = L.rstrip(NL).split(TB)
     COV[(x[0], x[3], x[1], x[2])] = (int(x[4]), int(x[5]))
 
-HTF = np.zeros(NT)          # TF footprint 중심 분포
-HFP = np.zeros(NT)          # 아무 footprint 든 덮개
+HTF = np.zeros(NT)          # the distribution of TF footprint centres
+HFP = np.zeros(NT)          # a cover by any footprint at all
 NCO = np.zeros(NT)
 nref = 0
 ntot = 0

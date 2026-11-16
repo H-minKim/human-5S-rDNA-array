@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
-# array 정본(flank-array-flank)을 유닛 단위로 자른다
-#   정본 머리 : >…  flank<N>_array_flank<N> strand=<+|-> chrom=<c> array=<s>-<e>
-#   G8 지도의 유닛 좌표(조립본 좌표)를 정본 좌표로 옮겨 자른다
+# Cut the array canonical sequence, flank-array-flank, into units.
+#   The canonical header reads: >...  flank<N>_array_flank<N> strand=<+|-> chrom=<c> array=<s>-<e>
+#   The unit coordinates of the G8 map, which are in assembly coordinates, are carried into canonical coordinates and the cut made there.
 #     strand=+ : canon_pos = chrom_pos - (array_start - flank5) + 1
-#     strand=- : 정본은 역상보라 canon_pos = (array_end + flank5) - chrom_pos + 1  (좌우가 뒤집힌다)
-#   검산 : 잘라낸 유닛 서열이 조립본에서 직접 뽑은 유닛 서열과 같아야 한다(전건 대조)
-#   산출 : <out>/<array>.units.fa (유닛 서열) · <array>.units.tsv (자리표) · CANON_UNITS_SUM.tsv
-#   인자 : data_v2 폴더 출력폴더
+#     On the minus strand the canonical sequence is reverse-complemented, so canon_pos = (array_end + flank5) - chrom_pos + 1, which reverses left and right.
+#   Check: every unit sequence cut out must equal the unit sequence taken directly from the assembly.
+#   Outputs: <out>/<array>.units.fa with the unit sequences, <array>.units.tsv with their positions, and CANON_UNITS_SUM.tsv.
+#   Arguments: the data_v2 folder and the output folder.
 # MIT License · Copyright (c) 2026 Hungmin Kim
 import io
 import os
@@ -39,7 +39,7 @@ for mf in sorted(glob.glob(os.path.join(SRC, "02_consensus_map", "*", "*.g8map.t
     if not m:
         continue
     f5, f3, st, a0, a1 = int(m.group(1)), int(m.group(2)), m.group(3), int(m.group(4)), int(m.group(5))
-    # 실제 flank 는 조립본 끝에 걸리면 짧아진다 → 정본 길이로 되맞춘다
+    # the actual flank is shorter where it runs off the end of the contig, so it is brought back to the canonical length
     alen = a1 - a0 + 1
     extra = len(seq) - alen
     if extra != f5 + f3:

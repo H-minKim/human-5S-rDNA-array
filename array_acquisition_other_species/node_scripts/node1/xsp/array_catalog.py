@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 # 5S array list, built from cmsearch --tblout
-#   hit 사이 간격 10 kb 이하 = 같은 array · 기록 : 염색체 · 시작 · 끝 · copy 수 · 단위 주기(이웃 hit 시작 간격 중앙값) · 우세 가닥
-#   ±100 kb 안의 N 연속(gap) · array 안의 N · 판정
-#   판정 : array 안과 ±100 kb 에 N 없음 = 조립완료(COMPLETE) / 있으면 GAP_NEAR 또는 GAP_INSIDE
-#   copy 수는 hit 수로 센다 (bp/주기 환산 금지)
-#   인자 : 종 · 어셈블리 이름 · tblout · fasta(.fai 필요) · 출력 tsv(덧붙임)
+#   Hits no more than 10 kb apart belong to the same array. Recorded: chromosome, start, end, copy number, unit period (median gap between neighbouring hit starts), dominant strand.
+#   Runs of N (gaps) within +-100 kb, N inside the array, and the verdict.
+#   Verdict: no N inside the array or within +-100 kb = COMPLETE; otherwise GAP_NEAR or GAP_INSIDE.
+#   Copy number is counted as the number of hits, never derived from bp / period.
+#   Arguments: species, assembly name, tblout, fasta (a .fai is required), output tsv (appended to).
 import io
 import os
 import re
@@ -33,7 +33,7 @@ for L in io.open(fa + ".fai", encoding="utf8"):
 
 
 def fetch(chrom, s, e):
-    # 1 기반 포함 좌표를 .fai 로 직접 읽는다 (samtools 없이)
+    # 1-based inclusive coordinates are read straight from the .fai, without samtools.
     ln, off, lb, lw = FAI[chrom]
     s = max(1, s)
     e = min(ln, e)

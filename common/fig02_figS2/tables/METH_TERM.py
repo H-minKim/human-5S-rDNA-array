@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
-r"""Methylation of terminal-type vs non-terminal-type units (2026-10-13, user question)
+r"""Methylation of terminal-type vs non-terminal-type units
    After normalising at the haplotype level (unit beta - median unit beta of that haplotype)
    (1) at the same distal depth, terminal-type units vs non-terminal-type units (between haplotypes)
    (2) within the same haplotype, a terminal-type unit vs its immediate neighbour (depth +-1) non-terminal-type units (pairs)
    Ruler: hard-call beta (beta_call, dedup=pool), unit reads >= 5, cohort 541 haplotypes of 299 individuals (V11_SUBSET, repro_tables SUBSET541),
-        terminal type = at least 10 of the 12 diagnostic variants (termdef.is_term, 2026-10-31)
-   2026-11-07: the '# ' header lines written into the tables below still say 'H1 557' and 'D1096:1' (old wording), kept to preserve the canonical table bytes
-   Read only, outputs go to scratchpad"""
+        terminal type = at least 10 of the 12 diagnostic variants (termdef.is_term)
+   Note: the '# ' header lines written into the tables below say 'H1 557' and 'D1096:1', kept to preserve the canonical table bytes
+   Read only, outputs go to the working folder"""
 import os, sys, io, collections
 import numpy as np
 from scipy import stats
@@ -20,7 +20,7 @@ U, _, META = G.load("h1")
 M = G.load_meth(min_reads=MINR)
 tok = collections.Counter(t for v in U.values() for r in v for t in r[4] if "1096" in t)
 print("1096 이 든 토큰 :", tok.most_common(5))
-TERM = "D1096:1"   # unused (old definition). Terminal type is decided by TD.is_term below
+TERM = "D1096:1"   # not used; terminal type is decided by TD.is_term below
 rows = []   # (slot, depth, N, is_term, beta)
 for s, recs in U.items():
     for gp, gd, N, _, vs, _, info in recs:
@@ -33,7 +33,7 @@ for r in rows: by[r[0]].append(r)
 med = {s: np.median([r[4] for r in v]) for s, v in by.items() if len(v) >= 20}
 ok = [r for r in rows if r[0] in med]
 print("유닛 20 개 이상 하플로타입 %d · 유닛 %d" % (len(med), len(ok)))
-# unit table for the figure (2026-10-14), depth 1-15, including haplotype-normalised values
+# unit table for the figure, depth 1-15, including haplotype-normalised values
 with io.open(os.path.join(OUT, "METH_TERM_units.tsv"), "w", encoding="utf8", newline="\n") as gu:
     gu.write("# 말단형 vs 비말단형 유닛 메틸 · H1 557 · 하드콜 β(beta_call · dedup pool) · read>=%d · "
              "유닛 20 개 이상 하플로타입 · beta_norm = β - 그 하플로타입 유닛 β 중앙값 · 말단형 = D1096:1 보유\n" % MINR)

@@ -1,23 +1,23 @@
 # -*- coding: utf-8 -*-
-# v11 core remeasurement, corresponding to the old sections 5-1 to 5-7
-#   [0] do array_only and junction give the same value at the same position (a new comparison)
+# v11 core measurements
+#   [0] do array_only and junction give the same value at the same position
 #   [1] measurement noise floor (odd/even split of canonical CpGs)
 #   [2] raw beta distribution, is it bimodal
-#   [3] per-position profile (with the confirmed proximal/distal names)
+#   [3] per-position profile
 #   [4] two-state model mean beta = L + (H-L)f
 #   [5] length law, boundaries Bp/Bd
 #   [6] co-variation (autocovariance)
 #
-# Polarity confirmed (v2 measured): old 'distal' = array_pos 1 side (genomic distal, hypomethylated run 14.6)
-#                        old 'proximal' = N-array_pos+1 side (genomic proximal, run 2.6)
-#   -> ad = array_pos (distal index), ap = N-array_pos+1 (proximal index). Same names as the old version.
+# Polarity (measured): 'distal' = array_pos 1 side (genomic distal, hypomethylated run 14.6)
+#                        'proximal' = N-array_pos+1 side (genomic proximal, run 2.6)
+#   -> ad = array_pos (distal index), ap = N-array_pos+1 (proximal index).
 import io, os
 import numpy as np
 import pandas as pd
 from scipy.stats import gaussian_kde
 
 OUT = __import__("os").environ["RDNA_DATA_ROOT"] + r"\v11_readvar"
-LOG = io.open(os.path.join(OUT, r"04_logs\V3_CORE.txt"), "w", encoding="utf8", newline="\n")
+LOG = io.open(os.path.join(OUT, r"04_logs/V3_CORE.txt"), "w", encoding="utf8", newline="\n")
 rng = np.random.RandomState(20260913)
 
 
@@ -30,7 +30,7 @@ def P(s=""):
     LOG.flush()
 
 
-A = pd.read_parquet(os.path.join(OUT, r"02_tables\ru_v11.parquet"))
+A = pd.read_parquet(os.path.join(OUT, r"02_tables/ru_v11.parquet"))
 A = A[(A.frac_canon >= 0.9) & (A.n_canon >= 150)]
 A = A[A.data_source.astype(str) == "HPRC_ONT_submissions"].copy()
 A["ad"] = A.ap_dj.astype("int32")          # distal index (1 = genomic distal end)
@@ -124,7 +124,7 @@ P("   가운데 (양쪽 >=30) : 슬롯 %d · read-유닛 %s · 평균β %.3f · 
      mid.b.mean(), mid.hi.mean()))
 pd.DataFrame(PR, columns=["pos", "b_prox", "f_prox", "n_prox", "b_dist", "f_dist",
                           "n_dist"]).to_csv(
-    os.path.join(OUT, r"02_tables\PROFILE.tsv"), sep="\t", index=False, float_format="%.4f")
+    os.path.join(OUT, r"02_tables/PROFILE.tsv"), sep="\t", index=False, float_format="%.4f")
 P()
 
 P("=" * 112)
@@ -197,7 +197,7 @@ P("  N>=81 만 (%d): Bp %.2f±%.2f · Bd %.2f±%.2f · r(Bp,Bd) = %+.3f"
   % (len(L2), L2.Bp.mean(), L2.Bp.std(), L2.Bd.mean(), L2.Bd.std(),
      float(np.corrcoef(L2.Bp, L2.Bd)[0, 1])))
 P("  (옛 판: r(Bp,Bd) = +0.003)")
-L.to_csv(os.path.join(OUT, r"02_tables\HAP_LENGTH_BOUNDARY.tsv"), sep="\t", index=False,
+L.to_csv(os.path.join(OUT, r"02_tables/HAP_LENGTH_BOUNDARY.tsv"), sep="\t", index=False,
          float_format="%.4f")
 P()
 

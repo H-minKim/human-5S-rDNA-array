@@ -1,11 +1,11 @@
 #!/bin/bash
-# 애기장대 재콜링 배분기 (로컬에서 백그라운드) — 노는 코어를 모두 쓴다
-#   흘려받기가 끝나기를 기다리지 않고, 필터가 끝난 pod5 조각을 ~300 read 묶음으로 노드에 맡긴다 (ath_claim.sh · flock)
+# The Arabidopsis re-basecalling scheduler, run in the background locally; it uses every idle core.
+#   It does not wait for the streaming to finish: as soon as a pod5 slice has been filtered it is handed to a node in batches of about 300 reads, through ath_claim.sh and flock.
 # Cores : node1 2-15 (2 cores left for the streaming share)
 # node3 24-31 while the zebra finch re-calling runs, 0-31 afterwards
 # node2 0-15 after the zebra finch re-calling finishes
 # the pod5 share is streamed straight from node1 to the other nodes (tar | ssh), and the finished BAM is sent back to node1
-#   흘려받기가 끝나고 남은 조각이 없고 도는 묶음도 없으면 ath_finalize.sh
+#   Once the streaming has finished, no slices are left and no batch is still running, it calls ath_finalize.sh.
 set -u
 K=$NODE_KEY
 S="-n -i $K -o StrictHostKeyChecking=no -o ConnectTimeout=20"

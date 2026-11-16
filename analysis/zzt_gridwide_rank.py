@@ -1,20 +1,20 @@
 # -*- coding: utf-8 -*-
-"""[숙제2] 격자 전체 다중성 문턱 + [숙제1] 구역 창 통일 (2026-10-12).
+"""Grid-wide multiplicity threshold, and one set of zone windows.
 
-숙제2 - zzn/zzm 은 문턱을 크기 칸마다 따로 세웠다.
-  자리 269 개에 대해서는 family-wise 지만 칸 29 개를 가로질러서는 보정이 없다.
-  귀무에서도 칸마다 5% 확률로 봉우리가 하나 나오므로 목록에 평균 1.5 개가 섞인다.
-  고침 : 치환 한 번에 이동량을 한 벌 뽑아 모든 칸에 같이 쓰고(= 한 분자의 footprint 는
-  어느 칸에 있든 함께 움직인다 - 더 옳은 귀무이기도 하다), 그 치환의 격자 전체 최대를
-  기록해 95 분위로 문턱 하나를 세운다.
+Threshold
+  A threshold set per size bin is family-wise over the 269 positions but uncorrected across the 29 bins:
+  under the null each bin yields a peak with probability 5%, an average of 1.5 in the list.
+  Here one set of shifts is drawn per permutation and used for every bin (the footprints of one molecule
+  move together whichever bin they are in, which is also the more correct null), the grid-wide maximum
+  of that permutation is recorded, and a single threshold is set at its 95th percentile.
 
-숙제1 - 구역 창이 두 벌이었다.
-  Fig5E/Fig5D 는 FWHM 으로 뽑은 narrow(-28..-10 / +57..+68),
-  그림1/표2-4 와 스캔은 내가 눈대중으로 넓힌 wide(-35..0 / +45..+90).
-  순위는 안 바뀌고 이름표만 바뀌지만 "상위 10 중 9 ↔ 6" 으로 대표 문장이 달라진다.
-  -> narrow 로 통일한다 (자료에서 수로 유도된 쪽). wide 는 표에 한 열 더 남긴다.
+Zone windows
+  narrow (-28..-10 / +57..+68), derived from the FWHM, and
+  wide (-35..0 / +45..+90).
+  The ranking is the same under both and only the labels change.
+  narrow is used (derived from the data by number). wide is kept as one more column of the table.
 
-zzn 의 산출(scan_maps.npz · peaks_both.tsv)은 지우지 않는다. 여기는 _v2 로 낸다.
+The output is written with the suffix _v2.
 """
 import io
 import os
@@ -34,7 +34,7 @@ def _need(k):
         raise SystemExit(
             "environment variable %s is not set; it is required by %s." % (k, _SELF)
             + chr(10)
-            + "The deposited copy has no default; see README.md section 2")
+            + "The deposited copy has no default; see README.md, section 'Environment variables'")
     return v
 
 
@@ -58,8 +58,8 @@ SBIN, SMIN, SMAX = 5, 20, 164
 GAP, FLANKW = 8, 17
 WIDTHS = [9, 15, 21, 27, 33, 41, 51, 61, 71]
 SHIFT = {("HG02559", "2"), ("HG03672", "1")}
-ZT, ZI = (-28, -10), (57, 68)          # 정본 = FWHM 으로 뽑은 narrow
-ZTW, ZIW = (-35, 0), (45, 90)          # 옛 wide (표에 한 열로만 남긴다)
+ZT, ZI = (-28, -10), (57, 68)          # canonical: the narrow peak taken by FWHM
+ZTW, ZIW = (-35, 0), (45, 90)          # the earlier wide measure, kept as one column of the table only
 rel = np.arange(LO, HI + 1)
 rng = np.random.default_rng(20261011)
 K = np.ones(SM) / SM
@@ -106,14 +106,14 @@ def cv(ce):
 OBSM = np.array([cv(c) for c in CEa])
 PROF = np.empty((NB, NBK, i1 - i0))
 for t in range(NB):
-    d = rng.integers(0, PER, nmolF)            # 한 벌을 모든 칸에 같이 쓴다
+    d = rng.integers(0, PER, nmolF)            # one set is used for every bin
     for bi in range(NBK):
         PROF[t, bi] = cv((CEa[bi] + d[MIa[bi]]) % PER)
 BASE = PROF.mean(0)
 ENR = OBSM / np.maximum(BASE, 1e-9)
 NR = PROF / np.maximum(BASE, 1e-9)
-FTHR_BIN = np.percentile(NR.max(2), 95, axis=0)          # 옛 방식 (칸마다)
-FTHRG = float(np.percentile(NR.reshape(NB, -1).max(1), 95))   # 격자 전체
+FTHR_BIN = np.percentile(NR.max(2), 95, axis=0)          # the earlier method, per bin
+FTHRG = float(np.percentile(NR.reshape(NB, -1).max(1), 95))   # the whole grid
 print("FiberHMM 문턱 : 칸마다 %.2f~%.2f  ->  격자 전체 %.2f"
       % (FTHR_BIN.min(), FTHR_BIN.max(), FTHRG))
 FH, FH_OLD = [], []
@@ -209,8 +209,8 @@ for t in range(NB):
 sA, sM = A.sum(0).astype(float), M.sum(0).astype(float)
 DNULL = np.array([[np.nanmax(dprof(NULA[t], NULM[t], w)) for w in WIDTHS]
                   for t in range(NB)])
-DTHR_W = np.nanpercentile(DNULL, 95, axis=0)                 # 옛 방식 (폭마다)
-DTHRG = float(np.nanpercentile(np.nanmax(DNULL, axis=1), 95))  # 격자 전체
+DTHR_W = np.nanpercentile(DNULL, 95, axis=0)                 # the earlier method, per width
+DTHRG = float(np.nanpercentile(np.nanmax(DNULL, axis=1), 95))  # the whole grid
 print("Dubocanin 문턱 : 폭마다 %.3f~%.3f  ->  격자 전체 %.3f"
       % (DTHR_W.min(), DTHR_W.max(), DTHRG))
 DU, DU_OLD = [], []
@@ -236,7 +236,7 @@ for wi, w in enumerate(WIDTHS):
 print("Dubocanin 봉우리 : 폭마다 문턱 %d 개  ->  격자 전체 문턱 %d 개"
       % (len(DU_OLD), len(DU)))
 
-# ── 봉우리 목록을 남겨 둔다 (재계산 방지)
+# -- the peak list is kept, so that it need not be recomputed
 with io.open(os.path.join(DD, "peaks_both_v2.tsv"), "w", encoding="utf8", newline=NL) as g:
     g.write(TB.join(["방법", "자리", "크기또는폭_lo", "크기또는폭_hi", "값",
                      "이름표_narrow", "이름표_wide"]) + NL)
@@ -251,7 +251,7 @@ with io.open(os.path.join(DD, "peaks_both_v2.tsv"), "w", encoding="utf8", newlin
         g.write(TB.join(["Dubocanin", "%d" % q, "%d" % w, "%d" % w, "%.4f" % v,
                          _lab(q, ZT, ZI), _lab(q, ZTW, ZIW)]) + NL)
 
-# ══ 표3 : 자리로 뭉치기 — 단일연결은 사슬처럼 다 붙는다. 밀도 봉우리에 붙인다.
+# == table 3: clustering by position. Single linkage chains everything together, so positions are attached to the density peak instead.
 allq = np.array([q for q, _, _ in FH] + [q for q, _, _ in DU])
 h = np.zeros(NP)
 for q in allq:
@@ -274,7 +274,7 @@ for q in sorted(set(allq.tolist())):
     else:
         extra.append([q])
 cent = [c for c in cent if c]
-# 낱개는 이미 군집 안에 든 자리면 버린다 (중복 행 방지)
+# a singleton already inside a cluster is dropped, to prevent duplicate rows
 for e in extra:
     q = e[0]
     if not any(min(c) - MERGE <= q <= max(c) + MERGE for c in cent):

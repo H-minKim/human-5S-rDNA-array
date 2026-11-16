@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# 5S methylation extraction (2026-09-12, user request "merged methylation table + every region of every read viewable directly")
+# 5S methylation extraction
 #   Input : MM/ML of the placed BAMs (junction ~/placed_bam, ARRAY_ONLY ~/placed_bam_g8), taken from the original reads as is
 #          Unit boundaries : unit_start/unit_end of the map CONSENSUS_MAP (canonV8)
 #   Coordinate rules (validated against sequence in the pilot, CpG hit rate 0.986)
@@ -23,7 +23,7 @@ import bisect
 import subprocess
 import collections
 
-H = "/home/ubuntu"
+H = os.environ["NODE_HOME"]   # the compute node's home directory
 NL = chr(10)
 TAB = chr(9)
 CIG = re.compile(r"(\d+)([MIDNSHP=X])")

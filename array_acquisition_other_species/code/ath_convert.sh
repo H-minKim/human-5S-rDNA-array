@@ -1,9 +1,9 @@
 #!/bin/bash
-# 애기장대 : pod5 0.3.47 로 쓴 조각을 dorado 2.1.2 가 읽는 형식으로 되돌린다
-#   원인 : 0.3.47 이 쓴 파일은 reads 표의 channel 이 uint32 라 dorado(및 0.3.44)가 거부한다. 0.3.46 이하로 쓰면 읽힌다
-#   길 : pod5(0.3.47) --to_fast5--> fast5 --0.3.44 convert--> pod5(0.3.44)  [시험에서 dorado 가 읽고 MM 태그까지 정상]
-#   인자 : 동시 작업 수
-#   산출 : sub44/<same_name>.pod5 · sub44/converted.tsv (이름 · read 수)
+# Arabidopsis: convert slices written by pod5 0.3.47 back into a format dorado 2.1.2 can read.
+#   Cause: in a file written by 0.3.47 the channel column of the reads table is uint32, which dorado (and 0.3.44) reject. Written by 0.3.46 or earlier it reads.
+#   Route: pod5 (0.3.47) --to_fast5--> fast5 --convert with 0.3.44--> pod5 (0.3.44). In testing dorado read these and the MM tags were intact.
+#   Argument: the number of concurrent jobs.
+#   Outputs: sub44/<same_name>.pod5 and sub44/converted.tsv (name, read count).
 # MIT License · Copyright (c) 2026 Hungmin Kim
 set -u
 H=~/xsp/ath

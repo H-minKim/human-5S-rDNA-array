@@ -1,8 +1,8 @@
 #!/bin/bash
-# 금화조 : 5S k-mer 후보 read -> v0.3 이배체(mat+pat) 참조 정렬(PAF) -> 5S array 에 한 번이라도 걸친 read id (flowcell 별)
-#   정렬 = minimap2 map-ont --secondary=no · 보조정렬(supplementary)도 걸침으로 인정 · MAPQ 로 거르지 않는다 (탠덤 array)
-#   array = zfinch_v03_5S_arrays.bed (cmsearch RF00001 hit 10 kb 이내 묶음 · 3 copy 이상 · mat 4 + pat 4)
-#   산출 : sel/<fc>.ids · sel/<fc>.paf.gz · sel/summary.tsv (flowcell · 후보 read · array read · array read 염기합)
+# Zebra finch: the 5S k-mer candidate reads are aligned to the v0.3 diploid (maternal + paternal) reference (PAF), and the ids of reads overlapping a 5S array at least once are kept per flowcell.
+#   Alignment = minimap2 map-ont --secondary=no; a supplementary alignment also counts as overlapping, and there is no MAPQ filter because this is a tandem array.
+#   The arrays are zfinch_v03_5S_arrays.bed: cmsearch RF00001 hits grouped within 10 kb with at least 3 copies, 4 maternal and 4 paternal.
+#   Outputs: sel/<fc>.ids, sel/<fc>.paf.gz and sel/summary.tsv (flowcell, candidate reads, array reads, total bases in the array reads).
 # MIT License · Copyright (c) 2026 Hungmin Kim
 set -u
 Z=~/xsp/zfont

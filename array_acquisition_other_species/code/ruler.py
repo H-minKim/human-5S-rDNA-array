@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-# 공개 전장 반복단위를 자로 써서 실측 유닛을 잰다
-#   자 : X12811 (인간 5S 반복단위 2,231 bp · 전장) · AY130738 (애기장대 495 bp) · AF213516 (제브라피시 175 bp)
-#   재는 대상 : 같은 계통 실측 대표 유닛
-#   n_HSP 1 + 덮힘 ~1.0 = 유닛 하나 / HSP 여러개 규칙적 = 여러 유닛 덩어리 / 덮힘 낮음 = 자 밖 서열이 큼
+# Measure the units found here against published full-length repeat units used as rulers.
+#   The rulers: X12811, the human 5S repeat unit, 2,231 bp, full length; AY130738, Arabidopsis, 495 bp; AF213516, zebrafish, 175 bp.
+#   Measured: the representative unit of the same lineage, as found here.
+#   One HSP with coverage near 1.0 means a single unit; several regular HSPs mean a block of several units; low coverage means much of the sequence lies outside the ruler.
 # MIT License · Copyright (c) 2026 Hungmin Kim
 import io
 import os
@@ -31,6 +31,7 @@ U = {}
 for p in sorted(glob.glob("units/*.unit.fa")):
     U[os.path.basename(p).replace(".unit.fa", "")] = list(rdfa(p).values())[0]
 ALL = rdfa("ALL_lit.fa")
+W = os.environ["NODE_WORK_DIR"]   # the compute node's working directory
 RULERS = [("X12811.1", ("human", "rhesus", "chimp", "bonobo", "gorilla", "orang", "siamang")),
           ("AY130738.1", ("arabidopsis",)),
           ("AF213516.1", ("zebrafish",)),
@@ -40,14 +41,14 @@ for racc, tags in RULERS:
     if racc not in ALL:
         print("자 없음 " + racc)
         continue
-    io.open("ruler.fa", "w", encoding="utf8", newline=NL).write(">" + racc + NL + ALL[racc] + NL)
+    io.open(os.path.join(W, "ruler.fa"), "w", encoding="utf8", newline=NL).write(">" + racc + NL + ALL[racc] + NL)
     print(NL + "=== 자 : %s (%d bp)  -> %s" % (racc, len(ALL[racc]), "/".join(tags)))
     print("%-52s %6s %4s %6s %7s %s" % ("array_id", "unit", "nHSP", "cov", "pid_med", "HSP 위치(유닛 좌표)"))
     keep = [a for a in U if any(t in a for t in tags)]
     for a in sorted(keep, key=lambda z: (z.split("__")[0], -len(U[z]))):
-        io.open("one.fa", "w", encoding="utf8", newline=NL).write(">" + a + NL + U[a] + NL)
+        io.open(os.path.join(W, "one.fa"), "w", encoding="utf8", newline=NL).write(">" + a + NL + U[a] + NL)
         r = subprocess.run(["blastn", "-task", "blastn", "-word_size", "11", "-dust", "no", "-evalue", "1e-5",
-                            "-query", "ruler.fa", "-subject", "one.fa",
+                            "-query", os.path.join(W, "ruler.fa"), "-subject", os.path.join(W, "one.fa"),
                             "-outfmt", "6 pident length sstart send bitscore"], capture_output=True, text=True)
         hs = []
         for L in r.stdout.splitlines():

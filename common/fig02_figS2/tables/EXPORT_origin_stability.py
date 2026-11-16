@@ -2,11 +2,11 @@
 """
 EXPORT_origin_stability: stabilizes the inherited-type call so that it does not depend on a single lineage partition (KMeans K=8, seed 0).
 
-Background (measured 2026-09-18)
-  From v11 to v11-fix2, one more haplotype and one more background marker (45 -> 46) moved the KMeans 8-cluster boundaries,
-  and the call changed for 68 of 838 variants (8%). The terminal-type constituent variants (635CT, DB43:2, 113GA, 380TA) and 2206GA
-  had p=0.002, but their effect size (top-lineage occupancy - null) fell below 0.10, so inherited -> undetermined (small effect).
-  -> The S25 strand-asymmetry main estimate flipped because of the single site 2206GA.
+Background (measured)
+  A single partition is fragile: one more haplotype and one more background marker (45 -> 46) move the KMeans 8-cluster boundaries,
+  and the call changes for 68 of 838 variants (8%). The terminal-type constituent variants (635CT, DB43:2, 113GA, 380TA) and 2206GA
+  keep p=0.002, but their effect size (top-lineage occupancy - null) falls below 0.10, so inherited -> undetermined (small effect),
+  and the single site 2206GA is enough to flip the S25 strand-asymmetry main estimate.
 
 Method
   15 lineage partitions = KMeans K in {6, 8, 10} x random_state in {0..4} (n_init 20), on the 0/1 matrix of background markers
@@ -25,9 +25,9 @@ Calls (stable version)
   Broad inherited set for sensitivity: frac_pass >= 0.2 (used by ORIGIN_MODE=broad in S25/S25b)
 
 Usage
-  python EXPORT_origin_stability.py F2   -> updates export\V11_ORIGIN_CALL.tsv in this folder to the stable version
+  python EXPORT_origin_stability.py F2   -> updates export/V11_ORIGIN_CALL.tsv in this folder to the stable version
                                            (originals kept: V11_ORIGIN_CALL.single_kmeans.tsv, V11_VARIANT_GROUPS.tsv.single_kmeans)
-  python EXPORT_origin_stability.py v11  -> same computation on the original v11 data, writes only to export\stability_v11\ (for comparing agreement between the two versions)
+  python EXPORT_origin_stability.py v11  -> same computation on the original v11 data, writes only to export/stability_v11\ (for comparing agreement between the two versions)
 """
 import sys, io, os, collections, shutil
 MODE = sys.argv[1] if len(sys.argv) > 1 else "F2"
@@ -38,7 +38,7 @@ from sklearn.cluster import KMeans
 import unitdef_v11 as FC
 import v11_io as G
 
-F2DIR = G.OUT if MODE == "F2" else (__import__("os").environ["RDNA_DATA_ROOT"] + r"\5S_position_variant_work\2026-09-17_v11_fix2")   # correction: F2 mode output follows G.OUT (so the mirror guard applies). Previously the canonical path was hard-coded and a mirror run overwrote the canonical output.
+F2DIR = G.OUT if MODE == "F2" else (__import__("os").environ["RDNA_DATA_ROOT"] + r"/5S_position_variant_work/2026-09-17_v11_fix2")   # F2 mode output follows G.OUT (so the mirror guard applies)
 SRC_EXPORT = os.path.join(G.OUT, "export")
 OUTD = os.path.join(F2DIR, "export") if MODE == "F2" else os.path.join(F2DIR, "export", "stability_v11")
 os.makedirs(OUTD, exist_ok=True)

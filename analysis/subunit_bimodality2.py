@@ -1,18 +1,18 @@
 # -*- coding: utf-8 -*-
-# Ask A (2차) — 요소마다 이항 혼합(EM)으로 두 상태를 독립 추정하고, 그 문턱으로 전이 위치를 본다.
+# For each element, the two states are estimated independently by a binomial mixture fitted with EM, and the transition position read off that threshold.
 #
-# 1차 실패: 히스토그램에서 봉우리·골을 찾는 방식은 CpG 가 적은 요소(유전자 9·프로모터 11)에서
-#   β 가 이산적이라 β=1.0 막대 옆 빈 칸을 '골'로 잡았다(0.95~0.97). 폐기.
+# Finding the peaks and trough in a histogram fails for elements with few CpG sites (9 in the gene, 11 in the promoter):
+#   beta is discrete there, and the empty bin beside the bar at beta = 1.0 is taken as the trough, at 0.95-0.97. That approach is not used.
 #
-# 이번 방법: 요소마다 (n_cpg, n_meth) 로 2성분 이항 혼합을 EM 으로 적합 →
-#   p_low, p_high, 혼합비 w. 분류는 균등 사전(우도비)로 해서 위치 곡선이 w 에 끌리지 않게 한다.
-#   이분성 판정 = 적합된 혼합이 관측 분포를 설명하는가 + '애매한 유닛'(우도비 1 근처) 비율.
+# Instead: per element, a two-component binomial mixture is fitted to (n_cpg, n_meth) by EM, giving
+#   p_low, p_high and the mixing weight w. The classification uses a uniform prior, that is the likelihood ratio, so that the positional curve is not pulled by w.
+#   Bimodality is judged by whether the fitted mixture explains the observed distribution, together with the fraction of ambiguous units, those with a likelihood ratio near 1.
 import io, os, gzip, collections, math, statistics
 
 def _need(_v):
     """No defaults are set: the script stops if a variable is missing.
-    이 글이 읽는 자료의 뿌리는 README.md 의
-    "Running this code" 절에 적혀 있다."""
+    The roots of the data this script reads are listed in the
+    "Running this code" section of README.md."""
     import os as _o, sys as _s
     _x = _o.environ.get(_v)
     if not _x:
@@ -41,7 +41,7 @@ for i, L in enumerate(io.open(SUM, encoding="utf8")):
     if len(f) >= 8 and int(f[7]) > 0:
         BRK.add((f[0], f[1]))
 
-CNT = collections.defaultdict(collections.Counter)       # el -> (n,k) -> 수
+CNT = collections.defaultdict(collections.Counter)       # element -> (n, k) -> count
 ROWS = collections.defaultdict(list)                     # el -> [(axis,idx,n,k)]
 for i, L in enumerate(gzip.open(SU, "rt", encoding="utf8")):
     if i == 0:
@@ -72,7 +72,7 @@ def logbinom_pmf(k, n, p):
 
 
 def em(cnt, iters=300):
-    """2성분 이항 혼합. 조합계수는 두 성분에 공통이라 생략 가능."""
+    """Two-component binomial mixture. The binomial coefficient is common to both components and can be omitted."""
     plo, phi, w = 0.05, 0.85, 0.7
     items = list(cnt.items())
     for _ in range(iters):
@@ -112,14 +112,14 @@ for e in EL:
     FIT[e] = (plo, phi, w)
     ncs = [n_ for (n_, _k), c in CNT[e].items() for _ in range(min(c, 1))]
     med_n = statistics.median([n_ for (n_, _k) in CNT[e] for _ in range(CNT[e][(n_, _k)])][:400000])
-    # 애매 유닛 = 우도비가 1/9 ~ 9 사이 (posterior 0.1~0.9, 균등 사전)
+    # an ambiguous unit has a likelihood ratio between 1/9 and 9, that is a posterior of 0.1 to 0.9 under a uniform prior
     amb = tot = 0
     for (n_, k_), c in CNT[e].items():
         d = logbinom_pmf(k_, n_, phi) - logbinom_pmf(k_, n_, plo)
         tot += c
         if abs(d) < math.log(9):
             amb += c
-    # 귀무 : 진짜 두 상태뿐일 때 표집만으로 생기는 애매 비율
+    # the null: the fraction of ambiguous units that sampling alone produces when there really are only two states
     nullamb = nulltot = 0.0
     for (n_, k_), c in CNT[e].items():
         pass
@@ -128,9 +128,9 @@ for e in EL:
         ns[n_] += c
     for n_, c in ns.items():
         for comp, wt in ((phi, w), (plo, 1 - w)):
-            # 이 성분에서 k 분포
+            # the distribution of k under this component
             lg = [0.0] * (n_ + 1)
-            # log C(n,k) 재귀
+            # log C(n, k), computed recursively
             lc = 0.0
             for k_ in range(n_ + 1):
                 if k_ > 0:

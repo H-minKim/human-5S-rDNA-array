@@ -6,7 +6,7 @@ EXPORT_origin_finalize, finalize the inherited/recurrent calls.
       so most calls survive the threshold, but tiny differences in variants with very many carriers are filtered out.
   (2) Compare with the lineage test values already produced by S3 to confirm the implementation.
   (3) Representative examples are drawn near the median effect size (drawing the most common variants would mislead).
-Input : export\V11_ORIGIN_CALL.tsv (output of EXPORT_origin_call.py), primary\S3_lineage_test_results.tsv
+Input : export/V11_ORIGIN_CALL.tsv (output of EXPORT_origin_call.py), primary/S3_lineage_test_results.tsv
 Output : updates the same two files (origin_call recomputed)
 """
 import io, os, collections

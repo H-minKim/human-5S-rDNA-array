@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-# surgical replacement v2, anchors are fixed by position (2026-09-13)
+# surgical replacement, anchors are fixed by position
 #
-#   v1 failure: the anchor unit was searched over the whole consensus by 'highest identity', so it attached to a different copy within the tandem
-#                (NA20282: the consensus had 3 units, but the rear anchor attached to the middle unit and swallowed one real unit -> 2 units)
-#   fix       : by definition the consensus is the span [front anchor ... rear anchor]. The front anchor is fixed to the first HSP of the consensus,
+#   why       : an anchor unit searched over the whole consensus by 'highest identity' attaches to a different copy within the tandem
+#                (NA20282: the consensus has 3 units, but the rear anchor attaches to the middle unit and swallows one real unit -> 2 units)
+#   rule      : by definition the consensus is the span [front anchor ... rear anchor]. The front anchor is fixed to the first HSP of the consensus,
 #               and the rear anchor to the last HSP. Then the 'bp of the consensus left outside the anchors' is printed
 #               to confirm they really attached at the ends (it should be close to 0).
 #   tests     : (1) leftover bp (2) anchor identity (100 against the assembly) (3) breaks (4) unit count must equal the consensus
@@ -12,7 +12,7 @@ import os
 import subprocess
 import collections
 
-H = "/home/ubuntu"
+H = os.environ["NODE_HOME"]   # the compute node's home directory
 NL = chr(10)
 TAB = chr(9)
 W = os.path.join(H, "splice2")

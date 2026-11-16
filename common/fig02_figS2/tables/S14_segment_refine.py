@@ -2,8 +2,8 @@
 """
 S14 - validate the segments from S13 and split them more finely.
 
-Problem found in S13
-  k=3 of basis A is skewed at 49,097 : 1,818 : 881, so it was 'outlier picking', not segmentation.
+Why S13 needs validation
+  k=3 of basis A is skewed at 49,097 : 1,818 : 881, which is 'outlier picking', not segmentation.
   The length contribution in that state (intermediate type 0.97) comes from the intermediate type being 95% of the units, which is close to a tautology.
 
 What is done here

@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 # → ALIGNED_POS_RATE.tsv
-#   단계 : S1 H·I 상류
+#   Step: S1 H and I upstream.
 #   Method document : analysis/METHOD_CONSENSUS_MAP_G8_REBUILD.md
 
 # -*- coding: utf-8 -*-
-# 배치된 자리에서 본 앵커 — 전량 스캔 + 역위 검출력
-#   (A) 손대지 않은 정본 : 자리마다 '배치된 자리가 ±5 이웃 중 최고인 read 유닛 비율'(국소 최고율)
-#       → 낮은 자리 · 낮은 자리가 이어진 구간 = 정본 이상 후보 (귀무 없이도 해석 가능하나 분포로 문턱을 정한다)
-#   (B) 역위 검출력 : 구간 크기 3·6·12 × 위치를 옮기며 정본 유닛 내용을 뒤집고, 그 구간 국소 최고율이
-#       문턱 아래로 떨어지는지 · 구간 밖은 그대로인지
+# The anchor seen from the placed position: an exhaustive scan plus the power to detect an inversion.
+#   (A) The untouched canonical sequence: per position, the fraction of read units for which the placed position scores highest among its +-5 neighbours (the local-best rate).
+#       A low position, or a run of low positions, is a candidate anomaly in the canonical sequence; the threshold is taken from the distribution.
+#   (B) The power to detect an inversion: the content of the canonical units is reversed over windows of 3, 6 and 12 units at varying positions, and it is tested whether
+#       the local-best rate falls below the threshold inside the window while staying unchanged outside it.
 import io, os, glob, collections, statistics
 
 S = os.path.dirname(os.path.abspath(__file__))
@@ -17,7 +17,7 @@ MAPF = os.path.join(S, "pos_in", "CONSENSUS_MAP_G8_full.tsv")
 V = os.path.join(os.environ["RDNA_V11"], "06_units_final")
 TAB = chr(9); NL = chr(10); W = 5
 
-# 정본 지도
+# the canonical map
 CAN = {}; NUN = collections.Counter()
 f = io.open(MAPF, encoding="utf8"); h = f.readline().rstrip(NL).split(TAB)
 for L in f:
@@ -36,7 +36,7 @@ for (s, sl, ap), ts in CAN.items():
 FIX = {k: {t for t, v in cnt[k].items() if v >= 0.9 * tot[k]} for k in tot}
 CANF = {k: (v - FIX[(k[0], k[1])]) for k, v in CAN.items()}
 
-# 배치 read 유닛
+# the placed read units
 def load(path, ci_slot, ci_pos, ci_var, has_read16):
     out = []
     for L in io.open(path, encoding="utf8"):
@@ -57,7 +57,7 @@ def jac(a, b):
     if not a or not b: return 0.0
     i = len(a & b); return i / float(len(a) + len(b) - i)
 
-# (A) 손대지 않은 정본
+# (A) the untouched canonical sequence
 pos_hit = collections.defaultdict(list)
 for s, sl, rid, ap, ts in U:
     c0 = CANF.get((s, sl, ap))
@@ -104,7 +104,7 @@ L.append("|---|---|---|---|---|")
 for r0, n0, k in low_rows[:20]:
     L.append("| %s | h%s | %d | %.2f | %d |" % (k[0], k[1], k[2], r0, n0))
 
-# (B) 역위 검출력
+# (B) the power to detect an inversion
 byhap = collections.defaultdict(list)
 for s, sl, rid, ap, ts in U: byhap[(s, sl)].append((ap, ts))
 def block_rate(key, lo, hi, invert):

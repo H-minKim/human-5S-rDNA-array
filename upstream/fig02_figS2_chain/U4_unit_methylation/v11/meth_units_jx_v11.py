@@ -23,7 +23,7 @@ import bisect
 import subprocess
 import collections
 
-H = "/home/ubuntu"
+H = os.environ["NODE_HOME"]   # the compute node's home directory
 NL = chr(10)
 TAB = chr(9)
 CIG = re.compile(r"(\d+)([MIDNSHP=X])")

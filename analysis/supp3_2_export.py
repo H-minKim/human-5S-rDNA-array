@@ -1,20 +1,20 @@
 # -*- coding: utf-8 -*-
-# Supp3_2 의 원자료 표를 낸다 2026-10-10
-#   까닭 : `supp3_2_draw.py` 는 중간표 없이 `L1_READ_UNIT` 에서 바로 그린다.
-#          ⇒ 원자료 xlsx 에 넣을 표가 없다 — 그림이 보이는 것을 그대로 표로 낸다.
-#   그림을 다시 그리지 않는다 — 같은 여과·같은 정렬로 표만 낸다.
-#   검산 : 분자 수 52 · 덮인 칸 1,200 · 자리 83 (그림 출력과 같아야 한다)
+# Write the Source Data table for supplementary panel 3-2.
+#   The drawing script plots straight from L1_READ_UNIT with no intermediate table,
+#          so there is no table for the Source Data workbook. This writes exactly what the figure shows.
+#   The figure is not redrawn; only the table is written, under the same filter and the same ordering.
+#   Check: 52 molecules, 1,200 covered bins and 83 positions, which must match the figure's own output.
 import io, os, sys, hashlib
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 import numpy as np, pandas as pd
-# 자료 뿌리는 환경변수 하나로 (2026-10-21 · 저장소 공개 준비)
-#   안 주면 지금까지 쓰던 자리를 그대로 쓴다 — 돌아가는 것이 달라지지 않는다.
+# The data roots come from environment variables.
+#   They have no default: the script stops with a message if one is not set.
 DATA_ROOT = os.environ["DATA_ROOT"]
 
 S = DATA_ROOT + "/"
-# 표를 읽고 쓰는 자리 — 저장소에서는 표가 코드 옆에 없으므로 환경변수로 받는다 (2026-10-21)
-# 예치표의 열 이름과 값을 영문으로 낸다
-#   쓰기 바로 전 한 자리 에서만 바꾼다 — 이 글 안의 내부 이름은 그대로 둔다.
+# Where the tables are read and written. The tables are not deposited next to the code, so these paths come from the environment.
+# Write the deposited table's column names and values in English.
+#   The renaming happens at a single point just before writing.
 _KO2EN_COL = {
     "FIG3_A_UNITPROFILE_ZONE.tsv": {"구역": "zone", "유닛안자리": "pos_in_unit",
                                     "유전자기준": "pos_gene_ref", "호출수": "n_call",
@@ -61,15 +61,15 @@ NN = int(L.N.iloc[0])
 order = list(L.groupby("read_id").b_call.mean().sort_values().index)
 pos = {r: i for i, r in enumerate(order)}
 
-# ---- A·B : 분자 x 유닛 (긴 꼴) ----
+# ---- A and B: molecule by unit, in long form ----
 A = L[["read_id", "ap", "ad", "b_call"]].copy()
-A["분자순번"] = A.read_id.map(pos)          # 평균 메틸 오름차순 (그림의 세로 순서)
+A["분자순번"] = A.read_id.map(pos)          # in increasing mean methylation, the vertical order of the figure
 A["하플로타입"] = "%s|%d" % (HAPS, HAPSLOT)
 A["array_길이_유닛"] = NN
 A = A.sort_values(["분자순번", "ap"])[
     ["하플로타입", "array_길이_유닛", "read_id", "분자순번", "ap", "ad", "b_call"]]
 
-# ---- C : 자리별 분자 사이 흩어짐 ----
+# ---- C: the spread between molecules, per position ----
 g = L.groupby("ap").b_call.agg(["mean", "std", "count"]).reset_index()
 g.columns = ["ap", "평균_b_call", "분자사이_sd", "분자수"]
 g["ad"] = NN - g.ap + 1

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Step 1: extract only the anchor segments on each node (2026-09-12), the reads are split across nodes and must be gathered
+# Step 1: extract only the anchor segments on each node (the reads are split across nodes and must be gathered)
 #   anchor = start of the intact unit before the gap to end of the intact unit after the gap
 #   Even if the anchor ends are not exactly aligned, the nearest aligned position within +-100bp is used
 #   (requiring exactness discards reads in bulk, measured 15 -> 2)
@@ -11,7 +11,7 @@ import sys
 import subprocess
 import collections
 
-H = "/home/ubuntu"
+H = os.environ["NODE_HOME"]   # the compute node's home directory
 NL = chr(10)
 TAB = chr(9)
 CIG = re.compile(r"(\d+)([MIDNSHP=X])")

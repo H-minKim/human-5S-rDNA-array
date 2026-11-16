@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-# 시료×좌위갈래×부류(코딩부/스페이서/flankL/flankR) 메틸 — read 묶음 부트스트랩(독립, 정렬 전 차이)
+# Methylation by sample, locus class and region class (coding, spacer, flank left, flank right), with a read-level bootstrap, independent and taking the difference before any alignment.
+import os
 import io
 import collections
 import numpy as np
@@ -8,7 +9,8 @@ rng = np.random.default_rng(0)
 NB = 2000
 TAB = chr(9)
 d = collections.defaultdict(list)
-for L in io.open("ADULT_PERREAD.tsv", encoding="utf8"):
+W = os.environ["NODE_WORK_DIR"]   # the compute node's working directory
+for L in io.open(os.path.join(W, "ADULT_PERREAD.tsv"), encoding="utf8"):
     f = L.rstrip("\n").split(TAB)
     if f[0] == "group":
         continue
@@ -21,7 +23,7 @@ def boot(v):
     idx = rng.integers(0, n, size=(NB, n))
     c = a[idx, 0].sum(1)
     m = a[idx, 1].sum(1)
-    return m / c          # 정렬하지 않는다
+    return m / c          # no alignment is performed
 
 
 def pt(v):
@@ -33,9 +35,9 @@ groups = ["알_Jiang", "알_Potok", "정자_Jiang", "정자_Potok", "16세포", 
           "배아24hpf", "F_GSC_35to70", "M_GSC_35to70", "early_GSC_1to28", "F_Control_35to70",
           "M_Control_35to70", "early_Control_1to28", "근육_Potok", "장", "심장", "정소"]
 parts = ["코딩부", "스페이서", "바깥_flankL", "바깥_flankR"]
-out = io.open("ADULT_STATS.tsv", "w", encoding="utf8", newline="\n")
+out = io.open(os.path.join(W, "ADULT_STATS.tsv"), "w", encoding="utf8", newline="\n")
 out.write(TAB.join(["sample", "branch", "part", "n_read", "n_cpg", "frac", "lo95", "hi95"]) + "\n")
-diffo = io.open("ADULT_DIFFS.tsv", "w", encoding="utf8", newline="\n")
+diffo = io.open(os.path.join(W, "ADULT_DIFFS.tsv"), "w", encoding="utf8", newline="\n")
 diffo.write(TAB.join(["sample", "branch", "contrast", "diff", "lo95", "hi95"]) + "\n")
 for br in ("chr4", "chr18"):
     print("\n#### %s   (값 [95%%] r=read)" % br)

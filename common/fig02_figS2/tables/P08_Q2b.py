@@ -4,7 +4,7 @@ r"""P08 Q2b, three additions to Q2
        Reason: with decile-stratified permutation each decile spans 8 copies, so the null mimics the short-lag signal itself
                (the stratifying variable is collinear with the predictor) => detrending must be done by window restriction
    (b) section 3.8 practical range / global p per segment (the 119 bp gene may lack enough diagnostic sites)
-   (c) second output path = direct pairwise alignment with parasail (TRASH/ModDotPlot not installed)"""
+   (c) second output path = direct pairwise alignment with parasail"""
 import os, sys, io, re, time, collections, pickle
 import numpy as np
 sys.stdout.reconfigure(encoding="utf-8")

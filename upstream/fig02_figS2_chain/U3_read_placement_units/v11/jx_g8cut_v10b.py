@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# cut junction-placed reads on the G8v3 frame (2026-09-11), run on the node, nothing is re-aligned
+# cut junction-placed reads on the G8v3 frame, run on the node, nothing is re-aligned
 #   material: alignment records of accepted reads stored by the reproduction run (<sample>.placed.sam, original read sequence, quality and MM/ML unchanged, passed comparison with the original)
 #   reference: rebuilt exactly as used for that alignment = rc(distal flank 5000) + canonical + rc(proximal flank 5000)
 #          main edition: hap_seq_node, cmp4d, orientation CONSENSUS_SUM_G6 revcomp (exactly the original rjfreq2 input)

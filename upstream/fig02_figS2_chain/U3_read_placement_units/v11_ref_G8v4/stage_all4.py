@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
-# Stage table for all individuals, classification of 313 individuals, recomputed on G8v4 (2026-09-12, rules of stage_all3.py unchanged)
-#   changed inputs: map CONSENSUS_MAP_G6C2 -> CONSENSUS_MAP_G8v4_full, merge READMAP_MERGED_v7 -> READMAP_G8V4_BYSOURCE
-#   rules (same as the old version): cov1 = fraction of units with 1 or more reads, cov3 = fraction with depth 3 or more
+# Stage table for all individuals, classification of 313 individuals, on G8v4
+#   inputs: map CONSENSUS_MAP_G8v4_full, merge READMAP_G8V4_BYSOURCE
+#   rules: cov1 = fraction of units with 1 or more reads, cov3 = fraction with depth 3 or more
 #                       agreement = TP/(TP+FN+FP) of units with depth 3 or more, decision thresholds cov3 >= 90% and agreement >= 95%
-#   The new merge has rows split by source (19 haplotypes with two sources). So two versions are produced together.
-#     union : sources merged per position (sample, slot, array_pos), the main version comparable with the old table (source-merged)
-#     rep   : only the source with the largest summed depth in that haplotype, the version that follows the user rule (do not mix sources)
-#   The canonical source (canon_src) and slot list are taken from CONSENSUS_SUM_G6.tsv unchanged, since the canonical did not change.
+#   The merge has rows split by source (19 haplotypes with two sources). So two versions are produced together.
+#     union : sources merged per position (sample, slot, array_pos), the main version (source-merged)
+#     rep   : only the source with the largest summed depth in that haplotype (sources are not mixed)
+#   The canonical source (canon_src) and slot list are taken from CONSENSUS_SUM_G6.tsv.
 #   Output is written to the work folder, not the canonical path.
 #   Arguments: SUM_G6, MAP_G8v4, READMAP_G8V4, HAP_READ_NEW44, HAP_READ_FINAL, output folder
 import io

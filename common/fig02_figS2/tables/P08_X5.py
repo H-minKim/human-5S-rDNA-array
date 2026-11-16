@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 r"""P08 X5 - test lag1 > lag2 with a non-circular definition
-   (2) of X4 was invalid: 'single unit' was defined as lag2 distance < lag1 distance, and then those units were removed
-     => the result was built into the definition (the clue was the sign flipping by 435%, from +0.51 to -1.70)
-   Corrected definition: whether a unit is odd is decided from its own content only (independent of neighbors and position)
+   Defining a 'single unit' by lag2 distance < lag1 distance and then removing those units is circular
+     => the result is built into the definition
+   Definition used here: whether a unit is odd is decided from its own content only (independent of neighbors and position)
      div_i = distance to the medoid unit of that haplotype, odd = top quartile within the haplotype
    Tests (a) are odd units scattered (number of adjacent odd-odd pairs vs a position-permutation null)
         (b) do lag1 pairs include odd units more often than lag2 pairs  <- decisive

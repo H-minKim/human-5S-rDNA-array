@@ -1,8 +1,8 @@
 #!/bin/bash
-# 알 시료 깊이 올리기 — 8M 씩 조각내어 순차 정렬 후 합친다
-#   32M 을 한 번에 돌리면 bismark 임시파일이 31 GB 까지 불어 디스크가 98% 가 됐다(중단함).
-#   8M 실행은 문제없이 끝났으므로 같은 크기로 4 조각을 하나씩 처리하고 매번 임시를 지운다.
-#   이미 끝난 1 조각(bam/SRR837875.sorted.bam)은 그대로 쓰고 2~4 조각만 만든다.
+# Increasing depth on the egg samples: aligned in 8M chunks in sequence, then merged.
+#   Running 32M in one go grows the bismark temporary files to 31 GB,
+#   so four 8M chunks are processed one at a time with the temporary files deleted each time.
+#   Chunk 1 is the existing bam/SRR837875.sorted.bam; only chunks 2 to 4 are built.
 set -u
 cd ~/zfwgbs
 export PATH=$HOME/zfwgbs/Bismark-0.24.2:$PATH
@@ -13,7 +13,7 @@ guard () {
   if [ "$F" -lt 25 ]; then echo "STOP — 디스크 여유 ${F}G"; exit 1; fi
 }
 
-L=32000000          # 8,000,000 read = 32,000,000 줄
+L=32000000          # 8,000,000 reads = 32,000,000 lines
 for K in 2 3 4; do
   guard
   [ -f bam/eggC${K}.sorted.bam ] && { echo "SKIP 조각$K"; continue; }

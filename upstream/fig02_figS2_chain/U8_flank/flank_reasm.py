@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# cut the flank from the newly assembled contig and attach it to the canonical (2026-09-15)
+# cut the flank from the newly assembled contig and attach it to the canonical
 #
 #   Invariant: the canonical array sequence is not changed by a single character. Things are only attached at both ends.
 #
@@ -21,8 +21,8 @@ import collections
 NL = chr(10)
 TAB = chr(9)
 H = os.path.expanduser("~")
-ASM = os.path.expanduser(os.environ.get("ASM", "~/reasm_v12/out"))
-OUT = os.path.expanduser(os.environ.get("OUT", "~/flank_v12"))
+ASM = os.path.expanduser(os.environ["ASM"])
+OUT = os.path.expanduser(os.environ["OUT"])
 CMPD = os.path.join(H, "cmp4d_v11")
 TMP = os.path.join(H, "frtmp")
 os.makedirs(OUT, exist_ok=True)
@@ -103,7 +103,7 @@ def aln(q, tfa, tag):
 st = collections.Counter()
 for smp in sorted(OWN):
     # hifiasm outputs the same sequence several times, as bp.p_ctg, bp.hap1, bp.hap2 and the copy p_ctg.
-    #   With all of them in, the front and back anchors attach to different copies and are misjudged as 'different contigs' (measured 2026-09-15).
+    #   With all of them in, the front and back anchors attach to different copies and are misjudged as 'different contigs' (measured).
     #   Only hap1 and hap2 are used. If absent, only bp.p_ctg.
     cands = sorted(glob.glob(os.path.join(ASM, "%s.bp.hap?.p_ctg.fa" % smp)))
     if not cands:

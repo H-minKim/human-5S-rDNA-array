@@ -13,7 +13,7 @@ for M in 0 30; do
   done
   echo "MQ>=$M 완료"
 done
-# read/kb 몰림도 같이
+# the reads per kb, as a measure of clustering, is reported as well
 python3 - <<'PY'
 import io,collections
 TAB=chr(9)

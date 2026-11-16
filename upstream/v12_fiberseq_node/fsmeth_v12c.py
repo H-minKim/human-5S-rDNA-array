@@ -1,24 +1,24 @@
 # -*- coding: utf-8 -*-
 # Per-unit m6A and CpG of the placed Fiber-seq reads (v12)
-#   뼈대 = v11 mkbam_ao_v11.py (BAM·참조 만들기) + meth_units_ao_v11.py (좌표 규칙) 를 그대로 옮김
-#   바뀐 것 (환경변수로만)
-#     D     : 작업폴더 (~/aog8v12fs2 · ~/aog8v12pb)     — v11 은 ~/aog8v10
-#     CFG   : AOJV_FS · AOJV_PB                          — 이 cfg 의 SAM 만 읽는다
-#     LABEL : UCSC_ONT_FIBERSEQ · PACBIO_FIBERSEQ        — v11 은 srcmap_<host>.tsv
-#     OUT   : 새 폴더 (v11 폴더에 쓰지 않는다)
-#     FINAL : 최종 유닛표 (in_final 열 표시용 · 열 8 = array_pos G8)
-#     SMPS  : (선택) 쉼표로 개체 제한 — 파일럿
-#     SAMD  : (선택) SAM 폴더 — 기본 D/sam
-#   MM 블록 끝 플래그가 없으면 SAM 명세대로 '.' 와 같게 본다 (ft 출력 A+a,/T-a, · jasmine·ONT 는 '.' 명시라 영향 없음)
-#   CpG : v11 코드 그대로 (C+m · 역방향 -1 · ML>=128) -> METH_READUNIT / METH_SITE  + 적중률(정본 C·G)
-#   m6A : 추가
-#     · A+a (원본 read 의 A) / T-a (원본 read 의 T = 반대가닥 A · PacBio 에만)
-#     · 플래그 '.' = 목록에 없는 염기는 0 -> 분모 = 해당 염기 전부 (C+m '?' 는 목록만)
-#     · 한 염기짜리 변형이라 CpG 의 -1 보정 없음
-#     · mod_strand = 정본 기준 m6A 가 놓인 가닥 : '+' 면 정본 A 자리 · '-' 면 정본 T 자리
-#         A+a : 정방향 read '+' · 역방향 read '-'     T-a : 정방향 '-' · 역방향 '+'
-#     · 적중률 = 정본 염기가 기대 염기(A/T)와 같은 비율 (좌표 한 칸 틀리면 ~0.3 로 떨어짐)
-#   ARRAY_ONLY·junction 모두 ao_g8cut 로 정본 창에 다시 정렬됐으므로 offset 0
+#   The skeleton is mkbam_ao_v11.py, for building the BAM and the reference, plus meth_units_ao_v11.py, for the coordinate rules, carried across unchanged.
+#   Settings, through environment variables:
+#     D     the working folder
+#     CFG   AOJV_FS or AOJV_PB: only the SAMs of this cfg are read
+#     LABEL UCSC_ONT_FIBERSEQ or PACBIO_FIBERSEQ, in place of the per-host srcmap table
+#     OUT   the output folder
+#     FINAL the final unit table, for the in_final column; column 8 is array_pos in G8
+#     SMPS  optionally a comma-separated list of individuals, for a pilot run
+#     SAMD  optionally the SAM folder, defaulting to D/sam
+#   Where an MM block carries no terminating flag it is read as equivalent to '.', per the SAM specification (the fibertools output is A+a,/T-a,; jasmine and ONT state '.' explicitly and are unaffected).
+#   CpG: the v11 code unchanged (C+m, minus 1 on the reverse strand, ML >= 128) -> METH_READUNIT and METH_SITE, with the hit rate against the canonical C and G.
+#   m6A:
+#     · A+a, the A of the original read, and T-a, the T of the original read, that is an A on the opposite strand, which occurs only in PacBio data.
+#     · The flag '.' means a base absent from the list is 0, so the denominator is every base of that kind; the '?' of C+m means the list only.
+#     · Being a single-base modification there is no minus-1 correction as there is for CpG.
+#     · mod_strand is the strand the m6A lies on in the canonical frame: '+' is a canonical A position and '-' a canonical T position.
+#         A+a is '+' on a forward read and '-' on a reverse read; T-a is '-' on a forward read and '+' on a reverse one.
+#     · The hit rate is the fraction of positions where the canonical base equals the expected one, A or T; one position out and it falls to about 0.3.
+#   Both ARRAY_ONLY and junction reads were realigned to the canonical window by ao_g8cut, so the offset is 0.
 import io
 import os
 import re
@@ -38,7 +38,7 @@ LABEL = os.environ["LABEL"]
 OUT = H(os.environ["OUT"])
 FINAL = os.environ.get("FINAL", "")
 SMPS = set(x for x in os.environ.get("SMPS", "").split(",") if x)
-SAMD = H(os.environ.get("SAMD", os.path.join(D, "sam")))   # SAM 폴더 (기본 D/sam · ft 재호출판은 ~/pbft_v12/sam)
+SAMD = H(os.environ.get("SAMD", os.path.join(D, "sam")))   # the SAM folder, defaulting to D/sam; the fibertools recall version uses pbft_v12/sam
 MAPF = H("~/MAP_V11.tsv")
 HOST = os.uname()[1]
 CIG = re.compile(r"(\d+)([MIDNSHP=X])")
@@ -56,7 +56,7 @@ def rd(p):
     return "".join(x.strip() for x in io.open(p, encoding="utf8").read().split(NL)[1:])
 
 
-# ── 정본 서열 (mkbam_ao_v11 과 같은 방식)
+# -- the canonical sequence, built the same way as in mkbam_ao_v11
 SEQF = {}
 for L in io.open(os.path.join(D, "g8in", "hap_seq_node_v7.tsv"), encoding="utf8"):
     f = L.rstrip(NL).split(TAB)
@@ -69,7 +69,7 @@ for L in f:
     r = L.rstrip(NL).split(TAB)
     FLIP[(r[0], r[1])] = (r[4] == "Y")
 
-# ── 유닛 경계 (meth_units_ao_v11 과 같음)
+# -- the unit boundaries, as in meth_units_ao_v11
 U = collections.defaultdict(list)
 f = io.open(MAPF, encoding="utf8")
 ix = dict((n, i) for i, n in enumerate(f.readline().rstrip(NL).split(TAB)))
@@ -82,17 +82,17 @@ for k in U:
     U[k].sort()
 STARTS = dict((k, [x[0] for x in v]) for k, v in U.items())
 
-# ── 최종 유닛표 (sample, read, slot, array_pos) OK
+# -- the OK rows of the final unit table, as (sample, read, slot, array_pos)
 FIN = set()
 if FINAL:
     for fp in glob.glob(H(FINAL)):
         for L in io.open(fp, encoding="utf8"):
             r = L.rstrip(NL).split(TAB)
             if len(r) > 13 and r[4] == CFG and r[13] == "OK":
-                FIN.add((r[0], r[1], r[3], r[7]))                  # r[7]=array_pos(G8) · r[8]=G6 번호 (fix_relabel_only 주석)
+                FIN.add((r[0], r[1], r[3], r[7]))                  # r[7] is array_pos in G8 and r[8] the G6 index (see the comments in fix_relabel_only)
 
 
-# ── 1. BAM + 참조 (mkbam_ao_v11 그대로 · 출력 폴더만 새로)
+# -- 1. the BAM and the reference, exactly as in mkbam_ao_v11, with only the output folder new
 def mkbam(sp, smp):
     recs = [L.rstrip(NL) for L in io.open(sp, encoding="utf8") if L.strip() and not L.startswith("@")]
     nzr = sum(1 for x in recs if (TAB + "ZR:Z:") in x)
@@ -124,7 +124,7 @@ def mkbam(sp, smp):
 
 
 def blocks(seq, flag, mm, ml):
-    """(블록이름, [(SEQ좌표, 값)]) — MM 은 원본 read 방향. '.' 블록은 목록 밖 염기를 0 으로 채움."""
+    """(block name, [(SEQ coordinate, value)]); MM is relative to the original read orientation. A '.' block fills bases outside the list with 0."""
     orig = rc(seq) if (flag & 16) else seq
     vals = [int(x) for x in ml.split(",") if x != ""]
     res = []
@@ -145,9 +145,9 @@ def blocks(seq, flag, mm, ml):
                     break
                 got[j] = vals[base + t] if base + t < len(vals) else 0
             if nm == "C+m":
-                items = sorted(got.items())                       # v11 : 목록만
+                items = sorted(got.items())                       # C+m: the list only
             elif head.endswith(".") or head[-1] not in ".?":
-                items = [(j, got.get(j, 0)) for j in range(len(idx))]   # 분모 = 염기 전부
+                items = [(j, got.get(j, 0)) for j in range(len(idx))]   # the denominator is every base of that kind
             else:
                 items = sorted(got.items())
             out = []
@@ -215,10 +215,10 @@ for sp_ in sorted(glob.glob(os.path.join(SAMD, "*.%s.sam" % CFG))):
             T["no_mm"] += 1
             continue
         if not ml:
-            T["mm_empty"] += 1                    # MM 블록만 있고 호출 0 (ML 비어 있음) -> 0 으로 채우지 않고 뺀다
+            T["mm_empty"] += 1                    # an MM block present but with no calls, the ML being empty, is dropped rather than filled with zeros
             continue
         if "A+a" not in mm and "T-a" not in mm:
-            T["no_m6a_block"] += 1                # 원자료에 m6A 호출 없음 (CpG 는 계속)
+            T["no_m6a_block"] += 1                # the raw data carries no m6A calls; the CpG part continues
         ref = refs[sn]
         m = {}
         rp = pos - 1
@@ -248,7 +248,7 @@ for sp_ in sorted(glob.glob(os.path.join(SAMD, "*.%s.sam" % CFG))):
                     if sp not in m:
                         continue
                     cp = m[sp] - OFF
-                    # 검정 : 보정 전 자리
+                    # the test: the position before the correction
                     if 0 <= cp < len(ref) and ref[cp] == ("G" if flag & 16 else "C"):
                         T["cpg_hit_noshift"] += 1
                     if flag & 16:

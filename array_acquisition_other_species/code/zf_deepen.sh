@@ -1,12 +1,12 @@
 #!/bin/bash
-# chr18 read 수를 올린다 — 지금 결론의 유일한 약점이 read 수다.
-#   Potok 알   SRR800059 : chr18 array 를 덮은 read 9 개  → 32M 으로 약 4 배
-#   Potok 근육 SRR800081 : chr18 33 개 · chr4 교락을 그 연구 안에서 풀기 위해 필요
+# Increase the number of chr18 reads.
+#   Potok egg SRR800059: 9 reads cover the chr18 array, so 32M spots gives roughly four times as many.
+#   Potok muscle SRR800081: 33 on chr18, needed to resolve the chr4 confounding within that same study.
 #
-#   8M 씩 조각내어 하나씩 정렬하고 매번 임시 삭제(bismark --parallel 은 입력 전체를
-#     먼저 조각 복사하므로 --upto 로는 임시가 안 줄어든다 — 32M 한 번에 = 31GB).
-#   fastq-dump -N/-X 로 구간만 받아 전체를 저장하지 않는다.
-#   디스크 25GB 미만이면 중단.
+#   Aligned in 8M chunks one at a time, deleting the temporary files each time. bismark --parallel copies the whole
+#     input into chunks first, so --upto does not reduce the temporary space: 32M in one run reaches 31 GB.
+#   Only the needed range is fetched with fastq-dump -N/-X, so the whole run is never stored.
+#   Stops if less than 25 GB of disk is free.
 set -u
 cd ~/zfwgbs || exit 1
 export PATH=$HOME/zfwgbs/Bismark-0.24.2:$PATH
@@ -43,14 +43,14 @@ chunk () {
 deep () {
   R=$1; D=$2
   echo "=== $R ($D) 깊이 올리기 $(date -u +%H:%M)"
-  # 1 조각은 이미 bam/${R}.sorted.bam 으로 있다
+  # chunk 1 already exists as bam/${R}.sorted.bam
   for K in 2 3 4; do chunk "$R" "$K"; done
   guard
   L="bam/${R}.sorted.bam"
   for K in 2 3 4; do [ -f bam/${R}_c${K}.sorted.bam ] && L="$L bam/${R}_c${K}.sorted.bam"; done
   samtools merge -f -@ 6 bam/${R}_deep.bam $L && samtools index bam/${R}_deep.bam
   echo "합본 $R read=$(samtools view -c -@6 bam/${R}_deep.bam)  조각합=$(for f in $L; do samtools view -c -@6 $f; done | paste -sd+ | bc)"
-  # 합본이 확인되면 조각은 지워 공간을 돌려준다(1 조각 원본은 남긴다)
+  # Once the merge is verified the chunks are deleted to return the space; the original of chunk 1 is kept.
   rm -f bam/${R}_c*.sorted.bam*
   df -h / | tail -1
 }

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-# 보노보 5S array 메틸을 호출기 판본별로 다시 잰다(기본값 확정용)
-#   입력 : 03_reads/bonobo…read_unit.tsv(read×유닛 · n_calls · n_5mC) + read→판본 대응(flowcell 선별 SAM 의 read id)
-#   값 : 호출 가중 5mC 비율(Σn_5mC/Σn_calls) · read 중앙값 · read 수
+# Re-measure the bonobo 5S array methylation per basecaller release, to settle the default value.
+#   Input: the bonobo read_unit table from 03_reads, holding read x unit with n_calls and n_5mC, plus the read-to-release mapping from the read ids in the flowcell selection SAMs.
+#   Values: the call-weighted 5mC fraction, sum(n_5mC) / sum(n_calls), the median over reads, and the read count.
 # MIT License · Copyright (c) 2026 Hungmin Kim
 import collections
 import csv

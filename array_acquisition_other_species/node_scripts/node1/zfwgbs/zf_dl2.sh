@@ -1,5 +1,5 @@
 #!/bin/bash
-# 제브라피시 WGBS 추가 시료 — 하나씩 받고 즉시 압축(디스크 아끼기)
+# Further zebrafish WGBS samples: downloaded one at a time and compressed immediately, to save disk.
 cd ~/zfwgbs/sra
 for R in SRR19364705 SRR11614917 SRR12797061; do
   [ -f ${R}.done ] && { echo "SKIP $R"; continue; }

@@ -1,8 +1,8 @@
 #!/bin/bash
-# GSE122695 / PRJNA506038 — vasa:eGFP 생식세포(GSC) · 체세포(Control) 저심도 PBAT WGBS 정렬
-#   인자 : 목록파일(각 줄 "run<TAB>시료명<TAB>ftp")
-#   PBAT 라 bismark --pbat · 단일말단
-#   디스크 25 GB 가드
+# GSE122695 / PRJNA506038: alignment of low-depth PBAT WGBS from vasa:eGFP germ cells (GSC) and somatic cells (Control).
+#   Argument: a list file with one line per run, "run<TAB>sample<TAB>ftp".
+#   PBAT, so bismark --pbat, single-end.
+#   a 25 GB disk guard
 set -u
 cd ~/zfwgbs || exit 1
 export PATH=$HOME/zfwgbs/Bismark-0.24.2:$PATH

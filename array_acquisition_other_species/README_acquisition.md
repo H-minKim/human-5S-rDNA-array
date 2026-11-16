@@ -4,18 +4,16 @@ This folder holds the code that produced the array catalogue, the canonical arra
 references and the read placements for the eight non-human species of Figure 7 and
 Supplementary Figures S11 to S13.
 
-Unlike the scripts under `upstream/`, these do not carry the absolute paths of the
-machines that ran them; section 4 says what was replaced.
+Unlike the scripts under `upstream/`, these do not carry absolute paths; section 4 lists
+the variables they use in their place.
 
 **No assembly was performed.** Every genome used for these species is a published assembly,
-downloaded by accession through the NCBI Datasets API. A sweep of all 114 scripts here
-and the 113 recovered from the compute nodes for
-`hifiasm|verkko|flye|canu|shasta|wtdbg|raven|miniasm|spades` returns no hit. The one file
-file built here is the zebra finch diploid reference, which is not an assembly but
+downloaded by accession through the NCBI Datasets API. The one file
+built here is the zebra finch diploid reference, which is not an assembly but
 the concatenation of two published assemblies (`cat` of the maternal and paternal FASTA).
-This is a point of difference
+This differs
 from the human part of the study, where haplotypes assembled with `hifiasm` are used
-alongside HPRC assemblies. The two must not be described together.
+alongside HPRC assemblies.
 
 ## 1. The six steps
 
@@ -79,9 +77,8 @@ frame: they use a flank-to-flank array reference built per haplotype.
 
 ## 4. Paths are given by root variables
 
-The scripts were written to run on one workstation and on three compute nodes. The paths of
-those machines appear here as variables, so no machine-specific location is carried in the
-code.
+The scripts run on one workstation and on three compute nodes. The paths of
+those machines are given by the variables below.
 
 | Variable | What it points at |
 |---|---|
@@ -90,22 +87,17 @@ code.
 | `$NODE_KEY` | the private key used to reach the compute nodes |
 | `$NODE_HOST_1`, `$NODE_HOST_2`, `$NODE_HOST_3` | the three compute nodes |
 
-No value is recorded here for the key path or the three host addresses: they are
-credentials and infrastructure, not inputs a reader would follow. Nothing in this folder
-needs them in order to be read; they are needed only to re-run the work, which requires
-new nodes in any case.
+No value is given here for the key path or the three host addresses. They are needed
+only to re-run the work, which requires new nodes.
 
-`node_scripts/node1/zfwgbs/zf_prep.sh` names `~/.ssh/id_rsa`. That is the default key name
-under a node's own home directory, the same string on any machine; it identifies nothing and
-no file in this deposit.
+`node_scripts/node1/zfwgbs/zf_prep.sh` names `~/.ssh/id_rsa`, the default key name
+under a node's own home directory.
 
 ## 5. Which scripts are current
 
-`CODE_INDEX.tsv` lists all 110 scripts in `code/` with an `mtime`, a `status` and a one-line
-description. 87 are marked `current` plainly, and the rest carry a status with a reason in
-parentheses. Superseded and withdrawn files are kept rather than deleted so that
-a number traced to an older table can still be matched to the code that made it. **Read the
-status before running anything in `code/`.**
+`CODE_INDEX.tsv` lists all 108 scripts in `code/` with an `mtime`, a `status` and a one-line
+description. 86 are marked `current` plainly, and the rest carry a status with a reason in
+parentheses. **Read the status before running anything in `code/`.**
 
 The five statuses are `current`, `superseded` (the parenthesis names the file that replaced
 it), `withdrawn` (with why it was not used), `decision record`, and `reference only`. The two
@@ -118,9 +110,6 @@ The file names in section 1 are the entry points.
 The upstream extraction, alignment and methylation calling ran on three Linux compute nodes.
 The scripts that ran there are in `node_scripts/`, one folder per node: `node3` 44 files,
 `node2` 41, `node1` 28, **113 files in all**.
-
-They are deposited as plain files rather than as archives, so that a text search of this
-folder reaches them.
 
 Where a node copy and a local copy of the same script differ, **the node copy is the one that
 ran**.

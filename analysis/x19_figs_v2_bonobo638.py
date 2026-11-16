@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
-# 뒤 그림 v2 — 보노보를 guppy 6.3.8 read 만으로 다시 그림 (원 그림·원 코드 무수정)
-#   원 그림 코드(x2 · x10 · x12)를 그대로 exec 하고 입력과 저장 이름만 바꾼다 (분석 논리·시드 그대로) :
-#     R1  x2  : AVF 합산에서 온 array 행(meth 가 AVF frac 합산과 같은 행 — 애기장대 CG 재계산 행·붉은털·생쥐는 제외)
-#               의 meth/flank/delta 를 정수 n_5mC 판(x16)으로 · 보노보는 6.3.8 만 값(x17) · 호출기 딱지 '6.3.8 만'
-#     R4  x10 : read_unit 에서 보노보 6.3.7 read 제거(x18 표) · 유인원 페이지만
-#     R5  x12 : coding 표에서 보노보 6.3.7 read 제거 · 유닛전체 판정은 v2 표에서 · 유인원 페이지만
-#   거름 순서는 x17 과 같게(중앙값 문턱은 원래대로 전체 read 로 정한 뒤 6.3.7 을 뺌) → 수치가 x17 과 맞아야 함
+# The later figures, version 2: the bonobo is redrawn from the guppy 6.3.8 reads alone, leaving the original figures and the original code untouched.
+#   The original drawing code (x2, x10 and x12) is exec'd unchanged, with only the input and the output name altered, so the analysis and the seeds are the same:
+#     R1, from x2: the array rows coming from the AVF sum, those whose methylation equals the AVF fraction sum, excluding the recomputed Arabidopsis CG row, the rhesus and the mouse,
+#               have their methylation, flank and delta taken from the integer n_5mC version in x16, with the bonobo on its 6.3.8-only values from x17 and labelled accordingly.
+#     R4, from x10: the bonobo 6.3.7 reads are removed from the read-unit table using the x18 table, for the ape pages only.
+#     R5, from x12: the bonobo 6.3.7 reads are removed from the coding table, the whole-unit call is taken from the v2 table, for the ape pages only.
+#   The order of filtering matches x17: the median threshold is first set on all the reads, and the 6.3.7 reads are then removed, so the numbers must agree with x17.
 # Saves figures/<name>_v2.png, .svg (svg.fonttype=none, text kept as text) and .pdf (fonttype 42)
-#   표 : tables/OTHERSP_READUNIT_PERARRAY_v2_bonobo638.tsv · tables/OTHERSP_READUNIT_CODING_PERARRAY_v2_bonobo638.tsv
-#   로그 : X19_FIGS_V2.txt (+ 각 원 코드 로그는 X19_x2.txt · X19_x10.txt · X19_x12.txt 로 바꿔 씀)
+#   Tables: tables/OTHERSP_READUNIT_PERARRAY_v2_bonobo638.tsv and tables/OTHERSP_READUNIT_CODING_PERARRAY_v2_bonobo638.tsv
+#   Logs: X19_FIGS_V2.txt, with each original script's log redirected to X19_x2.txt, X19_x10.txt and X19_x12.txt.
 import io, os, shutil, sys
 import matplotlib
 matplotlib.use("Agg")
@@ -22,7 +22,7 @@ def _need(k):
     v = _os_need.environ.get(k)
     if not v:
         _sys_need.exit("environment variable %s is not set (the deposited copy has no default; "
-                       "see README.md, section 'How to run it')" % k)
+                       "see README.md, section 'Environment variables')" % k)
     return v
 
 
@@ -87,8 +87,8 @@ ns = run("x2_fig_meth.py", [
      'LOG = io.open(OUT + "/X19_x2.txt", "w", encoding="utf8", newline="\\n")'),
     ('T = pd.read_csv(OUT + "/tables/OTHERSP_ARRAY_METH.tsv", sep="\\t")\n', OVR),
     ('"보노보": "6.3.7+6.3.8 혼합"', '"보노보": "guppy6.3.8 만"'),
-    # 표시 고침(수치 무관) : 원 그림은 chrom_name 이 비면 이름표가 "nan" — 새 pandas 의 astype(str) 가 NaN 을 "nan" 글자로
-    #   바꾸지 않아 원 코드의 != "nan" 비교가 늘 참이 되던 것. fillna 로 chrom(접근번호/염색체)을 채움.
+    # Display only, no number changes: an empty chrom_name is filled in with the chromosome, either an accession or a chromosome name,
+    #   so that the label does not read "nan".
     ('labT["lab"] = np.where(labT.chrom_name.astype(str) != "nan",\n                       labT.chrom_name.astype(str), labT.chrom.astype(str))',
      'labT["lab"] = labT.chrom_name.fillna(labT.chrom).astype(str)'),
     ('fig.savefig(OUT + "/figures/Fig_othersp_array_meth.png")', '_save(fig, "Fig_othersp_array_meth_v2")'),
@@ -97,7 +97,7 @@ T = ns["T"]
 g = T[T.species_key.isin(["bonobo_mPanPan1", "chimp_mPanTro3", "gorilla_mGorGor1", "orang_bornean_mPonPyg2", "orang_sumatran_mPonAbe1"])]
 P("R1 v2 : 대형 유인원 5 array − flank %+.3f ~ %+.3f (보노보 %+.4f)" % (g.delta.min(), g.delta.max(), T[T.species_key == "bonobo_mPanPan1"].delta.iloc[0]))
 
-# ---------------------------------------------------------------- R4 (x10) 유인원 페이지
+# ---------------------------------------------------------------- R4 (x10), the ape pages
 ns = run("x10_readunit_per_array.py", [
     ('LOG = io.open(OUT + "/X10_READUNIT_PERARRAY.txt", "w", encoding="utf8", newline="\\n")',
      'LOG = io.open(OUT + "/X19_x10.txt", "w", encoding="utf8", newline="\\n")'),
@@ -109,7 +109,7 @@ ns = run("x10_readunit_per_array.py", [
 b = ns["T"][ns["T"].array_id.str.contains("bonobo")].iloc[0]
 P("R4 v2 : 보노보 read-유닛 %d · OFF %.4f · %s · 봉우리 %.2f/%.2f (x17 : OFF 0.0875 · 이봉 0.89/0.13)" % (b.n, b.off, b.call, b.peak1, b.peak2))
 
-# ---------------------------------------------------------------- R5 (x12) 유인원 페이지
+# ---------------------------------------------------------------- R5 (x12), the ape pages
 ns = run("x12_coding_perarray.py", [
     ('LOG = io.open(OUT + "/X12_CODING_PERARRAY.txt", "w", encoding="utf8", newline="\\n")',
      'LOG = io.open(OUT + "/X19_x12.txt", "w", encoding="utf8", newline="\\n")'),

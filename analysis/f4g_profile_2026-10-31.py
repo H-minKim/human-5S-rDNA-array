@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
-#  Fig 4G 흩어진 쪽 곡선을 자리 집합으로 다시 합친다 (2026-10-31 · 사용자 「Fig 4G 도 같은 기준으로」 → S5 와 같은 29 자리)
-#    규칙 = `$RDNA_WORK_ROOT/code/disp_03_analyze.py` 의 prof()/group_get() :
-#      구간(50 bp · 45 칸)마다 Σmeth / Σn (자리 · half 0+1 를 모두 더함) · Σn < 30 이면 빈 칸
-#    입력 = `dispersed_vs_array_cut0508/DISP_SITE_BINS_ALL.tsv` (Claim_G 가 읽는 폴더 · 컷 0.508)
-#    ① 현행 28 자리(58 판 cover_pattern = 다섯 구획)로 DISP_PROFILES.tsv 의 group 행을 재현하는지
-#    ② S5 와 같은 29 자리 곡선 → DISP_PROFILES_S42SET29_2026-10-31.tsv (같은 꼴 · kind=group · name=S42SET29)
-#  쓰기 : python -B f4g_profile_2026-10-31.py <출력 폴더>
+#  The dispersed curve of Fig 4G recombined over a set of sites (the same 29 sites as S5)
+#    Rule = prof() / group_get() of `$RDNA_WORK_ROOT/code/disp_03_analyze.py`:
+#      for each bin (50 bp, 45 bins) the sum of meth over the sum of n (adding sites and halves 0+1); an empty bin where sum of n < 30
+#    Input = `dispersed_vs_array_cut0508/DISP_SITE_BINS_ALL.tsv` (the folder Claim_G reads; cut 0.508)
+#    (1) whether the group rows of DISP_PROFILES.tsv are reproduced with the current 28 sites (cover_pattern of generation 58 = five segments)
+#    (2) the curve over the same 29 sites as S5 -> DISP_PROFILES_S42SET29_2026-10-31.tsv (same shape; kind=group; name=S42SET29)
+#  Usage: python -B f4g_profile_2026-10-31.py <output folder>
 import collections
 import hashlib
 import io
@@ -16,7 +16,7 @@ def _need(_v):
     """The deposited copy has no default paths. Stop when a root variable is missing."""
     _x = os.environ.get(_v)
     if not _x:
-        sys.exit("environment variable %s is not set; see README.md section Figures after 30 October 2026" % _v)
+        sys.exit("environment variable %s is not set; see README.md, section 'Environment variables'" % _v)
     return _x
 
 
@@ -56,7 +56,7 @@ def prof(sites, st):
     return out
 
 
-#  ① 재현
+#  (1) reproduction
 S28 = sorted(s for s, r in S58.items() if r["cover_pattern"] == "NTS1+GA+NTS2+prom+gene")
 assert len(S28) == 28
 worst = 0.0
@@ -72,7 +72,7 @@ for st in ("low", "high"):
 print("① 28 자리 재현 : 칸별 최대 |차| (4 자리 반올림 뒤) %.4f" % worst)
 assert worst == 0.0
 
-#  ② S5 의 29 자리
+#  (2) the 29 sites of S5
 B = [r for r in rd(K) if r["site"] != "S0206" and len(r["cover_pattern"].split("+")) >= 3]
 S29 = sorted(r["site"] for r in B)
 assert len(S29) == 29 and set(S29) <= set(S58)
@@ -95,7 +95,7 @@ io.open(os.path.join(OUT, "DISP_PROFILE_BINS_28vs29_2026-10-31.tsv"), "w", encod
 io.open(os.path.join(OUT, "S42SET29_sites.tsv"), "w", encoding="utf8", newline="\n").write(
     "site\tchr\tstart\tcover_pattern\tn_loci_58판\n" + "\n".join(
         "%s\t%s\t%s\t%s\t%s" % (s, S58[s]["chr"], S58[s]["start"], S58[s]["cover_pattern"], S58[s]["n_loci"]) for s in S29) + "\n")
-#  요약 : 구획별 평균 (칸 평균 · 28 ↔ 29)
+#  Summary: the mean per segment (mean over bins; 28 against 29)
 EL = [("AluY", 1, 318), ("NTS1", 319, 1178), ("GA", 1179, 1551), ("NTS2", 1552, 2031), ("prom", 2032, 2121), ("gene", 2122, 2240)]
 for st in ("low", "high"):
     a, b_ = prof(S28, st), prof(S29, st)

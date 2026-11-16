@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
-"""표S3 2 번 줄을 양분으로 (2026-10-14).
+"""Row 2 of table S3, with the two-way methylation split.
 
-옛 값 : 중메틸 0.582 / 고메틸 0.570  ← 삼분위 시절 · 정의 불명 (재현 못 함)
-새로 낼 때는 정의를 표에 적는다.
+The definition of the measured quantity is written into the table.
 
-재는 것 : TFIIIB 구역 창(-28..-10) 안에서,
-          그 구간에 뉴클레오솜이 없는 분자의 m6A/A
-대안     : "footprint 는 사실 작은 뉴클레오솜이다"
-예측     : 그렇다면 뉴클레오솜 없는 분자의 m6A/A 도 낮아야 한다
+
+Measured    : inside the TFIIIB zone window (-28..-10),
+              m6A/A of the molecules with no nucleosome over that span
+Alternative : "the footprint is in fact a small nucleosome"
+Prediction  : if so, m6A/A of the nucleosome-free molecules should be low as well
 """
 import os
 import numpy as np

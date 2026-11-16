@@ -2,7 +2,7 @@
 """
 S16 - test by measurement the claim that "the ends must not be drawn in relative position", and redraw the figure in absolute coordinates.
 
-Claim (user)
+Claim
   In section 13 the place that absorbs length variation came out as the 'middle'. Then even if a terminal segment has the same shape in absolute distance,
   a longer array **pushes it toward the end and narrows it in relative position**. So the ends must use absolute distance.
 

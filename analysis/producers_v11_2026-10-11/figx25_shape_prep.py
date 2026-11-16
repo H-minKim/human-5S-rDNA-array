@@ -1,16 +1,16 @@
 # -*- coding: utf-8 -*-
-# FigX25 자료 준비 — 자료원별 ⑴ 유닛 β 가 이봉인가 ⑵ 원위→근위 자리별 패턴이 닮았나
+# FigX25 data preparation, per data source: 1) is the unit beta bimodal, 2) do the distal-to-proximal position profiles resemble each other.
 #   
 #
-#   왜 이 두 가지만 보나 : 자료원 사이 절대 수준 은 플랫폼·basecaller 교란과 구분되지 않고,
-#   온전히 조립된 array 는 1kGP 에 1 개뿐이라 평균 비교가 성립하지 않는다.
-#   ⇒ 모양 (이봉성 · 자리별 윤곽) 만 본다. 모양은 수준 차이에 덜 휘둘린다.
+#   Only these two are examined: the absolute level cannot be separated from platform and basecaller confounding,
+#   and 1kGP holds only one fully assembled array, so a comparison of means does not stand.
+#   Therefore only the shape is used: bimodality and the per-position profile, both of which are less sensitive to a difference in level.
 #
-#   방향은 이름이 아니라 실측으로 정했다 :
-#     `ap = 1` 쪽 유닛 β 가 0.030 (끝에서 10 유닛까지 0.080) · 반대 끝은 0.354 · 가운데 0.815.
-#     대장의 "저메틸 끝 길이 원위 14.58 · 근위 2.56" 과 맞는다 ⇒ `ap` = 원위 끝에서의 거리,
-#     `ad = N - ap + 1` = 근위 끝에서의 거리. (기억 : "G8 지도 array_pos 1 = 원위")
-#   자(ruler) : `ru_v11.b` = 하드콜. 유닛 값은 그 유닛을 덮은 read 들의 평균.
+#   The orientation comes from measurement, not from the column name:
+#     unit beta at ap = 1 is 0.030 (0.080 over the first 10 units), the other end is 0.354 and the interior is 0.815.
+#     This matches the registry's hypomethylated end lengths of 14.58 distal and 2.56 proximal, so ap is the distance from the distal end
+#     and ad = N - ap + 1 is the distance from the proximal end. In the G8 map, array_pos 1 is the distal end.
+#   Ruler: ru_v11.b, the hard call. A unit's value is the mean over the reads covering it.
 import io, os, sys
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 import numpy as np
@@ -19,8 +19,8 @@ from scipy.stats import gaussian_kde
 
 def _need(_v):
     """No defaults are set: the script stops if a variable is missing.
-    이 글이 읽는 자료의 뿌리는 README.md 의
-    "Running this code" 절에 적혀 있다."""
+    The roots of the data this script reads are listed in the
+    "Running this code" section of README.md."""
     import os as _o, sys as _s
     _x = _o.environ.get(_v)
     if not _x:
@@ -37,15 +37,15 @@ def _need(_v):
 HERE = os.path.dirname(os.path.abspath(__file__))
 S = _need("RDNA_V11_ROOT")
 FAMS = ["1kGP", "GIAB", "HPRC"]
-EDGE = 20            # 끝에서 몇 유닛까지 그릴까
+EDGE = 20            # how many units from the end to plot
 
 
 def fam(s):
     # `GIAB_SOMATIC_ONT` is excluded.
-    #    까닭 — 앞머리가 "GIAB" 라는 이유만으로 종양 시료 `HG008-T` 가 GIAB 묶음에
-    #    들어와 있었다. 실측 : 이 묶음 465 유닛 가운데 237(51%)이 그 한 사람이었다.
+    #    It is the tumour sample HG008-T, whose name begins with GIAB.
+    #    237 of the 465 units under that prefix, 51%, come from that one individual.
     # The other outputs exclude that sample as well (`arrayprof_noHG008T_…py`).
-    #    뺀 뒤 : hg002·hg003·hg004 3 개체 / 4 슬롯 / 228 유닛.
+    #    Without it: 3 individuals (hg002, hg003, hg004), 4 slots, 228 units.
     s = str(s)
     if s.startswith("GIAB_SOMATIC"):
         return "그 밖"
@@ -53,19 +53,16 @@ def fam(s):
             else "1kGP" if s.startswith("1kGP") else "그 밖")
 
 
-#  원본은 `S = "$DATA_ROOT/"` 로 끝에 `/` 가 붙어 있었고
-#    여기서 문자열을 이어붙였다. 경로치환이 그 `/` 를 없애서 `…02_tables/…` 가 되었다.
-#    ⇒ 이어붙이기를 `os.path.join` 으로 바꾼다. 가리키는 파일은 같다.
+#  The paths are built with os.path.join, so the root needs no trailing slash.
 R = pd.read_parquet(os.path.join(S, "02_tables", "ru_v11.parquet"),
                     columns=["sample", "slot", "data_source", "ap", "N", "b"])
 R["fam"] = R.data_source.map(fam)
 R = R[R.fam.isin(FAMS)].copy()
 R["hap"] = R["sample"].astype(str) + "|" + R.slot.astype(str)
 
-# 정정 ① : HPRC 를 대장 H2(qc_eligible = 1) 로 자른다.
-#   전에는 tier·qc_eligible 관문을 하나도 걸지 않아 HPRC 가 ru_v11 전수(590 슬롯)였다.
-#   대장은 전부 HPRC_ONT_submissions 이라 1kGP·GIAB 에는 걸 층이 없다 ⇒ 그 둘은 그대로 둔다.
-#   이름으로 거르면 안 된다 — 1kGP 18 중 14 가 H2 키와 이름이 겹친다(같은 사람이 두 자료원에).
+# HPRC is restricted to registry H2 (qc_eligible = 1).
+#   The registry covers HPRC_ONT_submissions only, so there is no tier to apply to 1kGP or GIAB and those two are left unfiltered.
+#   Filtering by name would be wrong: 14 of the 18 1kGP entries share a name with an H2 key, because the same individual appears in both sources.
 _TI = pd.read_csv(os.path.join(S, "02_tables", "TIERS_H0H3_SLOTS_2026-10-05.tsv"),
                   sep="	", dtype=str)
 _H2 = set(_TI[_TI.tier == "H2"]["sample"] + "|" + _TI[_TI.tier == "H2"]["slot"])
@@ -75,7 +72,7 @@ print("[H2 관문] HPRC 하플로 %d -> %d (대장 H2 %d) · 1kGP·GIAB 는 층 
       % (_before, R[R.fam == "HPRC"].hap.nunique(), len(_H2)))
 U = R.groupby(["fam", "sample", "hap", "ap", "N"], as_index=False).b.mean()
 U["ad"] = U.N - U.ap + 1
-U["rel"] = (U.ap - 1) / (U.N - 1).replace(0, np.nan)      # 0 = 원위 끝, 1 = 근위 끝
+U["rel"] = (U.ap - 1) / (U.N - 1).replace(0, np.nan)      # 0 = distal end, 1 = proximal end
 U.to_csv(os.path.join(HERE, "FIGX25_UNIT.tsv"), sep="\t", index=False, float_format="%.5f")
 print("유닛 %d · " % len(U) +
       " · ".join("%s 하플로 %d/개체 %d"
@@ -83,12 +80,12 @@ print("유닛 %d · " % len(U) +
                  for f in FAMS))
 print()
 
-# ---------- ⑴ 이봉인가 ----------
+# ---------- 1) is it bimodal ----------
 G = np.linspace(0.01, 0.99, 4901)
 
 
 def peaks(y):
-    """국소 최대 (양 옆보다 큰 자리) · 높이 순"""
+    """local maxima (positions higher than both neighbours), ordered by height"""
     i = np.where((y[1:-1] > y[:-2]) & (y[1:-1] > y[2:]))[0] + 1
     return sorted(i, key=lambda k: -y[k])
 
@@ -96,7 +93,7 @@ def peaks(y):
 def shape(v, bw=0.03):
     y = gaussian_kde(v, bw_method=bw)(G)
     pk = peaks(y)
-    big = [k for k in pk if y[k] >= 0.05 * y[pk[0]]]      # 가장 높은 봉의 5% 이상만 센다
+    big = [k for k in pk if y[k] >= 0.05 * y[pk[0]]]      # only peaks at least 5% as high as the tallest are counted
     lo = G[int(np.argmax(np.where(G < 0.4, y, -1)))]
     hi = G[int(np.argmax(np.where(G > 0.6, y, -1)))]
     m = (G > lo) & (G < hi)
@@ -114,7 +111,7 @@ for f in FAMS:
     d = U[U.fam == f]
     v = d.b.dropna().values
     s = shape(v)
-    # split-half : 하플로타입을 반으로 갈라 골이 재현되나 (50 회)
+    # split-half: the haplotypes are halved to test whether the trough reproduces (50 replicates)
     haps = d.hap.unique()
     by = {h: x.b.dropna().values for h, x in d.groupby("hap")}
     sh = []
@@ -153,14 +150,13 @@ print("## ⑴ 유닛 β 가 이봉인가 (자료원마다)")
 print(B.to_string(index=False))
 print()
 
-# ---------- ⑵ 원위 → 근위 자리별 패턴 ----------
-#   원위 끝은 `ap` 로, 근위 끝은 `ad` 로 묶는다. 근위 끝은 array 끝을 알아야 하므로
-#   관측 최대 자리가 N 과 같은 하플로타입만 쓴다 (그렇지 않으면 끝이 어디인지 모른다).
-# 정정 ② : obs_max 를 `hap`(= sample|slot) 만으로 묶으면 자료원이 안 들어가서
-#   같은 사람이 1kGP·HPRC 에 다 있을 때 다른 자료원 줄이 그 사람 array 끝을 채워 준다.
-#   그 결과 근위 끝을 쓸 수 있는 1kGP 하플로가 17/18 로 부풀어 있었다 (실제 6/18).
-#   적발 단서 : 1kGP 근위 n_hap 이 거리에 따라 6·6·7·9·10·11 로 늘어났다 —
-#   끝까지 관측된 하플로라면 늘 수 없다 (근위 끝 유닛이 없는 것이 먼 거리에만 나타난 것).
+# ---------- 2) the distal-to-proximal position profile ----------
+#   The distal end is binned by ap and the proximal end by ad. The proximal end requires knowing where the array ends,
+#   so only haplotypes whose largest observed position equals N are used; otherwise the end is unknown.
+# obs_max must be grouped by data source as well as hap (= sample|slot). Grouping by hap alone means that
+#   when the same individual is in both 1kGP and HPRC, rows from the other source supply that individual's array end.
+#   That inflates the 1kGP haplotypes usable at the proximal end to 17 of 18; the correct count is 6 of 18.
+#   A haplotype observed all the way to the end cannot grow in count with distance, so a count that rises is a sign of haplotypes missing their proximal terminal unit.
 obs = U.groupby(["fam", "hap"]).ap.max().rename("obs_max").reset_index()
 U2 = U.merge(obs, on=["fam", "hap"])
 U2["_ok"] = U2.obs_max == U2.N
@@ -201,7 +197,7 @@ print()
 print("## 가운데")
 print(PR[PR.쪽 == "가운데"][["fam", "n_unit", "n_hap", "mean"]].round(3).to_string(index=False))
 
-# 윤곽이 닮았나 — 자료원 쌍마다 상관
+# Do the profiles resemble each other: a correlation per pair of data sources.
 print()
 print("## ⑶ 윤곽이 닮았나 (끝 1-20 의 평균 β 를 자료원끼리 상관)")
 for side in ("원위", "근위"):

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-# read 묶음 부트스트랩 구간 + 군간 차이(부트스트랩) — chr4 6 array 묶음
+# A read-level bootstrap interval plus the between-group difference, also bootstrapped, for the cluster of 6 chr4 arrays.
+import os
 import io
 import random
 import collections
@@ -8,7 +9,8 @@ random.seed(0)
 NB = 5000
 TAB = chr(9)
 d = collections.defaultdict(list)
-for L in io.open("GSC_PERREAD.tsv", encoding="utf8"):
+W = os.environ["NODE_WORK_DIR"]   # the compute node's working directory
+for L in io.open(os.path.join(W, "GSC_PERREAD.tsv"), encoding="utf8"):
     f = L.rstrip("\n").split(TAB)
     if f[0] == "group":
         continue
@@ -26,7 +28,7 @@ def boot(v):
     for _ in range(NB):
         s = [v[random.randrange(n)] for _ in range(n)]
         out.append(frac(s))
-    return out          # 정렬하지 않는다 — 군간 차이는 독립 표본끼리 빼야 한다
+    return out          # No alignment is performed: a between-group difference must be taken between independent samples.
 
 
 def ci(bs):
@@ -34,7 +36,7 @@ def ci(bs):
     return t[int(0.025 * NB)], t[int(0.975 * NB)]
 
 
-out = io.open("GSC_STATS.tsv", "w", encoding="utf8", newline="\n")
+out = io.open(os.path.join(W, "GSC_STATS.tsv"), "w", encoding="utf8", newline="\n")
 out.write(TAB.join(["group", "branch", "part", "n_read", "n_cpg", "frac", "lo95", "hi95", "minus_flank", "mf_lo95", "mf_hi95"]) + "\n")
 BS = {}
 groups = ["F_GSC_35to70", "M_GSC_35to70", "early_GSC_1to28", "F_Control_35to70", "M_Control_35to70",

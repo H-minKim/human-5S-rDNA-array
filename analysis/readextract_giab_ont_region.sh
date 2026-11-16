@@ -1,8 +1,8 @@
 #!/bin/bash
-# s3://ont-open-data/giab_2023.05/analysis/<sample>/sup/*.pass.cram 을 GRCh38 chr1:228,460,268-228,796,040 구간질의로 뽑는다
-#   단계 : ① read 추출 (GIAB ONT)
-# GIAB 삼자 ONT 추출 — GRCh38 정렬 CRAM 영역질의 (색인 있음)
-# GRCh38 5S array = chr1:228,610,268-228,646,040 (5S 유전자 17개). ±150kb 여유
+# Extract from s3://ont-open-data/giab_2023.05/analysis/<sample>/sup/*.pass.cram by region query over GRCh38 chr1:228,460,268-228,796,040.
+#   Step 1: read extraction, GIAB ONT.
+# Extraction of the GIAB trio ONT data, by region query against the indexed GRCh38-aligned CRAM.
+# The GRCh38 5S array is chr1:228,610,268-228,646,040, holding 17 5S genes, taken with +-150 kb of slack.
 set -u
 W=~/giab5s; mkdir -p $W/{out,log,done}; cd $W || exit 9
 REG="chr1:228460268-228796040"
@@ -13,7 +13,7 @@ FC[hg002]="PAO83395 PAO89685"
 FC[hg003]="PAO83395 PAO89685"
 FC[hg004]="PAO83395 PAO89685"
 for S in hg001 hg002 hg003 hg004; do
-  # 실제 flowcell 목록을 조회해 사용
+  # the actual flowcell list is queried and used
   L=$(timeout 90 s5cmd --no-sign-request ls "s3://ont-open-data/giab_2023.05/analysis/${S}/sup/" 2>/dev/null | awk '{print $NF}' | grep "pass.cram$" | head -4)
   [ -n "$L" ] || { echo "  $S CRAM 없음"; continue; }
   n=0

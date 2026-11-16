@@ -2,14 +2,14 @@
 r"""
 Y4 - is the '2-3 position spacing' rule reproduced in the distal 20 units of cell lines (K562, GM12878, HepG2)
 
-Data (read only): `$RDNA_DATA_ROOT/P11_ENCODE_unit_placement/04_assembly_handover/*_distal20.fa` (, handed over 2026-09-24)
+Data (read only): `$RDNA_DATA_ROOT/P11_ENCODE_unit_placement/04_assembly_handover/*_distal20.fa`
   - array_pos 1 = distal (DJ) end, sequences already in canonical orientation, unit boundary = 5S gene END
 Method (no aligner)
   - unit similarity = Jaccard of 31-mer sets (a flat comparison without variant calling)
   - terminal-type marker = context of the 1 bp deletion at position 1096 + context of 635 C>T (context ±8 bp, same as for HiFi)
     At 1096 the canonical base is T, but 92% of real units are T>G -> the common allele is set to G
   - measured: terminal type by depth, spacing between terminal types, similarity by spacing (spacing 1 vs spacing 2), number of groups within a haplotype
-Output: $OUTDIR\Y4_cellline_units.tsv, Y4_cellline_summary.tsv
+Output: $OUTDIR/Y4_cellline_units.tsv, Y4_cellline_summary.tsv
 """
 import io, os, sys, glob, collections
 import numpy as np
@@ -33,7 +33,7 @@ def aln_tokens(s):
         if qg > 0: out.append("%dI%d" % (t[j][1] + 1, qg))
     return {y for y in (G.to_v4(x) for x in out) if y}
 OUT = (os.environ.get("OUTDIR") or os.environ["RDNA_OUT_DIR"])
-SRC = (__import__("os").environ["RDNA_DATA_ROOT"] + r"\P11_ENCODE_unit_placement\04_assembly_handover")
+SRC = (__import__("os").environ["RDNA_DATA_ROOT"] + r"/P11_ENCODE_unit_placement/04_assembly_handover")
 CAN = G.CAN; K = 31; W = 8
 P1096, P635 = 1095, 634
 ctx_G = CAN[P1096 - W:P1096] + "G" + CAN[P1096 + 1:P1096 + W + 1]

@@ -1,16 +1,16 @@
 # -*- coding: utf-8 -*-
-# bismark BAM 에서 구역별 CpG 메틸을 낸다 (array 와 그 flank 비교용)
+# Report CpG methylation per region from a bismark BAM, for comparing an array with its flank.
 #
-#   bismark 는 MM/ML 이 아니라 XM 태그에 메틸 호출을 담는다.
-#     Z = 메틸된 CpG · z = 안 된 CpG · X/x = CHG · H/h = CHH · U/u = 미지 · . = C 아님
-#   그래서 ONT 용 region_meth.py 와 별도로 둔다.
+#   bismark carries the methylation calls in the XM tag, not in MM/ML.
+#     Z = methylated CpG, z = unmethylated CpG, X/x = CHG, H/h = CHH, U/u = unknown, . = not a C.
+#   It is therefore kept separate from region_meth.py, which is for ONT.
 #
-#   mapq 로 거르지 않는다(탠덤 array 는 mapq 0 이 정상).
-#     대신 mapq>=10 만 쓴 값도 같이 적어 편향을 볼 수 있게 한다.
-#   중복(PCR) 표시된 read 는 뺀다.
+#   No mapq filter: mapq 0 is normal in a tandem array.
+#     The value using only mapq >= 10 is reported alongside, so any bias is visible.
+#   Reads flagged as duplicates are excluded.
 #
-#   인자 : bam 라벨 구역목록.tsv 출력.tsv
-#     구역목록 : 이름 <tab> chrom <tab> start <tab> end
+#   Arguments: bam, label, regions.tsv, out.tsv.
+#     The region list is name, chrom, start, end, tab separated.
 # MIT License · Copyright (c) 2026 Hungmin Kim
 import io
 import os

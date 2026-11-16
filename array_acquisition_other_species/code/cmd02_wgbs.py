@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
-# 제브라 short-read 메틸 — chr18(체세포형 array 1) vs chr4(모계형 array 묶음) 을 시료(조직·시기)별로
-#   read 단위 : WGBS_PERREAD_input.tsv (= 12_zebrafish_devseries 의 ADULT_PERREAD, adult_stats.py 입력과 같은 파일)
-#   array 전체 = 코딩부 + 스페이서(같은 read 는 합침). flank 는 쓰지 않음
-#   차이 = chr18 − chr4, 두 군 read 독립 부트스트랩(정렬 전 차이)
-#   cite : chr18 쪽 read < 10 인용 금지 · 10–29 약함 · ≥30 가능 
-#   Stage III 난모세포(GSE175951)는 저자 가공 CpG 표라 read 가 없음 → CpG 자리 수 합산값만 따로(구간 없음)
+# Zebrafish short-read methylation: chr18, the single somatic-type array, against chr4, the maternal-type cluster, broken out by sample, that is tissue and stage.
+#   Per read: WGBS_PERREAD_input.tsv, the same file as the ADULT_PERREAD input to adult_stats.py in 12_zebrafish_devseries.
+#   The whole array is the coding part plus the spacer, summed within a read; the flank is not used.
+#   The difference is chr18 minus chr4, bootstrapped independently in the two groups, with the difference taken before any alignment.
+#   Citability: fewer than 10 reads on the chr18 side must not be cited, 10-29 is weak, and 30 or more is usable.
+#   The stage III oocytes (GSE175951) are an author-processed CpG table with no reads, so only the per-site sum is reported, with no interval.
 # MIT License · Copyright (c) 2026 Hungmin Kim
 import collections
 import csv
@@ -83,7 +83,7 @@ for g, (lab, win, src) in SRC.items():
             lo = hi = "-"
         o.write(T.join([g, lab, win, src, part, str(len(a)), str(len(b)), "%.3f" % fa, "%.3f" % fb, "%+.3f" % (fa - fb),
                         lo, hi, cite(len(a))]) + "\n")
-# Stage III 난모세포 : CpG 호출 합산(자리 단위 · read 없음 · 구간 없음)
+# stage III oocytes: CpG calls summed per site, with no reads and no interval
 st = collections.defaultdict(lambda: [0, 0])
 for r in csv.DictReader(io.open(R + "12_zebrafish_devseries/oocyte_GSE175951/STEM_5S.tsv", encoding="utf8"), delimiter=T):
     if r["part"] in ("코딩부", "스페이서"):

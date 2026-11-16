@@ -1,8 +1,8 @@
 #!/bin/bash
-# 애기장대 : array read 만 남긴 pod5 조각 -> CPU dorado (hac@v5.0.0,5mC_5hmC = 모든 맥락 CG·CHG·CHH) -> Col-CC 재정렬 (primary 만)
-#   재정렬 = samtools fastq -T MM,ML | minimap2 -y -ax map-ont --secondary=no (제브라피시·금화조와 같음) · MAPQ 로 거르지 않음
-#   인자 : pod5 목록 파일 (한 줄에 경로) · taskset 코어 범위 · 이름표 · [모델]
-#   산출 : bc/<label>.ubam · bc/<label>.bam(+bai) · bc/<label>.done (종료코드 · read · MM read · 초)
+# Arabidopsis: pod5 slices holding only the array reads -> CPU dorado (hac@v5.0.0,5mC_5hmC = all contexts CG, CHG, CHH) -> realignment to Col-CC (primary only).
+#   Realignment = samtools fastq -T MM,ML | minimap2 -y -ax map-ont --secondary=no (the same as zebrafish and zebra finch); no MAPQ filter.
+#   Arguments: pod5 list file (one path per line), taskset core range, label, [model].
+#   Outputs: bc/<label>.ubam, bc/<label>.bam (+bai), bc/<label>.done (exit code, reads, reads with MM, seconds).
 # MIT License · Copyright (c) 2026 Hungmin Kim
 set -u
 H=~/xsp/ath
@@ -11,7 +11,7 @@ D=~/xsp/tools/dorado-2.1.2-linux-x64/bin/dorado
 L="${1:?pod5 목록}"
 CORES="${2:?코어 범위}"
 TAG="${3:?이름표}"
-# 모델은 이름이 아니라 경로로 준다 : 자동 선택이 "Failed to determine sequencing chemistry" 로 실패했다 (pod5 실측 5 kHz · FLO-PRO114M · SQK-LSK114)
+# The model is given as a path, not a name: automatic selection fails with "Failed to determine sequencing chemistry" (the pod5 files measure 5 kHz, FLO-PRO114M, SQK-LSK114).
 M=~/xsp/dmodels
 SIMPLEX="${4:-dna_r10.4.1_e8.2_400bps_hac@v5.0.0}"
 MODS="${5:-dna_r10.4.1_e8.2_400bps_hac@v5.0.0_5mC_5hmC@v3}"

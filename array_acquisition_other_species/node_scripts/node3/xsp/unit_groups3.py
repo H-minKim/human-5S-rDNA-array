@@ -1,19 +1,19 @@
 # -*- coding: utf-8 -*-
-# array 안 유닛이 한 종류인가 여러 종류인가 — 3 판
-#   판정 축 : "서로 떨어진 변이 사건이 블록으로 같이 다니는가"
-#     · 한 종류   = 변이가 유닛마다 독립적으로 흩어진다 (연관 없음)
-#     · 여러 종류 = 떨어진 여러 사건이 같은 유닛들에 함께 나타난다 (강한 연관)
-#   2 판에서 고친 것
-#     · 2 판은 좁은 구간에 몰린 변이(예 1397~1527 안 27 개 = 발산 구간 하나)를 '변이 27 개'로 세어
-#       단일 사건을 블록으로 승격시켰다. 3 판은 연속 자리를 사건 하나로 접는다(간격 <= EVGAP).
-#   방법
-#     1) 다형성 변이 : 유닛의 10~90% 에 있는 변이
-#     2) 변이쌍 연관 phi · |phi| >= 0.8 이면 연결 → 연결 성분
-#     3) 성분의 변이 자리를 사건으로 접고(간격 <= 20 bp 는 한 사건) 사건 >= 3 인 성분만 '블록'
-#     4) 귀무 대조 : 변이마다 같은 빈도로 유닛을 무작위 재배치해 같은 절차를 NPERM 회
-#     5) 위치 응집 : 그룹이 array 위에서 이어져 있는가(구역 분화) vs 섞여 있는가(유닛 종류)
-#   유닛 20 개 미만이면 판정하지 않는다
-#   인자 : 종키 fasta 지도폴더 출력폴더 [셔플 횟수=50] [EVGAP=20]
+# Are the units within an array of one type or several? Version 3.
+#   The criterion: do variant events that lie far apart travel together as a block?
+#     · One type: the variants are scattered independently across units, with no association.
+#     · Several types: distant events appear together in the same units, a strong association.
+#   Adjacent positions are collapsed into one event, at a gap of at most EVGAP:
+#     · counting variants clustered in a narrow interval, such as 27 within 1397-1527, which is one diverged stretch, as 27 variants
+#       promotes a single event to a block.
+#   method
+#     1) A polymorphic variant is one present in 10-90% of units.
+#     2) the association phi between variant pairs; |phi| >= 0.8 links them, giving connected components
+#     3) a component's variant positions are collapsed into events, a gap of at most 20 bp being one event, and only components of at least 3 events count as a block
+#     4) null control: the units are reassigned at random at the same frequency per variant and the whole procedure repeated NPERM times
+#     5) Positional clustering: are the groups contiguous along the array (zonation) or interleaved (unit types)?
+#   No call is made with fewer than 20 units.
+#   Arguments: species key, fasta, map folder, output folder, [shuffles = 50], [EVGAP = 20].
 # MIT License · Copyright (c) 2026 Hungmin Kim
 import io
 import os
@@ -42,7 +42,7 @@ def pos_of(v):
 
 
 def n_events(vs):
-    # 변이 자리를 정렬해 간격 <= EVGAP 이면 한 사건으로 접는다
+    # the variant positions are sorted and collapsed into one event at a gap of at most EVGAP
     ps = sorted(set(pos_of(v) for v in vs if pos_of(v) >= 0))
     if not ps:
         return 0

@@ -1,17 +1,17 @@
 # -*- coding: utf-8 -*-
-"""항목 1+3 — 미처리 대조를 **같은 추정량**으로 돌리고, 비의 비(ratio-of-ratios)를 낸다.
+"""Run the untreated control through the **same estimator** and give the ratio of ratios.
 
-왜 비의 비인가
-  미처리 시료는 같은 5S 서열이므로 창별 심문 A 수가 **정확히 같다**.
-  따라서 (ICR/flank)_처리 ÷ (ICR/flank)_미처리 는 서열 조성을 **완전히** 상쇄한다.
-  A 수를 모형으로 보정할 필요가 없다(모형 (1-q)^n 이 부정확한 것은 이미 확인됨).
+Why a ratio of ratios
+  The untreated sample has the same 5S sequence, so the number of interrogated A per window is **exactly the same**.
+  (ICR/flank)_treated / (ICR/flank)_untreated therefore cancels sequence composition **completely**.
+  No model correction for the number of A is needed (the model (1-q)^n is inaccurate).
 
-창 (전부 45 bp 로 길이 통일 · 기존 53 bp 창도 연속성 위해 병기)
-  W_prom   tx  -50..  -6   TFIIIB 대역
-  W_gene5  tx   +0.. +44   유전자 5' (ICR 바깥이나 Pol III 복합체 안일 수 있음)
+Windows (all 45 bp; the 53 bp windows are reported alongside)
+  W_prom   tx  -50..  -6   TFIIIB band
+  W_gene5  tx   +0.. +44   5' of the gene (outside the ICR but possibly inside the Pol III complex)
   W_ICR    tx  +50.. +94   A-box/IE/Box C
-  W_flank  tx +250..+294   스페이서
-  (구형) ICR53 +45..+97 / FLK53 +250..+302
+  W_flank  tx +250..+294   spacer
+  (53 bp) ICR53 +45..+97 / FLK53 +250..+302
 """
 import io, os, sys, subprocess, collections, bisect, math
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8",
@@ -26,7 +26,7 @@ def _need(k):
         raise SystemExit(
             "environment variable %s is not set; it is required by %s." % (k, _SELF)
             + chr(10)
-            + "The deposited copy has no default; see README.md section 2")
+            + "The deposited copy has no default; see README.md, section 'Environment variables'")
     return v
 
 

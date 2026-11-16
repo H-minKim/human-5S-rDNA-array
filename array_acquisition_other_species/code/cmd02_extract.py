@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
-# ONT 배치 BAM(MM/ML) → read × array × 부류(코딩/스페이서) CpG 호출 표
-#   CpG 전용 모델(금화조 dorado 5mCG_5hmCG · 제브라 guppy 5mC_CG)만 — 문맥 판정 없이 5mC('m') 호출을 CpG 로 본다.
-#   메틸 판정 : p(5mC) = ML/255 ≥ 0.5 (배치 경로 modkit 기준과 같은 문턱)
-#   부류 : CpG 의 C 위치가 cmsearch 유전자 구간 안이면 코딩, array 안 나머지는 스페이서
-#   보조/이차 정렬 제외 · mapq 로 거르지 않음(탠덤 안은 mapq0 정상) — mapq 는 칸으로 남김
-#   인자 : bam 시료 REGIONS.tsv 출력.tsv
+# ONT batch BAM (MM/ML) -> a table of CpG calls by read x array x class (coding / spacer).
+#   CpG-only models alone (zebra finch dorado 5mCG_5hmCG, zebrafish guppy 5mC_CG), so a 5mC ('m') call is taken as a CpG without deciding the context.
+#   A site is called methylated at p(5mC) = ML/255 >= 0.5, the same threshold modkit uses in the batch path.
+#   Class: a CpG whose C lies inside a cmsearch gene interval is coding; anything else inside the array is spacer.
+#   Supplementary and secondary alignments are excluded; there is no mapq filter (mapq 0 is normal inside a tandem array) and mapq is kept as a column.
+#   Arguments: bam, sample, REGIONS.tsv, out.tsv.
 # MIT License · Copyright (c) 2026 Hungmin Kim
 import bisect
 import io
@@ -55,7 +55,7 @@ for aid, ch, a0, a1, gi in regs:
                 rp = q2r.get(qp)
                 if rp is None:
                     continue
-                cpos = rp if not rev else rp - 1      # CpG 의 C (1 기반은 +1)
+                cpos = rp if not rev else rp - 1      # the C of the CpG (add 1 for 1-based)
                 p1 = cpos + 1
                 if p1 < a0 or p1 > a1:
                     continue

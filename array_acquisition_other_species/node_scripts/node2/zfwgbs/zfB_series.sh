@@ -1,9 +1,9 @@
 #!/bin/bash
-# 제브라피시 5S — 난자(알) → 배아 → 체세포 계열 WGBS 정렬
-#   묻는 것 : 체세포(뇌 ONT)에서 chr18(체세포형)이 제 flank 보다 낮았다.
-#             알에서는 chr4(모계형)로 방향이 뒤집히는가?
-#   선별 검사를 통과한 run 만 쓴다(변환 read >= 88%).
-#   한 시료씩 받고·정렬하고·임시 지우고 다음으로 간다. 디스크 25 GB 미만이면 멈춘다.
+# Zebrafish 5S: WGBS alignment of the oocyte, embryo and somatic series.
+#   The question: in the soma, the brain ONT data, chr18, the somatic type, was lower than its own flank.
+#             Does the direction invert to chr4, the maternal type, in the egg?
+#   Only runs that passed the screening check are used, at 88% or more converted reads.
+#   One sample is downloaded, aligned and its temporary files deleted before moving to the next. The run stops below 25 GB of free disk.
 set -u
 cd ~/zfwgbs
 export PATH=$HOME/zfwgbs/Bismark-0.24.2:$PATH

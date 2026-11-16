@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
-# 유닛 안 메틸 곡선의 공용 평활 — FigG13 · FigH8 · FigI2 가 같은 함수 를 쓴다(2026-10-06)
-#   왜 : 같은 array 인데 그림마다 곡선이 달라 보이면 독자가 오해한다(사용자 지적).
-#        앞서 G13 은 'CpG 자리 25 개' 창, H8 은 '±bp' 창이라 고릴라에서 rho 0.51 까지 벌어졌다.
-#   창 폭 : ±half bp, half = min(50, max(5, 유닛길이/20))
-#   끝이 끊기던 문제 : 창 안 호출수가 minc(40) 에 못 미치면 그 자리를 안 그렸다 →
-#     그 자리에서만 창을 넓혀 minc 를 채운다(자료를 채우는 게 아니라 창 폭만 바꾼다).
-#     넓혀도 못 채우면 그리지 않는다(없는 자료를 만들지 않는다).
+# The shared smoothing for the within-unit methylation curves: FigG13, FigH8 and FigI2 all use this same function.
+#   Why: a curve that looks different from figure to figure for the same array misleads the reader
+#        (a window of 25 CpG sites and a window of +-bp diverge to a rho of 0.51 in the gorilla).
+#   The window width is +-half bp, with half = min(50, max(5, unit length / 20)).
+#   Where the calls within the window fall short of minc (40), the window is widened at that position alone until minc is met;
+#     the window width changes, not the data.
+#     Where widening still cannot meet it, nothing is drawn: no data is invented.
 import numpy as np
 
 

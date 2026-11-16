@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
-# 파일마다 유닛 수 → seqidx_all.tsv (노드에서 가져옴)
-#   단계 : ② 서열 색인
+# The unit count per file, written to seqidx_all.tsv.
+#   Step 2: the sequence index.
 #   Method document : analysis/METHOD_CONSENSUS_MAP_G8_REBUILD.md
 
 # -*- coding: utf-8 -*-
-# 서열 색인 — cmp4d 의 모든 .fa 에 대해 개체·출처·bp·유닛 수를 전수로 잰다 (2026-09-05)
+# The sequence index: for every .fa in cmp4d, the individual, the source, the bp and the unit count are measured exhaustively.
 #
-#  유닛 수 프레임 = UNITS (= 2,100-2,400 bp 정상 간격 수 + 1).
-#    hap_final2.tsv 와 같은 프레임이다. bp/2240 환산은 쓰지 않는다.
-#  정렬은 python sorted() 로만 한다 (awk asorti 문자열정렬 사고 재발 방지).
+#  The unit count is in the unit frame, that is the number of normal 2,100-2,400 bp gaps plus 1.
+#    This is the same frame as hap_final2.tsv. Dividing bp by 2240 is never used.
+#  Sorting is done only with Python's sorted(); awk's string sort scrambles the coordinates.
 import io
 import os
 import re
@@ -33,7 +33,7 @@ def base_sample(b, kind):
         s = b[3:] if b.startswith("t1_") else b
         return s.split("_p")[0]
     s = b[6:] if b.startswith("hiarr_") else (b[4:] if b.startswith("arr_") else b)
-    s = re.sub(r"_\d+$", "", s)                 # _N 을 먼저 뗀다
+    s = re.sub(r"_\d+$", "", s)                 # strip the trailing _N first
     for pat in (r"_(sw|f)[2-6]$", r"_l0$", r"_sub250$", r"_noSPAN$"):
         s = re.sub(pat, "", s)
     return re.sub(r"_\d+$", "", s)

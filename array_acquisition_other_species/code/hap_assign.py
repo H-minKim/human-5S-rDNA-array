@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
-# 하플로타입 중복 array 에서 read 를 배정할 수 있는가
+# Can reads be assigned in an array with duplicate haplotypes?
 #
-#   금화조 chr2 는 mat/pat array 서열이 바이트 단위로 같다.
-#   → array 안쪽만 덮은 read 는 두 곳에 똑같이 맞아 원리적으로 배정 불가(mapq 0).
-#   → 그러나 flank 까지 문 read 는 flank 서열이 다르므로 배정이 가능해야 한다.
-#   이 스크립트는 read 를 두 무리로 갈라 mapq 분포를 비교해 그 예측을 검사한다.
-#     A 무리 : array 안쪽만 (flank 물림 < ANCHOR)
-#     B 무리 : 한쪽 이상 flank 를 ANCHOR bp 이상 물었다
-#   또 mat/pat 에 붙은 read 수가 반반인지(= 정렬기가 임의로 가른 흔적인지) 센다.
-#   인자 : bam chrom array시작 array끝 라벨 [ANCHOR=1000]
+#   In the zebra finch the maternal and paternal chr2 arrays are byte-identical in sequence,
+#   so a read covering only the interior of the array matches both equally and cannot be assigned in principle, giving mapq 0.
+#   A read reaching into the flank, however, should be assignable, because the flank sequences differ.
+#   This script tests that prediction by splitting the reads into two groups and comparing their mapq distributions:
+#     group A: the interior only, with less than ANCHOR bp of flank;
+#     group B: at least ANCHOR bp of flank on at least one side.
+#   It also counts whether the reads landing on the maternal and paternal copies split evenly, which would be the mark of the aligner dividing them arbitrarily.
+#   Arguments: bam, chrom, array start, array end, label, [ANCHOR = 1000].
 # MIT License · Copyright (c) 2026 Hungmin Kim
 import sys
 import collections
@@ -27,7 +27,7 @@ for r in b.fetch(CHROM, max(0, A0 - 1 - 50000), A1 + 50000):
     s, e = r.reference_start + 1, r.reference_end
     if e < A0 or s > A1:
         continue
-    left = max(0, A0 - s)      # array 왼쪽 바깥으로 문 길이
+    left = max(0, A0 - s)      # the length reaching outside the left edge of the array
     right = max(0, e - A1)
     k = "B_flank앵커" if (left >= ANCHOR or right >= ANCHOR) else "A_array내부"
     grp[k]["n"] += 1

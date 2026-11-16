@@ -1,32 +1,32 @@
 # -*- coding: utf-8 -*-
-# Figure 3 본 figure 자료 준비 2026-10-09
+# Data preparation for the main Figure 3.
 #
-#   구성 :
-#     A  array 구조 모식            — Fig1_2_array_structure a 윗단 재사용 (여기서는 안 만든다)
-#     B  자리별 유닛 β × 배열 길이층  —  `fig_G1_meth_domain` a 를 내 틀로 재현
-#     C  길이층별 저메틸 유닛 수      — 같은 그림 b 를 내 틀로 재현
-#     D  유닛 안 메틸 패턴 (구획별) — 고메틸 유닛 ↔ 저메틸 유닛
-#     E  8 구역을 그렇게 나눈 까닭 — 메틸 축 x 서열 축 교차에서 칸이 8 개 나온다
-#     F  구역별 하플로타입 사이 차    — Fig1_3_zone_variability a 재현
+#   The panels:
+#     A  the array structure schematic, reused from the top of Fig1_2_array_structure a and not built here
+#     B  unit beta by position against the array length stratum, reproduced in this frame
+#     C  the count of hypomethylated units per length stratum, reproduced in this frame
+#     D  the methylation pattern within the unit, by segment, for highly against weakly methylated units
+#     E  why the eight zones fall where they do: crossing the methylation axis with the sequence axis gives eight cells
+#     F  between-haplotype differences per zone, reproducing Fig1_3_zone_variability a
 #
-#   차용하지 않는다 : B·C 는 상대 표를 받지 않고 내 L2 로 직접 낸다.
-#     그쪽 그림 주석값과 맞춰 본 결과 최대 차 0.010 이었다 (아래 [검산] 절에 다시 적는다).
+#   Nothing is borrowed: B and C are computed directly from L2 here rather than taken from another table.
+#     Compared against the values annotated on that other figure the largest difference was 0.010; this is repeated in the check section below.
 #
-#   자(ruler) : 유닛 β = L2_HAP_UNIT.b_mean (하드콜) · 관문 gate(v13:84) + n_read>=5
-#   방향 : L2 기준 — ap = 근위 끝에서 센 번호 · ad = 원위 끝에서 센 번호 (ru_v11 과 반대)
-#   읽기만 · 무거운 IO 는 이 한 패스에서 다 낸다
+#   Ruler: unit beta is L2_HAP_UNIT.b_mean, a hard call, behind the v13 gate plus n_read >= 5.
+#   Orientation, in the L2 convention: ap counts from the proximal end and ad from the distal end, the opposite of ru_v11.
+#   Read-only, and all the heavy IO is done in this single pass.
 import io, os, sys, hashlib
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 import numpy as np
 import pandas as pd
-# 자료 뿌리는 환경변수 하나로 (2026-10-21 · 저장소 공개 준비)
-#   안 주면 지금까지 쓰던 자리를 그대로 쓴다 — 돌아가는 것이 달라지지 않는다.
+# The data roots come from environment variables.
+#   They have no default: the script stops with a message if one is not set.
 DATA_ROOT = os.environ["DATA_ROOT"]
 
 S = DATA_ROOT + "/"
-# 표를 읽고 쓰는 자리 — 저장소에서는 표가 코드 옆에 없으므로 환경변수로 받는다 (2026-10-21)
+# Where the tables are read and written. The tables are not deposited next to the code, so these paths come from the environment.
 # Writes the deposited table with English column names and values
-#   쓰기 바로 전 한 자리 에서만 바꾼다 — 이 글 안의 내부 이름은 그대로 둔다.
+#   Renamed at a single point just before writing; the rest of this file uses the internal names.
 _KO2EN_COL = {
     "FIG3_A_UNITPROFILE_ZONE.tsv": {"구역": "zone", "유닛안자리": "pos_in_unit",
                                     "유전자기준": "pos_gene_ref", "호출수": "n_call",
@@ -89,14 +89,14 @@ def save(df, name, **kw):
 
 LENB = [(40, 80, "N40-80"), (81, 110, "N81-110"), (111, 140, "N111-140"), (141, 10 ** 9, "N141+")]
 CUT = 0.508 # trough of the unit hard call
-CUT_THEM = 0.51      #  가 쓴 컷 (견주기용)
+CUT_THEM = 0.51      #  the cut used there, for comparison
 
 P("=" * 92)
 P("Figure 3 본 figure 자료 준비 — 2026-10-09")
 P("=" * 92)
 P()
 
-# ---------------------------------------------------------------- 입력
+# ---------------------------------------------------------------- inputs
 L2 = pd.read_parquet(S + "02_tables/L2_HAP_UNIT.parquet",
                      columns=["sample", "slot", "ap", "ad", "N", "n_read", "b_mean", "f_hi"])
 L2 = L2[L2.n_read >= 5].copy()
@@ -212,12 +212,12 @@ for grp in ("전체", "고메틸 유닛", "저메틸 유닛"):
     g = L1 if grp == "전체" else L1[L1.lohi == grp]
     for i, (nm, bc, nc) in enumerate(SEG):
         v = g[bc].dropna()
-        # 하플로타입 평균으로도 (유닛은 하플로 안에서 독립이 아니다)
+        # also as a mean over haplotypes, since units are not independent within a haplotype
         hv = g.groupby("hap")[bc].mean().dropna()
         rows.append(dict(무리=grp, 구획=nm, 순서=i, b=v.mean(), sd=v.std(), n=len(v),
                          b_hap=hv.mean(), sd_hap=hv.std(), n_hap=len(hv),
-                         # cpg 가 아니라 '그 유닛에서 실제로 호출된 참조 CpG 자리 수' 의 중앙값이다
-                         #   (서열에서 센 CpG 개수가 아니다 — canon_v2.fa 전체는 199)
+                         # this is the median number of reference CpG sites actually called in that unit, not the CpG count
+                         #   (not the number counted in the sequence; canon_v2.fa holds 199 in total)
                          cpg_호출수_중앙=float(g[nc].median())))
 D = pd.DataFrame(rows)
 save(D, "FIG3_D_UNITPROFILE.tsv")
@@ -250,7 +250,7 @@ if os.path.exists(ZI):
 else:
     P("   ZONE_INTEGRATED.tsv 없음")
 
-# 근위 제3경계 17 의 근거 — 길이층별로 내부값 98% 에 닿는 자리
+# The basis for the third proximal boundary at 17: the position at which each length stratum reaches 98% of its interior value.
 rows = []
 for lo_, hi_, nm in ((30, 59, "N30-59"), (60, 99, "N60-99"),
                      (100, 139, "N100-139"), (140, 300, "N140-300")):
@@ -323,7 +323,7 @@ P("   ⇒ 하플로타입 사이 차가 가장 작은 구역 : %s (SD %.4f)"
   % (F.loc[F.sd.idxmin()].구역, F.sd.min()))
 P("   ⇒ 가장 큰 구역 : %s (SD %.4f)" % (F.loc[F.sd.idxmax()].구역, F.sd.max()))
 
-# ================================================================ 코호트
+# ================================================================ cohort
 P()
 P("=" * 92)
 P("[코호트] 분모 — 모든 패널 공통")

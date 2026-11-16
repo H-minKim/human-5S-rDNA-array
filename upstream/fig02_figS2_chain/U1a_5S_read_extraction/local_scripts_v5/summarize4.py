@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""ONT summary v4: tRNA removal + CHM13 alignment replaced by the TUC tandem map.
+"""ONT summary v4: no tRNA step, and the TUC tandem map in place of CHM13 alignment.
 
-Reasons for the change (all measured)
-  - CHM13 alignment took 44-54% of the time per individual, and its PAF was used only for locus assignment and
+Basis (all measured)
+  - CHM13 alignment takes 44-54% of the time per individual, and its PAF serves only locus assignment and
     for choosing 'which reads to keep'.
-  - Replaced by the TUC tandem map (90kb): on the same 8,000 ONT reads, CHM13 312s vs TUC 60s = 5.2x.
+  - The TUC tandem map (90kb) is used instead: on the same 8,000 ONT reads, CHM13 312s vs TUC 60s = 5.2x.
     At the keep threshold tandem_span>=500bp, recall against CHM13 1.000, false positives 0.79%.
     (Raising the threshold to 4,480 gives 0 false positives but recall falls to 0.719, losing short array reads.
      Recall comes first at the keep step, so 500 is used.)

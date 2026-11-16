@@ -1,5 +1,5 @@
 #!/bin/bash
-# Fill the 60 individuals that have no assembly candidate (2026-09-04)
+# Fill the 60 individuals that have no assembly candidate
 #
 #  Measured causes (60 without candidates among our 264 ONT individuals)
 #    no attempt record at all  42  (median read data 408 MB, the data are sufficient)
@@ -14,7 +14,7 @@
 #      HG03521 615Mb failed -> 206Mb succeeded 74 units). The optimal data amount differs per haplotype, so
 #      the union over several fractions is taken.
 #
-#  1kGP (kgp_ont/out) is not used, those data were judged unassemblable because they are 27 times too small.
+#  1kGP (kgp_ont/out) is not used, those data are 27 times too small to assemble.
 #  Outputs are kept separately in ~/fill60.
 set -u
 MODE=${1:?A 또는 B}

@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
-# PBAT 단일말단 read 전처리 — cutadapt 대신(노드에 없다)
-#   ① 5' 9 bp 자름 : PBAT 는 무작위 프라이머로 합성해 앞쪽이 참조와 안 맞는다
-#   ② 3' 어댑터 자름 : Illumina 공통 `AGATCGGAAGAGC`(어댑터는 바이설파이트 뒤에 붙어 변환 안 됨)
-#      전체 일치가 없으면 read 끝에 걸친 앞부분(≥5 bp)도 잘라 낸다
-#   ③ 30 bp 미만 버림
-#   인자 : in.fastq.gz out.fastq.gz
+# Preprocessing of single-end PBAT reads, in place of cutadapt, which is not installed on the node.
+#   1) Trim 9 bp from the 5' end: PBAT is primed randomly, so the start of the read does not match the reference.
+#   2) Trim the 3' adapter, the common Illumina AGATCGGAAGAGC; the adapter is ligated after bisulfite treatment and so is not converted.
+#      If there is no full match, a prefix of at least 5 bp running off the end of the read is also trimmed.
+#   3) Discard reads shorter than 30 bp.
+#   Arguments: in.fastq.gz out.fastq.gz
 # MIT License · Copyright (c) 2026 Hungmin Kim
 import gzip
 import sys

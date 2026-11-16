@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
-# 타 생물종 5S : G8v4 방식 유닛 지도 (array 마다 제 참조 유닛으로)
-#   사람 consmapG8v4.py 의 규칙을 그대로 옮기고, 종별 값(참조유닛·PAD·CTX·LO/HI)만 REFUNIT_PARAMS.tsv 에서 읽는다
-#     · 유닛 경계 = 유전자 끝 +1 .. 다음 유전자 끝 (유전자 HSP 를 질의 좌표로 전체 길이까지 확장)
-#     · 자를 때 앞뒤 PAD 여유 · 정렬 대상은 [참조유닛 끝 CTX][참조유닛][참조유닛 앞 CTX]
-#     · 채움 금지 — 변이는 정렬(cs/BTOP)로만. 가운데 유닛 구간을 다 못 덮으면 NO_FULL
-#     · 간격이 LO~HI 밖이면 유닛을 만들지 않고 끊김(n_break)
-#     · 양끝 조각은 PARTIAL 로 적고 변이를 부르지 않는다
-#   산출 : g8map/<array_id>.g8map.tsv · G8MAP_SUM.tsv
-#   인자 : 종키 fasta tblout REFUNIT_PARAMS.tsv 참조유닛폴더 출력폴더
+# 5S in other species: a G8v4-style unit map, each array against its own reference unit.
+#   The rules follow the human consmapG8v4.py unchanged; only the per-species values (reference unit, PAD, CTX, LO/HI) are read from REFUNIT_PARAMS.tsv.
+#     · A unit runs from gene end + 1 to the next gene end, with the gene HSP extended to the full length using the query coordinates.
+#     · cut with PAD bp of slack on each side; the alignment target is [last CTX bp of the reference unit][reference unit][first CTX bp of the reference unit]
+#     · No filling: variants come from the alignment (cs / BTOP) alone. If the middle unit interval is not fully covered the result is NO_FULL.
+#     · if the gap falls outside LO..HI, no unit is made and a break is recorded (n_break)
+#     · The fragments at either end are recorded as PARTIAL and no variants are called for them.
+#   Outputs: g8map/<array_id>.g8map.tsv, G8MAP_SUM.tsv.
+#   Arguments: species key, fasta, tblout, REFUNIT_PARAMS.tsv, reference unit folder, output folder.
 # MIT License · Copyright (c) 2026 Hungmin Kim
 import io
 import os
@@ -98,7 +98,7 @@ def btop_vars(btop, ss):
 
 
 def fmt(tok):
-    # 사람 지도와 같은 표기 : 1096G · 1476D10 · 1275I2 (연속 결실/삽입은 합친다)
+    # The same notation as the human map: 1096G, 1476D10, 1275I2, with runs of deletions or insertions merged.
     out, i = [], 0
     while i < len(tok):
         p, k, v = tok[i]
@@ -168,7 +168,7 @@ for r in PR:
         gg = sorted([(a, b) for (a, b, st) in keep if st == major])
     if len(gg) < 3:
         continue
-    # 유닛 자르기 (PAD 여유) + 끊김
+    # cutting the units with PAD slack, and the breaks
     qs, meta, brk = [], [], 0
     pos = 0
     for i in range(len(gg) - 1):
@@ -239,7 +239,7 @@ for r in PR:
                               "none", "NA", "NA", "NA", "NA", "NOALN", "NOALN"]) + NL)
             cnt["NOALN"] += 1
             continue
-        # ctx 좌표 -> 참조유닛 좌표 (가운데 유닛만)
+        # context coordinates -> reference unit coordinates, for the middle unit only
         toks = [(pp - CTX, kk, vv) for (pp, kk, vv) in bb[2] if CTX < pp <= CTX + U]
         cov0, cov1 = bb[3] - CTX, bb[4] - CTX
         full = (cov0 <= 1 and cov1 >= U)

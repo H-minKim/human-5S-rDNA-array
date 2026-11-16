@@ -1,35 +1,35 @@
 # -*- coding: utf-8 -*-
-"""R20 — R18 과 같되 구역을 유닛마다 자기 TSS 에 맞춰 자른다.  [for_paper · 2026-10-06]
+"""R20: actuation per zone, with the zones cut at each unit's own TSS.
 
-왜 : 트랙은 유닛 안 위치로 색인되는데 r18 은 구역을 고정 OFF=2123 에서 잘랐다.
-      실측 TSS 는 2113~2126 으로 흩어져(z03) gene 구역이 ~2% 과소추정됐다(z04).
-고친 곳 : 트랙을 쌓는 자리 한 군데 — 자리 i 를 OFF+(i−tss_u) 에 쌓는다.
-           ⇒ OFF 가 그 유닛의 TSS 를 가리키므로 아래 계산은 r18 과 같은 코드다.
-r18 은 그대로 둔다(옛 판 보존). 출력만 r20_* 로 나간다.
+Tracks are indexed by position inside the unit, and the TSS varies between units
+      (measured 2113 to 2126), so a zone cut at a fixed offset would misplace the gene zone.
+Stacking : position i of a unit is stacked at OFF+(i-tss_u), with OFF=2123,
+           so OFF points at the TSS of every unit and the zones below are cut at OFF.
+The output is written as r20_*.
 
 
-레퍼런스(FIRE/fibertools) 정량 단위
-  percent actuation = 자리마다 : (그 자리에 MSP 를 가진 분자) / (그 자리를 덮는 분자)
-  ※ 우리가 쓰던 nucfrac(=N bp/(N+M) bp)은 bp 비율이라 레퍼런스 단위가 아니다.
+Unit of quantification, as in the reference (FIRE/fibertools)
+  percent actuation = per position : (molecules with an MSP at that position) / (molecules covering that position)
+  Note: nucfrac (= N bp/(N+M) bp) is a base-pair fraction and is not the reference unit.
 
-주 플랫폼 = ONT · PacBio(HiFi)는 병기만. PacBio 전용 검정(mono/kb · nucA)은 본 결과에서 뺀다.
+Main platform = ONT; PacBio (HiFi) is reported alongside. The PacBio-only tests (mono/kb, nucA) are not in the main result.
 
-한 번에 내는 것 (전부 같은 단위로)
-  ① 구역별 actuation (개체 단위 · Wilcoxon)
-  ② 창 의존성 : 구역 창 ↔ 유닛 전체
-  ③ 층 의존성 : 자리당 분자 수 층
-  ④ 품질 교란 : 분자를 QUAL 1 점 칸으로 H 분포에 맞춰 재가중
-  ⑤ 미처리 배경 : 미처리 대조에서 같은 계산 (원값 · 품질 맞춤 후)
-  ⑥ 자리별 윤곽 (그림용)
-출력 r20_actuation_unified.tsv · r20_actuation_profile.tsv
+Produced in one run (all in the same unit)
+  (1) actuation per zone (per individual, Wilcoxon)
+  (2) window dependence : zone window against the whole unit
+  (3) depth dependence : strata of molecules per position
+  (4) quality confounding : molecules reweighted to the H distribution in 1-point QUAL bins
+  (5) untreated background : the same calculation in the untreated control (raw, and after quality matching)
+  (6) per-position profile (for the figure)
+Output r20_actuation_unified.tsv, r20_actuation_profile.tsv
 """
 import io, os, sys, gzip, glob, struct, bisect, collections
 import numpy as np
 from scipy.stats import wilcoxon
 
 # The data and output roots are environment variables with no default (CONVENTIONS, "the deposited copy wins").
-#  저장소 안 파일로 가는 길은 `__file__` 에서 상대로 푼다 — `a_lib`·`bamlite`·`p02_lib` 가 이 폴더에 같이 예치돼 있다.
-#  변수 표는 `README.md` §2 에 있다.
+#  Paths to files inside the repository are resolved relative to __file__: a_lib, bamlite and p02_lib are deposited in this folder.
+#  The table of variables is in README.md, section 'Environment variables'.
 _HERE = os.path.dirname(os.path.abspath(__file__))
 
 
@@ -39,17 +39,17 @@ def _need(k):
     except KeyError:
         raise SystemExit(
             "environment variable %s is not set; it is required by %s. "
-            "The deposited copy has no default; see README.md section 2."
+            "The deposited copy has no default; see README.md, section 'Environment variables'."
             % (k, os.path.basename(__file__)))
 
 sys.path.insert(0, _HERE)
 from p02_lib import seq2ref
 
-#  쓰는 폴더다 — 발행 입력 폴더를 가리키면 그 표를 덮는다.
+#  This is written to: if it points at the published input folder, those tables are overwritten.
 W = _need("RDNA_RESULTMAP_DIR")
 R = _need("RDNA_V12_CANON_DIR")
 S6 = _need("RDNA_S6_DIR")
-#  파일 이름 라벨 (RFC1918 사설 대역 · 주소가 아니다) · `NODE_LABELS` 로 덮어쓸 수 있다
+#  File-name labels (RFC1918 private range; these are not reachable addresses). NODE_LABELS overrides them.
 HOST = {"w3": "ip-172-31-58-58", "iB": "ip-172-31-32-12", "iA": "ip-172-31-57-143"}
 if os.environ.get("NODE_LABELS"):
     HOST = dict(kv.split("=", 1) for kv in os.environ["NODE_LABELS"].split(",") if "=" in kv)
@@ -105,7 +105,7 @@ with gzip.open(os.path.join(S6, "a13_unit_state_gmm.tsv.gz"), "rt", encoding="ut
         x = l.rstrip("\n").split("\t")
         ST[(x[1], x[0], x[2], x[3], x[4])] = x[10]
 
-# ---------- 1 차 : 유닛별 평균 QUAL
+# ---------- first pass: the mean QUAL per unit
 import sys as _sys
 _sys.path.insert(0, _HERE)
 import a_lib as _alib
@@ -149,11 +149,11 @@ for src, bam in BAMS:
                 QU[(smp, src, r["name"], slot, ap)] = v[0] / v[1]
 print("  QUAL 유닛 %d" % len(QU), flush=True)
 
-# ---------- 2 차 : 트랙을 흘리며 자리별 누적
+# ---------- second pass: stream the track and accumulate per position
 NB = ULEN + 2
 P_SMP = collections.defaultdict(lambda: np.zeros((NB, 2)))      # (src,smp,state)
 P_Q = collections.defaultdict(lambda: np.zeros((NB, 2)))        # (src,state,qbin)
-QCNT = collections.Counter()                                     # (src,state,qbin) -> 분자 수
+QCNT = collections.Counter()                                     # (source, state, quality bin) -> number of molecules
 NOTSS = collections.Counter() # units with no TSS found
 print("2 차 : 트랙 누적", flush=True)
 for p in sorted(glob.glob(os.path.join(S6, "a01_tracks", "*.tsv.gz"))):
@@ -175,11 +175,11 @@ for p in sorted(glob.glob(os.path.join(S6, "a01_tracks", "*.tsv.gz"))):
             a = np.frombuffer(x[ix["track"]].encode(), dtype=np.uint8)
             cov = (a != ord(".")).astype(np.float64)
             msp = (a == ord("M")).astype(np.float64)
-            # 자리 i(1기반) -> OFF + (i - tss_u) · 배열 밖은 잘라낸다
+            # position i, 1-based, maps to OFF + (i - tss_u); anything outside the array is clipped
             sh = OFF - tss_u
-            j0 = 1 + sh                      # 자리 1 이 놓이는 칸
-            k0 = max(0, 1 - j0)   # 하한 1 — 칸 0 에 쓰지 않는다(r18 과 같은 경계)                 # 트랙에서 버릴 앞쪽
-            k1 = min(len(a), ULEN + 1 - j0)   # 상한 ULEN(2241) — r18 과 같은 경계        # 트랙에서 버릴 뒤쪽
+            j0 = 1 + sh                      # the bin position 1 falls in
+            k0 = max(0, 1 - j0)   # lower bound 1: nothing is written to bin 0, the same boundary as r18
+            k1 = min(len(a), ULEN + 1 - j0)   # upper bound ULEN (2241), the same boundary as r18
             if k1 <= k0:
                 continue
             d0, d1 = j0 + k0, j0 + k1
@@ -284,7 +284,7 @@ for src, s6 in SRCS:
             continue
         TL += AL; TH += AH
         if nl >= 10 and nh >= 10:
-            WL += AL * (nh / nl)           # L 을 H 의 QUAL 분포로
+            WL += AL * (nh / nl)           # L reweighted to H's QUAL distribution
             WH += AH
     def _a(Z):
         m = Z[:, 0] >= MINCOV
@@ -299,7 +299,7 @@ with io.open(os.path.join(W, "r20_actuation_unified.tsv"), "w", encoding="utf8",
     for x in rows:
         g.write("\t".join(str(q) for q in x) + "\n")
 
-# ---------- 자리별 윤곽
+# ---------- the profile by position
 prof = []
 for src, s6 in SRCS:
     for st in ("L", "H"):

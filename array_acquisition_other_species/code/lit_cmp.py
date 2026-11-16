@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
-# 논문·GenBank 5S 반복단위 vs 내가 실측한 대표 유닛 대조
-#   입력 : ~/lit5s/ALL_lit.fa (공개 서열) · ~/lit5s/units/<array_id>.unit.fa (실측 대표 유닛 77)
-#   1) 공개 서열 -> 실측 유닛 blastn : 어느 array 유닛과 가장 닮았나 (일치도 · 덮힘)
-#   2) 실측 유닛 안에 공개 반복단위가 몇 번 들어가는가 (겹치지 않는 HSP 수)
-#      -> 2 이상이면 내 "유닛" 은 여러 유닛이 한 덩어리로 잡힌 것
-#   산출 : LIT_BEST.tsv · LIT_TILING.tsv
+# Compare the published and GenBank 5S repeat units against the representative units measured here.
+#   Inputs: lit5s/ALL_lit.fa, the published sequences, and lit5s/units/<array_id>.unit.fa, the 77 measured representative units.
+#   1) blastn of each published sequence against the measured units: which array's unit does it most resemble, by identity and coverage?
+#   2) How many times does the published repeat unit fit inside a measured unit, as the number of non-overlapping HSPs?
+#      More than one means our unit has taken several units as a single block.
+#   Outputs: LIT_BEST.tsv and LIT_TILING.tsv
 # MIT License · Copyright (c) 2026 Hungmin Kim
 import io
 import os
@@ -84,14 +84,14 @@ for q in sorted(LIT, key=lambda x: -len(LIT[x])):
                       str(aln), "%.3f" % cq, "%.3f" % cu, str(len(hits))]) + NL)
 w.close()
 
-# 2) 타일링 : 실측 유닛 안에 공개 단위가 몇 번 들어가나
+# 2) tiling: how many times the published unit fits inside the measured unit
 GRP = {"human": "human_CHM13v2", "macaca_fas": "rhesus_T2T_MMU8v2", "zebrafish": "zebrafish_GRCz12tu",
        "arabidopsis": "arabidopsis_ColCC", "chicken": "zfinch_v03_dip", "rat": "mouse_C57BL6J_T2T"}
 ACC2GRP = {}
 for g in GRP:
     for k in rdfa(os.path.join(H, g + ".lit.fa")) if os.path.exists(os.path.join(H, g + ".lit.fa")) else []:
         ACC2GRP[k] = g
-if not ACC2GRP:  # 묶음 파일이 없으면 ALL 에서 유추 불가 -> 전부 검사
+if not ACC2GRP:  # with no grouping file, nothing can be inferred from ALL, so everything is tested
     ACC2GRP = dict((k, None) for k in LIT)
 t = io.open(os.path.join(H, "LIT_TILING.tsv"), "w", encoding="utf8", newline=NL)
 t.write(TAB.join(["array_id", "unit_len", "lit_acc", "lit_len", "n_nonoverlap_hsp", "covered_bp",

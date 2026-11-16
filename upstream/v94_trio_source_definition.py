@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
-# v94 — trios recomputed with the v11-add2 source definition; the earlier v79b definition is kept alongside
-#  원천 정의 (v11-add2_trio\09_tests\fix1_test_GIAB_precise\08_by_zone_both_ends_aligned_transmitted_vs_control.txt) :
-#    β = beta_call(자리 단위 합본의 ML>=128 비율) · read>=2 · 구역 = 원위1-10 · 원위11-20 · 근위11-20 · 근위1-10 양 끝에서 센 번호로 맞춤
-#    판정축 = 구역 안 |Δβ|(자식 vs 전달 부모 하플로) 중앙  vs  |Δβ|(자식 vs 비전달 = 같은 부모의 다른 하플로) 중앙
-#    HG003(부) → HG002 짝은 전달 검정에서 제외
-#  짝 : v79b 확정 짝(유닛 변이 서명 자카드 + 배경 대조). 비전달 하플로 = 같은 부모의 다른 슬롯(없으면 대조 없음)
-#  [0] 원천 표 재현 : 같은 짝(HG01250 · HG01251 · HG03815 · HG00556 · HG004)에서 원천 08 표 값과 대조
-#  [1] 모든 확정 짝에서 원천 정의로 · 구역별 전달 vs 비전달 (짝 단위 윌콕슨)
-# [2] the result of the earlier definition (v79b : beta_read_mean, read>=3, consensus zone, unrelated control) is placed alongside
-#  입력 v11-추가2 `08_methylation\READMAP_METH_V11F2+extra2_trios.tsv` · `03_maps\G8MAP_trio.tsv` · 02_tables/TRIO_PAIR_CONF.tsv · TRIO_TRANSMIT_ZONE2.tsv
-#  출력 02_tables/TRIO_SRCDEF_PAIRZONE.tsv · TRIO_SRCDEF_SUMMARY.tsv · 04_logs/V94_TRIO_SRCDEF.txt
+# v94: trios computed with the v11-add2 source definition, with the v79b definition alongside
+#  The source definition (v11-add2_trio/09_tests/fix1_test_GIAB_precise/08_by_zone_both_ends_aligned_transmitted_vs_control.txt):
+#    beta = beta_call, the fraction at ML >= 128 in the per-site merge; at least 2 reads; the zones are distal 1-10, distal 11-20, proximal 11-20 and proximal 1-10, matched by the index counted from each end.
+#    The axis of the test is the median |delta beta| within a zone between the child and the transmitting parental haplotype, against the median against the non-transmitted one, the other haplotype of the same parent.
+#    The HG003 (father) to HG002 pair is excluded from the transmission test.
+#  The pairs are the confirmed pairs of v79b, from the Jaccard of the unit variant signature against a background control. The non-transmitted haplotype is the other slot of the same parent, and where there is none there is no control.
+#  [0] Reproduce the source table: for the same pairs (HG01250, HG01251, HG03815, HG00556, HG004) the values are compared with those of the source table.
+#  [1] Apply the source definition to every confirmed pair, giving transmitted against non-transmitted per zone, by a Wilcoxon over pairs.
+# [2] the result of the v79b definition (beta_read_mean, read>=3, consensus zone, unrelated control) is placed alongside
+#  Inputs: 08_methylation/READMAP_METH_V11F2+extra2_trios.tsv and 03_maps/G8MAP_trio.tsv from the second v11 addition, plus 02_tables/TRIO_PAIR_CONF.tsv and TRIO_TRANSMIT_ZONE2.tsv
+#  Outputs: 02_tables/TRIO_SRCDEF_PAIRZONE.tsv, TRIO_SRCDEF_SUMMARY.tsv and 04_logs/V94_TRIO_SRCDEF.txt
 import io
 import numpy as np, pandas as pd
 from scipy import stats

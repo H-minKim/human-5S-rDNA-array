@@ -1,5 +1,5 @@
 #!/bin/bash
-# Build the trio reference folder and list (2026-09-18)
+# Build the trio reference folder and list
 #   ~/trio_v11/cmp4d_trio = the 616 files of cmp4d_v11_fix1 as real copies + new reference files
 #   ~/trio_v11/hap_seq_node_trio.tsv = hap_seq_node_v8 with the 4 changed slots replaced + new rows for the parents
 #   ~/trio_v11/new_rows.tsv = only the changed or new slots (the targets for unit mapping)

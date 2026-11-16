@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
-# [archive copy] from the working copy s2_newzone_values.py (md5 15e5a60896bf) · data and output roots via environment variables with no default (the script stops if one is unset) · module names changed to the archive names · no change to any computation
+# Working name: s2_newzone_values.py. Data and output roots come from environment variables with no default (the script stops if one is unset).
 # WARNING — this script WRITES tables, into P11_TABLE_OUT_DIR (no default). Pointing it at the folder that holds the published
 #   input tables (P11_TABLE_DIR) OVERWRITES them. To verify, set P11_TABLE_OUT_DIR to an empty temporary folder.
 import os as _os_need, sys as _sys_need
 def _need(k):
     v = _os_need.environ.get(k)
     if not v:
-        _sys_need.exit("environment variable %s is not set; it is required by %s (a module stops the script that imports it). The deposited copy has no default; see README.md section 2" % (k, _os_need.path.basename(globals().get("__file__", "an exec-loaded block"))))
+        _sys_need.exit("environment variable %s is not set; it is required by %s (a module stops the script that imports it). The deposited copy has no default; see README.md, section 'Environment variables'" % (k, _os_need.path.basename(globals().get("__file__", "an exec-loaded block"))))
     return v
 # . Supplementary S2, which holds the ChIP targets left out of the main figure, is recomputed on the new zones, that is, the low methylation span of the gene body. This is the value step.
 #   ① K562 BDP1 and BRF1 come from the node table K562_QUALGATE_MIX_BDP1BRF1.tsv (mixk_bdp1brf1.py, same position list and same gate as K562_QUALGATE_MIX).
@@ -109,7 +109,7 @@ for lab in ("BDP1", "BRF1"):
         lab, s.ratio["근위"], s.n_marker["근위"], s.ratio["가운데"], s.n_marker["가운데"], s.ratio["원위"], s.n_marker["원위"],
         s.ratio["근위"] / s.ratio["가운데"], r.nc_interaction_OR, r.nc_lo, r.nc_hi, r.판정))
 # ---------------- ② GM12878 TBP leave-one-out on the new zones with the WGS denominator, using the same counts as the RT, that is, READLEVEL_GM_MIX filtered alt_n over depth
-# Markers that drop out of the WGS denominator, meaning that genome carries no alternate allele and q is 0, are recorded as well. 2079C of the earlier HiFi denominator version is such a case.
+# Markers that drop out of the WGS denominator, meaning that genome carries no alternate allele and q is 0, are recorded as well. 2079C is such a case.
 GM = rd("P11_GM12878_MARKERS_NEWZONE_2026-10-13.tsv"); GZ = dict(zip(GM.variant, GM.zone))
 RL = rd("READLEVEL_GM_MIX.tsv"); RL = RL[RL["filter"] == "filtered"]
 DEN = pd.read_csv(os.path.join(T, "denominator_comparison_2026-10-14", "denom_GM_WGS_ERR3239334.tsv"), sep=TAB)
@@ -137,7 +137,7 @@ LO.to_csv(os.path.join(TO, "GM12878_TBP_LOO_NEWZONE_GMWGS_2026-10-14.tsv"), sep=
 print("  GM12878 TBP LOO (RT 재현 ✓)"); print(LO.to_string(index=False))
 print("  → K562_interaction_NEWZONE_withBDP1BRF1_2026-10-14.tsv · K562_zoneratio_Q20_NEWZONE_withBDP1BRF1_2026-10-14.tsv · GM12878_TBP_LOO_NEWZONE_GMWGS_2026-10-14.tsv")
 # ---------------- ③ the GM12878 interaction against input, inter_all unchanged, counts = READLEVEL_GM_MIX filtered, q = NA12878 WGS (ERR3239334)
-#   GM12878 has no negative control ChIP of the SNAPC5 kind. The INPUT here is an untargeted control, and the reason it is not put in the main figure is unchanged.
+#   GM12878 has no negative control ChIP of the SNAPC5 kind. The INPUT here is an untargeted control, and it is not put in the main figure.
 gq = []
 for _, r in RL.iterrows():
     if r.label not in ("TBP", "POLR3G", "INPUT", "ATAC") or r.variant not in GZ: continue

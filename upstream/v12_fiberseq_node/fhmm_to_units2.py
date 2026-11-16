@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
-"""FiberHMM BED12 -> 5S 유닛 좌표 · 전량판 (2026-10-11)
+"""FiberHMM BED12 -> 5S unit coordinates, full set
 
-ex_<sample>__<pacbio|nanopore>/<tag>.calls_{tf,nucleosome,msp}.bed 를 읽어
-MAP_V11 유닛 경계로 자르고 TSS 기준 rel 로 옮긴다.
-재정렬 없음 — 좌표는 배치기(ao_g8cut) 가 준 것 그대로.
-TSS = 유닛 서열에서 GTCTACGGC 의 마지막 출현 (a_lib 과 같은 규칙)
+Reads ex_<sample>__<pacbio|nanopore>/<tag>.calls_{tf,nucleosome,msp}.bed,
+cuts at the MAP_V11 unit boundaries and moves to rel from the TSS.
+No realignment: the coordinates are those given by the placement step (ao_g8cut).
+TSS = the last occurrence of GTCTACGGC in the unit sequence (the rule of a_lib)
 """
 import io
 import os
@@ -96,17 +96,17 @@ for exd in sorted(glob.glob(os.path.join(W, "out", "ex_*"))):
             sm_, sl = rn.rsplit("_h", 1)
             bl = [int(v) for v in x[10].rstrip(",").split(",") if v != ""]
             bs = [int(v) for v in x[11].rstrip(",").split(",") if v != ""]
-            # read 가 덮는 범위는 어느 class 에서든 한 번만 적는다
-            #   (tf BED 에만 적으면 TF 가 없는 read 가 분모에서 빠진다 - 2026-10-11 수정)
+            # the range a read covers is recorded once only, under whichever class
+            #   (recording it only in the tf BED would drop a read carrying no TF from the denominator)
             r0, r1 = cs + 1, int(x[2])
             for (us, ue, ap, tss) in UT[rn]:
-                if min(r1, ue) - max(r0, us) < 200:        # 이 유닛을 충분히 덮는 read 만
+                if min(r1, ue) - max(r0, us) < 200:        # only reads covering this unit sufficiently
                     continue
                 if (sm_, plat, sl, ap, rid) in SEEN:
                     continue
                 SEEN.add((sm_, plat, sl, ap, rid))
-                # 덮개를 유닛 안으로 자르지 않는다 — 탠덤이라 flank 는 이웃 유닛의 실제 서열이다.
-                #   자르면 유닛 끝(rel ~ +118)에서 분모가 끊겨 가짜 봉우리가 선다 (2026-10-11 수정)
+                # The cover is not clipped into the unit: the array being tandem, the flank is the real sequence of the neighbouring unit.
+                #   Clipping it cuts the denominator off at the end of the unit, around rel +118, and raises a spurious peak.
                 a, b = max(r0, tss - 1200), min(r1, tss + 1200)
                 cov.write(TB.join([sm_, plat, sl, ap, rid,
                                    "%d" % (a - tss), "%d" % (b - tss)]) + NL)

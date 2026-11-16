@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
-# 타 생물종 — 유닛 하나하나의 구조와 메틸을 한 표로
+# The other species: the structure and methylation of every single unit in one table.
 #
-#   유닛 좌표 : 06_units_from_canonical/<array_id>.units.tsv
+#   Unit coordinates: 06_units_from_canonical/<array_id>.units.tsv
 #               (array_pos · chrom_start/end · unit_len · strand)
-#   메틸      : 05_bedmethyl/<species>/<시료>.5S.cpg.bed  (동물, CpG)
-#               arabidopsis 는 allC.bed.gz 에서 CG 만
-#   변이      : 07_consensus_from_reads/*.unit_consensus.tsv
-#               (array_pos 별 n_var_cons · n_sub/ins/del · n_var_strict · depth)
+#   Methylation: 05_bedmethyl/<species>/<sample>.5S.cpg.bed for the animals, CpG context,
+#               and for Arabidopsis the CG context only, from allC.bed.gz.
+#   Variants: 07_consensus_from_reads/*.unit_consensus.tsv
+#               (n_var_cons, n_sub, n_ins, n_del, n_var_strict and depth per array_pos).
 #
-#   '-' 가닥 array 는 array_pos 순서와 조립본 좌표 순서가 반대다 — 검산해서 확인한다.
+#   For an array on the minus strand the array_pos order runs opposite to the assembly coordinate order, which is checked here rather than assumed.
 # Output is written only to this folder.
 import io, os, glob, gzip
 import numpy as np
@@ -22,7 +22,7 @@ def _need(k):
     v = _os_need.environ.get(k)
     if not v:
         _sys_need.exit("environment variable %s is not set (the deposited copy has no default; "
-                       "see README.md, section 'How to run it')" % k)
+                       "see README.md, section 'Environment variables')" % k)
     return v
 
 
@@ -45,14 +45,14 @@ P("유닛 구조 + 유닛별 메틸")
 P("=" * 104)
 P()
 
-# ---------------------------------------------------------------- 유닛 좌표
+# ---------------------------------------------------------------- unit coordinates
 fs = sorted(glob.glob(R + "/06_units_from_canonical/*.units.tsv"))
 U = pd.concat([pd.read_csv(f, sep="\t") for f in fs], ignore_index=True)
 U = U[U.verify.astype(str) == "OK"] if "verify" in U.columns else U
 P("  유닛 좌표 %s 행 · array %d · 종 %d"
   % (format(len(U), ","), U.array_id.nunique(), U.species_key.nunique()))
 
-# 가닥 검산
+# the strand check
 P()
 P("  '-' 가닥 array 에서 array_pos 와 좌표 방향이 반대인가")
 chk = []
@@ -69,16 +69,16 @@ for s, g in C.groupby("strand"):
 P("   ⇒ 부호가 가닥과 맞으면 units.tsv 가 이미 array 순서를 맞춰 둔 것이다")
 P()
 
-# ---------------------------------------------------------------- 메틸 site
+# ---------------------------------------------------------------- methylation sites
 def load_cpg(path):
-    """modkit bedMethyl -> (chrom, pos, nmod, ncan)  'm' 행만"""
+    """modkit bedMethyl -> (chrom, pos, nmod, ncan)  'm' rows only"""
     rows = []
     op = gzip.open if path.endswith(".gz") else io.open
     with op(path, "rt") as f:
         for l in f:
             t = l.rstrip("\n").split("\t")
             code = t[3]
-            if "allC" in path:                          # allC 만 문맥 표기
+            if "allC" in path:                          # only allC records the context
                 if not code.startswith("m,"):
                     continue
                 if code.split(",")[1] != "CG":
@@ -139,7 +139,7 @@ M["meth"] = M.n_mod / M.n_call.replace(0, np.nan)
 P()
 P("  유닛-시료 %s 행 · array %d" % (format(len(M), ","), M.array_id.nunique()))
 
-# ---------------------------------------------------------------- 변이
+# ---------------------------------------------------------------- variants
 cs = sorted(glob.glob(R + "/07_consensus_from_reads/*.unit_consensus.tsv"))
 V = pd.concat([pd.read_csv(f, sep="\t", low_memory=False) for f in cs],
               ignore_index=True)
@@ -152,7 +152,7 @@ for c in ("depth_median", "n_var_cons", "n_sub", "n_ins", "n_del", "n_var_strict
         V[c] = pd.to_numeric(V[c], errors="coerce")
 P("  유닛 변이 %s 행 · array %d" % (format(len(V), ","), V.array_id.nunique()))
 
-#  시료 이름이 판마다 다르다 (bedmethyl "Control1" vs 합본 "Control1.g12")
+#  The sample names differ between releases, for example "Control1" in the bedmethyl against "Control1.g12" in the merged table.
 V["sample_key"] = V["sample"].astype(str).str.split(".").str[0]
 M["sample_key"] = M["sample"].astype(str).str.split(".").str[0]
 V2 = V.drop(columns=["sample"])
@@ -165,7 +165,7 @@ NM = {"zebrafish_GRCz12tu": "제브라피시", "zfinch_v03_dip": "금화조",
       "orang_sumatran_mPonAbe1": "수마트라오랑", "siamang_mSymSyn1": "시아망"}
 M["종"] = M.species_key.map(NM)
 
-# 끝에서 센 거리 (양쪽) — 가닥/방향에 안 휘는 축
+# the distance from the end, on each side: an axis that does not depend on the strand or the orientation
 g = M.groupby(["array_id"])["array_pos"].transform("max")
 M["N_unit"] = g
 M["p_from_1"] = M.array_pos

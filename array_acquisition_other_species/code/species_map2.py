@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
-# 타 생물종 5S : 정본(flank-array-flank) + consensus map(유닛별 변이표) — 사람 작업과 같은 꼴 · 2판
-#   1판의 결함 정정 : minimap2 가 못 맞춘 유닛을 "변이 0" 으로 세었다 -> 이제 blastn 으로 되받고, 그래도 안 되면 NOALN 으로 남긴다
-#   유닛틀 : 사람 정본과 같게 "스페이서 다음 유전자" (유닛이 유전자로 끝난다) — 사람에 돌리면 2,240 bp · 유전자 2122 재현
-#   유닛번호: array 의 유전자 방향으로 1 부터 + 유닛마다 염색체 좌표 병기 (사람의 '원위=1' 규칙은 다른 종에 근거 없음)
-#   변이   : 1 차 minimap2 -cx asm20 --cs (사람 방법) · 2 차 blastn -task blastn (짧거나 많이 갈린 유닛)
-#            토큰은 사람 지도와 같게 1484T(치환) · 437D1(결실) · 1056I3(삽입) · 좌표는 대표유닛 1-기반
-#   인자 : 종키 fasta tblout struct표 출력폴더 [flank bp=20000]
+# 5S in other species: the canonical sequence (flank-array-flank) plus a consensus map (a per-unit variant table), in the same form as for human.
+#   A unit minimap2 fails to align must not be counted as carrying no variants: it is retried with blastn, and if that also fails it is recorded as NOALN.
+#   Unit frame: spacer then gene, as in the human canonical unit, so the unit ends with the gene. Run on human it reproduces 2,240 bp with the gene at 2122.
+#   Units are numbered from 1 along the array's gene direction, with the chromosome coordinate recorded alongside; the human convention that position 1 is distal has no basis in other species.
+#   Variants: first minimap2 -cx asm20 --cs, the human method, then blastn -task blastn for units that are short or heavily diverged.
+#            The tokens match the human map: 1484T for a substitution, 437D1 for a deletion, 1056I3 for an insertion, in 1-based representative-unit coordinates.
+#   Arguments: species key, fasta, tblout, structure table, output folder, [flank bp = 20000].
 # MIT License · Copyright (c) 2026 Hungmin Kim
 import io
 import os
@@ -56,7 +56,7 @@ def faidx(reg):
 
 
 def merge(tok):
-    # 1 bp 씩 나온 결실/삽입을 사람 지도처럼 붙인다 : 100D1,101D1 -> 100D2
+    # Single-bp deletions and insertions are merged as in the human map: 100D1, 101D1 -> 100D2.
     out, i = [], 0
     while i < len(tok):
         t = tok[i]
@@ -114,7 +114,7 @@ def cs_to_vars(cs, rs):
 
 
 def btop_to_vars(btop, ss):
-    # blast BTOP -> 같은 토큰. ss = 대표유닛(subject) 시작 (1-기반)
+    # blast BTOP -> the same tokens; ss is the start in the representative unit (subject), 1-based.
     out, p, i = [], ss - 1, 0
     while i < len(btop):
         if btop[i].isdigit():
@@ -190,7 +190,7 @@ for (c, s0, e1, strand, cop) in ARR:
                 cs = x[5:]
         if q not in best or bs > best[q][0]:
             best[q] = (bs, "mm2", cs_to_vars(cs, rs), int(f2[9]), int(f2[10]))
-    # 2 차 : minimap2 가 못 맞춘 유닛만 blastn
+    # Second pass: blastn, for the units minimap2 could not align.
     miss = [u for u in units if ("u%d" % u[0]) not in best]
     if miss:
         mp = os.path.join(OUT, "map", aid + ".miss.fa")

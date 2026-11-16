@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
-# ① 을 하플로타입 하나에 값 하나 로 — 하위표집 없음 · 난수 없음 · 모든 교차쌍 정확 집계
+# Reduce 1) to one value per haplotype: no subsampling, no random numbers, every cross pair counted exactly.
 #
-#   하플로타입 h 마다 두 값을 낸다 (같은 띠 안, 다른 하플로타입의 유닛과만 견줌) :
-#     같은집합거리(h) = h 의 유닛 ↔ 같은 변이집합 을 가진 다른 하플로타입 유닛 의 평균 |Δ|
-#     다른집합거리(h) = h 의 유닛 ↔ 다른 변이집합 을 가진 다른 하플로타입 유닛 의 평균 |Δ|
-#   → 하플로타입당 값 둘 → 짝지은 윌콕슨 부호순위 검정 (관측이 독립)
+#   Two values are produced per haplotype h, comparing only against units of other haplotypes within the same position band:
+#     same-set distance(h) = the mean |delta| between h's units and units of other haplotypes carrying the same variant set
+#     other-set distance(h) = the mean |delta| between h's units and units of other haplotypes carrying a different variant set
+#   -> two values per haplotype -> a paired Wilcoxon signed-rank test, so the observations are independent.
 #
-#   합 |a-b| 는 정렬 + 누적합으로 전수 계산한다 (표집 없음 ⇒ 난수 의존 없음).
+#   The sum of |a-b| is computed exhaustively by sorting and a cumulative sum, so there is no sampling and no dependence on random numbers.
 import sys
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 import numpy as np, pandas as pd
@@ -14,7 +14,7 @@ from scipy import stats
 
 
 def sumabs_within(values, group):
-    """같은 group 안에서 각 원소가 그 group 의 모든 원소와 갖는 |차| 의 합, 그리고 group 크기."""
+    """within one group, for each element the sum of |difference| to every element of that group, and the group size."""
     v = np.asarray(values, float)
     g = np.asarray(group)
     out = np.zeros(len(v)); cnt = np.zeros(len(v))
@@ -36,8 +36,8 @@ def run(col):
     L = L[L.n_read >= 5].copy()
     L["hap"] = L["sample"].astype(str) + "|" + L.slot.astype(str)
     L["vl"] = L.varlist.fillna("-").astype(str)
-    # 공통 5 구역 (2026-10-16) = 정본 8 구역을 묶은 것 Z1 / Z2+Z3 / ZI / Z4 / Z5+Z6+Z7.
-    #   main (F)(G)(H) · FigX26 · supp (G) 와 같은 조건식 이다.
+    # The common five zones group the canonical eight: Z1 / Z2+Z3 / ZI / Z4 / Z5+Z6+Z7.
+    #   This is the same condition used by main panels F, G and H, by FigX26 and by supplementary panel G.
     def band(ap, ad):
         if ap <= ad:
             if ap <= 3:  return "근위 1-3"
@@ -53,15 +53,15 @@ def run(col):
         v = g[col].values.astype(float)
         hap = pd.factorize(g.hap)[0]
         vl = pd.factorize(g.vl)[0]
-        hv = hap.astype(np.int64) * (vl.max() + 1) + vl          # (hap, set) 합성 키
+        hv = hap.astype(np.int64) * (vl.max() + 1) + vl          # composite (hap, set) key
         one = np.zeros(len(v), dtype=np.int64)
-        S_all, C_all = sumabs_within(v, one)                      # 전체
-        S_hap, C_hap = sumabs_within(v, hap)                      # 같은 하플로 안
-        S_set, C_set = sumabs_within(v, vl)                       # 같은 집합 안
-        S_hs,  C_hs  = sumabs_within(v, hv)                       # 같은 하플로 & 같은 집합
-        S_same = S_set - S_hs;  C_same = C_set - C_hs             # 같은 집합 · 다른 하플로
-        S_cross = S_all - S_hap; C_cross = C_all - C_hap          # 다른 하플로 전부
-        S_diff = S_cross - S_same; C_diff = C_cross - C_same      # 다른 집합 · 다른 하플로
+        S_all, C_all = sumabs_within(v, one)                      # all
+        S_hap, C_hap = sumabs_within(v, hap)                      # within the same haplotype
+        S_set, C_set = sumabs_within(v, vl)                       # within the same variant set
+        S_hs,  C_hs  = sumabs_within(v, hv)                       # same haplotype and same variant set
+        S_same = S_set - S_hs;  C_same = C_set - C_hs             # same variant set, different haplotype
+        S_cross = S_all - S_hap; C_cross = C_all - C_hap          # all different haplotypes
+        S_diff = S_cross - S_same; C_diff = C_cross - C_same      # different variant set, different haplotype
         d = pd.DataFrame(dict(hap=g.hap.values, Ss=S_same, Cs=C_same, Sd=S_diff, Cd=C_diff))
         a = d.groupby("hap").sum()
         a = a[(a.Cs > 0) & (a.Cd > 0)]

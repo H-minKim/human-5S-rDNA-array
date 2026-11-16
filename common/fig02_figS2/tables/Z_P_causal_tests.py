@@ -11,7 +11,7 @@ P1 (most important), dose-response: is 'reduced exchange' a **function of sequen
       If terminal types fall below the curve -> something besides the difference is at work
 P2, read-level mixing test: redo the mixing test on **read consensus** (READMAP read_varlist) instead of assemblies
 P3, shape of the spacing distribution: is it 'anything 2 or more', or 'a peak at 2-3'
-Output : $OUTDIR\ZP_*.tsv
+Output : $OUTDIR/ZP_*.tsv
 """
 import io, os, sys, collections
 import numpy as np

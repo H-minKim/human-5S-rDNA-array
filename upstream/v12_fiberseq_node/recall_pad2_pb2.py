@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
-# read 유닛 재호출 — 여유(±PAD)를 두고 자르고, 문맥을 붙인 정본유닛에 정렬한다 (2026-09-12 사용자 설계)
-#   참조 = [정본유닛 끝 CTX bp][정본유닛 2,240bp][정본유닛 앞 CTX bp]
-#     탠덤 배열이라 유닛의 앞뒤는 같은 정본유닛의 끝·앞이다. 문맥을 붙이면 여유분이 양옆에 붙고,
-#     가운데 유닛이 정렬 가장자리 문제에서 자유로워진다. 정본유닛을 두 번 이어 붙이면 어느 사본에 붙을지 갈리므로 쓰지 않는다.
-#   왜 : 유닛을 정확히 잘라 정렬하면 꼬리가 짧게 잘리고(파일럿 2,172 중 524), 그걸 채움(글자 맞춤)으로 메우면
-#        indel 하나가 그 뒤를 통째로 밀어 가짜 치환을 만든다. G8 유닛은 유전자(2122-2240)가 끝에 있어 피해가 유전자부에 집중.
-#   변이 : 정렬 결과(cs)만 쓴다. 채움 없음. 목표 좌표 t(0 기반) 중 [CTX, CTX+2240) 안의 것만 정본유닛 좌표(t-CTX+1)로 적는다.
-#   판정 : OK(정렬이 유닛 구간을 모두 덮음) · NO_FULL · SEQ_MISMATCH · NOALN
-#   인자 : JX|AO · 입력 유닛표 · 출력표   (환경변수 PAD 기본 50 · CTX 기본 100)
+# Re-calling read units: cut with +-PAD bp of slack and align to the canonical unit with flanking context added.
+#   The reference is [last CTX bp of the canonical unit][the 2,240 bp canonical unit][first CTX bp of the canonical unit].
+#     Because the array is tandem, what precedes and follows a unit is the end and the start of the same canonical unit. Adding the context gives the slack somewhere to align,
+#     and frees the middle unit from edge effects. Concatenating the canonical unit twice is not used, because the read could then align to either copy.
+#   Why: aligning an exactly cut unit leaves the tail clipped short (524 of 2,172 in the pilot), and filling that in by character matching
+#        lets a single indel shift everything after it and create spurious substitutions. In the G8 unit the gene sits at 2122-2240, at the end, so the damage concentrates in the gene.
+#   Variants come from the alignment (cs tag) alone, with no filling. Only target coordinates t (0-based) inside [CTX, CTX+2240) are recorded, in canonical unit coordinates (t - CTX + 1).
+#   Verdicts: OK (the alignment covers the whole unit interval), NO_FULL, SEQ_MISMATCH, NOALN.
+#   Arguments: JX|AO, input unit table, output table. Environment variables PAD (default 50) and CTX (default 100).
 import io
 import os
 import re
@@ -56,7 +56,7 @@ def call(seqs, tag):
 
 
 def tokens(qseq, g):
-    """정렬(cs)에서 유닛 구간 [CTX, CTX+UL) 의 변이만 정본유닛 좌표로 뽑는다"""
+    """from the alignment (cs), extract only the variants in the unit interval [CTX, CTX+UL), in canonical unit coordinates"""
     qs, qe, ts, te, cs = g
     tp = ts
     toks, reb = [], []

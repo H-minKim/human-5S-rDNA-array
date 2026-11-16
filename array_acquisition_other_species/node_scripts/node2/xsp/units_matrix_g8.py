@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
-# read x 유닛 메틸 행렬 — G8 틀 (유닛 경계를 G8 지도에서 그대로 가져온다)
-#   옛 판(units_matrix.py)은 유닛 경계를 cmsearch 유전자 시작점으로 잡았다 = 사람이 버린 G6 틀.
-#   이제 경계는 G8 지도의 chrom_start..chrom_end (유전자 끝 → 다음 유전자 끝) 를 쓴다.
-#   그래서 read 행렬과 consensus map 이 (array_id, array_pos) 하나로 조인된다.
-#   맥락(CG/CHG/CHH)은 참조 서열로 판정 · 호출은 mod_qual >= 0.5 · MAPQ 로 거르지 않는다
-#   입력 : --fa 참조 · --mapdir G8 지도 폴더(<array_id>.g8map.tsv) · --samples · --bam({s}) · --meth({s}) · --out
-#   산출 : <표본>.read_unit.tsv · 5S_unit_summary.tsv · 5S_array_summary.tsv  (열쇠 = array_id · array_pos)
+# read x unit methylation matrix in the G8 frame: the unit boundaries are taken straight from the G8 map.
+#   The boundary is chrom_start..chrom_end from the G8 map (gene end to next gene end).
+#   This lets the read matrix and the consensus map join on (array_id, array_pos) alone.
+#   Context (CG/CHG/CHH) is decided from the reference, a call is mod_qual >= 0.5, and there is no MAPQ filter.
+#   Inputs: --fa reference, --mapdir the G8 map folder (<array_id>.g8map.tsv), --samples, --bam ({s}), --meth ({s}), --out.
+#   Outputs: <sample>.read_unit.tsv, 5S_unit_summary.tsv, 5S_array_summary.tsv (key = array_id, array_pos).
 # MIT License · Copyright (c) 2026 Hungmin Kim
 import io
 import os
@@ -23,7 +22,7 @@ for k in ("--fa", "--mapdir", "--samples", "--bam", "--meth", "--out"):
     ap.add_argument(k, required=True)
 a = ap.parse_args()
 os.makedirs(a.out, exist_ok=True)
-# 1) G8 지도에서 유닛 구간 읽기
+# 1) read the unit intervals from the G8 map
 UNITS = collections.defaultdict(list)   # chrom -> [(start, end, array_id, array_pos, N)]
 AINFO = {}
 for fn in sorted(os.listdir(a.mapdir)):

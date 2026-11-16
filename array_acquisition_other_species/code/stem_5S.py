@@ -1,19 +1,21 @@
 # -*- coding: utf-8 -*-
-# GSE175951 Stage III(GV) 난모세포 STEM-seq 가공 CpG 표(danRer7) 로 5S 구역 메틸을 잰다.
-#   구역은 danRer7 서열에서 직접 찾은 유전자 히트(hits_dr7.tsv)로 만든다.
-#   chr4 : 모계형 유전자가 3 kb 안으로 이어진 무리(≥10 개)를 array 로 본다.
-#   코딩부 = 유전자 · 스페이서 = array 안 나머지 · flank = 양쪽 100 kb(경계 5 kb 띄움, 다른 array 제외)
-#   구간 : CpG 자리 부트스트랩(피복이 자리당 ~1 이라 자리 ≈ read 1 개)
+# Measure the methylation over the 5S regions from the author-processed STEM-seq CpG table of GSE175951 stage III (GV) oocytes, on danRer7.
+#   The regions are built from the gene hits found directly in the danRer7 sequence, in hits_dr7.tsv.
+#   chr4: a cluster of at least 10 maternal-type genes running within 3 kb of each other counts as an array.
+#   Coding is the gene, spacer is the remainder inside the array, and the flank is 100 kb on each side, held 5 kb clear of the boundary and excluding other arrays.
+#   The interval comes from a bootstrap over CpG sites, the coverage being about 1 per site, so a site is roughly one read.
 import bisect
 import collections
 import gzip
+import os
 import io
 import random
 
 random.seed(0)
 TAB = "\t"
 hits = collections.defaultdict(list)
-for L in io.open("hits_dr7.tsv"):
+W = os.environ["NODE_WORK_DIR"]   # the compute node's working directory
+for L in io.open(os.path.join(W, "hits_dr7.tsv")):
     c, a, b, st, typ, dm, ds = L.rstrip("\n").split(TAB)
     if (c == "chr4" and typ == "maternal") or (c == "chr18" and typ == "somatic"):
         hits[c].append((int(a), int(b)))
@@ -22,7 +24,7 @@ for c, g in hits.items():
     g.sort()
     groups = [[g[0]]]
     for x in g[1:]:
-        # chr18 유닛은 1,980 bp 이고 danRer7 에서 빠진 유닛이 있어 간격이 6 kb 까지 벌어진다
+        # the chr18 unit is 1,980 bp and danRer7 is missing some units, so the gaps widen to 6 kb
         if x[0] - groups[-1][-1][1] <= (3000 if c == "chr4" else 12000):
             groups[-1].append(x)
         else:
@@ -39,7 +41,7 @@ for c, g in hits.items():
                 regions[(loc, "스페이서")].append((c, p, a - 1))
             p = b + 1
         for fs, fe, side in ((s0 - 105000, s0 - 5001, "flankL"), (e0 + 5001, e0 + 105000, "flankR")):
-            # 다른 array 와 겹치는 flank 부분은 뺀다
+            # the part of the flank overlapping another array is removed
             pieces = [(max(1, fs), fe)]
             for (xs, xe) in spans:
                 new = []
@@ -57,7 +59,7 @@ for c, g in hits.items():
     print(loc, "array", len(groups), "· 유전자", sum(len(gr) for gr in groups),
           "· span 합 %d bp" % sum(e - s + 1 for s, e in spans))
 
-# 빠른 판정용 색인
+# an index, for a fast lookup
 idx = {}
 for key, iv in regions.items():
     by = collections.defaultdict(list)
@@ -77,7 +79,7 @@ def inside(key, c, p):
     return i >= 0 and p <= en[i]
 
 
-out = io.open("STEM_5S.tsv", "w", encoding="utf8", newline="\n")
+out = io.open(os.path.join(W, "STEM_5S.tsv"), "w", encoding="utf8", newline="\n")
 out.write(TAB.join(["sample", "locus", "part", "n_site", "n_call", "n_meth", "frac", "lo95", "hi95"]) + "\n")
 gw = {}
 for samp, fn in (("oocyte_StageIII_rep1", "GSM5351778.mCG.txt.gz"), ("oocyte_StageIII_rep2", "GSM5351780.mCG.txt.gz")):
@@ -114,7 +116,7 @@ for samp, fn in (("oocyte_StageIII_rep1", "GSM5351778.mCG.txt.gz"), ("oocyte_Sta
 out.close()
 print("완료")
 
-# ── 코딩부/스페이서 − flank(L+R) 차이 : 자리 부트스트랩, 독립 표본(정렬 전 차이) ──
+# -- coding and spacer minus the flank, left plus right: a site bootstrap over independent samples, with the difference taken before any alignment --
 import numpy as np
 rng = np.random.default_rng(1)
 
@@ -127,7 +129,7 @@ def bsamp(v, nb=4000):
     return a[ix, 0].sum(1) / (a[ix, 0] + a[ix, 1]).sum(1)
 
 
-dout = io.open("STEM_5S_DIFF.tsv", "w", encoding="utf8", newline="\n")
+dout = io.open(os.path.join(W, "STEM_5S_DIFF.tsv"), "w", encoding="utf8", newline="\n")
 dout.write(TAB.join(["sample", "locus", "contrast", "diff", "lo95", "hi95"]) + "\n")
 for samp, fn in (("oocyte_StageIII_rep1", "GSM5351778.mCG.txt.gz"), ("oocyte_StageIII_rep2", "GSM5351780.mCG.txt.gz")):
     sites = collections.defaultdict(list)

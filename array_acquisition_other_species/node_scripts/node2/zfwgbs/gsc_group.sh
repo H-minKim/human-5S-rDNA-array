@@ -1,15 +1,15 @@
 #!/bin/bash
-# 시료를 군별로 합쳐 5S 구역 메틸을 잰다(시료 하나로는 read 가 너무 적다)
-#   군 : F_GSC(35–70d) · M_GSC(35–70d) · early_GSC(1–28d, 성 미분화) · F_Control · M_Control · early_Control
-#   + 시기별(35·40·45·50·70d) F_GSC / F_Control
+# Samples are pooled by group to measure methylation over the 5S regions; a single sample carries too few reads.
+#   Groups: F_GSC (35-70 d), M_GSC (35-70 d), early_GSC (1-28 d, sex undifferentiated), F_Control, M_Control, early_Control.
+#   Plus F_GSC and F_Control broken out by stage (35, 40, 45, 50, 70 d).
 set -u
 cd ~/zfwgbs || exit 1
 until grep -q GSC_DONE gsc/run_all.out 2>/dev/null; do sleep 60; done
 mkdir -p gsc/grp
 rm -f gsc/GSC_PARTS.tsv
-# run → 시료명
+# run -> sample name
 awk -F'\t' '{print $1"\t"$2}' all.list > gsc/names.tsv
-mk () {  # 군이름 · 이름정규식
+mk () {  # group name, name regex
   G=$1; P=$2
   L=$(awk -F'\t' -v p="$P" '$2 ~ p {print "gsc/bam/"$1".sorted.bam"}' gsc/names.tsv | while read f; do [ -f "$f" ] && echo "$f"; done)
   N=$(echo "$L" | grep -c bam)

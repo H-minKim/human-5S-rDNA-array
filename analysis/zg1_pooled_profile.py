@@ -1,25 +1,25 @@
 # -*- coding: utf-8 -*-
-"""모든 read 를 합친 자리별 프로파일 (2026-10-10).
+"""Per-position profile over all reads pooled.
 
- : "모든 read 합쳐서 봐보기 — 근위·원위는 절대, 가운데는 상대"
-왜 : 슬롯 하나만 그리면 자리마다 분자가 5~20 개뿐이라 di-nuc·patch 트랙이 너무 뾰족하다.
+All reads are pooled; the proximal and distal ends are in absolute positions, the middle in relative position.
+Why : one slot alone has only 5 to 20 molecules per position, and the di-nuc and patch tracks are too spiky.
 
-자리 틀 (이 프로젝트의 기존 규칙 · unit-filter-and-bin-conventions)
+Position frame
    array_pos 1 = genomic distal (DJ), array_pos N = proximal (centromeric)
-   · 원위 1..E      -> 절대 번호 d = ap            (끝에서 센다)
-   · 근위 1..E      -> 절대 번호 p = N - ap + 1    (끝에서 센다)
-   · 가운데         -> 상대 r = (ap - E) / (N - 2E)  를 NB 칸으로
-   ⇒ 가로축 = [원위 E칸] [가운데 NB칸] [근위 E칸]
+   - distal 1..E      -> absolute number d = ap            (counted from the end)
+   - proximal 1..E    -> absolute number p = N - ap + 1    (counted from the end)
+   - middle           -> relative r = (ap - E) / (N - 2E)  in NB bins
+   so the x axis = [E distal bins] [NB middle bins] [E proximal bins]
 
-지표 (레퍼런스 Dubocanin 2025 식)
-   · di-nucleosome 밀도 = (>210 bp 뉴클레오솜이 덮은 염기) / (호출된 염기)
-   · 접근 가능 패치 밀도 = (>150 bp large MSP 가 덮은 염기) / (호출된 염기)
-   · 개수 밀도(per kb) 도 같이 낸다
-합치는 법 : 자리칸마다 분자를 다 모아 분자(염기) 합 / 분모(염기) 합  = pooled
-   ⇒ 뾰족함이 사라진다. 분자 수(n) 를 같이 적는다.
+Measures (as in the reference, Dubocanin 2025)
+   - di-nucleosome density = (bases covered by nucleosomes >210 bp) / (called bases)
+   - accessible patch density = (bases covered by large MSPs >150 bp) / (called bases)
+   - the count density (per kb) is also given
+Pooling : per position bin all molecules are gathered, sum of numerators (bases) / sum of denominators (bases)  = pooled
+   The spikiness goes away. The number of molecules (n) is written alongside.
 
-배치 : 본표 a23 과 같다(정본 좌표 · 틈은 '.')
-두 플랫폼 따로 낸다 (절대 수준은 플랫폼마다 다르다 — 맞대지 않는다)
+Layout : as in the main table a23 (canonical coordinates, gaps are '.')
+The two platforms are reported separately (absolute levels differ between platforms and are not compared)
 """
 import io
 import os
@@ -29,8 +29,8 @@ import collections
 import numpy as np
 
 # The data and output roots are environment variables with no default (CONVENTIONS, "the deposited copy wins").
-#  저장소 안 파일로 가는 길은 `__file__` 에서 상대로 푼다 — `a_lib`·`bamlite`·`p02_lib` 가 이 폴더에 같이 예치돼 있다.
-#  변수 표는 `README.md` §2 에 있다.
+#  Paths to files inside the repository are resolved relative to __file__: a_lib, bamlite and p02_lib are deposited in this folder.
+#  The table of variables is in README.md, section 'Environment variables'.
 _HERE = os.path.dirname(os.path.abspath(__file__))
 
 
@@ -40,14 +40,14 @@ def _need(k):
     except KeyError:
         raise SystemExit(
             "environment variable %s is not set; it is required by %s. "
-            "The deposited copy has no default; see README.md section 2."
+            "The deposited copy has no default; see README.md, section 'Environment variables'."
             % (k, os.path.basename(__file__)))
 
 A = _need("RDNA_ACCESS_DIR")
-#  쓰는 폴더다 — 발행 입력 폴더를 가리키면 그 표를 덮는다.
+#  This is written to: if it points at the published input folder, those tables are overwritten.
 HF = _need("RDNA_FIBERSEQ_DIR")
 OUT = os.path.join(HF, "01_latest_results", "REF2_20261010c_merged_profile.tsv")
-NPZ = os.path.join(_need("RDNA_FHMM_DIR"), "zg1_profile.npz")   # 여기에 쓴다
+NPZ = os.path.join(_need("RDNA_FHMM_DIR"), "zg1_profile.npz")   # written here
 sys.path.insert(0, _HERE)
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8',
                               errors='replace', line_buffering=True)
@@ -55,19 +55,19 @@ import a_lib as L                                      # noqa: E402
 
 UNIT, _ = L.load_units()
 DINUC, LARGE = 210, 150
-E = 20          # 양 끝에서 절대 번호로 볼 유닛 수 ( : 15 -> 20)
-NB = 10         # 가운데 상대 칸 수
+E = 20          # the number of units counted by absolute index from each end
+NB = 10         # the number of relative bins in the interior
 
 NMAX = collections.Counter()
 for (smp, slot, ap) in UNIT:
     NMAX[(smp, slot)] = max(NMAX[(smp, slot)], int(ap))
 
-# ── beta (자리칸마다)
+# -- beta, per position bin
 BETA = collections.defaultdict(list)
 
 
 def slot_cell(ap, n):
-    """자리 -> 칸 번호 (0..E-1 원위 · E..E+NB-1 가운데 · E+NB..2E+NB-1 근위) · 없으면 None"""
+    """position -> bin number (0..E-1 distal, E..E+NB-1 middle, E+NB..2E+NB-1 proximal); None if absent"""
     if n < 2 * E + 4:
         return None
     if ap <= E:
@@ -103,7 +103,7 @@ for smp, src, rid, slot, arr, lo, us in L.iter_reads(UNIT, 0, 0):
     n = NMAX.get((smp, slot), 0)
     if n < 2 * E + 4:
         continue
-    # 염기마다 어느 유닛인지
+    # which unit each base belongs to
     own = np.full(len(arr), -1, dtype=np.int32)
     for ap, _t in us:
         s, e, _ = UNIT[(smp, slot, ap)]

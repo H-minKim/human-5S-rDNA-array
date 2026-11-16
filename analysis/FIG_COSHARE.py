@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
-r"""FIG COSHARE - two units that share a rare variant also share other variants (new 2026-10-16: replaces supplementary e)
+r"""FIG COSHARE - two units that share a rare variant also share other variants
   Data: COSHARE_PERHAP.tsv (produced by COSHARE_BSTRAT.py, H1 557, middle window 0.2-0.8, 533 haplotypes with 23 or more window units)
     A = rare variant (cohort unit frequency < 1%), pair = two units in the same array
     cls 0 = pairs that share A, cls 1 = pairs at the same distance where only one unit carries A
     value = fraction of other variants B, carried by at least one of the two units, that are in both units, by |B - A| bin
   Panel A: B is rare (< 1%)   Panel B: B is common (≥ 10%)
   bars = haplotype cluster bootstrap 95% (500 times). Bins at or below 100 bp are not drawn (a single event spanning several positions would be mixed in)
-Output: $FIGOUT\fig_coshare.png/svg, FIG_COSHARE_source_values.tsv
+Output: $FIGOUT/fig_coshare.png/svg, FIG_COSHARE_source_values.tsv
 """
 import io, os, collections
 import numpy as np
@@ -21,7 +21,7 @@ plt.rcParams["axes.unicode_minus"] = False
 plt.rcParams["svg.fonttype"] = "none"
 TAB = os.environ.get("FIGTAB", (__import__("os").environ["RDNA_DATA_ROOT"] + r"/for_paper/00_paper_figures_distal_layout/tables"))
 OUT = (os.environ.get("FIGOUT") or os.environ["RDNA_OUT_DIR"])
-# The English version uses this table without a hook (2026-10-16, the translation hook folder in scratchpad disappeared, so only this figure translates itself)
+# The English version uses this table without a hook (this figure translates itself)
 EN = os.environ.get("FIG_LANG", "ko") == "en"
 TR = {"희귀 변이를 함께 가진 두 유닛은 다른 변이도 함께 가진다": "Two units that share a rare variant also share other variants",
       "같은 거리, A 를 한쪽만 가진 두 유닛": "Same distance, only one unit carries A",
@@ -46,7 +46,7 @@ for r in L[1:]:
     if st is None or b not in BINS:
         continue
     A[HI[(r[H["sample"]], r[H["slot"]])], st, BINS.index(b), int(r[H["cls"]])] = (int(r[H["n_shared"]]), int(r[H["n_cand"]]))
-assert len(haps) == 541, len(haps)   # the alignment set is the full 541 (was 531, 10 slots missing from the FASTA map)
+assert len(haps) == 541, len(haps)   # the alignment set is the full 541
 rng = np.random.default_rng(20261016); NB = 500
 
 

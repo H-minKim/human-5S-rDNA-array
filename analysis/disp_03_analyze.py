@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
-# 흩어진 5S 자리 : ① 덮는 유닛 부분으로 묶기 ② 자리별 이봉/단봉 ③ 상태별 유닛좌표 프로파일 vs array
+# Dispersed 5S sites: (1) grouped by which part of the unit they cover (2) bimodal or unimodal per site (3) unit-coordinate profile per state against the array
 import io, os, math, collections, statistics
 
 def _need(_v):
     """No defaults are set: the script stops if a variable is missing.
-    이 글이 읽는 자료의 뿌리는 README.md 의
-    "Running this code" 절에 적혀 있다."""
+    The roots of the data this script reads are listed in the
+    "Running this code" section of README.md."""
     import os as _o, sys as _s
     _x = _o.environ.get(_v)
     if not _x:
@@ -34,7 +34,7 @@ def sub_of_bin(b):
 BSUB = [sub_of_bin(b) for b in range(NB)]
 MIN_LOCI, MIN_SMP = 200, 10
 
-# ---------- 적재 ----------
+# ---------- load ----------
 INFO = {}
 for i, L in enumerate(io.open(os.path.join(D, "DISP_SITE_INFO_ALL.tsv"), encoding="utf8")):
     if i == 0:
@@ -183,7 +183,7 @@ def bimodal(x):
     return dict(w=w, m0=m0, m1=m1, D=D_, BC=B, call=call)
 
 
-# ---------- ① 덮는 부분으로 묶기 ----------
+# ---------- (1) grouped by the part they cover ----------
 O = io.open(os.path.join(D, "DISP_SITES_TABLE.tsv"), "w", encoding="utf8", newline="\n")
 O.write("site\tchr\tstart\tmain_group\tn_loci\tn_samples\tcover_pattern\t" +
         "\t".join("cov_" + e[0] for e in EL) + "\tmean_beta\tfrac_low\tfrac_high\t"
@@ -232,7 +232,7 @@ for p_, ss in sorted(PG.items(), key=lambda kv: -sum(INFO[s]["n"] for s in kv[1]
     print("  %-34s 자리 %3d · 좌위 %7d · 구조 %s" % (p_, len(ss), sum(INFO[s]["n"] for s in ss),
                                                ", ".join("%s %d" % x for x in mg.most_common(4))))
 
-# ---------- ② 이봉 / 단봉 ----------
+# ---------- (2) bimodal / unimodal ----------
 print("\n[② 자리별 이봉/단봉] (좌위 β, NTS1+NTS2+코딩 CpG>=10 · GMM Ashman D>2 & BC>0.555 & 작은성분>=5%)")
 rows = []
 for s in KEEP:
@@ -250,7 +250,7 @@ for p_, s, r, m, n in sorted([x for x in rows if x[2]["call"] == "이봉"], key=
           % (s, sm.get("chr"), sm.get("start", 0) / 1e6, sm.get("main"), n, m, r["m0"], r["m1"], r["w"],
              r["D"], r["BC"], BIMO.get(s, {}).get("call", "-")))
 
-# ---------- ③ 상태별 프로파일 vs array ----------
+# ---------- (3) profile per state against the array ----------
 A_ALL = {st: prof(arr_get("ALL"), st, halves=(0,)) for st in ("low", "high")}
 A_POS = {(p, st): prof(arr_get(p), st, halves=(0,)) for p in ("distal1_10", "interior", "proximal1_10")
          for st in ("low", "high")}
@@ -300,7 +300,7 @@ for s in KEEP:
             dump("site", s, st, pr)
 OUTP.close()
 
-# ---------- ④ 사용자 질문 : AluY 안 기울기 · NTS1 수준 ----------
+# ---------- (4) the slope inside AluY and the NTS1 level ----------
 print("\n[④] AluY 안 50bp 칸 (1-300) 과 NTS1 수준")
 def aluy(p):
     return [p[b] for b in range(6)]

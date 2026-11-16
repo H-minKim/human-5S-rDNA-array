@@ -1,5 +1,5 @@
 #!/bin/bash
-# 제브라피시 WGBS — 참조 준비 + read 내려받기
+# Zebrafish WGBS: prepare the reference and download the reads.
 set -e
 cd ~/zfwgbs
 export PATH=$HOME/zfwgbs/Bismark-0.24.2:$PATH

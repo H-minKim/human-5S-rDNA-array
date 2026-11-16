@@ -1,24 +1,24 @@
 # -*- coding: utf-8 -*-
-# P10 배치 BAM → read × 유닛 × CHM13 유닛 프레임 40 bp 칸 (n, meth)
+# P10 batch BAM -> read x unit x 40 bp bins in the CHM13 unit frame, as (n, meth).
 #
-# 원 파이프라인과 다른 점 (유닛을 정확히 잡기 위해)
-#  1. 앵커를 유닛 앞 90 bp 가 아니라 CHM13 유닛 전체의 유닛내 유일 31-mer 로 쓴다.
-#     적중 하나하나가 '그 유닛의 CHM13 0 번 염기' 위치를 정확히 알려준다
-#       정방향 적중(조각 j, 유닛 i) → pos0 = j - i
-#       역방향 적중                → pos0 = j + i + 30   (역상보 k-mer 의 끝이 유닛 i 번)
-#  2. 조각의 유닛 가닥(+/−)을 적중 다수결로 정하고, −면 CHM13 좌표를 거꾸로 잰다.
-#     (원 파이프라인은 − 조각에서 유닛내 위치가 뒤집히고 창이 ~60 bp 밀린다)
-#  3. 조각 계열은 등록부(md5)로, 원위/근위 극성은 CLEAN 의 orientation 으로.
-#  4. 같은 (표본, 조각md5, read) 는 한 번만 (여러 좌위 폴더가 같은 조각을 잡는다).
+# How the units are located exactly:
+#  1. The anchor is every 31-mer that is unique within the CHM13 unit, rather than the first 90 bp of the unit.
+#     Each hit locates base 0 of that unit in CHM13 exactly:
+#       a forward hit at block position j, unit position i, gives pos0 = j - i
+#       a reverse hit gives pos0 = j + i + 30, the end of the reverse-complement k-mer being unit position i
+#  2. The block's unit strand is decided by a majority of the hits, and on the minus strand the CHM13 coordinate is measured in reverse.
+#     (Otherwise a minus-strand block has its within-unit position reversed and its windows shifted by about 60 bp.)
+#  3. The block's family comes from the registry, by md5, and the distal/proximal polarity from the orientation field of CLEAN.
+#  4. Each (sample, block md5, read) is counted once, because several locus folders can hold the same block.
 #
-# 인자 : 표본 목록(쉼표) 또는 ALL
+# Arguments: a comma-separated list of samples, or ALL.
 import sys, io, os, glob, gzip, hashlib, bisect, collections, statistics
 import pysam
 
 def _need(_v):
     """No defaults are set: the script stops if a variable is missing.
-    이 글이 읽는 자료의 뿌리는 README.md 의
-    "Running this code" 절에 적혀 있다."""
+    The roots of the data this script reads are listed in the
+    "Running this code" section of README.md."""
     import os as _o, sys as _s
     _x = _o.environ.get(_v)
     if not _x:
@@ -37,9 +37,9 @@ OUTD = os.path.join(_need("RDNA_WORK_ROOT"), "out", "P10")
 K, BIN = 31, 40
 FAM_UNIT = {"5S": "5S", "D4Z4_4q": "D4Z4_4q", "D4Z4_10q": "D4Z4_10q", "DXZ4": "DXZ4",
             "RNU2": "RNU2", "SST1": "SST1_a"}
-# 기준 유닛 길이 = CHM13 유닛 서열의 실측 주기 (31-mer 자기일치 최다 오프셋).
-#   문헌값(RNU2 6100·D4Z4 3300·DXZ4 3000·SST1 2523)을 쓰면 긴 유닛은 끝이 잘린다
-#   (RNU2 71 bp = 다음 U2 상류 프로모터 자리가 빠졌었다).
+# The reference unit length is the measured period of the CHM13 unit sequence (the most frequent offset of 31-mer self-matches).
+#   Using the published lengths (RNU2 6100, D4Z4 3300, DXZ4 3000, SST1 2523) truncates the end of the longer units
+#   (for RNU2 this cut 71 bp, which removed the upstream promoter region of the next U2 copy).
 ULEN = {"5S": 2240, "D4Z4_4q": 3298, "D4Z4_10q": 3323, "DXZ4": 2972, "RNU2": 6171, "SST1": 2527}
 want = sys.argv[1] if len(sys.argv) > 1 else "ALL"
 tag = sys.argv[2] if len(sys.argv) > 2 else "ALL"
@@ -62,7 +62,7 @@ KM = {}                                        # fam -> {kmer: (strand, i)}
 for fam, un in FAM_UNIT.items():
     L = ULEN[fam]
     u = UN[un][:L]
-    circ = u + u[:K - 1]                       # 유닛은 원형
+    circ = u + u[:K - 1]                       # the unit is circular
     cnt = collections.Counter(circ[i:i + K] for i in range(L))
     d = {}
     for i in range(L):
@@ -92,8 +92,8 @@ for i, L in enumerate(io.open(P + "/out/P10_PLACED_CLEAN.tsv", encoding="utf8"))
 
 
 def landmarks(seq, fam):
-    """랜드마크마다 가닥을 따로 (한 조각 안에 반대 방향 하위 array 가 있을 수 있다 — SST1).
-    반환 : 유닛 구간 목록 [(a, b, strand)] (조각 좌표, a<=rp<b), fwd/rev 적중 수"""
+    """Strand is decided per landmark (one piece can hold a sub-array in the opposite orientation, as in SST1).
+    Returns : list of unit intervals [(a, b, strand)] (piece coordinates, a<=rp<b), and the fwd/rev hit counts"""
     d, L = KM[fam], ULEN[fam]
     est = {"+": [], "-": []}
     nf = nr = 0
@@ -128,7 +128,7 @@ def landmarks(seq, fam):
             else:
                 units.append((lm[k] + 1, lm[k + 1] + 1, "-"))   # c = (b-1) - rp
     units.sort()
-    # 겹치는 유닛(반대 방향 경계) 은 버린다
+    # overlapping units (boundaries in opposite orientation) are discarded
     clean = []
     for u in units:
         if clean and u[0] < clean[-1][1]:
@@ -203,15 +203,15 @@ for fd in folders:
         if len(units) < 2:
             continue
         sp = sorted(b - a for a, b, _s in units)
-        # 조각 방향 = 적중의 95% 이상이 한 방향이면 그 방향 (D4Z4_4q 는 반대 적중 0.5% 로 mix 가 됐었다)
+        # A block's orientation is set when at least 95% of the hits agree; D4Z4_4q has 0.5% of hits in the other orientation and was otherwise classified as mixed.
         tot = float(nf + nr)
         if tot and max(nf, nr) / tot >= 0.95:
             st = "+" if nf >= nr else "-"
         else:
             st = "mix"
         pol = POL.get((smp, md), "?")
-        # 극성 : flank 판정 우선. flank 가 '?' 이고 조각이 한 방향이면 유닛 가닥으로 채운다
-        #        (파일럿 : 한 방향 조각 24/24 에서 유닛 가닥 == flank 극성)
+        # Polarity: the flank call wins. If the flank is '?' and the block is in one orientation, fill it in from the unit strand.
+        #        (In the pilot, the unit strand equalled the flank polarity in 24 of 24 single-orientation blocks.)
         if pol in ("+", "-"):
             pol_used = pol if (st == "mix" or st == pol) else "CONFLICT"
         else:
@@ -263,7 +263,7 @@ for fd in folders:
             k = sum(x[1] for x in per[u].values())
             if n < 5:
                 continue
-            # 유닛 순번 u 는 조각 좌표 좌→우
+            # the unit index u runs left to right in block coordinates
             if pol_used == "+":
                 ufd = nun - u
             elif pol_used == "-":

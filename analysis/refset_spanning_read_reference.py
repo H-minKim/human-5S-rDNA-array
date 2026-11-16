@@ -1,22 +1,22 @@
 # -*- coding: utf-8 -*-
-# 관통 read 에서 tier1 참조 서열
-#   단계 : 참조 확정
+# the tier 1 reference sequence, from an array-spanning read
+#   Step: fix the references.
 #   Method document : analysis/METHOD_CONSENSUS_MAP_G8_REBUILD.md
 
 # -*- coding: utf-8 -*-
-# tier1 참조 만들기 — 관통 read 의 array 구간을 하플로타입별 참조로 쓴다
+# Build the tier 1 references: the array interval of an array-spanning read becomes that haplotype's reference.
 #
-#  하플로타입 묶기: (근위hap, 원위hap) 짝으로 묶는다.
-#    근위 번호와 원위 번호는 서로 독립이라 한쪽만 쓰면 절반이 섞인다
-#    (실측: 근위=원위인 read 가 46.9% 뿐). 관통 read 는 양쪽을 다 가지므로
-#    짝이 하플로타입을 확정한다. 개체당 짝은 최대 2 종이어야 하고 실제로 97.2% 가 그렇다.
+#  Haplotypes are grouped by the pair (proximal hap, distal hap).
+#    The proximal and distal labels are independent, so using one alone mixes about half of them
+#    (measured: only 46.9% of reads have the proximal label equal to the distal one). A spanning read carries both,
+#    so the pair fixes the haplotype. There should be at most 2 pairs per individual, and 97.2% of individuals have that.
 #
-#  같은 하플로타입에 관통 read 가 여럿이면 array bp 가 가장 긴 것을 쓴다.
-#    유닛 수 최대가 아니라 bp 최대다: 실측상 4 유닛 이상 어긋난 쌍은 bp 가 거의 같았다
-#    (비 0.10~0.28) — 즉 서열은 멀쩡하고 blastn 이 유전자 HSP 를 놓친 계수 오류다.
-#    서열을 참조로 쓸 것이므로 판단 기준은 실제 덮은 길이여야 한다.
+#  Where a haplotype has several spanning reads, the one with the most array bp is used.
+#    The criterion is bp, not unit count: measured, pairs differing by 4 or more units had almost identical bp
+#    (ratios 0.10-0.28), so the sequence is sound and the discrepancy is a counting error where blastn missed a gene HSP.
+#    Since the sequence is what becomes the reference, the criterion must be the length actually covered.
 #
-#  array 경계는 CHM13 junction 바깥 50 kb 탐침 두 개로 잡는다 (다른 산출물과 동일).
+#  The array boundaries are set by two 50 kb probes outside the CHM13 junctions, as elsewhere.
 import io
 import os
 import sys
@@ -32,7 +32,7 @@ TH = os.environ.get("TH", "6")
 TAG = os.environ.get("TAG", "x")
 NL = "\n"
 
-# 하플로타입 표 (side 를 키에 포함해야 한다)
+# the haplotype table; the side must be part of the key
 H = collections.defaultdict(dict)
 for hp in ("~/v5k/hap_reads_v5.tsv", "~/giabv5/hap_reads.tsv",
            "~/hg008v5/hap_reads.tsv"):
@@ -92,7 +92,7 @@ for smp in sys.argv[1:]:
     with io.open(fa, "w", newline=NL) as g:
         for r, s in seqs.items():
             g.write(u">%s\n%s\n" % (r, s))
-    # 탐침은 -N 20 -p 0.1 로. --secondary=no 면 탐침이 read 하나에만 붙는다.
+    # the probes are aligned with -N 20 -p 0.1; with --secondary=no a probe aligns to only one read
     paf = subprocess.run(["minimap2", "-x", "map-ont", "-t", TH, "-N", "20", "-p", "0.1",
                           fa, PROBE], capture_output=True, text=True)
     FL = collections.defaultdict(dict)
@@ -129,7 +129,7 @@ for smp in sys.argv[1:]:
         cand[k].sort(reverse=True)
         bp, r, s0, e0, side = cand[k][0]
         seq = seqs[r][s0:e0]
-        # 참조는 근위->원위 방향으로 통일한다 (다른 산출물과 좌표계를 맞춘다)
+        # the references are all oriented proximal to distal, which matches the coordinate frame of the other outputs
         if side == "DIST_FIRST":
             seq = seq.translate(str.maketrans("ACGTacgtNn", "TGCAtgcaNn"))[::-1]
         nm = "%s_p%d_d%d" % (smp, k[0], k[1])

@@ -1,19 +1,13 @@
 # -*- coding: utf-8 -*-
-# The Source Data workbooks written by this script are an earlier
-# generation. They are not the workbooks submitted with the paper.
+# The Source Data workbooks written by this script are not the
+# workbooks submitted with the paper.
 # The submitted Source Data workbooks for Figure 6 and its
-# supplementary figures are the later generation recorded in the
+# supplementary figures are those recorded in the
 # panel source data ledger
 # (59_panel_source_data_ledger_2026-11-07).
-# This file is kept, and not deleted, so that the earlier generation
-# stays reproducible and so that the two generations can be told
-# apart by reading the code rather than by guessing from file names.
-# v20e (make_source_data_v20e_2026-10-18.py) = v20d plus the n sheet of main version 21, which holds the real counts of the four real markers. Output goes to rawdata_xlsx_edition21_2026-10-18\
-# v20d (make_source_data_v20d_2026-10-17.py) = v20c with only the figure version and md5 in the title changed to v12. Output goes to rawdata_xlsx_edition20_v12_2026-10-17\
-# v20c (make_source_data_v20c_2026-10-17.py) = v20b plus the new panel letters of supplementary figure 2 (a and b, c to e, f for marker unit methylation, g, h and i) and the f sheet. Output goes to rawdata_xlsx_edition20_v11_2026-10-17\ and no value changes.
-# v20b (make_source_data_v20b_2026-10-17.py) = v20 plus the new panel letters of supplementary figure 2 (a and b, c to e, f, g and h). Output goes to rawdata_xlsx_edition20_v10_2026-10-17\ and no value changes.
-# . Source Data xlsx version 20: main version 20, supplementary figure 1 (v6) and supplementary figure 2 (v6).
-#   Output = 03_figures\00_Fig6_2026-10-09\rawdata_xlsx_edition20_2026-10-17\ and the older 원자료xlsx_2026-10-16, the version 14 bundle source_data, is left untouched.
+# . Source Data xlsx version 20e: main version 20 with the n sheet of main version 21 (the real counts of the four real markers), supplementary figure 1 (v6) and supplementary figure 2 (v6).
+#   Supplementary figure 2 has the panel letters a and b, c to e, f for marker unit methylation, g, h and i, and an f sheet.
+#   Output = 03_figures/00_Fig6_2026-10-09/rawdata_xlsx_edition21_2026-10-18/ ; the source-data bundle from version 14 is read and not written to.
 #   ① Sheets that did not change are carried over value for value from the version 14 bundle source_data, with only the GM12878 hap1 and hap2 letters renamed to hapA and hapB, which is the standard used in this manuscript.
 #   ② Newly built sheets: BDP1 added to main p_ChIP_zone, the end 20 unit values of supplementary 1a, the anchored reads of GM12878 hapB in 1a, BDP1 in supplementary 2d, the interaction table including BDP1, and criteria 1 and 2 of 2h.
 #   ③ Check: the numbers printed in the figures (14.7, 47.8, 8.1, the criterion 1 and 2 values and so on) are recomputed from the sheet values and asserted.
@@ -27,7 +21,7 @@ def _env(name, what):
         sys.exit("set %s to %s" % (name, what))
     return v
 
-R0 = _env("P11_WORK_DIR", "the working folder of this run"); C = os.path.join(R0, "01_code"); T = os.path.join(R0, "02_tables"); F6 = os.path.join(R0, r"03_figures\00_Fig6_2026-10-09")
+R0 = _env("P11_WORK_DIR", "the working folder of this run"); C = os.path.join(R0, "01_code"); T = os.path.join(R0, "02_tables"); F6 = os.path.join(R0, r"03_figures/00_Fig6_2026-10-09")
 OLD = os.path.join(F6, "for_paper_tidy_2026-10-17", "source_data"); OUT = os.path.join(F6, "rawdata_xlsx_edition21_2026-10-18"); os.makedirs(OUT, exist_ok=True)
 NB = os.path.join(T, "node_original_GM_HOR_anchor_2026-10-17")
 REL = {"GM12878 hap1": "GM12878 hapA", "GM12878 hap2": "GM12878 hapB"}
@@ -122,7 +116,7 @@ want = {"POLR3A": 16.43, "TBP": 219.94, "BDP1": 3.47, "SNAPC5": 6.67, "BRF1": 1.
 for r in H2[1:]: assert round(r[1], 2) == want[r[0]], r
 assert round(g2["EIN"], 2) == 1.09
 
-# ---- v20c: supplementary 2 panel f, the methylation of units that carry a marker, from K562 reads with no assembly
+# ---- supplementary 2 panel f, the methylation of units that carry a marker, from K562 reads with no assembly
 _MK = {r["variant"]: r for r in csv.DictReader(io.open(os.path.join(T, "P11_K562_MARKERS_NEWZONE_2026-10-13.tsv"), encoding="utf-8"), delimiter="\t")}
 _ZN = {"근위(합)": "proximal", "가운데": "interior", "원위(합)": "distal"}
 FU = [["read", "q_start", "q_end", "strand", "n_call", "n_meth", "beta", "markers", "marker_zones"]]

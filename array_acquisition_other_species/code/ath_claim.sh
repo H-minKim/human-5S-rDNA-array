@@ -1,8 +1,8 @@
 #!/bin/bash
 # Arabidopsis: claim one batch of filtered, unclaimed pod5 chunks, one batch at a time under flock
-#   members.tsv 한 줄 = 멤버 필터 완료 (5 열 = 남긴 read 수 · 0 이면 제외)
-#   인자 : 묶음 read 목표 수 · 강제(1 = 목표 미달이어도 남은 것 모두 · 흘려받기가 끝난 뒤)
-#   출력 : 묶음 이름 (b001 ...) 또는 NONE   · 산출 : batch/<batch>.txt (절대경로 목록) · batch/claimed.txt
+#   One row of members.tsv means that member has been filtered; column 5 is the number of reads kept, and 0 means it is excluded.
+#   Arguments: the target number of reads per batch, and force (1 = take everything left even below the target, once the streaming has finished).
+#   Prints the batch name (b001 ...) or NONE. Outputs: batch/<batch>.txt (a list of absolute paths) and batch/claimed.txt.
 set -u
 H=~/xsp/ath
 N="${1:-300}"
@@ -11,7 +11,7 @@ mkdir -p $H/batch
 touch $H/batch/claimed.txt
 exec 9> $H/batch/.lock
 flock 9
-# NR==FNR 는 첫 파일(claimed.txt)이 비면 둘째 파일을 첫 파일로 착각한다 -> 파일 이름으로 가른다
+# NR==FNR mistakes the second file for the first when the first (claimed.txt) is empty, so the files are distinguished by name instead.
 avail=$(awk -F'\t' 'FILENAME==ARGV[1]{c[$1]; next} NF>=5 && $5>0 && !($1 in c){print $1"\t"$5}' $H/batch/claimed.txt $H/members.tsv)
 tot=$(printf '%s\n' "$avail" | awk -F'\t' 'NF==2{s+=$2} END{print s+0}')
 if [ "$tot" -eq 0 ] || { [ "$tot" -lt "$N" ] && [ "$FORCE" != 1 ]; }; then

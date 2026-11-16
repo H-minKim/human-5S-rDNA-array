@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-# 양가닥 변환 검사(단일말단용) — C→T 가닥(C 적음) · G→A 가닥(G 적음) 을 read 마다 판정.
-#   PBAT 는 read 가 두 가닥에서 섞여 나오므로 두 서명의 합으로 본다.
+# A both-strand conversion check for single-end data: each read is called as a C-to-T strand, low in C, or a G-to-A strand, low in G.
+#   PBAT produces reads from both strands mixed together, so the two signatures are taken together.
 import gzip
 import sys
 

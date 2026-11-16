@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-# 그림 3 : 종마다 스페이서 종류 전부 + 각 종류의 유닛 내부 구조 + 문헌 대조 결과
-#   입력 : lit/SPACER_TYPES.tsv · lit/UNIT_VERDICT.tsv
-#   자 : 0~2,400 bp 선형. 그보다 긴 유닛은 끝을 톱니로 끊고 실제 길이를 적는다
+# Figure 3: every spacer type in each species, the internal structure of each type, and the result of the comparison with the literature.
+#   Inputs: lit/SPACER_TYPES.tsv and lit/UNIT_VERDICT.tsv
+#   Ruler: linear from 0 to 2,400 bp. A unit longer than that is broken off with a jagged edge and its real length written in.
 # MIT License · Copyright (c) 2026 Hungmin Kim
 import io
 import os
@@ -31,7 +31,7 @@ def rdtsv(p):
 _, ST = rdtsv(os.path.join(L, "SPACER_TYPES.tsv"))
 _, VD = rdtsv(os.path.join(L, "UNIT_VERDICT.tsv"))
 V = dict((r["array_id"], r) for r in VD)
-# 종 > 종류 묶기
+# grouping by species, then by type
 TY = collections.defaultdict(lambda: collections.defaultdict(list))
 for r in ST:
     TY[r["species"]][int(r["spacer_type"])].append(r)
@@ -42,9 +42,9 @@ X0 = 270.0
 ROWH = 26
 GAPH = 14
 HEADH = 24
-GENE = "#B85C1E"      # 유전자 119 bp
-SPC = "#2C6E9B"       # 스페이서
-SPC2 = "#7FA8C4"      # 스페이서 (문헌 검증 안 된 종류)
+GENE = "#B85C1E"      # the 119 bp gene
+SPC = "#2C6E9B"       # the spacer
+SPC2 = "#7FA8C4"      # a spacer type not verified against the literature
 INK = "#1F2328"
 MUT = "#6B7280"
 GRID = "#E3E6EA"
@@ -64,7 +64,7 @@ o.append('<rect width="%d" height="%d" fill="#FFFFFF"/>' % (W, H))
 o.append('<text x="24" y="34" font-size="17" font-weight="700" fill="%s">5S rDNA — 종마다 스페이서 종류 전부와 유닛 내부 구조</text>' % INK)
 o.append('<text x="24" y="54" font-size="11.5" fill="%s">종류 = 유전자 119 bp 를 떼고 스페이서만 비교(blastn 일치 80%% 이상 · 긴 쪽의 50%% 이상 정렬 · 단일연결). 막대는 유닛 하나 = [스페이서][유전자].</text>' % MUT)
 o.append('<text x="24" y="70" font-size="11.5" fill="%s">진한 파랑 = 공개 반복단위와 전장 일치한 종류 · 연한 파랑 = 대조할 같은 종 공개 단위가 없거나 부분만 상동. 2,400 bp 를 넘는 유닛은 끝을 톱니로 끊었다.</text>' % MUT)
-# 자
+# the ruler
 ty = 100
 for bp in (0, 500, 1000, 1500, 2000, 2400):
     x = X0 + BW * bp / MAXBP

@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 # Version-archiving helper
-#   규칙 : 무엇을 고치든 ① 이전 파일은 절대 지우지 않고 archive\<date>_v<edition>\ 로 옮겨 적고(복사)
-#          ② 새 파일은 latest\ 에만 둔다 ③ 대장에 md5·날짜·사유를 남긴다.
+#   The rule: whatever is changed, 1) the previous file is never deleted but copied into archive/<date>_v<edition>/,
+#          2) the new file goes only into latest/, and 3) the ledger records the md5, the date and the reason.
 #
-#   쓰는 법
-#     python arch.py put <새파일> <최신안_상대경로> --사유 "..."     새 파일을 최신에 넣는다(있으면 옛 판을 보관으로)
-#     python arch.py archive <최신안_상대경로> --사유 "..."          최신에 있는 파일을 보관으로만 넘긴다(대체 없음)
-#     python arch.py index                                        대장(최신·보관) 다시 만든다
-#   폴더 : latest\{코드,표,그림,로그,문서}  ·  archive\<YYYY-MM-DD>_v<N>_<reason>\  ·  90_ledger\
+#   Usage:
+#     python arch.py put <new file> <path relative to latest> --reason "..."   puts the new file into latest, moving any existing version into the archive
+#     python arch.py archive <path relative to latest> --reason "..."          moves a file from latest into the archive with no replacement
+#     python arch.py index                                        rebuilds the ledger of latest and the archive
+#   The folders: latest/{code,tables,figures,logs,docs}, archive/<YYYY-MM-DD>_v<N>_<reason>/, and 90_ledger/
 import io, os, sys, time, shutil, hashlib, glob, argparse
 import pandas as pd
 
@@ -19,7 +19,7 @@ def _need(k):
     v = _os_need.environ.get(k)
     if not v:
         _sys_need.exit("environment variable %s is not set (the deposited copy has no default; "
-                       "see README.md, section 'How to run it')" % k)
+                       "see README.md, section 'Environment variables')" % k)
     return v
 
 
@@ -55,7 +55,7 @@ def log_line(row):
 
 
 def next_ver(rel):
-    """이 파일이 몇 번째로 보관되는가"""
+    """the ordinal of this file among those archived"""
     n = 0
     for d in glob.glob(ARC + "/*/"):
         if os.path.exists(os.path.join(d, rel)):
@@ -71,7 +71,7 @@ def archive(rel, reason):
     box = "%s/%s_v%d_%s" % (ARC, time.strftime("%Y-%m-%d"), v, (reason or "수정")[:24].replace("/", "_").replace(" ", "_"))
     dst = box + "/" + rel
     os.makedirs(os.path.dirname(dst), exist_ok=True)
-    shutil.copy2(cur, dst)          # 복사 : 최신 쪽은 곧 새 파일로 덮이지만 보관본이 남는다
+    shutil.copy2(cur, dst)          # a copy: the one in latest will be overwritten by the new file, but the archived copy remains
     log_line([time.strftime("%Y-%m-%d %H:%M"), "보관", cur, dst, "", md5(dst), reason])
     print("보관 : %s → %s (md5 %s · 수정일 %s)" % (rel, dst, md5(dst)[:12], mt(dst)))
     return dst

@@ -1,6 +1,6 @@
 #!/bin/bash
 # Other species 5S arrays and methylation: prepares the work node
-#   어셈블리 · Rfam 5S 모델 · modkit 을 ~/xsp 아래에 받는다. 기존 폴더는 건드리지 않는다.
+#   The assembly, the Rfam 5S model and modkit are downloaded under xsp. Existing folders are not touched.
 set -u
 X=$HOME/xsp
 mkdir -p $X/asm $X/tools $X/rfam $X/log
@@ -17,7 +17,7 @@ fi
 # Rfam 5S (RF00001)
 curl -sL -o $X/rfam/RF00001.cm https://rfam.org/family/RF00001/cm
 log "RF00001.cm $(grep -c '^INFERNAL' $X/rfam/RF00001.cm) 모델 · $(wc -c < $X/rfam/RF00001.cm) bytes"
-# NCBI 어셈블리 (datasets API)
+# the NCBI assembly, through the datasets API
 getncbi() {
   a=$1; nm=$2
   [ -s $X/asm/$nm.fna ] && { log "$nm 이미 있음"; return; }
@@ -35,7 +35,7 @@ getncbi GCA_051427915.1 zfinch_bTaeGut7_mat
 getncbi GCA_051428105.1 zfinch_bTaeGut7_pat
 getncbi GCA_022117705.1 maize_Mo17_T2T
 getncbi GCA_028009825.2 arabidopsis_ColCC
-# 제브라피시 GRCz11 (ENA BAM 좌표계 = Ensembl 이름 1,2,... 993 서열) — Ensembl toplevel
+# zebrafish GRCz11; the ENA BAM coordinate system uses the Ensembl names 1, 2, ... over 993 sequences, so the Ensembl toplevel is used
 if [ ! -s $X/asm/zebrafish_GRCz11_ens.fa ]; then
   curl -sL --retry 3 -o $X/asm/zebrafish_GRCz11_ens.fa.gz https://ftp.ensembl.org/pub/release-113/fasta/danio_rerio/dna/Danio_rerio.GRCz11.dna.toplevel.fa.gz
   gzip -dc $X/asm/zebrafish_GRCz11_ens.fa.gz > $X/asm/zebrafish_GRCz11_ens.fa && samtools faidx $X/asm/zebrafish_GRCz11_ens.fa

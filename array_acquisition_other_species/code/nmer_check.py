@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
-# 유닛 하나에 5S 유전자가 몇 개 들어가나 (n-mer 판정) — cmsearch 유전자 끝 간격의 차례를 본다
-#   단량체 : 간격이 한 부류 (붉은털원숭이 기각 array 처럼 한 값에 몰림)
-#   n 량체 : 간격이 두세 부류로 규칙적으로 번갈아 난다
-#            (제브라피시 chr4 56.53 Mb = 164/313 교대 -> 유닛 477 에 유전자 2 개
-#             붉은털원숭이 chr1 20.4 Mb = 2,9xx/4,4xx 교대 -> 유닛 7,440 에 유전자 2 개)
-#   불규칙 : 어느 k 로도 차례가 맞지 않음 (유닛 경계 없음)
-#   판정은 직접 측정 주기(옵셋 사다리)와 대조해 확정한다
-#   산출 : NMER.tsv
+# How many 5S genes fit in one unit, the n-mer call, read from the sequence of gaps between cmsearch gene ends.
+#   A monomer gives gaps of one kind, concentrated on a single value, as in the rejected rhesus arrays.
+#   An n-mer gives gaps of two or three kinds alternating regularly
+#            (zebrafish chr4 at 56.53 Mb alternates 164 and 313, so the 477 bp unit holds 2 genes;
+#             rhesus chr1 at 20.4 Mb alternates about 2,900 and 4,400, so the 7,440 bp unit holds 2 genes).
+#   Irregular means no k makes the sequence fit, and there is no unit boundary.
+#   The call is settled against the directly measured period from the offset ladder.
+#   Output: NMER.tsv
 # MIT License · Copyright (c) 2026 Hungmin Kim
 import io
 import os
@@ -18,8 +18,8 @@ NL = chr(10)
 TAB = chr(9)
 BASE = "$RDNA_OTHERSP_DIR/data_v2"
 LOC = os.path.join(os.path.dirname(os.path.abspath(__file__)), "lit")
-TOL = 0.08     # 같은 부류로 볼 상대 차이
-MINFRAC = 0.80  # 차례가 맞아야 하는 비율
+TOL = 0.08     # the relative difference within which two gaps count as the same kind
+MINFRAC = 0.80  # the fraction of the sequence that must fit
 
 
 def classes(gaps):

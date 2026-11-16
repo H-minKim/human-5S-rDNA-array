@@ -1,11 +1,11 @@
 #!/bin/bash
-# 금화조 ONT fastq 에서 5S 유전자 k-mer 가 든 read 만 고르기 (정렬 전 선별)
-#   스트리밍 (S3 -> pigz -> 한 줄 묶기 -> grep -F) · 디스크에는 후보 read 만
-#   k-mer = v0.3 mat chr2 5S 유전자 (cmsearch hit CM109790.1:97272500-97272617, - 가닥 = 유전자 5'->3') 의 22-mer 4 개 + 역상보
-#     array read 는 5S 사본이 수백 개라 22-mer 정확일치가 사실상 반드시 걸린다 (R10 ~Q20). 흩어진 5S 는 뒤 정렬에서 걸러진다
-#   네 줄 묶기 구분자 = 제어문자 0x01 (헤더에 탭이 있어도 레코드가 깨지지 않게)
-#   인자 : S3 키 목록 파일 · 동시 스트림 수
-#   산출 : ~/xsp/zfont/cand/<flowcell>.cand.fq.gz · <flowcell>.done (후보 수 · 파이프 각 단계 종료코드)
+# Select only the reads containing a 5S gene k-mer from the zebra finch ONT fastq, before any alignment.
+#   Streamed (S3 -> pigz -> join to one line -> grep -F), so only the candidate reads reach disk.
+#   The k-mers are four 22-mers of the v0.3 maternal chr2 5S gene (cmsearch hit CM109790.1:97272500-97272617, minus strand = gene 5'->3') plus their reverse complements.
+#     An array read carries hundreds of 5S copies, so an exact 22-mer match is effectively certain at R10 quality (~Q20). Dispersed 5S copies are removed by the later alignment.
+#   The four fastq lines are joined with the control character 0x01, so that a tab in the header cannot break the record.
+#   Arguments: a file listing the S3 keys, and the number of concurrent streams.
+#   Outputs: cand/<flowcell>.cand.fq.gz and <flowcell>.done (candidate count, exit code of each stage of the pipe).
 # MIT License · Copyright (c) 2026 Hungmin Kim
 set -u
 L="${1:?키목록}"

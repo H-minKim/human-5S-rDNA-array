@@ -1,11 +1,10 @@
 #!/bin/bash
-# Transcribed from the run record: the code ran as a shell heredoc or a one-line command, so no script file existed on disk.
 # Writes the cohort tier list TIERS_H0H3_SLOTS_2026-10-05.tsv (2,161 rows: H0 604, H1 557, H2 510, H3 490).
-# Machine paths are given by RDNA_DATA_ROOT / RDNA_WORK_DIR (no default); the computing lines are unchanged.
-# step 1 (record line 19136): copy the five slot lists and the dataset ledger
+# Machine paths are given by RDNA_DATA_ROOT / RDNA_WORK_DIR (no default).
+# step 1: copy the five slot lists and the dataset ledger
 D="$RDNA_WORK_DIR/coh"; mkdir -p "$D" && cp "$RDNA_DATA_ROOT/for_paper/00_handover/handover_v11_data_ledger_2026-10-04/COHORT_SLOTS_ledger_20261005.tsv" "$D/ledger.tsv" && cp "$RDNA_DATA_ROOT/for_paper/00_paper_figures_distal_layout/tables/COHORT_SLOTS_variant_position_20261005.tsv" "$D/varpos.tsv" && cp "$RDNA_DATA_ROOT/v11_readvar/00_handover_control/COHORT_SLOTS_5S_methylation_20261005.tsv" "$D/meth5s.tsv" && cp "$RDNA_DATA_ROOT/5S_methylation_model/cmd_20261005/out/COHORT_SLOTS_haplotype_effect_20261005.tsv" "$D/haploinf.tsv" && cp "$RDNA_DATA_ROOT/5S_array_methylation_handover/02_output_tables/cohort_list_2026-10-05/COHORT_SLOTS_methylation_blocks_20261005.tsv" "$D/methblock.tsv" && cp "$RDNA_DATA_ROOT/for_paper/00_handover/handover_v11_data_ledger_2026-10-04/V11F4_DATASET_hap_flags.tsv" "$D/flags.tsv" && ls -la "$D" && md5sum "$D"/*.tsv
 
-# step 2 (record line 19141): load every cohort as a set of sample|slot -> coh.pkl
+# step 2: load every cohort as a set of sample|slot -> coh.pkl
 cd "$RDNA_WORK_DIR/coh" && PYTHONIOENCODING=utf-8 python - <<'PYEOF'
 import pandas as pd, pickle
 F={"대장":"ledger.tsv","변이위치":"varpos.tsv","5S메틸":"meth5s.tsv","하플로영향":"haploinf.tsv","메틸블록":"methblock.tsv"}
@@ -25,7 +24,7 @@ for (s,c),v in sorted(C.items(), key=lambda x:(x[0][0],-len(x[1]))):
     print(f"  {s:8s} {c:36s} {len(v):4d} / {ns:4d}")
 PYEOF
 
-# step 3 (record line 19728): H0 = HPRC, H1 = variant-position list cohort primary_564 & HPRC & not 1kGP/GIAB ONT, H2 = ledger cohort E_QC-eligible_510 (SLOT_QC eligible), H3 = H1 & H2
+# step 3: H0 = HPRC, H1 = variant-position list cohort primary_564 & HPRC & not 1kGP/GIAB ONT, H2 = ledger cohort E_QC-eligible_510 (SLOT_QC eligible), H3 = H1 & H2
 cd "$RDNA_WORK_DIR/coh" && PYTHONIOENCODING=utf-8 python - <<'PYEOF'
 import pickle, pandas as pd
 C=pickle.load(open("coh.pkl","rb"))

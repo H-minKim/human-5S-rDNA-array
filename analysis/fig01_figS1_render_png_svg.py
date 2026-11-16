@@ -1,17 +1,17 @@
 # -*- coding: utf-8 -*-
-# 발행용 png·svg 를 pdf 에서 낸다 — 2026-10-21 에 새로 적은 글이다.
+# Render the publication png and svg from the pdf.
 #
-#   왜 새로 적나 : 제출본의 `Fig1_pipeline_EN.png/.svg` 와 합친 `SFig1_*.png/.svg` 는
-#     그때그때 손으로 그렸고 어느 스크립트도 만들지 않았다. 그 구멍을 메운다.
-#     (`SFig1_p1_*`·`SFig1_p2_*` 의 png·svg 는 그리는 스크립트가 matplotlib 으로 직접 낸다 —
-#      여기서 다시 내지 않는다.)
+#   The submitted Fig1_pipeline_EN.png/.svg and the merged SFig1_*.png/.svg
+#     were produced by hand and by no script; this fills that gap.
+#     (The png and svg for SFig1_p1_* and SFig1_p2_* are written directly by matplotlib in the drawing script
+#      and are not re-rendered here.)
 #
-#   어떻게 맞췄나 — 짐작이 아니라 발행본과 맞대어 정했다
-#     · svg : `text_as_path=False` ⇒ 발행본과 바이트까지 같다 (셋 다 확인)
-#     · png : 400 dpi ⇒ 발행본과 화소가 같다.
-#       다만 바이트는 다르다 — 발행본은 다른 판의 pymupdf 가 썼다
-#       (발행본 png 에 `Software` 덩어리가 없고 `pHYs` 가 96 dpi 로 적혀 있다).
-#       ⇒ png 은 화소로 맞댄다. 바이트 md5 로 재현을 판정하면 틀린다.
+#   The settings were fixed by comparison against the published files, not by assumption:
+#     · svg: with text_as_path=False the output is byte-identical to the published file, confirmed for all three.
+#     · png: at 400 dpi the pixels match the published file.
+#       The bytes differ, because the published file was written by a different release of pymupdf
+#       (it carries no Software chunk and records pHYs as 96 dpi).
+#       So png files are compared by pixels; judging reproduction by a byte md5 would be wrong.
 import os, sys, hashlib
 import fitz
 sys.stdout.reconfigure(encoding="utf-8")
@@ -37,7 +37,7 @@ def main():
         pm = pg.get_pixmap(dpi=DPI)
         pp = os.path.join(OUT_DIR, n + ".png")
         ps = os.path.join(OUT_DIR, n + ".svg")
-        # 덮어쓰기 전에 전에 있던 것의 화소를 적어 둔다 — 바뀜을 조용히 넘기지 않으려고.
+        # Before overwriting, the pixel dimensions of the existing file are recorded, so that a change cannot pass silently.
         before = None
         if os.path.exists(pp):
             old = fitz.Pixmap(pp)
@@ -46,7 +46,7 @@ def main():
         svg = pg.get_svg_image(text_as_path=False)
         with open(ps, "w", encoding="utf-8", newline="\n") as g:
             g.write(svg)
-        # 쪽 크기는 닫기 전에 꺼내 둔다 — 닫은 뒤 `pg` 를 만지면 `page is None` 으로 멈춘다.
+        # The page size is read before closing; touching the page object afterwards fails with "page is None".
         _w, _h = pg.rect.width, pg.rect.height
         d.close()
         now = ((pm.width, pm.height), hashlib.md5(pm.samples).hexdigest()[:12])

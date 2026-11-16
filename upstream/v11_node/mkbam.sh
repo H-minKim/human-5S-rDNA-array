@@ -1,9 +1,9 @@
 #!/bin/bash
-# 노드에서 : 재현판이 낸 배치 read SAM -> 정렬·색인 BAM (배치 read 만)
-#   ARRAY_ONLY 는 원 fastq 의 QUAL 을 채운다 (qualfill.py · 서열 글자 대조 통과 시만)
-#   junction 은 FASTQ 로 정렬했으므로 QUAL 이 이미 있다
-#   MM/ML 은 원 fastq 태그 그대로. 파일 이름에 데이터 출처(srcmap)를 넣는다
-#   출력 한 줄 = 노드 · 작업 · 개체 · 출처 · 기록 수 · QUAL 있는 기록 · MM 있는 기록
+# On the node: the placed-read SAM from the reproduction release -> a sorted, indexed BAM holding the placed reads only.
+#   For ARRAY_ONLY the QUAL is filled in from the original fastq, by qualfill.py, and only where the sequence matches character for character.
+#   The junction reads were aligned from FASTQ and already carry a QUAL.
+#   The MM/ML tags come straight from the original fastq. The data source, srcmap, goes into the file name.
+#   One output line gives: node, job, individual, source, record count, records with a QUAL, records with MM.
 set -u
 mkdir -p ~/placed_bam /tmp/qf
 H=$(hostname)

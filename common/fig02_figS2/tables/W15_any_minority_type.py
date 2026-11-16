@@ -2,7 +2,7 @@
 r"""
 W15 - not the 'terminal-type marker' but whether every kind of unit distinguishable within a haplotype shows a terminal-specific arrangement (v11-fix2, primary)
 
-User question: D1096:1 is not the point. Do units that are distinguishable from the other units within one array (inherited or anything else)
+Question: D1096:1 aside, do units that are distinguishable from the other units within one array (inherited or anything else)
               appear 'spaced out' at the distal end and 'clustered' at the proximal end?
 Definitions (judged within one array only, cohort frequency not used)
   - minority unit kind: when the 15 end units are grouped at Jaccard 0.85 (= W8 rule), a group with 2 or more members
@@ -10,7 +10,7 @@ Definitions (judged within one array only, cohort frequency not used)
   - minority variant: a variant token carried by 2 or more and at most half of the 15 end units (the same idea on a different scale)
 Test: per haplotype, keep the number of positions and redraw the depths at random (1,000 sets) as the null -> compare fractions of spacing 1, 2 and 3
 Split: reported separately for terminal-type groups (including D1096:1), non-terminal-type groups and proximal groups.
-Output: $OUTDIR\W15_minority_group_gaps.tsv, W15_minority_variant_gaps.tsv
+Output: $OUTDIR/W15_minority_group_gaps.tsv, W15_minority_variant_gaps.tsv
 """
 import io, os, sys, collections
 import numpy as np

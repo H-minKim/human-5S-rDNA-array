@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 r"""Protocol 04 section 2 Q0, alignment (hard gate for Q4)
-   Aligner: edlib installation failed (Python 3.13.14, no wheel, no C compiler)
-             => parasail 1.3.4 is used. Citable:
+   Aligner: parasail 1.3.4
+             Citable:
                Daily J. Parasail: SIMD C library for global, semi-global, and local pairwise
                sequence alignments. BMC Bioinformatics 2016;17:81. DOI 10.1186/s12859-016-0930-z
    Method: section 2.3 consensus profile projection, every unit is globally aligned (NW) to CAN (2,240) individually
@@ -41,7 +41,7 @@ def tsv(p):
 U, _, _ = G.load("h1")
 VPU = sum(len(r[4]) for v in U.values() for r in v) / sum(len(v) for v in U.values())
 print("RULER var_per_unit = %.6f  (정본 6.866)" % VPU)
-if abs(VPU - 6.868174) >= 0.000001: raise AssertionError("자가 다르다 (541 값 6.868174) — 훅 확인")   # 541: the value was 6.866 at 557
+if abs(VPU - 6.868174) >= 0.000001: raise AssertionError("자가 다르다 (541 값 6.868174) — 훅 확인")   # value for the 541 set (6.866 for the 557 set)
 H1 = {("%s" % k[0], "%s" % k[1]) for k in U}
 TOKS = {}
 for k, rs in U.items():
@@ -67,7 +67,7 @@ for r in Rb:
         if "_h" in rn:
             s, h = rn.rsplit("_h", 1)
             fa2slot[r[Hb["fasta"]]] = (s, h)
-# analysis slots that the 2026-10-07 FASTA map does not list (their reference sequence was replaced later in v11 curation).
+# analysis slots that the 2026-10-07 FASTA map does not list (their reference sequence comes from the v11 curation).
 #   Their file name comes from the reference node table. A file that is not in the tar is read from the curated reference folder
 #   (its whole sequence is the array, so it enters with flank5=0 and flank3=0) and is taken after the tar members, in slot order.
 _NODE = (__import__("os").environ["RDNA_DATA_ROOT"] + r"/for_paper/08_versions/v11-add2_trio/02_canonical/HAP_SEQ_NODE_v11+add1+add2.tsv")

@@ -1,16 +1,16 @@
 # -*- coding: utf-8 -*-
-# v11 array 기준 : 흩어진 좌위와 같은 규칙·같은 칸으로
-#   상태 = NTS1(319-1178) + NTS2·프로모터(1552-2121) + 유전자(2122-2240) 위 CpG, >=10 개
-#          <0.3 low · >0.7 high · 그 밖 mid   (struct_aln3.py 와 같음, ML>=128)
-#   칸   = (unit_pos - 1) // 50   (0..44)   · 좌표틀 canon_ctx == unit_canon (2240bp 불일치 0)
-#   위치 = 원위 끝 1-10 · 근위 끝 1-10 · 내부 (SUBUNIT prox_idx/dist_idx)
-# 입력 out/CALLS.tsv.gz (v11 READMAP_METH 중복제거판에서 뽑은 CpG 호출) · out/SUBUNIT.tsv.gz
+# The v11 array reference: by the same rule and the same bins as the dispersed loci
+#   State = the CpG on NTS1 (319-1178), NTS2 and the promoter (1552-2121) and the gene (2122-2240), at least 10 of them
+#          < 0.3 low, > 0.7 high, otherwise mid   (same as struct_aln3.py, ML >= 128)
+#   Bin   = (unit_pos - 1) // 50   (0..44)   - coordinate frame canon_ctx == unit_canon (0 mismatches over 2,240 bp)
+#   Position = distal end 1-10, proximal end 1-10, interior (SUBUNIT prox_idx / dist_idx)
+# Input out/CALLS.tsv.gz (CpG calls taken from the deduplicated v11 READMAP_METH) and out/SUBUNIT.tsv.gz
 import io, os, gzip, collections, sys
 
 def _need(_v):
     """No defaults are set: the script stops if a variable is missing.
-    이 글이 읽는 자료의 뿌리는 README.md 의
-    "Running this code" 절에 적혀 있다."""
+    The roots of the data this script reads are listed in the
+    "Running this code" section of README.md."""
     import os as _o, sys as _s
     _x = _o.environ.get(_v)
     if not _x:

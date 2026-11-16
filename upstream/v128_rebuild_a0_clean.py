@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
-# v128 (2026-09-23 · ④검증 보강) — 손상된 SAM 2 개를 깨끗한 사본으로 다시 계산해 수정판 표를 재구성
-# Background : $V_ROOT/13_junction50k/final_SAM/node3/rj50k_final2/{HG02717,HG02886}.placed50k.final.sam is
-#          기록 MD5(MD5_13.txt)와 다르다(92ce16e6→f656f570 · caf46658→37cfaf1b · 크기 동일 · 2026-09-23 디스크 사고).
-# the copy in 04_placement/junction50k_v2/node3/rj50k_final2/ matches the recorded MD5, so only those two samples are recomputed from it.
-#   방법 : v118(a0=ref_front) 과 똑같은 계산을 두 파일에만 돌리고, 나머지는 v118 의 파일별 중간 결과(04_logs/v118_partial)를 그대로 써서
-#          최종 표를 v118 과 같은 방식(groupby 합·beta 평균)으로 다시 만든다.
-#   출력 02_tables/FLANK_METH_HAP_A0_CLEAN.tsv · 04_logs/V128_REBUILD_CLEAN.txt
+# Rebuild FLANK_METH_HAP_A0_CLEAN.tsv, recomputing two samples (HG02717, HG02886) from the SAM copy whose MD5 matches the recorded one.
+#   The copy of {HG02717,HG02886}.placed50k.final.sam under $V_ROOT/13_junction50k/final_SAM/node3/rj50k_final2/ does not match the MD5 recorded in MD5_13.txt;
+#   the copy in 04_placement/junction50k_v2/node3/rj50k_final2/ matches it, so only those two samples are recomputed from it.
+#   The method: the same computation as the a0 = ref_front version is run on those two files alone, and for the rest the per-file intermediate results of that version, in 04_logs/v118_partial, are used as they are,
+#          then the final table is rebuilt the same way, by a groupby sum and a mean of beta.
+#   Outputs: 02_tables/FLANK_METH_HAP_A0_CLEAN.tsv and 04_logs/V128_REBUILD_CLEAN.txt
 import io, os, glob, hashlib
 import numpy as np, pandas as pd
 OUT = __import__("os").environ["RDNA_DATA_ROOT"] + "/v11_readvar"; T = OUT + "/02_tables"

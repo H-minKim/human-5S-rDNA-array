@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
-# v11-fix1: G6 map coordinate correction for ARRAY_ONLY (edition 2, 2026-09-17)
+# v11-fix1: G6 map coordinate correction for ARRAY_ONLY
 #
-#   Defect of edition 1 (mkg6map_fix1.py): G6 units overlapping the surgery window were removed entirely (HG00133 12, HG03270 9).
-#     For reads whose stored number range ended inside the window, the window (stored G6 range +-250bp) got shorter and slipped by 5-6 units in the tandem
-#     (HG03270 read 5288a70a: v11 matched the fingerprint perfectly but edition 1 was -5, 5s-ao-window-slide-trap).
-#   Edition 2: remove only the units that were actually lost. Lost units = read unit DP events (old map numbers)
+#   Removing every G6 unit that overlaps the surgery window (HG00133 12, HG03270 9) is not done:
+#     for reads whose stored number range ends inside the window, the window (stored G6 range +-250bp) gets shorter and slips by 5-6 units in the tandem.
+#   Only the units that were actually lost are removed. Lost units = read unit DP events (old map numbers)
 #         HG00133 h2: old G8 units 122-125 (+ gap piece between 124/125)   HG03270 h1: old G8 unit 43
 #     For each G6 unit, check which unit (or gap) of the old G8 map (g8canonv10) its center coordinate falls in
 #       - before the first lost unit            -> coordinate unchanged

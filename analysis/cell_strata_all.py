@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-"""층(유전자부 β · 고정 구역 · 실측 저메틸 구역)별 두 자리 footprint (2026-10-12)
+"""Footprint at the two sites by stratum (gene-body β, fixed zones, measured low-methylation zones)
 usage: python cell_strata.py HepG2|K562|GM12878 gene|zonefix|zoneemp
-층마다 : 블라인드(10bp · 격자 전체) · 호출기 없음 확인검정 · 두 자리 배수 · 곡선
+per stratum : blind (10 bp, grid-wide), caller-free confirmation test, fold at the two sites, curves
 """
 import io
 import os
@@ -24,7 +24,7 @@ def _need(k):
         raise SystemExit(
             "environment variable %s is not set; it is required by %s." % (k, _SELF)
             + chr(10)
-            + "The deposited copy has no default; see README.md section 2")
+            + "The deposited copy has no default; see README.md, section 'Environment variables'")
     return v
 
 
@@ -99,7 +99,7 @@ for si, nm in enumerate(names):
     smi, sce, ssz = remap[mi[sel]], ce[sel], sz[sel]
     res = dict(label=nm, n=int(n), n_events=int(sel.sum()))
     flo = 1000.0 / (n * S.SM)
-    # 곡선
+    # Curves
     for k, (a0, a1) in enumerate([(20, 29), (30, 39), (40, 49), (50, 59)]):
         s = (ssz >= a0) & (ssz <= a1)
         o, b = S.dens_fold(smi[s], sce[s], n, NB_CURVE, rng)
@@ -117,14 +117,14 @@ for si, nm in enumerate(names):
     sM = M[idx].sum(0).astype(float)
     res["dub_m11"] = S.dub_paper(sA, sM, -11)
     res["dub_p58"] = S.dub_paper(sA, sM, 58)
-    # 블라인드
+    # Blind
     bl = S.blind(smi, sce, ssz, n, NB_BLIND, rng, minev=MINEV, sbin=10)
     if bl is None:
         res["blind"] = None
     else:
         res["blind"] = dict(nk=bl["nk"], thr=bl["thr"], NB=bl["NB"], sites=bl["sites"],
                             peaks=[list(p[:2]) + list(p[2]) for p in bl["peaks"][:6]])
-    # 호출기 없음 확인검정
+    # Caller-free confirmation
     okm = A[idx].sum(1) >= 20
     if okm.sum() >= 100:
         res["confirm"] = S.confirm(A[idx][okm], M[idx][okm], NB_CONF, rng)

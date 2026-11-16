@@ -1,20 +1,20 @@
 # -*- coding: utf-8 -*-
-"""확인 검정 — HMM 이 고른 두 자리를 호출기 없는 방법으로 다시 (2026-10-12).
+"""Confirmation test: the two sites chosen by the HMM, tested again with a caller-free method.
 
-논리
-  ① 기본 방법 = HMM footprint 호출 (FiberHMM). 자리를 미리 정하지 않고 전수 훑기.
-     -> 귀무 대비 배수 1 위 TFIIIB 자리 · 2 위 ICR 자리
-  ② 그 두 자리만 들고 가서, 호출기를 쓰지 않는 방법(flank-core m6A 빈도비)으로
-     같은 자리가 귀무를 넘는지 본다.
+Logic
+  (1) main method = HMM footprint calls (FiberHMM). No site is fixed in advance; the whole grid is scanned.
+     -> fold over the null: first the TFIIIB site, second the ICR site
+  (2) only those two sites are carried over, and a method that uses no caller (flank-core m6A frequency ratio)
+     tests whether the same sites exceed the null.
 
-왜 이것이 순위보다 옳은 검정인가
-  순위는 "그 격자에 몇 개가 더 있었나" 에 휘둘린다 (폭을 촘촘히 하면 순위가 내려간다).
-  확인 검정은 창이 이미 정해져 있으므로, 그 창 안에서만 다중성을 통제하면 된다 :
-    p = (귀무에서 그 창 안 최대값이 관측 최대값 이상이었던 치환 수 + 1) / (치환 수 + 1)
-  창 안 자리 x 폭 전부에 대해 최대를 쓰므로 창 안 다중성은 통제된다.
-  창을 고른 것은 다른 방법(HMM)이므로 이 검정 자체는 순환이 아니다.
+Why this is a sounder test than the rank
+  The rank depends on how many other entries the grid holds (a finer width grid lowers the rank).
+  In the confirmation test the window is fixed in advance, so multiplicity needs controlling only inside it :
+    p = (permutations whose maximum inside the window under the null >= the observed maximum, + 1) / (permutations + 1)
+  The maximum is taken over every position x width inside the window, so multiplicity inside the window is controlled.
+  The window was chosen by another method (HMM), so the test itself is not circular.
 
-귀무 : 분자마다 (A, m6A) 자리표를 통째로 원형 이동. 서열 조성·분자별 표지율은 보존된다.
+Null : the (A, m6A) position table of each molecule is circularly shifted as a whole. Sequence composition and the per-molecule labelling rate are preserved.
 """
 import io
 import os
@@ -33,7 +33,7 @@ def _need(k):
         raise SystemExit(
             "environment variable %s is not set; it is required by %s." % (k, _SELF)
             + chr(10)
-            + "The deposited copy has no default; see README.md section 2")
+            + "The deposited copy has no default; see README.md, section 'Environment variables'")
     return v
 
 
@@ -47,7 +47,7 @@ OUTD = _need("RDNA_OUT_DIR")
 MLTHR = 128
 LO, HI = -150, 118
 NP = HI - LO + 1
-NB = 2000                                  # 확인 검정이라 치환을 늘린다
+NB = 2000                                  # this is a confirmatory test, so the number of permutations is raised
 GAP, FLANKW = 8, 17
 WIDTHS = list(range(9, 72, 2))
 SHIFT = {("HG02559", "2"), ("HG03672", "1")}

@@ -1,5 +1,5 @@
 #!/bin/bash
-# Regenerate the AWS own references. Input is CHM13v2.0 only. No SNU/local outputs are used at all.
+# Generate the reference sequences. Input is CHM13v2.0 only.
 #  canonical unit = revcomp(chr1:227,887,698-227,889,937)  <- confirmed with pident 100.00/2240bp
 #  unit frame: AluY 1-318 / NTS1 319-1178 / GA-rich+(CA)n 1179-1551 / NTS2 1552-2121 / 5S gene 2122-2240
 #  discriminating segment = NTS1 + NTS2 = 1430 bp

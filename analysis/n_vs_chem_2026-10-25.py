@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
-#  물음 : `1kGP` 곡선이 흔들리는 것이 화학 혼합 때문인가, 유닛 수가 적어서인가.
-#  제가 어제 화학 탓으로 적었는데 그 측정은 둘을 가르지 못합니다.
-#    단서 : R9 만(719 유닛)이 봉우리 23 개로 합친 것(1,265 유닛 · 16 개)보다 더 많습니다.
+#  The question: is the 1kGP curve unstable because the chemistries are mixed, or because there are few units?
+#  Splitting by chemistry alone cannot separate the two.
+#    The clue: R9 alone (719 units) gives 23 peaks, more than the pooled set (1,265 units, 16 peaks).
 # If chemistry drove it, splitting should make it cleaner, and it does the opposite, so `n` is the suspect.
-#  자 : HPRC(화학이 섞였지만 47,483 유닛)에서 1,265 유닛씩 50 번 뽑아
-#        `figx25` 의 같은 `shape()` 로 봉우리 수·골을 센다.
-#        HPRC 는 전수로는 봉우리 3 · 골 0.5068 로 단단하다 — 작게 뽑아도 그러면 n 탓이 아니다.
+#  The ruler: draw 1,265 units 50 times from HPRC, which also mixes chemistries but holds 47,483 units,
+#        and count the peaks and the trough with the same shape() used in figx25.
+#        On the full set HPRC is stable at 3 peaks and a trough of 0.5068; if a small draw stays stable, n is not the cause.
 import os
 
 import numpy as np

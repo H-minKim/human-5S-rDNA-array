@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
-# 논문용 그림 용어 사전 2 판 (2026-10-08)
-# 들어온 까닭 : 전수 점검(PAPER_AUDIT_TEXT_*)에서 세 가지가 나왔다
+# The terminology dictionary for the publication figures, version 2.
+# It corrects three things in the figure text:
 # ① working upper-case emphasis (HIGH/LOW/OFF/THAT/FIRST/ALL/...) is not manuscript prose
-# ② 같은 것을 다섯 가지로 부르는 축 이름 (unit index/number, from the dist end, ...)
+# 2) An axis named five different ways for the same thing (unit index, unit number, from the distal end, and so on).
 # ③ working tags (P10, canon, slot) are left in axis names
-# 규칙 : 낱말 경계로만, 긴 것부터, 맨 앞 대문자는 지키되 그리스 문자는 올리지 않는다
-# $...$ 수식 안은 건드리지 않는다 (mathtext 가 깨진다)
+# The rules: on word boundaries only, longest first, keeping an initial capital but never capitalising a Greek letter.
+# Anything inside $...$ is left alone, which would break mathtext.
 import re
 
 BETA = chr(946)       # β
@@ -13,23 +13,23 @@ MU = chr(956)         # μ
 SIGMA = chr(963)      # σ
 PHI = chr(966)        # φ
 
-# ── ① 대문자 강조 -> 보통 글자 (낱말 경계) ─────────────────────────────
-# 고유명사(RNU2, DXZ4, CHM13, CpG, AluY, HPRC ...)는 넣지 않는다
+# -- 1) capitalised emphasis becomes ordinary text, on word boundaries ─────────────────────────────
+# proper nouns (RNU2, DXZ4, CHM13, CpG, AluY, HPRC and so on) are not included
 CAPS = [
     "HIGH", "LOW", "OFF", "ON", "THAT", "FIRST", "ALL", "OTHER", "IDENTICAL", "SIMULATED",
     "PROXIMAL", "DISTAL", "WIDTH", "MIDPOINT", "RATIO", "PREVIOUS", "SAME", "NOT",
     "ONE", "TWO", "BOTH", "EVERY", "NEVER", "ONLY", "MUST", "CANON", "RANK", "LAST",
     "ARRAY", "JUMP", "STEP",
-    # 2 차 전수 점검에서 더 나온 것 (2026-10-08)
+    # further cases
     "PEAKS", "END", "INNER", "BIG", "BIMODAL", "OWN", "MIXED", "CLEAN", "WHOLE",
     "SAME WAY", "TRUE", "FALSE", "YES", "NO",
     "UNIT", "BIG", "SMALL", "EXACTLY", "HARD", "CALL",
     "POSITION", "LEVEL", "SHAPE", "COUNT", "WHOLE", "PART", "AGREE", "MOSTLY",
 ]
 
-# ── ③ 너무 긴 축 이름 -> 명사구 (방법,정의는 legend 로) ────────────────
-# 전수 점검에서 28 자 넘는 축 이름이 133 종 나왔고, 긴 이름이 옆 칸을 침범해
-# 414.4 pt 폭에서 서로 겹쳤다. 아래는 그 중 문장형인 것들.
+# -- 3) an over-long axis name becomes a noun phrase, with the method and the definition moved to the legend ────────────────
+# A long axis name intrudes on the neighbouring cell so that they overlap at a width of 414.4 pt
+# (133 distinct axis names are longer than 28 characters). Those below are the sentence-form ones.
 LONG = {
     "Transcription coordinate tx = position inside the unit - 2121 "
     "(negative = upstream of the 5S gene, >119 = downstream spacer)":
@@ -126,19 +126,19 @@ LONG = {
     "(0 = 이미 다 넘어갔다)": "새 상태까지 남은 거리",
 }
 def _norm(x):
-    """줄바꿈·연속공백·' / ' 를 지워 맞춘다.
+    """Normalise by removing line breaks, runs of spaces and ' / '.
 
-    점검표가 줄바꿈을 ' / ' 로 적어 두기 때문에, 그 표를 보고 사전 키를 적으면
-    실제 라벨(줄바꿈)과 안 맞는다 — C5 두 장이 그래서 안 바뀌고 제목과 겹쳤다.
+    The check table writes a line break as ' / ', so a dictionary key copied from that table
+    does not match the real label (which has a line break).
     """
     return " ".join(x.replace(" / ", " ").split())
 
 
 _LONG = sorted(((_norm(k), v) for k, v in LONG.items()), key=lambda kv: -len(kv[0]))
 
-# ── ② 같은 뜻 다른 말 -> 한 가지로 (대소문자 안 가림) ────────────────
+# -- 2) different words for the same thing become one, ignoring case ────────────────
 PHRASE = [
-    # 자리 세는 축 - 다섯 가지로 불리던 것을 하나로
+    # the axis counting positions: five names for one thing
     (r"unit index from (?:the )?(?:dist|distal) (?:end|junction)",
      "unit number from the distal end"),
     (r"unit index from (?:the )?(?:prox|proximal) (?:end|junction)",
@@ -146,7 +146,7 @@ PHRASE = [
     (r"unit number counted from the (distal|proximal) end", r"unit number from the \1 end"),
     (r"unit index from that end", "unit number from the array end"),
     (r"unit number from each end", "unit number from the array end"),
-    # 자(ruler) 이름 - beta 는 기호로
+    # the name of the ruler, with beta written as a symbol
     (r"\bunit beta\b", "unit methylation " + BETA),
     (r"\bread-unit beta\b", "read-unit methylation " + BETA),
     (r"\bmean beta\b", "mean methylation " + BETA),
@@ -162,7 +162,7 @@ PHRASE = [
     (r"\bD4Z4_4q\b", "D4Z4 4q"),
     (r"\bD4Z4_10q\b", "D4Z4 10q"),
     (r"\bSST1_a\b", "SST1"),
-    # 눈금 이름이 길어 옆 눈금과 붙는다 (Claim_G c, J3, J1 에서 실측)
+    # a tick name long enough to run into its neighbour (in Claim_G c, J3 and J1)
     (r"\bAluY element\b", "AluY"),
     (r"\bDXZ4_F\b", "DXZ4, female"),
     (r"\bDXZ4_M\b", "DXZ4, male"),
@@ -176,12 +176,12 @@ PHRASE = [
     (r"\bhigh-methyl\b", "high-methylation"),
     (r"\blow-methyl\b", "low-methylation"),
     (r"\bind\.", "individuals"),
-    # 수식 기호는 기호로
+    # a mathematical symbol is written as a symbol
     (r"\bmu\b", MU),
     (r"\bsigma\b", SIGMA),
     (r"\bphi\b", PHI),
     (r"\bfrac\b", "fraction"),
-    # 부등호는 논문 기호로
+    # an inequality is written in the journal's notation
     (r">=", chr(8805)),
     (r"<=", chr(8804)),
 ]
@@ -192,7 +192,7 @@ _PH_RE = [(re.compile(a, re.I), b) for a, b in PHRASE]
 
 
 def _sub_outside_math(t):
-    """$...$ 수식 안은 건드리지 않는다 — mathtext 가 깨진다."""
+    """The inside of $...$ math is left alone: mathtext would break."""
     parts, i = [], 0
     for m in re.finditer(r"\$[^$]*\$", t):
         parts.append((t[i:m.start()], True))
@@ -215,7 +215,7 @@ def apply_terms2(t):
         return t
     head_upper = t[0].isalpha() and t[0].isupper()
     t = _sub_outside_math(t)
-    # 긴 문장형 축 이름은 명사구로 (정의,방법은 legend 로) - 바꾼 뒤 글자로 맞춘다
+    # a long sentence-form axis name becomes a noun phrase, with the definition and the method moved to the legend, then matched by character
     _k = _norm(t)
     for a, b in _LONG:
         if _k == a:
@@ -225,7 +225,7 @@ def apply_terms2(t):
             t = _k.replace(a, b)
             break
     t = re.sub(r"[ ]{2,}", " ", t).strip()
-    # 그리스 문자는 대문자로 올리지 않는다 (beta -> β 가 Β 가 되어 버린다)
+    # a Greek letter is never capitalised (beta written as the symbol would become a capital Beta)
     if head_upper and t and "a" <= t[0] <= "z":
         t = t[0].upper() + t[1:]
     return t

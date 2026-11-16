@@ -1,18 +1,18 @@
 # -*- coding: utf-8 -*-
-"""메틸을 양분으로 다시 — 컷 0.508 (이봉의 골) (2026-10-12).
+"""Two-way methylation split at the cut 0.508 (the valley of the bimodal distribution).
 
-왜 바꾸나
-  지금까지 쓰던 층은 삼분위였고 경계가 0.7034 / 0.8485 였다.
-  그런데 유닛 CpG β 분포는 뚜렷한 이봉이다 :
-     낮은 봉우리 0.125~0.175 · 골 0.475~0.500 (가장 얕은 칸 n=148) · 높은 봉우리 0.850~0.875
-  0.7034 는 높은 봉우리의 오르막 중턱을 자른다 - 같은 집단을 반으로 쪼갠 것이다.
-  골에서 자르는 것이 옳다. 이 프로젝트에 기록된 컷 0.508 이 바로 그 자리다
-  (경험적 최저 칸 0.475~0.500 · 0.488 과 0.508 은 나누는 비율이 25.0% ↔ 25.3% 로 거의 같다).
+Why this cut
+  The unit CpG β distribution is clearly bimodal :
+     low peak 0.125-0.175, valley 0.475-0.500 (shallowest bin n=148), high peak 0.850-0.875
+  A tertile boundary such as 0.7034 cuts half-way up the rise of the high peak,
+  which splits one population in two.
+  The cut belongs in the valley, and 0.508 is there
+  (empirical lowest bin 0.475-0.500; 0.488 and 0.508 split at nearly the same fraction, 25.0% against 25.3%).
 
-내는 것
-  fhmm_peaks_5bp_bin.npz : FiberHMM 5 bp 칸 x 자리 · 2 층 (저 β<0.508 · 고 β>=0.508)
-  occlusion_bin.npz      : flank-core m6A 빈도비용 nA / nM · 2 층
-옛 산출(삼분위)은 지우지 않는다.
+Written
+  fhmm_peaks_5bp_bin.npz : FiberHMM 5 bp bins x positions, 2 strata (low β<0.508, high β>=0.508)
+  occlusion_bin.npz      : nA / nM for the flank-core m6A frequency ratio, 2 strata
+The tertile outputs are left in place.
 """
 import io
 import os
@@ -32,7 +32,7 @@ def _need(k):
         raise SystemExit(
             "environment variable %s is not set; it is required by %s." % (k, _SELF)
             + chr(10)
-            + "The deposited copy has no default; see README.md section 2")
+            + "The deposited copy has no default; see README.md, section 'Environment variables'")
     return v
 
 
@@ -62,7 +62,7 @@ print("β n=%s · 컷 %.3f -> 저 %d (%.1f%%) · 고 %d (%.1f%%)"
       % (format(len(bb), ","), CUT, (bb < CUT).sum(), 100 * (bb < CUT).mean(),
          (bb >= CUT).sum(), 100 * (bb >= CUT).mean()))
 
-# ══ 1. FiberHMM 5 bp 칸 · 2 층
+# == 1. FiberHMM 5 bp bins, two strata
 SEG = collections.defaultdict(list)
 for p in sorted(glob.glob(os.path.join(FD, "FHMM_UNITS_*.tsv"))):
     with io.open(p, encoding="utf8") as f:
@@ -134,7 +134,7 @@ for j, (a0, a1, lab) in enumerate(CLS):
     print("  %-8s %+8d %10.2f %10.2f %9.2f"
           % (lab, i - HALF, r0[i], r1, r0[i] / r1 if r1 > 0 else float("nan")))
 
-# ══ 2. occlusion (nA / nM) · 2 층
+# == 2. occlusion (nA / nM), two strata
 UNIT, _ = L.load_units()
 TSSU = {k: (v[2] - v[0] + 1) for k, v in UNIT.items()}
 nA = np.zeros((2, NR))

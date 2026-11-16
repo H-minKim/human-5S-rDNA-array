@@ -12,4 +12,3 @@ anchor scan	Mosaic	HG03516	2	D4	31	40	9	9	17	5	0.9950	not repaired (09-22, mosai
 anchor scan	Mosaic	HG04115	2	D2	8	15	11	12	13	10	0.9897	not repaired (09-22, mosaic)	0.133	0.933	0	Y
 anchor scan	Contradicted, counted as Mosaic in the summary	HG00609	2	I13	11	20	6	8	10	10	0.9948	not repaired (09-22, mosaic)	0.190	0.923	0	Y
 anchor scan	Contradicted, counted as Mosaic in the summary	NA20827	2	I8	69	77	6	7	9	15	0.9850	not repaired (09-22, mosaic)	0.000	0.727	0	Y
-anchor scan	Not reproduced	NA21133	2	D22	65	89	4	4	None	None	-	not repaired (not reproduced)	0.286	0.571	0	Y

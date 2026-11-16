@@ -1,6 +1,6 @@
 #!/bin/bash
-# Build the GM12878 HiFi assembly input properly, using the same gate as K562
-#  Why change (measured): coordinate region extraction 715 reads vs 5S unit gate 2,373 reads, overlap only 346
+# Build the GM12878 HiFi assembly input, using the same gate as K562
+#  Why this gate (measured): coordinate region extraction 715 reads vs 5S unit gate 2,373 reads, overlap only 346
 #    - 369 only in the region = **pure flank reads** without 5S k-mers -> anchors at both array ends, needed for assembly, but the unit gate misses them
 #    - 2,027 only in the full set = missed by region extraction (though many may be dispersed 5S copies)
 #  => the correct gate is not the unit but BBDuk k=31 mkf=0.2 against the **whole region sequence** (array +-115 kb)
@@ -31,7 +31,7 @@ if [ -s $W/gm_region_full.fastq.gz ]; then
   zcat $W/gm_region_full.fastq.gz | awk 'NR%4==1{print substr($1,2)}' | sort -u > $W/regionfull.ids
   log "  고유 read $(wc -l < $W/regionfull.ids)"
 else log "산출 없음"; exit 9; fi
-# HiFi-only assembly, same conditions as round 1 (119/91), only the input changed for comparison
+# HiFi-only assembly
 A=$W/asm; mkdir -p $A; cd $A; rm -f *.bin *.gfa *.fa
 ~/hifiasm -o HG001full -t 14 $W/gm_region_full.fastq.gz > hifiasm.log 2>&1
 rc=$?

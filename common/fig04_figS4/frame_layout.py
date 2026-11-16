@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
-# 틀(축 사각형) 기준 자리잡기 -, 배치 규칙
+# Placement from the frame, that is the axes rectangle, and the layout rules.
 #
-# 왜 : 조립기가 칸(그림 전체 상자)으로 붙이면 y 축 이름 길이가 다른 순간
-# 그래프 선이 어긋난다. ⇒ 틀로 맞춘다.
+# Why: when the assembler joins panels on their cells, the whole figure box, a difference in the length of the y-axis label
+# puts the plot lines out of line. The frame is used instead.
 #
-# 이 파일이 하는 일 ⒜ 지금 패널들에서 틀과 네 여백을 잰다(여백은 글자가 정하므로
-# 배율과 무관하다) ⒝ 줄마다 틀 폭,높이를 하나로 정한다 ⒞ SPEC_FRAME json 을 낸다.
-# 그 json 을 넣고 다시 그리면 틀이 그 크기로 못박히고, 조립기는 틀로 붙인다.
+# What this file does: a) measure the frame and its four margins in the current panels (the margins are set by the type and so do not depend on scale);
+# b) fix one frame width and height per row; c) write the SPEC_FRAME json.
+# Feeding that json back in and redrawing fixes the frames at that size, and the assembler then joins them on the frame.
 #
-# 기준 값 :
-# 맨 왼쪽 틀 x 41.90, 오른쪽 끝 408.17, 패널 글자 19.42(= 41.90 - 22.48), 틀 위 -1.53
+# The reference values:
+# the leftmost frame at x 41.90, the right edge at 408.17, the panel letter at 19.42 (41.90 - 22.48), and the top of the frame at -1.53.
 import io
 import json
 import os
@@ -19,15 +19,15 @@ import sys
 SP = os.path.dirname(os.path.abspath(__file__))
 NL = chr(10)
 NUM = r"[-+]?[\d.]+"
-X_L, X_R = 41.90, 408.17        # 틀 왼쪽 선, 오른쪽 선 (모든 줄 공통)
-GAP_X, GAP_Y = 22.0, 8.0    # 줄 사이 13 -> 8 # 2026-10-19 : 줄 사이를 26 -> 13 # 2026-10-19 : 칸이 붙어 보여 12 -> 22 # 칸 사이 가로 틈(틀 사이가 아니라 여백 사이), 줄 사이
+X_L, X_R = 41.90, 408.17        # the left and right frame lines, shared by every row
+GAP_X, GAP_Y = 22.0, 8.0    # the horizontal gap between cells, measured between their margins rather than between their frames, and the gap between rows
 INPAD = 6.0
-# 칸마다 가로 몫을 손으로 기울인다 - {파일: 가중치}
-WEIGHT = {}                     # 한 칸 안의 작은 틈
+# the horizontal share of each cell, tilted by hand: {file: weight}
+WEIGHT = {}                     # the small gaps within one cell
 
 
 def frame_of(path):
-    """패널 svg → (폭, 높이, 틀 x0, 틀 y0, 틀 폭, 틀 높이) pt"""
+    """panel svg -> (width, height, frame x0, frame y0, frame width, frame height) pt"""
     s = io.open(path, encoding="utf8").read()
     W = float(re.search(r'width="([\d.]+)pt"', s[:400]).group(1))
     H = float(re.search(r'height="([\d.]+)pt"', s[:400]).group(1))
@@ -41,16 +41,16 @@ def frame_of(path):
     for a, b in re.findall(r"L\s*(%s)\s+(%s)" % (NUM, NUM), m.group(3)):
         xs.append(float(a))
         ys.append(float(b))
-    # figure_1 에 통째 옮김(translate)이 걸린 패널이 있다
-    # (S5 의 A - 왼쪽 빈 여백을 없애려고 밀었다).
-    # 그 옮김을 안 더하면 틀 자리를 옛 자리로 읽어 칸이 쪽 밖으로 끌려 나간다.
+    # a panel in figure_1 carries a whole-panel translate
+    # (A of S5, pushed to remove the empty margin on its left).
+    # Without adding that translate in, the frame is read at its old position and the cell is dragged off the page.
     tm = re.search(r'<g id="figure_1" transform="translate\(([-\d.]+),\s*([-\d.]+)\)"', s)
     dx, dy = (float(tm.group(1)), float(tm.group(2))) if tm else (0.0, 0.0)
     return W, H, min(xs) + dx, min(ys) + dy, max(xs) - min(xs), max(ys) - min(ys)
 
 
 def margins(path):
-    """(왼, 오른, 위, 아래, 틀폭, 틀높이)"""
+    """(left, right, top, bottom, frame width, frame height)"""
     f = frame_of(path)
     if f is None:
         return None
@@ -59,25 +59,25 @@ def margins(path):
 
 
 def plan(rows, panels_dir, name):
-    """줄마다 틀 폭·높이를 정해 {stem__label: [fw, fh]} 로 돌려준다"""
+    """set the frame width and height per row and return {stem__label: [fw, fh]}"""
     out, report = {}, []
     for ri, row in enumerate(rows):
-        cells = []                     # [(파일들 [[...]], letter)]
+        cells = []                     # [([[files, ...]], letter)]
         for f, lab in row:
             cells.append((f, lab))
-        # ── 한 줄의 칸들을 평평하게 펴서 (COL 은 세로로 쌓이므로 폭은 한 칸)
-        flat = []                      # [(파일, 칸번호, 줄안의 줄번호)]
+        # -- flatten the cells of one row; a COL stacks vertically, so it counts as one cell of width
+        flat = []                      # [(file, cell number, row number within the cell)]
         for ci, (f, lab) in enumerate(cells):
             if f == "COL":
                 for sub_f, _l in lab:
                     flat.append((sub_f, ci))
-            elif isinstance(f, list):          # 격자
+            elif isinstance(f, list):          # a grid
                 for rr in f:
                     for sub in (rr if isinstance(rr, list) else [rr]):
                         flat.append((sub, ci))
             else:
                 flat.append((f, ci))
-        # ── 칸마다 가장 넓은 왼/오른 여백
+        # -- the widest left and right margin per cell
         ncell = len(cells)
         mg = {}
         for f, ci in flat:
@@ -90,8 +90,8 @@ def plan(rows, panels_dir, name):
             mg[f] = m
         if not mg:
             continue
-        # ── 세로칸(column) 을 제대로 센다 : COL 은 한 칸, 격자는 그 안에서 나뉜다
-        colspecs = []                  # [(파일들, 왼여백, 오른여백, 틀폭)]
+        # -- count the columns properly: a COL is one column, and a grid divides within it
+        colspecs = []                  # [(files, left margin, right margin, frame width)]
         for ci, (f, lab) in enumerate(cells):
             if f == "COL":
                 fs = [sf for sf, _l in lab if sf in mg]

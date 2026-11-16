@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
-# 우리 hifiasm 조립본(GFA S 줄)에서 array 추출
-#   단계 : ① array 잘라내기
+# Extract the array from our hifiasm assemblies, from the S lines of the GFA.
+#   Step 1: cut out the arrays.
 #   Method document : analysis/METHOD_CONSENSUS_MAP_G8_REBUILD.md
 
 # -*- coding: utf-8 -*-
-# 우리 hifiasm 조립본에서 5S array 를 뽑아 유닛을 센다
-#   asm_arr_all.py / hicheck.py 와 완전히 같은 방법 (다르면 비교가 성립 안 함)
-#     ① CHM13 junction 바깥 50 kb 탐침 두 개를 contig 에 정렬 (양쪽 다 붙어야 함)
-#     ② 두 탐침 사이를 array 로 잡고
-#     ③ 5S 유전자 blastn HSP 시작 간 2,100~2,400 bp 를 유닛으로 센다
-#   결과는 한 줄씩 표준출력으로 흘린다 (호출 스크립트가 요약표에 이어붙인다).
+# Extract the 5S array from our hifiasm assemblies and count the units.
+#   Exactly the same method as asm_arr_all.py and hicheck.py; any difference would make the comparison invalid.
+#     1) Align the two 50 kb probes from outside the CHM13 junctions to the contig; both must align.
+#     2) Take the interval between the two probes as the array.
+#     3) Count as a unit each gap of 2,100-2,400 bp between the starts of the 5S gene blastn HSPs.
+#   Results are streamed one line at a time to stdout, and the calling script appends them to the summary table.
 import io
 import os
 import sys
@@ -42,7 +42,7 @@ def units_of(seq, tmp):
     return sum(1 for i in range(len(K) - 1) if 2100 <= K[i + 1] - K[i] <= 2400)
 
 
-# 모든 p_ctg 를 한 fasta 로 (hap1/hap2/primary 다 본다 — 중복은 뒤에서 정리)
+# all p_ctg files are merged into one fasta, covering hap1, hap2 and primary; duplicates are removed later
 fa = os.path.join(D, "all_ctg.fa")
 seqs = {}
 for g in sorted(os.listdir(D)):
@@ -88,12 +88,12 @@ for t, d in hit.items():
     got.append((t, a[2] - a[1], seg, d["PROX50k"][2] + d["DIST50k"][2]))
 
 if not got:
-    # 탐침 한쪽만 붙은 contig 도 기록해 둔다 (얼마나 아까웠는지 알려면 필요)
+    # contigs where only one probe aligned are recorded as well, so it is known how much was lost
     half = sum(1 for t, d in hit.items() if len(d) == 1)
     sys.stdout.write("%s\tNO_BOTH_PROBE\t%d\t-\t-\t-%s" % (SMP, half, NL))
     sys.exit()
 
-# 길이가 같은 중복 contig 는 하나로 (hap1/hap2/pri 가 같은 것을 여러 번 낸다)
+# duplicate contigs of the same length are merged, since hap1, hap2 and primary can emit the same one several times
 got.sort(key=lambda z: (-z[1], -z[3]))
 keep = []
 for t, L, seg, nm in got:

@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-# 완전 합본 v2 — Year7(조직) + 세포주 3 시료까지 넣는다
-#   바탕 = v11-수정4 `READMAP_METH_V11F4+추가1+추가2.tsv` (59,486 행 · 글자 그대로 보존)
-#   더함 = RU 에서 유도한 자리표 (유도 코드는 공식 merge_meth.py 와 같음이 검산됨
-#          — HG008 700 · CASTLE 1,433 · COLOr 266 자리를 글자까지 재현)
-#   Y7 은 공식 methmerge 산출 대신 RU 유도판을 쓴다 (이유는 문서 참고 · 둘 다 남긴다)
+# The full merge, version 2: the Year 7 tissues and three cell-line samples are added.
+#   The basis is the v11 revision 4 table READMAP_METH_V11F4 with the two additions, 59,486 rows, preserved character for character.
+#   Added: the per-site table derived from RU. The derivation was checked to match the official merge_meth.py
+#          by reproducing 700 HG008, 1,433 CASTLE and 266 COLO sites character for character.
+#   For Year 7 the RU-derived version is used in place of the official methmerge output; both are kept.
 import io, os, sys, hashlib, collections
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -66,7 +66,7 @@ for ln in chk[1:]:
 P("   키 중복 4 열 %d 자리 · 5 열(+dataset) %d 자리"
   % (sum(1 for v in k4.values() if v > 1), sum(1 for v in k5.values() if v > 1)))
 
-# Y7 공식판도 같이 남긴다 (견주어 볼 수 있게)
+# the official Year 7 version is kept alongside, for comparison
 OFF = OUTDIR + "READMAP_METH_Y7_공식methmerge_2026-09-27.tsv"
 rows = ["\t".join(hd)]
 for grp, ds_ in (("LCL", "HPRC_Y7_LCL_officialmerge"), ("PBMC", "HPRC_Y7_PBMC_officialmerge")):

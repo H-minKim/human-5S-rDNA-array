@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
-# Canonical v10, surgical replacement (2026-09-13)
+# Canonical v10, surgical replacement
 #   Based on v8 (the original assembly), only the 7 broken positions are joined as [assembly front anchor][read consensus middle][assembly back anchor].
-#   No rollback: the problem was v9's 'replace with the consensus up to the anchors', not the repair (SPLICE_MID2.tsv).
+#   The consensus replaces only the middle, not the anchors (SPLICE_MID2.tsv).
 #   Storage direction: the cmp4d .fa is the sequence before flipping. Windows made in map direction are written back reversed (rc).
 import io
 import os
 import glob
 import collections
 
-H = "/home/ubuntu"
+H = os.environ["NODE_HOME"]   # the compute node's home directory
 NL = chr(10)
 TAB = chr(9)
 CMP = {"A": "T", "T": "A", "G": "C", "C": "G", "N": "N"}

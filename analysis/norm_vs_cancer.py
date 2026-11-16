@@ -1,22 +1,21 @@
 # -*- coding: utf-8 -*-
-# 물음 정상(조직+1차세포+세포주) vs 암(세포주+조직) 을 두 덩어리로 합쳐 보면 결과가 뭔가
-#   정상 = 정상 조직(2) + PBMC(10) + LCL(10) + 비암 세포주(8) = 30 시료
-#   암   = 암 세포주(8) = 8 시료
-#   정정 : 전에 「암 세포주 7 + 암 조직 1」 로 적었는데 그 1(HG008-T)도
-#     세포주 다 (환자유래 PDAC · ATCC CRL-3734 · PMC12267650). 시료 집합은 그대로 8 이라
-#     이 글이 내는 수는 하나도 안 바뀐다 — 바뀐 것은 이름뿐이다.
-#   판정 : 시료 단위 Mann-Whitney + AUC · BH q
+# The question: what happens when normal (tissue, primary cells and cell lines) and cancer (cell lines and tissue) are pooled into two groups?
+#   Normal = normal tissue (2) + PBMC (10) + LCL (10) + non-cancer cell lines (8) = 30 samples.
+#   Cancer = cancer cell lines (8) = 8 samples.
+#   All eight are cell lines, HG008-T included: it is a patient-derived PDAC line
+#     (ATCC CRL-3734, PMC12267650).
+#   The test: Mann-Whitney on samples, with the AUC and a BH-adjusted q.
 import io, os, sys
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 import numpy as np, pandas as pd
 from scipy import stats
-# 표를 읽고 쓰는 자리 — 저장소에서는 표가 코드 옆에 없으므로 환경변수로 받는다 (2026-10-21)
+# Where the tables are read and written. The tables are not deposited next to the code, so these paths come from the environment.
 HERE = os.environ.get("TABLE_DIR", os.path.dirname(os.path.abspath(__file__)))
 LOG = io.open(os.path.join(HERE, "NORM_VS_CANCER.txt"), "w", encoding="utf8", newline="\n")
 def P(s=""): print(s, flush=True); LOG.write(str(s) + "\n"); LOG.flush()
 S = pd.read_csv(os.path.join(HERE, "ZSS_SAMPLE.tsv"), sep="\t")
 ZONES = ["Z1 근1-3", "Z2 근4-10", "Z3 근11-17", "ZI 내부", "Z4 원11-22", "Z5 원9-10", "Z6 원3-8", "Z7 원1-2"]
-CAN = ["암 세포주"]   # 옛 라벨 "암 조직(환자)" 는 없어졌다 (시료 집합은 같은 8)
+CAN = ["암 세포주"]   # the 8 cancer cell lines
 S["덩어리"] = np.where(S.군.isin(CAN), "암", "정상")
 P("[군 합치기] 암 = 암 세포주(8) · 정상 = 정상 조직 + PBMC + LCL + 비암 세포주")
 P("   시료 수 : %s" % S.drop_duplicates("sample").덩어리.value_counts().to_dict())
@@ -86,7 +85,7 @@ else:
     P("      없음")
 T.to_csv(os.path.join(HERE, "NORM_VS_CANCER.tsv"), sep="\t", index=False, float_format="%.5f")
 
-# array 전체(구역 안 가름)
+# the whole array, with no split by zone
 P()
 P("=" * 92)
 P("[구역을 안 가르고 array 전체로] 시료 단위")

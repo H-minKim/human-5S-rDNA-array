@@ -9,9 +9,9 @@ below names in its header as its reference document. It states the rule each ste
 and its md5 is recorded in `fig01/MANIFEST_Fig1.tsv`. This file is the index to it, and the
 section numbers below are its section numbers.
 
-It is worth reading for one thing in particular: it records the mistakes that set each threshold.
-The contig is found by sequence because guessing "the largest contig" put the array on the wrong
-contig for HG01943, where it is the 77th. The flank probes stop at the junction and do not include
+It also gives the reason for each threshold.
+The contig is found by sequence because the array is not always on the largest contig: in
+HG01943 it is on the 77th. The flank probes stop at the junction and do not include
 any array, because the array is tandem and a probe containing it aligns anywhere.
 
 ## The chain, step by step
@@ -59,18 +59,17 @@ that a reader checking one does not have to search.
 - Units are counted from the 5S-gene blastn search (`-task blastn -dust no -word_size 9
   -evalue 1e-5`) as HSP start spacings of 2,100-2,400 bp. §2 of the reference document states the
   unit count as **that number of spacings plus one**, and warns against deriving it as `bp / 2240`,
-  which was wrong by a factor of two on a sequence whose chain was broken.
+  which is wrong by a factor of two on a sequence whose chain is broken.
 
 **Placing reads** (`readplacement_align_reads_to_map.py`)
 
 - The reference for placement is one sequence set holding **both haplotypes of the individual and
   both 50 kb flank probes**. Both haplotypes are present so a read cannot be pulled onto the wrong
   one by the absence of the right one; the flanks are present so a read running out of the array
-  aligns to flank instead of being soft-clipped, which in an earlier version dropped the alignment
-  rate to 31-89%.
+  aligns to flank instead of being soft-clipped, which drops the alignment rate to 31-89%.
 - `minimap2 -a -x map-ont` for ONT and `-x map-hifi` for PacBio HiFi, with `--secondary=no` and `-y`.
-  The platform is taken from the **read name**, not the directory: a cancer directory of HiFi reads
-  was once run under `map-ont` and COLO829's alignment identity fell to 69% against 97-99% elsewhere.
+  The platform is taken from the **read name**, not the directory: HiFi reads run under `map-ont`
+  align poorly (COLO829's alignment identity is 69% against 97-99% elsewhere).
 - A read counts as reaching the flank when ≥ 1 kb aligns to a flank probe **and** that alignment
   comes within 50 bp of the junction (`MINFL = 1000`, `JXWIN = 50`). The 50 bp is the trough of a
   measured bimodal distribution; at 2 kb a 13-individual pilot called 27 flank-to-flank reads instead
@@ -104,5 +103,5 @@ that a reader checking one does not have to search.
   dropped (`MINSITE = 5`; the false-positive rate under permuted labels is 14.3% below five
   positions, 2.4% at five to nine and 0.0% at ten or more) and the remaining conflicts follow the
   chain, because every conflicting read is long enough to lie inside the range the chain was tested
-  over. Each such case is written to a log rather than resolved silently — merging the two tables
-  with `sort -u` instead had let six of 803 overlapping reads be decided by alphabetical order.
+  over. Each such case is written to a log rather than resolved silently: merging the two tables
+  with `sort -u` would let overlapping reads (six of 803) be decided by alphabetical order.

@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
-# array 안 유닛이 한 종류인가 여러 종류인가 — 그룹핑하고 그룹마다 참조 유닛을 만든다
-#   사용자 요구 : array 가 하나뿐인 종(유인원)도 "array 안이 같은 유닛의 반복인지" 확인하고, 아니면 그룹을 나눈다
-#   방법 : G8 지도의 유닛별 변이목록을 쓴다
-#     · 다형성 변이 = 유닛의 10~90% 에 있는 변이 (드문 변이는 개별 유닛 잡음, 90% 이상은 참조 유닛이 틀린 것)
-#     · 다형성 변이가 3 개 미만이면 한 종류로 본다
-#     · 아니면 유닛을 다형성 변이 벡터로 묶는다 (같은 패턴끼리 → 거리 15% 이내 패턴 병합)
-#     · 유닛 5 개 이상 + 구분 변이 3 개 이상인 묶음만 '그룹'으로 인정, 나머지는 기타
-#   그룹마다 : 유닛 서열을 모아 자리별 다수결로 그룹 참조 유닛 생성 + 그룹 안 일치도(blastn)
-#   인자 : 종키 fasta 지도폴더 출력폴더
-#   산출 : groups/<array_id>.groups.tsv · groups/<array_id>.g<k>.unit.fa · UNIT_GROUPS_<종>.tsv
+# Are the units within an array of one type or several? They are grouped, and a reference unit built per group.
+#   Even a species with only one array, as the great apes have, is checked for whether its array is a repeat of one unit, and divided into groups if not.
+#   The method uses the per-unit variant lists of the G8 map:
+#     · a polymorphic variant is one present in 10-90% of units (a rarer one is noise in an individual unit, and above 90% the reference unit is wrong);
+#     · with fewer than 3 polymorphic variants the array counts as a single type;
+#     · otherwise the units are clustered on their polymorphic variant vectors, grouping identical patterns and then merging patterns within 15% of each other;
+#     · only a cluster with at least 5 units and at least 3 distinguishing variants counts as a group; the rest are other.
+#   Per group: the unit sequences are pooled into a group reference unit by a per-position majority, and the within-group identity measured by blastn.
+#   Arguments: species key, fasta, map folder, output folder.
+#   Outputs: groups/<array_id>.groups.tsv, groups/<array_id>.g<k>.unit.fa and UNIT_GROUPS_<species>.tsv.
 # MIT License · Copyright (c) 2026 Hungmin Kim
 import io
 import os
@@ -54,7 +54,7 @@ for fn in sorted(os.listdir(MAPD)):
     pat = collections.Counter(vec)
     reps = [p for p, c in pat.most_common()]
     thr = max(1, int(0.15 * len(poly)))
-    groups = []          # [(대표패턴, [유닛 인덱스])]
+    groups = []          # [(the representative pattern, [unit indices])]
     for p in reps:
         placed = False
         for g in groups:
@@ -77,7 +77,7 @@ for fn in sorted(os.listdir(MAPD)):
                             str(n), "100.0", "-", "다형성 변이 %d 개" % len(poly)]) + NL)
         print("%s : 유닛 %d · 다형성 %d · 묶음 1 -> 한 종류" % (aid, n, len(poly)))
         continue
-    # 그룹마다 구분 변이와 참조 유닛
+    # the distinguishing variants and the reference unit, per group
     sizes, defs, paths = [], [], []
     regs, meta = [], []
     for k, (gi, mem) in enumerate(big):

@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
-# [v11-fix1 copy 2026-09-16: map g8canonv10, canonical cmp4d_v11, anchors set directly, input ~/fix1/pol, output ~/fix1/splice. Otherwise unchanged]
-# Surgical replacement v2: anchors are fixed by position (2026-09-13)
+# [v11-fix1: map g8canonv10, canonical cmp4d_v11, anchors set directly, input ~/fix1/pol, output ~/fix1/splice]
+# Surgical replacement: anchors are fixed by position
 #
-#   v1 failure: anchor units were found by 'best identity' over the whole consensus, and attached to another copy within the tandem
-#                (NA20282: consensus of 3 units, but the rear anchor attached to the middle unit and swallowed a real unit -> 2 units)
-#   fix      : by definition the consensus is the [front anchor ... rear anchor] segment. The front anchor is fixed to the first HSP of the consensus,
+#   why      : anchor units found by 'best identity' over the whole consensus attach to another copy within the tandem
+#                (NA20282: consensus of 3 units, but the rear anchor attaches to the middle unit and swallows a real unit -> 2 units)
+#   rule     : by definition the consensus is the [front anchor ... rear anchor] segment. The front anchor is fixed to the first HSP of the consensus,
 #               the rear anchor to the last HSP. Then the 'bp of the consensus left outside the anchors' is printed
 #               to check that they really attached at the ends (should be near 0).
 #   tests    : ① leftover bp ② anchor identity (100 against the assembly) ③ breaks ④ unit count must equal the consensus
@@ -13,7 +13,7 @@ import os
 import subprocess
 import collections
 
-H = "/home/ubuntu"
+H = os.environ["NODE_HOME"]   # the compute node's home directory
 NL = chr(10)
 TAB = chr(9)
 W = os.path.join(H, "fix1", "splice")

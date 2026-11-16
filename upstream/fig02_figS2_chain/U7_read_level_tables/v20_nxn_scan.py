@@ -13,7 +13,7 @@
 #   [D] unit level: the methylation difference between units with and without a specific variant
 #        is compared within the same slot and the same position window (removing position effects) plus a within-stratum permutation null.
 #
-#  matplotlib glyph trap: ASCII only.
+#  ASCII only in the figure text.
 import io, os, warnings
 import numpy as np
 import pandas as pd

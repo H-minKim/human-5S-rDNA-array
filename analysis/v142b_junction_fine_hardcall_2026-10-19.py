@@ -1,29 +1,29 @@
 # -*- coding: utf-8 -*-
-# v142b (2026-10-19) — 창 축을 하드콜 자 로도 낸다
+# The window axis is also reported on the hard-call ruler.
 #
-#   왜
-#     `Fig 3 (A)` 는 한 그림에 두 선을 겹쳐 그린다 :
-#       · 주황 유닛 축  = `FIG1_2_UNITS.tsv` — 하드콜 비율 (Σ(b_call × n_canon) / Σ n_canon)
-#       · 검정 창 축    = `FIG1_V5_A_bp.tsv` ← `JUNCTION_FINE_METH.tsv` — 확률 평균 (Σ sum_p / Σ n_call)
-#     둘은 같은 자가 아니었다 (2026-10-18 실측). 원위에서 창 축이 체계적으로 +0.103 높고,
-#     그 가운데 자 차이가 +0.093 · 모으는 법 차이는 +0.007 뿐이다.
-#     ⇒ 창 축을 하드콜로 다시 내면 두 선이 같은 자 위에 선다. (2026-10-19)
+#   why
+#     Figure 3A overlays two lines in one panel:
+#       · the orange unit axis, from FIG1_2_UNITS.tsv, a hard-call fraction, sum(b_call * n_canon) / sum(n_canon);
+#       · the black window axis, from FIG1_V5_A_bp.tsv via JUNCTION_FINE_METH.tsv, a probability mean, sum(sum_p) / sum(n_call).
+#     These are not the same ruler. Measured, the window axis runs systematically 0.103 higher at the distal end,
+#     of which 0.093 is the difference of ruler and only 0.007 the difference in how the values are pooled.
+#     Recomputing the window axis as a hard call puts the two lines on the same ruler.
 #
-#   무엇이 다른가 — v142 와 딱 한 가지
-#     원래 : 창마다 `n_call`(호출 수)과 `sum_p`(확률의 합)만 쌓았다.
-#     여기 : `sum_h`(ML ≥ 128 인 호출의 수) 를 함께 쌓는다. 나머지 파싱·창·좌표는 글자 그대로 같다.
-#     ⇒ `beta`(확률 평균)와 `beta_hc`(하드콜 비율) 를 한 표에 둔다. 옛 열은 그대로 남는다.
+#   What is accumulated per window:
+#     n_call, the number of calls, sum_p, the sum of the probabilities,
+#     and sum_h, the number of calls at ML >= 128.
+#     The table carries both beta, the probability mean, and beta_hc, the hard-call fraction.
 #
-#   옛 표를 덮지 않는다 — 새 이름으로 낸다 : `02_tables/JUNCTION_FINE_METH_HC.tsv`
-#     (`JUNCTION_FINE_METH.tsv` 는 다른 그림 묶음도 읽는다. 옛 판 보관 : `02_tables/00_previous_2026-10-19_before_hardcall_window/`)
+#   The existing table is not overwritten; the output goes to 02_tables/JUNCTION_FINE_METH_HC.tsv
+#     because JUNCTION_FINE_METH.tsv is read by other figure sets as well.
 #
-#   검산 : 새 표의 `n_call`·`sum_p` 가 옛 표와 같아야 한다 (같은 자료를 같은 길로 읽었으므로).
-#            다르면 파싱이 달라진 것이니 멈추고 본다.
+#   Check: n_call and sum_p in the new table must equal those in JUNCTION_FINE_METH.tsv, the same data being read by the same path.
+#            If they differ the run stops.
 import io, os, glob, sys
 import numpy as np, pandas as pd
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
-# 자료 뿌리는 환경변수 하나로 (2026-10-21 · 저장소 공개 준비)
-#   안 주면 지금까지 쓰던 자리를 그대로 쓴다 — 돌아가는 것이 달라지지 않는다.
+# The data roots come from environment variables.
+#   They have no default: the script stops with a message if one is not set.
 DATA_ROOT = os.environ["DATA_ROOT"]
 V_ROOT = os.environ["V_ROOT"]
 OUT = DATA_ROOT; T = OUT + "/02_tables"
@@ -33,7 +33,7 @@ LOG = io.open(OUT + "/04_logs/V142B_FINE_HC.txt", "w", encoding="utf8", newline=
 def P(s=""): print(s, flush=True); LOG.write(str(s) + "\n"); LOG.flush()
 COMP = str.maketrans("ACGTacgtN", "TGCAtgcaN")
 OUTMAX, INMAX = 50000, 45000
-HC = 128.0 / 255.0            # 하드콜 컷 — ML ≥ 128 (공통)
+HC = 128.0 / 255.0            # the hard-call cut, ML >= 128, as used throughout
 
 
 def binof(d):
@@ -152,7 +152,7 @@ for fi, f in enumerate(files):
                 k = (s0, sl, side, b)
                 a = acc.setdefault(k, [0, 0.0, 0])
                 a[0] += 1; a[1] += p
-                if p >= HC: a[2] += 1          # 하드콜
+                if p >= HC: a[2] += 1          # hard call
     if acc:
         rows.extend([dict(sample=k[0], slot=k[1], side=k[2], b=k[3],
                           n_call=v[0], sum_p=v[1], sum_h=v[2]) for k, v in acc.items()])
@@ -167,7 +167,7 @@ F.to_csv(T + "/JUNCTION_FINE_METH_HC.tsv", sep="\t", index=False, float_format="
 P("[2] 저장 02_tables/JUNCTION_FINE_METH_HC.tsv · 행 %d · 하플로 %d · %.0f 초"
   % (len(F), F.groupby(["sample", "slot"]).ngroups, time.time() - t0))
 
-# ---------- 검산 : 옛 표와 n_call·sum_p 가 같아야 한다 ----------
+# ---------- check: n_call and sum_p must match the existing table ----------
 Oldp = T + "/JUNCTION_FINE_METH.tsv"
 if os.path.exists(Oldp):
     Old = pd.read_csv(Oldp, sep="\t", dtype={"slot": str})

@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-# 전 종 read 배치 결과 + 메틸 요약 (타 생물종 전용)
-#   배치 : 03_reads 의 array 요약과 06_units_from_reads 의 조각 표에서 센다
-#   메틸 : 같은 array 요약의 CpG(식물은 CG/CHG/CHH) 호출 수와 비율
-#   산출 : PLACEMENT_METH_REPORT.tsv (종×샘플×문맥) · 화면에 종 단위 요약
-#   인자 : data_v2 폴더
+# Read placement and a methylation summary across every species, for the other species only.
+#   Placement: counted from the array summaries in 03_reads and the fragment tables in 06_units_from_reads.
+#   Methylation: the call count and fraction for CpG, or CG, CHG and CHH in the plant, from those same array summaries.
+#   Outputs: PLACEMENT_METH_REPORT.tsv, by species, sample and context, with a per-species summary printed to the terminal.
+#   Argument: the data_v2 folder.
 # MIT License · Copyright (c) 2026 Hungmin Kim
 import io
 import os
@@ -18,7 +18,7 @@ B = sys.argv[1]
 AR = []
 for f in glob.glob(os.path.join(B, "03_reads", "*", "5S_array_summary.tsv")):
     AR += list(csv.DictReader(io.open(f, encoding="utf8"), delimiter=TAB))
-# read 조각 표에서 배치 깊이
+# the placement depth, from the read fragment table
 DEP = {}
 for f in glob.glob(os.path.join(B, "06_units_from_reads", "*.read_unit_seq.tsv")):
     base = os.path.basename(f)[:-len(".read_unit_seq.tsv")]

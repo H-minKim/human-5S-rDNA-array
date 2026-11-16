@@ -1,26 +1,26 @@
 # -*- coding: utf-8 -*-
-# 타 생물종 5S : 참조 유닛이 여럿인 array 의 G8 유닛 지도 (유닛마다 제일 맞는 참조를 쓴다)
+# 5S in other species: the G8 unit map for an array with several reference units, choosing the best-matching reference for each unit.
 #
-# species_g8map.py (참조 하나) 를 그대로 옮기고, 참조가 여럿일 때 달라지는 곳만 고쳤다.
+# This follows species_g8map.py (single reference), changed only where having several references makes a difference.
 #
-# 경계가 복잡해지는 지점은 딱 하나다 — "이 간격을 유닛으로 받을 것인가" 의 길이 창
-#   유닛 경계 자체는 유전자 끝에서 나오므로 참조와 무관하다(유전자끝+1 .. 다음 유전자끝).
-#   그런데 그 간격을 유닛으로 받을지 말지는 길이 창 LO~HI 로 정하고, 이 창은 참조의 주기에서 온다.
-#   참조가 둘이면 창도 둘이다. 그래서 이 코드는
-#     1) 그룹마다 제 주기(구성원 유닛 길이 중앙값)로 창 [LO_k, HI_k] 를 따로 만든다
-#     2) 간격이 어느 한 창에라도 들면 유닛으로 받는다 (창의 합집합) · 어느 창이 받았는지 적는다
-#     3) 배수 함정 검사 : 어떤 창의 HI 가 다른 창 LO 의 2 배 이상이면, 유전자를 하나 놓쳐
-#        두 유닛이 합쳐진 조각이 '다른 종류의 정상 유닛' 으로 통과할 수 있다 → 경고를 적는다
-#     4) 창이 겹치는 구간도 적는다 — 이 구간의 간격은 어느 종류인지 길이로는 못 가린다
-#        (길이로 못 가려도 되는 이유 : 종류는 서열 정렬로 정하지 길이로 정하지 않는다)
-#     5) 참조 하나(array 참조)만 썼을 때와 비교해 새로 살아난 유닛을 센다
-#   길이 창은 합집합이므로 유닛이 사라지는 일은 없다(단일 창 ⊆ 합집합).
+# Only one thing becomes more complicated: the length window that decides whether a gap is accepted as a unit.
+#   The unit boundary itself comes from the gene ends and does not depend on the reference (gene end + 1 .. next gene end).
+#   Whether the gap is accepted as a unit is decided by the length window LO..HI, and that window comes from the reference's period.
+#   Two references mean two windows, so this script:
+#     1) builds a separate window [LO_k, HI_k] per group from its own period (the median unit length of its members)
+#     2) accepts a gap as a unit if it falls in any one window (the union of the windows), recording which window accepted it
+#     3) checks for multiples: if one window's HI is at least twice another window's LO, a missed gene can
+#        let two merged units pass as a normal unit of the other type, so a warning is recorded
+#     4) records where the windows overlap: in that range, length alone cannot tell which type a gap is
+#        (which is acceptable, because the type is decided by sequence alignment and not by length)
+#     5) counts the units recovered relative to using the single array reference.
+#   Because the windows are unioned, no unit can be lost: a single window is a subset of the union.
 #
-# 유닛마다 참조 고르기 : 모든 참조의 문맥판에 정렬해 점수 1 등. 확실성은 참조끼리 거리 Dmax 로 정규화
-#   margin_frac >= 0.50 OK · 0.20~0.50 WEAK · < 0.20 AMBIG(→ array 참조 공통 프레임)
-# 채움 금지 — 변이는 정렬(cs/BTOP)로만. 고른 참조의 유닛 구간을 다 못 덮으면 NO_FULL
+# Choosing a reference per unit: align to the context version of every reference and take the top score. The confidence is normalised by Dmax, the distance between the references.
+#   margin_frac >= 0.50 is OK, 0.20-0.50 is WEAK, below 0.20 is AMBIG and falls back to the common frame of the array reference.
+# No filling: variants come from the alignment (cs / BTOP) alone. If the chosen reference's unit interval is not fully covered, the result is NO_FULL.
 #
-# 인자 : array_id fasta gene.fa 참조폴더 그룹파일(쉼표) PAD CTX GL 출력폴더 array시작 array끝 chrom strand
+# Arguments: array_id, fasta, gene.fa, reference folder, group files (comma separated), PAD, CTX, GL, output folder, array start, array end, chrom, strand.
 # MIT License · Copyright (c) 2026 Hungmin Kim
 import io
 import os
@@ -105,7 +105,7 @@ def fmt(tok):
 
 
 def window(period):
-    # 사람 G8v4 규칙의 종별 환산 : 주기 -6% / +7% 와 ±30 bp 중 더 너그러운 쪽
+    # The human G8v4 rule carried across to other species: whichever is the more permissive of -6% / +7% of the period and +-30 bp.
     return (int(min(period * 0.94, period - 30)), int(max(period * 1.07, period + 30)))
 
 
@@ -125,7 +125,7 @@ WIN = dict((k, window(PERIOD[k])) for k in refs)
 GK = [k for k in refs if k != "arrayref"]
 ULO = min(w[0] for w in WIN.values())
 UHI = max(w[1] for w in WIN.values())
-# 배수 함정 검사
+# check whether one window's HI is at least twice another window's LO
 warn = []
 for a in WIN:
     for b in WIN:
@@ -164,7 +164,7 @@ if len(GK) >= 2:
     DM = min((aln_score(refs[k], refs[k]) - max(aln_score(refs[k], refs[j]) for j in GK if j != k))
              for k in GK)
 
-# ---- 유전자 위치로 경계 만들기 (참조와 무관) ----
+# ---- build the boundaries from the gene positions, independently of any reference ----
 mar = 3 * max(PERIOD.values()) + 3000
 L0, R1 = max(1, s0 - mar), min(LEN[CHROM], e1 + mar)
 seq = faidx("%s:%d-%d" % (CHROM, L0, R1))
@@ -215,7 +215,7 @@ for i in range(len(gg) - 1):
 qp = os.path.join(OUT, "g8map", AID + ".units.fa")
 io.open(qp, "w", encoding="utf8", newline=NL).write("".join(qs))
 
-# ---- 유닛을 모든 참조에 정렬 ----
+# ---- align the unit to every reference ----
 best = collections.defaultdict(dict)
 rm = subprocess.run("minimap2 -cx asm20 --cs -N 10 -p 0.5 -t 4 %s %s 2>/dev/null" % (ctxp, qp),
                     shell=True, capture_output=True, text=True)

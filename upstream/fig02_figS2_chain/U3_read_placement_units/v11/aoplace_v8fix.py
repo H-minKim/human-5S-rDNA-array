@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# ARRAY_ONLY actual placement, using only the gates set by validation (2026-09-09)
+# ARRAY_ONLY actual placement, using only the gates set by validation
 #
 #  Gates (fixed in validation, no post hoc adjustment)
 #      K = 16  ·  Δ >= 10
@@ -13,7 +13,7 @@
 #    so delta, which asks "does it attach confidently only to the own individual", is the real discriminating axis.
 #
 #  Units are cut by alignment coordinates (no blastn)
-#    The cause that broke chain placement was blastn cutting (unit count agreement 70.8%).
+#    blastn cutting breaks chain placement (unit count agreement 70.8%).
 #
 #  Target = reads that TUC judged to have caught the array and that have no flank
 #    arr_span >= 36000 (16 units = K met), flankL,flankR < 500
@@ -27,7 +27,7 @@ import random
 import subprocess
 import collections
 
-W = os.path.expanduser(os.environ.get("WDIR", "~/aojx8"))
+W = os.path.expanduser(os.environ["WDIR"])
 os.makedirs(W, exist_ok=True)
 R = os.path.expanduser("~/s5s_tuc/ref")
 NL = "\n"
@@ -73,7 +73,7 @@ if os.environ.get("SEQOVR"):
             SEQO[(f[0], f[1])] = f[2]
 UB = collections.defaultdict(list)
 MAPV = collections.defaultdict(dict)
-f = io.open(os.path.expanduser(os.environ.get("MAPF", "~/CONSENSUS_MAP_G6.tsv")), encoding="utf8")
+f = io.open(os.path.expanduser(os.environ["MAPF"]), encoding="utf8")
 h = f.readline().rstrip(NL).split("\t")
 ix = dict((n, i) for i, n in enumerate(h))
 for L in f:
@@ -91,7 +91,7 @@ CS = re.compile(r"([:*+-])([A-Za-z0-9]+)")
 def tuc_targets(smp):
     """Selects reads that TUC judged to have no flank and to have caught enough of the array"""
     out = set()
-    # giab_tuc was missing, so the 4 GIAB individuals were silently skipped (fixed).
+    # giab_tuc must be in the list, or the 4 GIAB individuals are silently skipped.
     #   If even one TUC call table directory is left out, tuc_targets returns an empty set
     #   and they disappear without error via "if not want: continue". Always check the directory list.
     for d in ("s5s_ont_tuc", "new44_tuc", "kgp_tuc", "giab_tuc", "s5s_tuc"):
@@ -334,10 +334,10 @@ for smp in [x.strip() for x in io.open(sys.argv[1], encoding="utf8") if x.strip(
         npass += 1
         # placement succeeded, record the units this read covered
         N = UB[(smp, ctg)][0][3]
-        # unit records are not cut at K (fixed)
+        # unit records are not cut at K
         #   the position is already fixed by the first K units, and the remaining units are contiguous, so
-        #   their positions follow automatically as r0[0]+t. But originally they were discarded.
-        #   measured: median 23.6 units actually spanned by a read, but only 16 were written, a 35.9% loss.
+        #   their positions follow automatically as r0[0]+t.
+        #   measured: a read spans a median of 23.6 units; writing only 16 would lose 35.9%.
         #   However, units after the K-th are an interval not used for the placement score, so
         #     they are marked separately in the scored column (so they are not mixed in before validation).
         for t, (u, _s) in enumerate(seg):

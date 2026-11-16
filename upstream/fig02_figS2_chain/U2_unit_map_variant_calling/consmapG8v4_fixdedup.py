@@ -1,34 +1,28 @@
 # -*- coding: utf-8 -*-
-# G8v3 (2026-09-11): only one gene boundary changed from G8v2
-#   blastn gene HSPs stop one or two bases early when the gene end base is a variant (50 of 57,878 HSPs measured in the 616 canonical sequences)
-#   G8v2 used only the canonical coordinates of the HSP, so that boundary shifted -> extend to the full gene length with the query coordinates (qstart/qend) to set the boundary
+# consensus map G8: cut assembly arrays into units and call variants against the canonical unit
+#
+#  inputs (environment variables)
+#    HSN   : hap_seq_node list (stops if missing)
+#    CMPD  : folder of the canonical .fa files
+#    WDIR  : work folder
+#    orientation : strand majority only. The revcomp column of SUM = whether it was flipped by strand majority
+#    slot_space column = assembly
+#    no canonical, no file, and - strand still dominant after flipping are counted, not silently skipped
+#
+#  gene boundary
+#    blastn gene HSPs stop one or two bases early when the gene end base is a variant (50 of 57,878 HSPs measured in the 616 canonical sequences)
+#    -> the HSP is extended to the full gene length with the query coordinates (qstart/qend) to set the boundary
 #     + strand : start = sstart - (qstart - 1), end = send + (119 - qend)
 #     - strand : start = send - (119 - qend)   , end = sstart + (qstart - 1)
-#   work folder ~/g8v3. Everything else (orientation, cutting rule, variant calling, checks) is as in G8v2
-# G8v2 (2026-09-11): recut from the latest canonical sequences (those used by merged v7) following METHOD_CONSENSUS_MAP_G8_REBUILD.md
-#   Changes are only the four places of the METHOD §5-5 table plus two for recording. Cutting, variant and check methods are as in G8.
-#   (1) SEQF  : new hap_seq_node from env var HSN (stops if missing, so it never silently runs on the old file)
-#   (2) .fa   : new folder CMPD (default ~/cmp4d_v7). The old ~/cmp4d is left as is
-#   (3) RCF   : removed, strand majority only (METHOD §4). The revcomp column of SUM = whether it was flipped by strand majority
-#   (4) W     : ~/g8v2. The old ~/g8 is not overwritten
-#   (5) slot_space column added (= assembly, METHOD §3-3). Slot numbers are as in the old hap_seq_node
-#   (6) no canonical, no file, and - strand still dominant after flipping are counted, not silently skipped
-# consensus map G8: recut assembly arrays from scratch (2026-09-10)
 #
-#  defect of G6 and the stopgap of G7
-#    G6 : cut units at the gene start -> [gene 119bp][AluY..NTS2]
-#         the canonical unit is [AluY..NTS2][gene], so a 119bp rotation offset.
-#         minimap2 cannot wrap around, so canonical 2122-2240 was never covered.
-#         result: map variants stopped at 2101 and there were 0 5S gene variants.
-#    G7 : patched by rotating the cut units by 119bp afterwards. It worked, but
-#         as a patch on top of a wrong cut it cannot be canonical.
-#
-#  G8 = cut in canonical phase from the start
+#  G8 = cut in canonical phase
 #    canonical unit = [AluY 1-318][NTS1 319-1178][GArich 1179-1551][NTS2 1552-2121][gene 2122-2240]
 #    => the canonical unit starts right after the gene ends.
 #    => therefore unit boundaries are set at the end of the gene HSP.
 #         unit i = (gene_end[i] + 1) .. gene_end[i+1]
 #       No rotation is needed. A cut unit is already in canonical phase.
+#       (a cut at the gene start gives [gene 119bp][AluY..NTS2], a 119bp rotation offset;
+#        minimap2 cannot wrap around, so canonical 2122-2240 would not be covered)
 #
 #  flanks are already handled (shared)
 #    cmp4d/*.fa are flank-to-flank sequences cut by asm_units3.py with 50kb flank probes.
@@ -41,8 +35,8 @@
 #
 #  checks are done with sequence
 #    ① restore unit sequences from the variant list and compare character by character with the original
-#    ② ends not covered by the aligner are filled by direct sequence comparison
-#       (minimap2 does not extend when the end mismatches -> it trims that variant.
+#    ② units are cut with a margin and aligned to the context-padded reference, so only the alignment result is used
+#       (minimap2 does not extend when the end mismatches -> without the margin it trims that variant.
 #        in measurement, 237 of 400 cases were real variants)
 #    ③ unit boundaries are checked with gene HSPs. No bp/2240 conversion
 import io
@@ -53,7 +47,7 @@ import subprocess
 import collections
 
 NL = "\n"
-W = os.path.expanduser(os.environ.get("WDIR", "~/g8v4"))
+W = os.path.expanduser(os.environ["WDIR"])
 os.makedirs(W, exist_ok=True)
 R = os.path.expanduser("~/s5s_tuc/ref")
 CANON = os.path.join(R, "unit_canon.fa")
@@ -101,7 +95,7 @@ for x in io.open(os.path.expanduser(os.environ["HSN"]), encoding="utf8"):
     if len(f) >= 3 and f[0] != "sample":
         SEQF[(f[0], f[1])] = f[2]
 RCF = {}
-for i, x in enumerate([]):   # RCF not used (METHOD §4)
+for i, x in enumerate([]):   # RCF not used
     if i == 0:
         continue
     f = x.rstrip(NL).split("\t")
@@ -145,10 +139,10 @@ def gene_hits(seq, tag):
         except OSError:
             pass
     os.remove(fa)
-    # F method (2026-09-13 audit): replaced 1kb bins with interval overlap + fragment call
-    #   bin defect: the ghost end 145074 and the real end 145147 differ by 73bp, but
-    #                 fell into bins 144/145 so both survived, giving a false break + a unit with its boundary shifted by 73bp
-    #   the extension rule itself is kept (some real ends are one or two bases short because of an end-base variant)
+    # F method: interval overlap + fragment call
+    #   1kb bins fail here: a ghost end 145074 and the real end 145147 differ by 73bp, but
+    #                 fall into bins 144/145 so both survive, giving a false break + a unit with its boundary shifted by 73bp
+    #   the extension rule applies (some real ends are one or two bases short because of an end-base variant)
     keep = []
     for h in sorted(hits):
         if keep and h[0] <= keep[-1][1]:          # ① interval overlap -> keep only the longer
@@ -218,8 +212,7 @@ def call_variants(seqs, tag):
                 if CTX <= tp < CTX + 2240:
                     toks.append("%dI%d" % (tp - CTX + 1, len(v)))
                 reb.append(v.upper())
-        # ends are filled by direct sequence, not trusting the aligner
-        # no filling (G8v4): aligned with margin to the context-padded reference, so only the alignment result is used
+        # no filling: aligned with margin to the context-padded reference, so only the alignment result is used
         OUT[i] = dict(toks=sorted(set(toks)), qs=qs, qe=qe, ts=ts, te=te,
                       reb="".join(reb), fill=0, cov_e=(2240 if te >= CTX + 2240 else 0), cov_s=(0 if ts <= CTX else 1))
     os.remove(q)
@@ -228,13 +221,13 @@ def call_variants(seqs, tag):
 
 def verify(seq, res):
     if res is None:
-        return "NOALN", "정렬 없음"
+        return "NOALN", "no alignment"
     if res["reb"] != seq[res["qs"]:res["qe"]]:
-        return "SEQ_MISMATCH", "복원 %d vs 원본 %d" % (len(res["reb"]), res["qe"] - res["qs"])
+        return "SEQ_MISMATCH", "rebuilt %d vs original %d" % (len(res["reb"]), res["qe"] - res["qs"])
     if res["cov_e"] < 2240 or res["cov_s"] > 0:
-        return "NO_FULL", "정본 %d..%d (+채움 %d)" % (res["ts"], res["te"], res["fill"])
+        return "NO_FULL", "canonical %d..%d (+fill %d)" % (res["ts"], res["te"], res["fill"])
     return ("OK_FILLED" if res["fill"] else "OK"), (
-        "말단 %d bp 서열로 채움" % res["fill"] if res["fill"] else "")
+        "end %d bp filled from sequence" % res["fill"] if res["fill"] else "")
 
 
 HDR = ["sample", "slot", "N", "array_pos", "seg_type", "unit_start", "unit_end",
@@ -257,7 +250,7 @@ for line in io.open(sys.argv[1], encoding="utf8"):
     if not fn:
         STAT["정본 없음"] += 1
         continue
-    p = os.path.join(os.path.expanduser(os.environ.get("CMPD", "~/cmp4d_v7")), fn)
+    p = os.path.join(os.path.expanduser(os.environ["CMPD"]), fn)
     if not os.path.exists(p):
         STAT["파일 없음"] += 1
         sys.stderr.write("  파일 없음 %s_%s %s%s" % (smp, sl, p, NL))
@@ -299,7 +292,7 @@ for line in io.open(sys.argv[1], encoding="utf8"):
                  off_prox, off_dist, nbreak))
     # proximal fragment (junction ~ end of the first gene), no variant calling
     MAP.write("\t".join([smp, sl, str(N), "0", "PARTIAL_PROX", "1", str(ends[0]),
-                         str(ends[0]), "0", "-", "0", "0", "-", "SKIP", "온전유닛 아님", "assembly"]) + NL)
+                         str(ends[0]), "0", "-", "0", "0", "-", "SKIP", "not a complete unit", "assembly"]) + NL)
     STAT["PARTIAL_PROX"] += 1
     for i, (s, e) in enumerate(bounds):
         res = V.get(i)
@@ -322,7 +315,7 @@ for line in io.open(sys.argv[1], encoding="utf8"):
     if off_dist > 0:
         MAP.write("\t".join([smp, sl, str(N), str(N + 1), "PARTIAL_DIST",
                              str(ends[-1] + 1), str(len(a)), str(off_dist), "0", "-",
-                             "0", "0", "-", "SKIP", "온전유닛 아님", "assembly"]) + NL)
+                             "0", "0", "-", "SKIP", "not a complete unit", "assembly"]) + NL)
         STAT["PARTIAL_DIST"] += 1
     sys.stderr.write("  %-10s 슬롯%s 유닛 %d · 끊김 %d%s" % (smp, sl, N, nbreak, NL))
     sys.stderr.flush()

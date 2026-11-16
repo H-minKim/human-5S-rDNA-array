@@ -1,18 +1,18 @@
 # -*- coding: utf-8 -*-
-# P10 계열별 : [B] 이봉성  [C] array 절대축 지도  [D] 전이의 sub-unit 위치
-# 입력 : out/P10/P10_FRAME_ALL.tsv (p10_08, 실측 주기판) · P10_FRAME_SEGS_ALL.tsv · P10_SUBUNIT_FRAMES.json
+# Per P10 family: [B] bimodality, [C] the map on the absolute array axis, [D] the sub-unit position of the transition.
+# Inputs: out/P10/P10_FRAME_ALL.tsv from p10_08, built on the measured period, plus P10_FRAME_SEGS_ALL.tsv and P10_SUBUNIT_FRAMES.json.
 #
 # Rules
-#  · 유닛 class = 계열별 2-성분 이항혼합 EM 의 우도비 (0.5 고정 임계 아님)
-#  · 결합도 = sub-unit 을 뺀 나머지로 class 를 정하고 그 sub-unit 의 β 차 / 동적범위 (순환 회피)
-#  · 경계 프로파일 = 같은 canonical 칸의 LL/HH 대조로 정규화한 score, 지속 교차(200 bp)
-#  · DXZ4 는 성별로 나눈다 (Xa/Xi). 극성 CONFLICT 인 DXZ4 조각은 원위/근위를 부르지 않는다.
+#  · The unit class comes from the likelihood ratio of a two-component binomial mixture fitted per family by EM, not from a fixed threshold at 0.5.
+#  · Coupling: the class is decided from everything except the sub-unit in question, then that sub-unit's beta difference is divided by the dynamic range, which avoids circularity.
+#  · The boundary profile is a score normalised against the LL and HH contrast in the same canonical bin, with a sustained crossing over 200 bp.
+#  · DXZ4 is split by sex, for Xa and Xi, and a DXZ4 block whose polarity is in conflict is not given a distal or proximal call.
 import io, os, math, json, collections, statistics
 
 def _need(_v):
     """No defaults are set: the script stops if a variable is missing.
-    이 글이 읽는 자료의 뿌리는 README.md 의
-    "Running this code" 절에 적혀 있다."""
+    The roots of the data this script reads are listed in the
+    "Running this code" section of README.md."""
     import os as _o, sys as _s
     _x = _o.environ.get(_v)
     if not _x:
@@ -36,7 +36,7 @@ for i, L in enumerate(io.open(os.path.join(W, "P10", "out", "P10_SAMPLES.tsv"), 
     f = L.rstrip("\n").split("\t")
     SEX[f[0]] = f[2]
 BIN, MINC = 40, 20
-# 5S 는 canonical 이 CHM13 c 와 반대 방향
+# for 5S the canonical frame runs opposite to the CHM13 coordinate c
 CDIR = {"5S": -1, "D4Z4_4q": 1, "D4Z4_10q": 1, "DXZ4": 1, "RNU2": 1, "SST1": 1}
 
 
@@ -52,10 +52,10 @@ def base(g):
 
 GROUPS = ["5S", "D4Z4_4q", "D4Z4_10q", "DXZ4_F", "DXZ4_M", "RNU2", "SST1"]
 
-# ---------- 적재 ----------
-# 완전 유닛만 : read 가 유닛 중간에서 끝나면 그 read-유닛은 일부 구획만 덮는다.
-#   RNU2 에서 부분 유닛 LOW 비율 0.314 vs 완전 유닛 0.004 — 비메틸 구획(U2·CpG섬)만 덮은 조각이
-#   가짜 저메틸 유닛을 만들었다. CpG 가 있는 칸의 90% 이상을 덮은 read-유닛만 쓴다.
+# ---------- load ----------
+# Complete units only: a read ending inside a unit covers only part of that unit's segments.
+#   In RNU2 the LOW fraction is 0.314 for partial units against 0.004 for complete ones: fragments covering only
+#   the unmethylated segments, the U2 gene and its CpG island, created spurious hypomethylated units. Only read-units covering at least 90% of the bins holding a CpG are used.
 RAW = []
 TOT = collections.defaultdict(collections.Counter)
 for i, L in enumerate(io.open(os.path.join(OUT, "P10_FRAME_ALL.tsv"), encoding="utf8")):
@@ -84,7 +84,7 @@ for f, cb in RAW:
                                None if f[10] == "NA" else int(f[10]), int(f[11]), int(f[12]), cb))
 del RAW
 print("적재(완전 유닛 / 전체) : " + " · ".join("%s %d/%d" % (g, len(RU[g]), NALL[g]) for g in GROUPS))
-# 하플로타입당 조각 수 (조립 끊김 표시)
+# blocks per haplotype, which indicates where the assembly is broken
 _segs = set()
 for i, L in enumerate(io.open(os.path.join(OUT, "P10_FRAME_SEGS_ALL.tsv"), encoding="utf8")):
     if i == 0:
@@ -104,7 +104,7 @@ def w(g, k, v):
     O.write("%s\t%s\t%s\n" % (g, k, v))
 
 
-# ---------- 이봉성 도구 ----------
+# ---------- bimodality tools ----------
 def em_binom(dat, p0=0.1, p1=0.85, w0=0.3):
     for _ in range(300):
         s0 = n0 = k0 = n1 = k1 = 0.0
@@ -193,7 +193,7 @@ for g in GROUPS:
                  ("frac_le03", lo), ("call", call),
                  ("hist50", ",".join("%.5f" % (c / float(len(x))) for c in h))):
         w(g, k, v)
-    # 하플로타입별 LOW 비율 (DXZ4 는 Xa/Xi 가 하플로 단위라 여기서 보인다)
+    # the LOW fraction per haplotype; for DXZ4 this is where Xa and Xi become visible, the haplotype being the unit
     hp = collections.defaultdict(list)
     for r in rows:
         hp[(r[0], r[1])].append(r[10] / float(r[9]))
@@ -201,7 +201,7 @@ for g in GROUPS:
                 for (s, h_), xx in hp.items() if len(xx) >= 30)
     w(g, "hap_lowfrac", ";".join("%s_%s:%.3f:%d" % (s, h_, f_, n_) for f_, s, h_, n_ in hl))
 
-# ---------- class 호출 ----------
+# ---------- class calls ----------
 
 
 def cls_of(g, n, k):
@@ -210,7 +210,7 @@ def cls_of(g, n, k):
     return 1 if d > 0 else 0
 
 
-# ---------- [C] array 절대축 ----------
+# ---------- [C] the absolute array axis ----------
 print("\n" + "=" * 100)
 print("[C] array 절대축 — 원위 끝부터 / 근위 끝부터 (극성 확정 조각만) · 유닛 β 평균")
 for g in GROUPS:
@@ -224,7 +224,7 @@ for g in GROUPS:
         if r[8] is not None:
             D_[r[8]].append(b)
             P_[nun - r[8] + 1].append(b)
-        # 극성 몰라도 되는 축 : 가까운 끝까지 거리
+        # an axis that needs no polarity: the distance to the nearer end
         e = min(r[7] + 1, nun - r[7])
         E_[e].append(b)
     nd = sum(len(v) for v in D_.values())
@@ -237,7 +237,7 @@ for g in GROUPS:
         v = [x for u in range(a, z + 1) for x in d[u]]
         return (statistics.mean(v), len(v)) if v else (float("nan"), 0)
     inner = [x for u, v in D_.items() for x in v if u > 20 and (u in D_)]
-    # 내부 = 양 끝에서 20 유닛 넘게
+    # interior means more than 20 units from either end
     inner = []
     for r in rows:
         if r[8] is not None and r[8] > 20 and (r[5] - r[8] + 1) > 20:
@@ -255,7 +255,7 @@ for g in GROUPS:
     w(g, "distal1_5", "%.4f" % d15[0])
     w(g, "proximal1_5", "%.4f" % p15[0])
     w(g, "interior_gt20", "%.4f" % statistics.mean(inner) if inner else "nan")
-    # 민감도 : 조립본이 array 를 끊으면 조각 끝 ≠ array 끝. 하플로당 조각 1 개인 것만
+    # Sensitivity: where the assembly breaks the array, the end of a block is not the end of the array, so only haplotypes with a single block are used.
     one = [r for r in rows if NSEG.get((r[0], r[1], base(g)), 0) == 1 and r[8] is not None]
     if one:
         d1 = [r[10] / float(r[9]) for r in one if r[8] <= 5]
@@ -268,11 +268,11 @@ for g in GROUPS:
         w(g, "onesegment_haps", nh)
         w(g, "onesegment_d_i_p", "%s|%s|%s" % (f_(d1), f_(i1), f_(p1_)))
 
-# ---------- canonical 칸 ----------
+# ---------- canonical bins ----------
 
 
 def canon_bins(fam, cb):
-    """CHM13 c 칸 → canonical 칸 (칸 중심의 canonical 위치로)"""
+    """CHM13 c bin -> canonical bin (by the canonical position of the bin centre)"""
     fr = FR[fam]
     L = fr["L"]
     out = collections.defaultdict(lambda: [0, 0])
@@ -285,7 +285,7 @@ def canon_bins(fam, cb):
     return out
 
 
-LABQ = {}              # fam -> [라벨] (canonical q 1..maxq, 빈 칸은 가까운 값으로)
+LABQ = {}              # family -> labels, over canonical q from 1 to maxq, with empty bins filled from the nearest value
 for fam, fr in FR.items():
     d = {q: lab for q, lab in zip(fr["canon"], fr["label"])}
     mq = max(fr["canon"])
@@ -308,7 +308,7 @@ def labq(fam, b):
     a = LABQ[fam]
     return a[max(1, min(len(a) - 2, b * BIN + BIN // 2))]
 
-# ---------- [D-1] sub-unit 결합도 (leave-one-subunit-out) ----------
+# ---------- [D-1] sub-unit coupling, leave-one-subunit-out ----------
 print("\n" + "=" * 100)
 print("[D-1] sub-unit 결합도 — 그 sub-unit 을 뺀 나머지로 class 를 정하고, 그 sub-unit 이 따라가나")
 print("   결합도 = (HIGH일 때 β − LOW일 때 β) / (그 sub-unit 의 HIGH−LOW 최대폭 : 전 sub-unit 중 최대)")
@@ -357,7 +357,7 @@ for g in GROUPS:
                                       for s, lo, hi in ok)))
     w(g, "subunit_coupling", ";".join("%s:%.4f:%.4f:%.4f" % (s, lo, hi, (hi - lo) / dyn) for s, lo, hi in ok))
 
-# ---------- [D-2] canonical 칸 프로파일 (class 별) + 경계 프로파일 ----------
+# ---------- [D-2] the canonical bin profile per class, plus the boundary profile ----------
 print("\n" + "=" * 100)
 print("[D-2] 경계 — 같은 read 에서 canonical 순서로 이웃한 두 유닛의 class 가 다를 때")
 print("   새 블록 첫 유닛의 canonical 칸 score (0 = 그 칸의 LOW 내부, 1 = HIGH 내부), 지속 교차 200 bp")
@@ -378,7 +378,7 @@ for g in GROUPS:
     for key, u in byread.items():
         for idx, r in u.items():
             sgn = 1 if r[3] == "+" else -1
-            step = sgn * CDIR[fam]              # canonical 다음 유닛
+            step = sgn * CDIR[fam]              # the next unit in canonical order
             c = cls_of(g, r[9], r[10])
             prv, nxt = u.get(idx - step), u.get(idx + step)
             if prv and nxt and cls_of(g, prv[9], prv[10]) == c and cls_of(g, nxt[9], nxt[10]) == c:
@@ -390,7 +390,7 @@ for g in GROUPS:
             cn = cls_of(g, nxt[9], nxt[10])
             if cn == c:
                 continue
-            # 청정 : 양쪽에 한 유닛씩 더 있고 같은 class (없으면 세지 않는다 — v11 은 3 개씩)
+            # Clean means one further unit on each side, both of the same class; otherwise it is not counted.
             p2, n2 = u.get(idx - step), u.get(idx + 2 * step)
             clean = (p2 is not None and cls_of(g, p2[9], p2[10]) == c) and \
                     (n2 is not None and cls_of(g, n2[9], n2[10]) == cn)
@@ -423,7 +423,7 @@ for g in GROUPS:
                     continue
                 rr.append((a[1] / float(a[0]) - bl) / (bh - bl))
             rowsc[off] = rr
-        # 지속 교차 : 새 유닛(off 1) 에서, 옛 상태 쪽 → 새 상태 쪽으로 넘어가 200 bp 유지
+        # A sustained crossing: within the new unit (offset 1) the profile crosses from the old state towards the new one and stays there for 200 bp.
         tgt = 0.5
         hf = (kind == "H2L")
         cs = None
@@ -445,7 +445,7 @@ for g in GROUPS:
             if ok and cnt >= 5:
                 cs = b
                 break
-        # 첫 유닛 sub-unit 별 평균 score
+        # the mean score per sub-unit of the first unit
         subsc = collections.defaultdict(list)
         for b, v in enumerate(r1):
             if v is None:
@@ -465,7 +465,7 @@ for g in GROUPS:
             w(g, "%s_score_off%d" % (kind, off),
               ",".join("%.4f" % v if v is not None else "" for v in rowsc[off]))
     print("  %-9s %s" % (g, "\n            ".join(line)))
-    # class 별 canonical 프로파일 (그림용)
+    # the canonical profile per class, for plotting
     for c in (0, 1):
         w(g, "ctrl_prof_%d" % c, ",".join("%.4f" % (CT[c][b][1] / float(CT[c][b][0])) if CT[c][b][0] >= 100 else ""
                                          for b in range(nb)))

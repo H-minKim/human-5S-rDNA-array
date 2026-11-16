@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-# 종마다 5S 유전자 22-mer 4 개 + 역상보 = k-mer 8 줄 만들기 (선별용)
-#   재료 = array_struct.py 가 뽑은 <종>.units.fa 의 유닛들. 유닛 앞쪽 119 bp 가 유전자(hit 구간)다
-#   여러 유닛에서 다수결을 취해 개별 유닛의 변이를 피한다
-#   인자 : units.fa · 유전자 길이(기본 119) · 출력파일
+# Build the 8 k-mer lines per species for read selection: four 22-mers of the 5S gene plus their reverse complements.
+#   The input is the units in <species>.units.fa from array_struct.py; the first 119 bp of a unit is the gene (the hit interval).
+#   A majority vote over several units avoids the variants of any one unit.
+#   Arguments: units.fa, gene length (default 119), output file.
 # MIT License · Copyright (c) 2026 Hungmin Kim
 import io
 import sys

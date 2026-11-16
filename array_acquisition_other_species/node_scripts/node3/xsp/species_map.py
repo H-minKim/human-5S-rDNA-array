@@ -1,16 +1,16 @@
 # -*- coding: utf-8 -*-
-# 타 생물종 5S : 정본(flank-array-flank 대표서열) + consensus map(유닛별 변이표) — 사람 작업과 같은 꼴로
-#   정본   : array 양옆 FL bp 를 붙인 서열. array 의 유전자 방향으로 맞춰 둔다(- 가닥이면 역상보)
-#   유닛틀 : 사람 정본과 같게 "스페이서 다음 유전자" 순서 — 유닛 i = 앞 유전자 끝+1 .. 이 유전자 끝
-#            (사람 canon_v2 는 AluY..NTS2 다음 gene 2122-2240 로 끝난다)
-#   유닛번호: array 의 유전자 방향으로 1 부터. 사람의 '원위=1' 규칙은 다른 종에 근거가 없어 쓰지 않는다.
-#            대신 유닛마다 염색체 좌표를 같이 적어 어느 끝인지 언제든 되짚게 한다
-#   변이   : 사람과 같은 방법 — minimap2 -cx asm20 --cs 로 종별(발산 큰 array 도 잡히게) 대표유닛에 맞춰 뽑고 pos+염기 / posD n / posI n 으로 적는다
-#   인자 : 종키 fasta tblout struct표 출력폴더 [flank bp=20000]
-#   산출 : canon/<species>__<chrom>_<start>_<end>.fa   (정본)
+# 5S in other species: the canonical sequence (a flank-array-flank representative) plus a consensus map (a per-unit variant table), in the same form as for human.
+#   The canonical sequence carries FL bp of flank on each side and is oriented along the array's gene direction (reverse-complemented if that is the minus strand).
+#   Unit frame: spacer then gene, as in the human canonical unit, so unit i runs from the previous gene end + 1 to this gene end.
+#            (The human canonical unit runs AluY .. NTS2 and ends with the gene at 2122-2240.)
+#   Units are numbered from 1 along the array's gene direction. The human convention that position 1 is distal has no basis in other species and is not used.
+#            Instead the chromosome coordinate is recorded with every unit, so which end it lies at can always be recovered.
+#   Variants: the same method as for human, taken with minimap2 -cx asm20 --cs against each species' representative unit, asm20 so that a highly diverged array is still found, and written as position plus base, positionD n, or positionI n.
+#   Arguments: species key, fasta, tblout, structure table, output folder, [flank bp = 20000].
+#   Outputs: canon/<species>__<chrom>_<start>_<end>.fa, the canonical sequence
 #          map/<species>__<chrom>_<start>_<end>.map.tsv (consensus map)
-#          canon_unit/<species>__....unit.fa            (그 array 의 대표 유닛)
-#          MAP_SUMMARY.tsv                          (array 한 줄)
+#          canon_unit/<species>__....unit.fa, that array's representative unit
+#          MAP_SUMMARY.tsv, one row per array
 # MIT License · Copyright (c) 2026 Hungmin Kim
 import io
 import os
@@ -61,7 +61,7 @@ def faidx(reg):
 
 
 def cs_to_vars(cs, rs):
-    # minimap2 cs(short) -> 사람 지도와 같은 토큰 : 123A(치환) · 123D2(결실) · 123I3(삽입) · 1-기반 대표유닛 좌표
+    # minimap2 cs (short) -> the same tokens as the human map: 123A for a substitution, 123D2 for a deletion, 123I3 for an insertion, in 1-based representative-unit coordinates.
     out, p, i = [], rs, 0
     while i < len(cs):
         c = cs[i]
@@ -110,7 +110,7 @@ for (c, s0, e1, strand, cop) in ARR:
     if not seq:
         continue
     hits = [h for h in HIT[c] if s0 <= h[0] and h[1] <= e1]
-    # 작업 방향 = array 유전자 방향. - 가닥이면 전체를 뒤집는다
+    # The working orientation is the array's gene direction; on the minus strand everything is flipped.
     if strand == "-":
         wseq = rc(seq)
         gen = sorted([(len(seq) - (h[1] - L0) - 1, len(seq) - (h[0] - L0) - 1) for h in hits])
@@ -155,7 +155,7 @@ for (c, s0, e1, strand, cop) in ARR:
     nv, ident, allv, noaln = [], 0, collections.Counter(), 0
     for (i, us, ue, u, gs) in units:
         b = best.get("u%d" % i)
-        # 정렬이 안 된 유닛은 "변이 0" 이 아니라 NOALN 으로 따로 표시한다 (옛 판은 이를 변이 0 으로 세어 틀렸다)
+        # a unit that failed to align is marked NOALN, not counted as carrying no variants
         if b:
             v = cs_to_vars(b[2], b[1])
             vstr = ",".join(v) if v else "-"

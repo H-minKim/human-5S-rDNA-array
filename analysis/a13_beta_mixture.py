@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
-"""A13 — 유닛 CpG 메틸 상태를 두 성분 beta-binomial 혼합으로 판정 (β<0.5 임시 기준 대체).
+"""A13: call the CpG methylation state of a unit with a two-component beta-binomial mixture.
 
-자료: METH_READUNIT in_final=Y · n_cpg>=10 · (n_meth, n_cpg) 를 그대로 사용 (CpG 수가 적으면 판정이 약해짐)
-묶음: ONT = dorado 판본별 (q01 공변량) · PacBio = jasmine / fibertools0.4.2 따로 (m6A 없는 2개체는 CpG 는 있음 → 'PB_noM6A' 따로)
-EM: 성분 L(저메틸)·H(고메틸) 각 BetaBinomial(n, a, b), M 단계는 가중 로그우도 수치 최대화.
-판정: P(L) >= 0.9 → L · P(L) <= 0.1 → H · 사이 → U(보류, 분석에서 제외)
-출력 a13_unit_state_gmm.tsv.gz · a13_mixture_params.tsv · a13_beta_mixture.png
+Data: METH_READUNIT in_final=Y, n_cpg>=10; (n_meth, n_cpg) are used as they are (few CpGs make the call weak)
+Groups: ONT by dorado version (covariate from q01); PacBio jasmine and fibertools0.4.2 separately (the 2 individuals without m6A still have CpG, kept as 'PB_noM6A')
+EM: components L (low methylation) and H (high methylation), each BetaBinomial(n, a, b); the M step maximises the weighted log-likelihood numerically.
+Call: P(L) >= 0.9 is L, P(L) <= 0.1 is H, in between is U (reserved, left out of the analysis)
+Output a13_unit_state_gmm.tsv.gz, a13_mixture_params.tsv, a13_beta_mixture.png
 """
 import io, os, sys, gzip, collections
 import numpy as np
@@ -16,8 +16,8 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 # Paths to files inside the repository are resolved relative to `__file__`
-#  (`a_lib` 이 이 폴더에 같이 예치돼 있다) · 자료 뿌리는 `a_lib` 이 환경변수로 받는다
-#  변수 표는 `README.md` §2a 에 있다.
+#  (`a_lib` is deposited in this same folder) - the data root is taken from the environment by `a_lib`
+#  The table of variables is in `README.md`, section 'Environment variables'.
 _HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, _HERE)
 import a_lib as L
@@ -25,8 +25,8 @@ import a_lib as L
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace", line_buffering=True)
 plt.rcParams["font.family"] = "Malgun Gothic"
 plt.rcParams["axes.unicode_minus"] = False
-#  여기에 쓴다 (`RDNA_ACCESS_DIR`) — 발행 자료 폴더를 가리키면
-#  `a13_unit_state_gmm.tsv.gz` 와 `a13_mixture_params.tsv` 를 덮는다.
+#  It writes here (`RDNA_ACCESS_DIR`) - pointing it at the published data folder would overwrite
+#  `a13_unit_state_gmm.tsv.gz` and `a13_mixture_params.tsv`.
 D = L.D
 COV = {}
 for l in io.open(os.path.join(D, "q01_sample_qc.tsv"), encoding="utf8").readlines()[1:]:

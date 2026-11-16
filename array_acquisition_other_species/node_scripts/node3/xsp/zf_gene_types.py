@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-# 제브라피시 5S 유전자 서열 종류를 전수로 가른다
-#   cmsearch(RF00001) hit 를 전부 뽑아 서열을 꺼내고, array 마다 어떤 유전자형이 몇 개인지 센다.
-#   array 대표 유닛의 '끝 119 bp' 가 아니라 실제 유전자 hit 서열을 쓴다(경계 가정 없음).
-#   같은 서열끼리 묶고, 가장 많은 형(=모계형 후보)과 몇 자리 다른지 적는다.
-#   인자 : cmsearch.tbl 조립본.fa array카탈로그.tsv 종키 출력접두
+# Divide the zebrafish 5S gene sequences into types, exhaustively.
+#   Every cmsearch (RF00001) hit is taken, its sequence extracted, and the number of each gene type counted per array.
+#   The actual gene hit sequence is used, not the last 119 bp of the array's representative unit, so no boundary is assumed.
+#   Identical sequences are grouped, and the number of positions each differs from the most common type, the candidate maternal type, is recorded.
+#   Arguments: cmsearch.tbl, assembly.fa, array catalogue.tsv, species key, output prefix.
 # MIT License · Copyright (c) 2026 Hungmin Kim
 import io
 import os
@@ -47,7 +47,7 @@ os.remove(reg)
 G = []
 for h, s in zip(hits, seqs):
     G.append((h, rc(s.upper()) if h[3] == "-" else s.upper()))
-# array 배정
+# assignment to an array
 AR = []
 for r2 in csv.DictReader(io.open(CAT, encoding="utf8"), delimiter=TAB):
     if r2["species_key"] != SP:

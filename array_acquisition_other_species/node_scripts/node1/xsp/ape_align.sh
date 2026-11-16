@@ -1,9 +1,9 @@
 #!/bin/bash
-# 유인원 : 5S k-mer 로 골라낸 SAM 기록(MM/ML 그대로) -> fastq -> 종 조립본 정렬 -> array read BAM -> modkit -> read x 유닛 행렬
-#   정렬 방식은 제브라피시·금화조·애기장대와 같다 : samtools fastq -T MM,ML | minimap2 -y -ax map-ont --secondary=no, primary 만
-#   MAPQ 로 거르지 않는다 (탠덤 array 는 mapq0 이 정상)
-#   ONT BAM 은 R9.4.1 guppy 6.3.8 (5mC CpG 모델) -> modkit 은 5mC CpG
-#   인자 : 종키(예 chimp_mPanTro3) · 머리말 가져올 원본 BAM URL · 선별폴더 · 출력폴더
+# Great apes: SAM records selected by 5S k-mer (MM/ML kept) -> fastq -> alignment to the species assembly -> array read BAM -> modkit -> read x unit matrix.
+#   The alignment is the same as for zebrafish, zebra finch and Arabidopsis: samtools fastq -T MM,ML | minimap2 -y -ax map-ont --secondary=no, primary only.
+#   No MAPQ filter: mapq 0 is normal in a tandem array.
+#   The ONT BAM is R9.4.1 guppy 6.3.8 (5mC CpG model), so modkit is run for 5mC CpG.
+#   Arguments: species key (e.g. chimp_mPanTro3), the source BAM URL to take the header from, the selection folder, the output folder.
 # MIT License · Copyright (c) 2026 Hungmin Kim
 set -u
 SP="${1:?종키}"
@@ -18,8 +18,8 @@ awk -F'\t' -v sp="$SP" 'NR>1 && $1==sp {printf "%s\t%d\t%s\t%s_c%s\n", $2, $3-1,
 cut -f1-3 $OUT/$SP.arrays.bed > $OUT/arrays3.bed
 echo "array $(wc -l < $OUT/$SP.arrays.bed) 개"
 samtools view -H "$HDR" > $OUT/hdr.sam 2> /dev/null
-# 같은 flowcell 이 두 번 basecalling 된 경우가 있다 (시아망 PAI18731_dorado-0.9.1 와 _guppy-6.3.8)
-#   -> flowcell 마다 판본 하나만 (dorado > guppy-6.3.8 > guppy-6.3.7) · read id 로 한 번 더 거른다
+# Some flowcells were basecalled twice (siamang PAI18731_dorado-0.9.1 and _guppy-6.3.8).
+#   -> one version per flowcell (dorado > guppy-6.3.8 > guppy-6.3.7), then deduplicated again by read id.
 ls $HITD/*.hit.sam 2> /dev/null | awk -F/ '{f=$NF; split(f, a, "_"); fc=a[1]; p=1; if(f ~ /dorado/) p=3; else if(f ~ /6[.]3[.]8/) p=2; if(p > pr[fc]) {pr[fc]=p; pick[fc]=$0}} END{for(k in pick) print pick[k]}' | sort > $OUT/use.txt
 echo "flowcell $(ls $HITD/*.hit.sam 2> /dev/null | wc -l) 개 중 쓰는 판본 $(wc -l < $OUT/use.txt) 개"
 n=$(cat $(cat $OUT/use.txt) | wc -l)

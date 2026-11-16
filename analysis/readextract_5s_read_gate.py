@@ -1,21 +1,21 @@
 # -*- coding: utf-8 -*-
-# 전 게놈 read 스트림에서 5S read 만 건진다 — BBDuk k=25 hdist=2 관문 + 유닛/유전자 질의. 이 글이 만든 `*.hits.fastq.gz` 가 hifiasm 의 입력이다
-#   단계 : ① read 추출 관문
+# Keep only the 5S reads from a whole-genome read stream, through a BBDuk gate at k = 25 and hdist = 2 plus a unit and gene query. The *.hits.fastq.gz this writes is the input to hifiasm.
+#   Step 1: the read-extraction gate.
 
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""ONT 추출 v5 — BBDuk k-mer 단일 관문 (tRNA 제거 · 스트림 blastn 제거).
+"""ONT read extraction: a single BBDuk k-mer gate (no tRNA, no blastn on the stream).
 
-바뀐 이유 (전부 실측, 같은 383MB 입력)
-  · 정답 = 현행 파이프라인이 ARRAY 로 판정해 보관한 read 2,262 개.
-      BBDuk k31 hdist1 (판별세그먼트 NTS)  188 MB/s · 재현율 1.0000 · 위양성 8
-      blastn ws=16                          8 MB/s · 재현율 1.0000 · 위양성 728
-      megablast ws=28                      14 MB/s · 재현율 0.9881 (놓침 27)
-    → 스트리밍 관문을 BBDuk 로 바꾸면 재현율 손실 없이 23 배 빨라진다.
-  · the earlier note "k-mer selection unsuitable" refers to **dispersed pseudogenes** diverged by 76-92%.
-    지금 보관 대상인 array read 는 정본과 거의 동일해 k-mer 가 완벽하게 듣는다.
-  · blastn 은 통과한 read(전체의 ~0.3%)에만 돌려 5s.tsv 필드를 채운다 — 비용 무시 가능.
-  · tRNA is excluded. The MM and ML tags are preserved.
+Benchmark of the gate (measured on one 383 MB input)
+  - truth = the 2,262 reads that the blastn-based pipeline called ARRAY and kept.
+      BBDuk k31 hdist1 (discriminating NTS segment)  188 MB/s, recall 1.0000, false positives 8
+      blastn ws=16                                     8 MB/s, recall 1.0000, false positives 728
+      megablast ws=28                                 14 MB/s, recall 0.9881 (27 missed)
+    so BBDuk as the streaming gate is 23 times faster with no loss of recall.
+  - k-mer selection is unsuitable only for **dispersed pseudogenes** diverged by 76-92%.
+    The array reads kept here are nearly identical to the canonical sequence, so the k-mer gate finds them all.
+  - blastn runs only on the reads that pass (about 0.3% of all) to fill the fields of 5s.tsv.
+  - tRNA is excluded. The MM and ML tags are preserved.
 """
 import sys, os, subprocess, time, collections, argparse
 
@@ -27,8 +27,8 @@ ap.add_argument("--bbduk", required=True)
 ap.add_argument("--out", required=True)
 ap.add_argument("--chunk", type=int, default=16000)
 ap.add_argument("--threads", type=int, default=6)
-ap.add_argument("--k", type=int, default=25)      # ONT 실측: k25 hdist2 에서 span>500 재현율 1.0000
-ap.add_argument("--hdist", type=int, default=2)   # (k31 h1 은 0.9158 — 발산한 짧은 NTS 를 놓친다)
+ap.add_argument("--k", type=int, default=25)      # Measured on ONT: at k = 25 and hdist = 2, recall for span > 500 is 1.0000.
+ap.add_argument("--hdist", type=int, default=2)   # (At k = 31 and hdist = 1 it is 0.9158, missing the shorter diverged NTS.)
 ap.add_argument("--tmp", default="/tmp")
 a = ap.parse_args()
 
@@ -70,7 +70,7 @@ def flush(chunk):
     if os.path.exists(tout):
         for L in open(tout):
             if L.startswith(">"): keep.add(L[1:].strip().split()[0])
-    # 양성대조: 판별세그먼트 자신이 안 잡히면 참조/설정이 깨진 것이다
+    # Positive control: if the discriminating segment itself is not caught, the reference or the configuration is broken.
     if POSCTL not in keep:
         sys.stderr.write("FATAL: 양성대조 미검출 (chunk %d)\n" % nchunk); raise SystemExit(9)
     keep.discard(POSCTL)
@@ -99,7 +99,7 @@ for line in sys.stdin:
 flush(chunk)
 fq.close()
 
-# ---- 통과 read 에만 blastn (5s.tsv 필드용) ----
+# ---- blastn on the reads that pass, for the fields of 5s.tsv ----
 hf = a.out + ".hits.fastq"
 fa = a.out + ".hits.fa"
 with open(fa, "w") as fh, open(hf) as f:

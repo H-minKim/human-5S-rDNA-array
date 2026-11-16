@@ -1,31 +1,25 @@
 # -*- coding: utf-8 -*-
-# 유닛 안 자리별 메틸 — 구역(근위 / 내부 / 원위)별 로 쌓는다  2026-10-18
+# Methylation by position within the unit, accumulated per zone (proximal / interior / distal).
 #
-#   왜 새로 내나
-#     전 판 (A)는 유닛 상태(저메틸/고메틸) 로 나눈 그림이었다. 구역으로 나누는 쪽 으로 갈았다.
-#     있는 표로는 안 된다 :
-#       · `UNIT_PROFILE_50bp_H2_FOR_FIG3_2026-10-16.tsv` (Fig 4 묶음) — 상태 3 × 칸 45 · 구역이 없다
-#       · `02_tables/META_PROFILE.tsv` (v4) — 구역이 있으나 구역 정의가 다르다
-#         (근위 ap<=15 · 원위 ad<=15 · 가운데 양쪽 >=30 · 나머지 other ⇒ 전수를 나누지 못한다)
-#     ⇒ 이 그림의 다른 패널과 같은 공통 구역 으로 다시 쌓는다.
+#   The zones are the common zones used by the other panels of this figure.
 #
-#   구역 (공통 5 구역을 쪽으로 묶은 것 — 새 경계가 아니다)
-#     근위 = ap <= ad 이고 ap <= 17   (= 공통 '근위 1-3' + '근위 4-17')
-#     원위 = ad <  ap 이고 ad <= 22   (= 공통 '원위 11-22' + '원위 1-10')
-#     내부 = 나머지                   (= 공통 '내부')          셋이 전수를 가른다
+#   Zones, grouped from the common five; no new boundary is introduced:
+#     proximal = ap <= ad and ap <= 17 (the common "proximal 1-3" plus "proximal 4-17")
+#     distal = ad < ap and ad <= 22 (the common "distal 11-22" plus "distal 1-10")
+#     interior = everything else (the common "interior"). The three partition the whole set.
 #     (ad = array_pos · ap = N - array_pos + 1)
 #
-#   자·관문 — 다른 패널과 같게
-#     하드콜 ML >= 128 · read×유닛마다 정본 CpG 호출 150 개 이상이면서 덮임 0.9 이상
-#     게다가 이 그림의 다른 패널과 코호트를 맞추려고 L2_HAP_UNIT 의 유닛(n_read>=5) 45,544 개 로 한정한다.
-#     칸 값 = Σ(메틸 호출) / Σ(호출)  — read × 유닛 을 모은 것이고 하플로타입 평균이 아니다.
+#   Ruler and gates, the same as the other panels:
+#     hard call at ML >= 128; each read x unit needs at least 150 canonical CpG calls and coverage of at least 0.9.
+#     To keep the cohort identical to the other panels of this figure, it is further restricted to the 45,544 units of L2_HAP_UNIT with n_read >= 5.
+#     A bin's value is sum(methylated calls) / sum(calls), pooled over read x unit; it is not a mean over haplotypes.
 #
-#   되는 법 : python v13_unitprofile_zone_2026-10-18.py   (약 4 분 · raw 6 파일 순서대로)
+#   To run: python v13_unitprofile_zone_2026-10-18.py (about 4 minutes, over the 6 raw files in order).
 import io, os, re, gzip, glob, time, collections, hashlib
 import numpy as np
 import pandas as pd
-# 자료 뿌리는 환경변수 하나로 (2026-10-21 · 저장소 공개 준비)
-#   안 주면 지금까지 쓰던 자리를 그대로 쓴다 — 돌아가는 것이 달라지지 않는다.
+# The data roots come from environment variables.
+#   They have no default: the script stops with a message if one is not set.
 DATA_ROOT = os.environ["DATA_ROOT"]
 V_ROOT = os.environ["V_ROOT"]
 CANON_FA = os.environ["CANON_FA"]
@@ -33,10 +27,10 @@ CANON_FA = os.environ["CANON_FA"]
 V = V_ROOT
 OUT = DATA_ROOT
 CANON = CANON_FA
-MAP = os.path.join(V, r"03_maps\g8canonv10\CONSENSUS_MAP_G8_full.tsv")
-RAW = os.path.join(V, r"08_methylation\raw")
-DST = os.path.join(OUT, r"03_figures\paper_Fig\FIG3_A_UNITPROFILE_ZONE.tsv")
-LOG = io.open(os.path.join(OUT, r"04_logs\V13_UNITPROFILE_ZONE.txt"), "w",
+MAP = os.path.join(V, r"03_maps/g8canonv10/CONSENSUS_MAP_G8_full.tsv")
+RAW = os.path.join(V, r"08_methylation/raw")
+DST = os.path.join(OUT, r"03_figures/paper_Fig/FIG3_A_UNITPROFILE_ZONE.tsv")
+LOG = io.open(os.path.join(OUT, r"04_logs/V13_UNITPROFILE_ZONE.txt"), "w",
               encoding="utf8", newline="\n")
 MLCUT = 128
 
@@ -50,19 +44,19 @@ def P(s=""):
     LOG.flush()
 
 
-# ---------- 정본 CpG ----------
+# ---------- canonical CpG sites ----------
 canon = "".join(x.strip() for x in io.open(CANON, encoding="utf8") if x[0] != ">")
 CPG = sorted(i + 1 for i in range(len(canon) - 1) if canon[i:i + 2] == "CG")
 CPGSET = set(CPG)
 
-# ---------- 이 그림이 쓰는 유닛 집합 (다른 패널과 같은 코호트) ----------
-L2 = pd.read_parquet(os.path.join(OUT, r"02_tables\L2_HAP_UNIT.parquet"),
+# ---------- the unit set this figure uses, the same cohort as the other panels ----------
+L2 = pd.read_parquet(os.path.join(OUT, r"02_tables/L2_HAP_UNIT.parquet"),
                      columns=["sample", "slot", "ap", "ad", "n_read"])
 L2 = L2[L2.n_read >= 5]
 KEEP = set(zip(L2["sample"].astype(str), L2.slot.astype(str), L2.ad.astype(int)))
 NHAP = L2.assign(h=L2["sample"].astype(str) + "|" + L2.slot.astype(str)).h.nunique()
 
-# ---------- 유닛 좌표 (varlist 로 자리 옮김) ----------
+# ---------- unit coordinates, shifted by the variant list ----------
 IN = re.compile(r"^(\d+)I(\d+)$")
 DE = re.compile(r"^(\d+)D(\d+)$")
 UMAP, UN = {}, {}
@@ -110,9 +104,9 @@ P("  구역 : 근위(ap<=ad 이고 ap<=17) · 내부(나머지) · 원위(ad<ap 
 P("  코호트 : L2_HAP_UNIT 의 n_read>=5 유닛 %s 개 · 하플로타입 %d" % (format(len(KEEP), ","), NHAP))
 P()
 
-ACC = collections.defaultdict(lambda: [0, 0])       # (구역, cpg) -> [n, n_meth]
-NU = collections.Counter()                          # 구역별 read×유닛 수
-USEEN = collections.defaultdict(set)                # 구역별 유닛 (중복 없이)
+ACC = collections.defaultdict(lambda: [0, 0])       # (zone, cpg) -> [n, n_meth]
+NU = collections.Counter()                          # number of read x unit observations per zone
+USEEN = collections.defaultdict(set)                # distinct units per zone
 n_gate_out = 0
 files = sorted(glob.glob(os.path.join(RAW, "METH_READUNIT_*.tsv.gz")))
 for f in files:
@@ -124,8 +118,8 @@ for f in files:
             if p[1] != "HPRC_ONT_submissions":
                 continue
             smp, sl = p[0], p[4]
-            ad = int(p[5])                           # array_pos = 원위 번호
-            if (smp, sl, ad) not in KEEP:            # 다른 패널과 같은 유닛만
+            ad = int(p[5])                           # array_pos is the index from the distal end
+            if (smp, sl, ad) not in KEEP:            # only the units used by the other panels
                 continue
             cs = p[11]
             if not cs or cs == ".":
@@ -136,7 +130,7 @@ for f in files:
             N = UN.get((smp, sl), 0)
             if N <= 0:
                 continue
-            ap = N - ad + 1                          # 근위 번호
+            ap = N - ad + 1                          # index from the proximal end
             L = len(arr) - 1
             hit, nraw = [], 0
             for it in cs.split(","):

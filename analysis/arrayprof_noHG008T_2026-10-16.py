@@ -1,17 +1,17 @@
 # -*- coding: utf-8 -*-
 # The two tumour `HG008-T` slots are excluded on the array side of panels f and g.
 #
-#  f 는 `dispersed_vs_array_cut0508\DISP_PROFILES.tsv` 의 `array_v11 / ALL / low|high` 행을
-#    그대로 그린다 ⇒ 그 두 행을 다시 계산해 갈아끼운다.
-#  흩어진 쪽은 고칠 것이 없다 — `DISP_SITE_SAMPLE_ALL.tsv` 의 개체 307 에 `HG008-T` 가 없다
-#    (있는 것은 `HG00867` 로 다른 정상 개체다 · 2026-10-16 확인).
+#  Panel f draws the `array_v11 / ALL / low|high` rows of `dispersed_vs_array_cut0508/DISP_PROFILES.tsv`
+#    as they are, so those two rows are recomputed and swapped in.
+#  The dispersed side needs no correction - `HG008-T` is not among the 307 individuals of `DISP_SITE_SAMPLE_ALL.tsv`
+#    (what is there is `HG00867`, a different, normal individual).
 #
-#  한 패스로 둘을 낸다 : 전수(지금 표)와 `HG008-T` 만 따로 ⇒ 뺀 판 = 전수 − HG008T.
-#    ⇒ 같은 패스에서 지금 표를 재현하는지도 함께 검산한다(재현되면 뺀 판도 믿을 수 있다).
+#  One pass produces both: the whole set (the current table) and `HG008-T` alone, so the excluded version = whole - HG008T.
+#    The same pass also checks that the current table is reproduced (if it is, the excluded version can be trusted too).
 #
-#  관문(= f 의 계보 `disp_02_array_ref.py`) : ⒜ read id 중복 제거 ⒝ 사슬 끊긴 슬롯 제외
-#    ⒞ 상태창 `spec` CpG >= 10 아니면 state=NA · 창 319-1178 + 1552-2240 · 컷 0.508
-#    자 = 하드콜(ML >= 128) · 칸 = (unit_pos - 1) // 50
+#  The gate (that is, the lineage of f, `disp_02_array_ref.py`): (a) duplicate read ids removed (b) slots with a broken chain excluded
+#    (c) state window `spec` CpG >= 10 or state = NA; windows 319-1178 and 1552-2240; cut 0.508
+#    Ruler = hard call (ML >= 128); bin = (unit_pos - 1) // 50
 import collections
 import gzip
 import hashlib
@@ -22,8 +22,8 @@ import time
 
 def _need(_v):
     """No defaults are set: the script stops if a variable is missing.
-    이 글이 읽는 자료의 뿌리는 README.md 의
-    "Running this code" 절에 적혀 있다."""
+    The roots of the data this script reads are listed in the
+    "Running this code" section of README.md."""
     import os as _o, sys as _s
     _x = _o.environ.get(_v)
     if not _x:
@@ -145,7 +145,7 @@ def beta(vr, st, b):
     return (nn, mm, (mm / float(nn)) if nn else None)
 
 
-#  ── 산출 : 전수 · 종양만 · 뺀 판
+#  -- Output: whole set, tumour only, excluded version
 rows = []
 for st in ("low", "high", "NA"):
     for b in range(45):
@@ -182,7 +182,7 @@ p("| **뺀 판 (새 그림)** | **%d** | **%d** | %s | %s |"
      format(units["ALL"] - units["TUM"], ","), format(na["ALL"] - na["TUM"], ",")))
 p()
 
-#  ── 지금 표를 재현하는지
+#  -- Whether the current table is reproduced
 PR = [l.rstrip(NL).split(TAB) for l in io.open(PROF, encoding="utf8") if l.strip()]
 hh = PR[0]
 bcol = [c for c in hh if c.startswith("b") and c[1:].isdigit()]

@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
-# 유닛 그룹을 확실한 차이가 있을 때만 남긴다 (gate)
-# "확실한 차이가 있을 때만 한 array 안에서 unit 별 그룹을 나눠라"
-#   통과 조건 (모두 만족)
-#     G1 홀/짝 교차검증 ARI >= 0.70        — 변이 절반만으로도 같은 분할이 재현된다
-#     G2 귀무 대조 우연 블록 0             — 무작위로는 나오지 않는다
+# A unit grouping is kept only where the difference is clear.
+# Divide the units of an array into groups only where the difference is clear.
+#   The conditions, all of which must hold:
+#     G1 odd/even cross-validation ARI >= 0.70, so half the variants reproduce the same partition
+#     G2 no block arises by chance in the null control
 # G3 polymorphism density < 50/kb: the group call is withheld when the reference unit itself is doubtful
-#     G4 그룹마다 유닛 >= 10 개 & >= 5%    — 못 미치는 그룹은 '미분류' 로 떨구고 남은 것만 센다
-#     G5 남은 그룹 >= 2 개이고, 그룹 대표끼리 실제 차이(blastn 불일치+갭) >= 10 자리
-#     G6 남은 그룹의 대표가 제 구성원을 대표한다 — 구성원 일치도 중앙값 >= 98%
-#   떨어진 그룹의 참조 유닛 파일은 dropped/ 로 옮긴다(지우지 않는다)
-#   인자 : 00_catalog 폴더
+#     G4 each group holds at least 10 units and at least 5%; groups below that are dropped as unclassified and only the rest counted
+#     G5 at least 2 groups remain, and their representatives really differ at 10 or more positions (blastn mismatches plus gaps)
+#     G6 each remaining representative represents its members, with a median member identity of at least 98%
+#   The reference unit files of dropped groups are moved to dropped/ rather than deleted.
+#   Argument: the 00_catalog folder.
 # MIT License · Copyright (c) 2026 Hungmin Kim
 import io
 import os
@@ -47,7 +47,7 @@ def member_ident(p):
 
 
 def real_diff(pa, pb):
-    """두 그룹 대표가 실제로 몇 자리 다른가 — blastn 최고 HSP 의 불일치 + 갭 자리"""
+    """How many positions the representatives of two groups really differ by: mismatches plus gap positions of the best blastn HSP"""
     r = subprocess.run("blastn -task blastn -word_size 11 -dust no -query %s -subject %s "
                        "-outfmt '6 mismatch gaps bitscore' 2>/dev/null" % (pa, pb),
                        shell=True, capture_output=True, text=True)

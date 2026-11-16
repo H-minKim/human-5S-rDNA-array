@@ -2,7 +2,7 @@
 r"""Ranks per zone separately: layer (all / shared type removed / single-unit type only) x 4 zones
 
   For each zone compute the null z of that zone, and rank by |z| within the zone
-  (earlier only the single 'most distant zone' was used. Here every zone is reported)
+  (every zone is reported, not only the single 'most distant zone')
 Output: REPRO/VTZONE4_byzone.tsv
 """
 import io, os, sys

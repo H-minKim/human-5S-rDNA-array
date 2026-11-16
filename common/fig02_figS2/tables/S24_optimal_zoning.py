@@ -3,8 +3,8 @@
 S24: split the array into zones **as the data decide** (optimal segmentation).
 
 Why it is needed
-  The zoning used so far (terminal 1-8, middle >30, 9 zones) was a **threshold set by convention**.
-  Change-point analysis showed that the boundary depth differs between proximal and distal,
+  A zoning by fixed depths (terminal 1-8, middle >30, 9 zones) is a **threshold set by convention**.
+  Change-point analysis shows that the boundary depth differs between proximal and distal,
   so the segmentation is applied to the per-depth profile itself to find the optimal boundaries.
 
 Method

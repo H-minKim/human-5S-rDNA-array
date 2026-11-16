@@ -24,7 +24,7 @@ Call rules (conservative, 'undetermined' when ambiguous)
 
 Limit: this is a call on **traces of transmission**, not a count of mutation events.
   Counting de novo events directly needs trio (parent-child) data, which this edition does not have.
-Output: columns added to export\V11_VARIANT_GROUPS.tsv (original kept as .noorigin), and export\V11_ORIGIN_CALL.tsv
+Output: columns added to export/V11_VARIANT_GROUPS.tsv (original kept as .noorigin), and export/V11_ORIGIN_CALL.tsv
 """
 import sys, io, os, collections, shutil
 import numpy as np

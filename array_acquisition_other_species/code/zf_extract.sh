@@ -1,11 +1,11 @@
 #!/bin/bash
-# 제브라피시 5S array read + 메틸 추출 (ENA PRJEB53713 대조군 6 개체 · 성체 뇌 · R10.4.1 Guppy 6.4.2 5mC_CG hac)
-#   ① ENA BAM(GRCz11 정렬 · 색인 있음)에서 GRCz11 5S 영역만 원격으로 뽑는다 (전체 458 GB 를 받지 않는다)
-#      primary 만 (-F 0x900 : secondary 기록에는 MM/ML 이 없다)
-#   ② MM/ML 을 유지한 채 GRCz12tu(gap 없는 T2T)에 다시 정렬 : samtools fastq -T MM,ML | minimap2 -y -ax map-ont
-#   ③ GRCz12tu 5S array 에 걸린 read 만 남긴다 -> 개체별 BAM
-#   ④ modkit pileup (CpG · array 영역) · modkit extract (read 단위)
-#   인자 : GRCz11 5S 영역 BED (패딩 포함) · GRCz12tu 5S array BED
+# Zebrafish 5S array reads and methylation extraction (ENA PRJEB53713, 6 control individuals, adult brain, R10.4.1, Guppy 6.4.2, 5mC_CG hac).
+#   1) Only the GRCz11 5S regions are extracted remotely from the indexed ENA BAMs aligned to GRCz11, so the full 458 GB is never downloaded.
+#      Primary only (-F 0x900): secondary records carry no MM/ML.
+#   2) Realigned to GRCz12tu, the gapless T2T assembly, keeping MM/ML: samtools fastq -T MM,ML | minimap2 -y -ax map-ont.
+#   3) Only reads overlapping a GRCz12tu 5S array are kept, giving one BAM per individual.
+#   4) modkit pileup over the array regions for CpG, and modkit extract per read.
+#   Arguments: the GRCz11 5S region BED including padding, and the GRCz12tu 5S array BED.
 set -u
 X=$HOME/xsp
 Z=$X/zf

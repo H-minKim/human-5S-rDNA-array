@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-# 군 BAM 마다 read 하나당 (좌위 갈래, 부류, CpG 수, 메틸 수) 를 뽑는다 — 부트스트랩·군간검정은 로컬에서
-#   좌위 갈래 : chr4(6 array 묶음) / chr18
-#   부류 : 코딩부 / 스페이서 / 바깥
-#   인자 : 구역조각.tsv 출력.tsv bam:군 [bam:군 ...]
+# For each group BAM, extract per read: locus class, region class, CpG count, methylated count. The bootstrap and the between-group test are done locally.
+#   Locus classes: chr4 (a cluster of 6 arrays) and chr18.
+#   Region classes: coding, spacer, outside.
+#   Arguments: regions.tsv out.tsv bam:group [bam:group ...]
 # MIT License · Copyright (c) 2026 Hungmin Kim
 import bisect
 import collections
@@ -13,7 +13,7 @@ import pysam
 TAB = chr(9)
 NL = chr(10)
 REG, OUT = sys.argv[1], sys.argv[2]
-parts = collections.defaultdict(list)   # (갈래, 부류) -> [(chrom,s,e)]
+parts = collections.defaultdict(list)   # (locus class, region class) -> [(chrom, start, end)]
 for L in io.open(REG, encoding="utf8"):
     f = L.rstrip(NL).split(TAB)
     if len(f) < 4:
@@ -36,7 +36,7 @@ for arg in sys.argv[3:]:
             ivs.sort()
             st = [s for s, e in ivs]
             en = [e for s, e in ivs]
-            # 구간이 흩어져 있으므로 구간마다 fetch 하되 read 는 한 번만 센다
+            # The intervals are scattered, so fetch per interval but count each read only once.
             seen = {}
             for s, e in ivs:
                 for r in b.fetch(ch, s - 1, e):

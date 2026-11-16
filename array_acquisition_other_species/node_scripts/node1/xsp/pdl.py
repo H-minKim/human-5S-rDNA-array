@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
-# 병렬 · 순서 보존 HTTP 범위 내려받기 (EBI 가 연결당 ~0.7 MB/s 라서 여러 연결을 동시에 쓴다)
-#   python3 pdl.py URL OUT [연결수=16] [조각MB=32]
-#   OUT = 파일 경로 -> 이어받기 가능 (이미 있는 크기가 조각 배수이면 거기서부터)
-#   OUT = -        -> 표준출력으로 순서대로 흘림 (tar 에 바로 물림 · 디스크에 전체를 쓰지 않는다)
-#   조각마다 받은 길이 = 요청 길이 확인, 실패 시 재시도 (최대 20 회, 지수 대기)
-#   진행 : 1 GB 마다 표준오류에 한 줄
+# Parallel, order-preserving HTTP range download; EBI serves about 0.7 MB/s per connection, so several are used at once.
+#   python3 pdl.py URL OUT [connections = 16] [chunk MB = 32]
+#   If OUT is a file path the download can be resumed: if the existing size is a multiple of the chunk size, it continues from there.
+#   OUT = - streams to stdout in order, so it can be piped straight into tar without writing the whole file to disk.
+#   For each chunk the received length is checked against the requested length, and a failure is retried up to 20 times with exponential backoff.
+#   Progress: one line on stderr per GB.
 # MIT License · Copyright (c) 2026 Hungmin Kim
 import os
 import sys

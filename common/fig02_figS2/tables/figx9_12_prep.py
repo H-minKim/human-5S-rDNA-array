@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-# Data for the new versions of FigX9 / FigX12, 2026-10-08
-#   (1) redo the array-type groups on both the reference (CHM13) basis and the majority-allele basis
+# Data for FigX9 / FigX12
+#   (1) form the array-type groups on both the reference (CHM13) basis and the majority-allele basis
 #   (2) produce the 2D haplotype layout (PCoA) on both bases, so similar types come close
 #   (3) group <-> population / proximal, middle and distal methylation / CN / depth associations + label shuffling null
 #   (4) CN-controlled version of FigX12 C
@@ -9,7 +9,6 @@
 #     The variant tokens in `HAPFEAT.parquet` (02 tables folder) used by FigX9, X11 and X12 are on the CHM13 reference basis.
 #     At 11 positions CHM13 carries the minor allele, so almost every haplotype "has" that token (563 0.99, 437 0.99 ...).
 #     Such tokens raise the Jaccard of every pair together and change the Jaccard 0.90 grouping.
-#     The majority-allele version was already made on 2026-10-01 (03 figures folder, latest_2026-10-01 majority-basis subfolder).
 #
 #   Gate (1): first reproduce the variant columns of `HAPFEAT.parquet` exactly, and stop if that fails.
 #   Never write to the canonical files, all outputs are written only under new names below the paper Fig subfolder of the 03 figures folder.
@@ -202,7 +201,7 @@ LL = L.copy()
 LL["hap"] = LL["sample"].astype(str) + "_" + LL.slot.astype(str)
 prox = LL[(LL.ap <= LL.ad) & (LL.ap <= 10)].groupby("hap").f_hi.mean()
 dist = LL[(LL.ad < LL.ap) & (LL.ad <= 10)].groupby("hap").f_hi.mean()
-midd = LL[(LL.ap > 25) & (LL.ad > 25)].groupby("hap").f_hi.mean()      # newly made
+midd = LL[(LL.ap > 25) & (LL.ad > 25)].groupby("hap").f_hi.mean()
 POP = pd.read_csv(T + "POP_COHORT.tsv", sep="\t")
 POP["hap"] = POP["sample"].astype(str) + "_" + POP.slot.astype(str)
 meta = POP.set_index("hap")[["sp", "pop", "N"]]

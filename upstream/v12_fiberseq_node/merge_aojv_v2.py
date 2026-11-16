@@ -1,19 +1,19 @@
 # -*- coding: utf-8 -*-
-"""array only 배치 + junction 배치를 규칙대로 합친다 (2026-09-16)
+"""Merge the array-only placement and the junction placement by rule
 
-  sort -u 로 합치면 안 된다 — 같은 read 에 두 출처가 다른 슬롯을 주면 두 줄이 다 살아남고
-    ao_g8cut 이 먼저 읽은 줄(사전순이라 늘 슬롯 "1")을 잡는다. 규칙이 아니라 우연이다.
+  A plain sort -u is not a merge: when the two sources give one read different slots, both lines survive
+    and ao_g8cut takes the line it reads first (always slot "1" in lexical order), which is chance and not a rule.
     (measured : of 803 overlapping reads 6 conflict, and all 6 are cut to slot 1 in the output)
 
-  충돌 해소 규칙 (2026-09-16 검정 근거)
-    ① 판별 자리 < 10 인 투표는 배제 — 라벨 뒤섞기 귀무에서 자리<5 는 위양성 14.3%,
-       자리 10+ 는 0.0% (자리 4 개짜리 표차 1.000 은 1/7 로 우연히 난다)
-    ② 남은 충돌은 array only 사슬을 따른다 — 충돌 read 는 전부 유닛 >=14 로
-       사슬 게이트(K=12)가 검정된 범위 안이다. 투표는 사슬이 안 되는 구간을 메우려 만든 것이지
-       사슬을 뒤집으라고 만든 것이 아니다.
-    ③ 결과와 근거를 반드시 기록한다 (조용히 정해지는 일이 없도록)
+  Conflict resolution
+    (1) votes with fewer than 10 discriminating sites are excluded: under a label-shuffling null, votes with <5 sites
+       have 14.3% false positives and votes with 10 or more 0.0% (a margin of 1.000 on 4 sites arises by chance 1 time in 7)
+    (2) remaining conflicts follow the array-only chain: every conflicting read has >=14 units,
+       inside the range where the chain gate (K=12) was tested. The vote exists to fill the spans where the chain fails,
+       not to overturn the chain.
+    (3) the outcome and its basis are always logged (nothing is decided silently)
 
-  쓰기 : merge_aojv.py <array only tsv…> --jx <junction tsv> --vote <slotvote tsv> --out <합본> --log <기록>
+  usage : merge_aojv.py <array only tsv...> --jx <junction tsv> --vote <slotvote tsv> --out <merged> --log <log>
 """
 import io
 import os
@@ -23,9 +23,9 @@ import collections
 NL = "\n"
 TAB = "\t"
 # the threshold is the environment variable MINSITE, default 10; the value used is 5 :
-#   귀무 위양성 자리<5 14.3% · 5-9 2.4% · 10+ 0.0% -> 5-9 는 살린다 (되살린 것 중 약 3% 오배정 가능)
+#   False positives in the null: 14.3% at fewer than 5 discriminating positions, 2.4% at 5-9 and 0.0% at 10 or more, so 5-9 is kept (about 3% of those recovered may be misassigned).
 MINSITE = int(os.environ.get("MINSITE", "10"))
-# read 열쇠 길이 : ONT 16 · PacBio 0(전체) — 앞 16 자가 movie 라 전건 충돌
+# the read key length: 16 for ONT and 0, the whole name, for PacBio, whose first 16 characters are the movie and would collide in every case
 KEYLEN = int(os.environ.get("KEYLEN", "16"))
 
 
@@ -53,7 +53,7 @@ while i < len(args):
         ao_files.append(a)
     i += 1
 
-# 투표의 판별 자리 수 : (개체, read16) -> 자리수
+# the number of discriminating positions in the vote: (individual, read16) -> count
 NSITE = {}
 if vote and os.path.exists(vote):
     for k, L in enumerate(io.open(vote, encoding="utf8")):
@@ -66,7 +66,7 @@ if vote and os.path.exists(vote):
 
 
 def load(paths, tag):
-    """(개체, read16) -> (슬롯, [행…])"""
+    """(individual, read16) -> (slot, [rows...])"""
     D = collections.defaultdict(lambda: [None, []])
     for p in paths:
         if not os.path.exists(p):
@@ -107,9 +107,9 @@ for k in sorted(set(list(AO.keys()) + list(JX.keys()))):
         rows.extend(b[1])
         T["junction 만"] += 1
         continue
-    # 둘 다 있다
+    # present in both
     if a[0] == b[0]:
-        # 같은 슬롯 — array only 를 본으로 쓰고 junction 이 더 찾은 유닛을 보탠다
+        # the same slot: the array-only placement is taken as the base and the units the junction placement additionally found are added
         seen = set(x.split(TAB)[3] for x in a[1])
         extra = [x for x in b[1] if x.split(TAB)[3] not in seen]
         rows.extend(a[1])
@@ -118,7 +118,7 @@ for k in sorted(set(list(AO.keys()) + list(JX.keys()))):
         T["  junction 이 더한 유닛"] += len(extra)
         continue
     ns = NSITE.get(k, 0)
-    rows.extend(a[1])                      # 규칙 ② array only 를 따른다
+    rows.extend(a[1])                      # rule 2: follow the array-only placement
     T["슬롯충돌 → array only 채택"] += 1
     lg.write("%s\t%s\t%s\t%s\t%d\tAO\t%s\n"
              % (k[0], k[1], a[0], b[0], ns,

@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
-"""FiberHMM BED12 -> 5S 유닛 좌표 (2026-10-11)
+"""FiberHMM BED12 -> 5S unit coordinates
 
-배치기 BAM(pbmeth_v12d/bam/*.G8v3.bam) 에 돌린 FiberHMM 출력을
-MAP_V11 의 유닛 경계로 잘라 TSS 기준 rel 좌표로 옮긴다.
+The FiberHMM output run on the placement BAMs (pbmeth_v12d/bam/*.G8v3.bam) is
+cut at the unit boundaries of MAP_V11 and moved to rel coordinates from the TSS.
 
-재정렬 하지 않는다 — 좌표는 배치기가 준 것 그대로다.
-TSS 는 a_lib 과 같은 규칙 : 유닛 서열에서 GTCTACGGC 의 마지막 출현.
+No realignment: the coordinates are those given by the placement step.
+The TSS follows the rule of a_lib : the last occurrence of GTCTACGGC in the unit sequence.
 """
 import io
 import os
@@ -38,7 +38,7 @@ def rd_fa(p):
     return d
 
 
-# ── 유닛 경계
+# -- the unit boundaries
 U = collections.defaultdict(list)
 f = io.open(MAPF, encoding="utf8")
 ix = dict((n, i) for i, n in enumerate(f.readline().rstrip(NL).split(TB)))
@@ -66,7 +66,7 @@ for refp in sorted(glob.glob(os.path.join(H("~/pbmeth_v12d/bam/ref"), "*.fa"))
     if not os.path.isdir(exd):
         continue
     SEQ = rd_fa(refp)
-    # 유닛마다 TSS (ref 좌표 1-based)
+    # the TSS per unit, 1-based in reference coordinates
     UT = {}
     for rn, s in SEQ.items():
         sm_, sl = rn.rsplit("_h", 1)
@@ -94,7 +94,7 @@ for refp in sorted(glob.glob(os.path.join(H("~/pbmeth_v12d/bam/ref"), "*.fa"))
             bl = [int(v) for v in x[10].rstrip(",").split(",") if v != ""]
             bs = [int(v) for v in x[11].rstrip(",").split(",") if v != ""]
             if cls == "tf":
-                # read 가 덮는 범위도 한 번만 적는다
+                # the range a read covers is also recorded once only
                 r0, r1 = int(x[1]) + 1, int(x[2])
                 for (us, ue, ap, tss) in UT[rn]:
                     a, b = max(r0, us), min(r1, ue)
@@ -102,7 +102,7 @@ for refp in sorted(glob.glob(os.path.join(H("~/pbmeth_v12d/bam/ref"), "*.fa"))
                         cov.write(TB.join([sm_, sl, ap, rid,
                                            "%d" % (a - tss), "%d" % (b - tss)]) + NL)
             for sz, st in zip(bl, bs):
-                g0 = cs + st + 1            # 1-based ref 시작
+                g0 = cs + st + 1            # the 1-based reference start
                 g1 = g0 + sz - 1
                 for (us, ue, ap, tss) in UT[rn]:
                     if g1 < us or g0 > ue:

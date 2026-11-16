@@ -30,7 +30,7 @@ def _need(k):
     v = os.environ.get(k)
     if not v:
         sys.exit("environment variable %s is not set (this script has no default; "
-                 "see README.md, section 'How to run it')" % k)
+                 "see README.md, section 'Environment variables')" % k)
     return v
 
 

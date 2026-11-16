@@ -1,18 +1,18 @@
 # -*- coding: utf-8 -*-
-"""[자동생성 — `_make_cut508_variants.py` 가 zk1_m6a_by_state.py 에서 만든다]
-   저·고메틸을 `beta <= 0.508` 로 가른다 (U 없음).
-   유닛 안 자리별 m6A — 저메틸 / 고메틸로 가른다 (2026-10-11).
+"""[Generated: `_make_cut508_variants.py` makes this file from zk1_m6a_by_state.py]
+   Low and high methylation are split at `beta <= 0.508` (no U).
+   m6A per position inside the unit, split into low and high methylation.
 
-왜 다시 하나 : 앞 그림 (b) 는 구역(원위/가운데/근위)으로 갈랐는데
-   사용자가 저메틸/고메틸로 보고 싶다고 했다.
-왜 전에는 못 했나 : `M6A_SITE` 는 read 를 이미 합친 표라 상태를 붙일 수 없다.
-이번에 쓴 것 : `M6A_READUNIT` — read_id 가 있고 `calls` 에 자리별 ML 점수가 있다.
-       열 : sample|data_source|cfg|kind|slot|array_pos|read_id|strand|mod_strand|n_a|n_m6a|frac|in_final|calls
-       calls = "유닛자리:ML(0~255)" 목록 · m6A 판정 = ML >= 128
-       검산 : 합계가 표의 n_m6a 와 맞는지 본다
+The split is by methylation state (low/high),
+   not by region (distal/middle/proximal).
+`M6A_SITE` is a table already pooled over reads, so no state can be attached to it.
+`M6A_READUNIT` is used : it has read_id, and `calls` holds the ML score per position.
+       columns : sample|data_source|cfg|kind|slot|array_pos|read_id|strand|mod_strand|n_a|n_m6a|frac|in_final|calls
+       calls = list of "unit position:ML(0-255)"; m6A call = ML >= 128
+       check : the total must agree with n_m6a of the table
 
-분모는 레퍼런스대로 깊이다 — 그 자리를 덮은 분자 수.
-상태는 a13 GMM (read x 유닛 단위) 로 붙인다.
+The denominator is depth, as in the reference: the number of molecules covering that position.
+The state is attached from the a13 GMM (per read x unit).
 """
 import io
 import os
@@ -23,8 +23,8 @@ import collections
 import numpy as np
 
 # The data and output roots are environment variables with no default (CONVENTIONS, "the deposited copy wins").
-#  저장소 안 파일로 가는 길은 `__file__` 에서 상대로 푼다 — `a_lib`·`bamlite`·`p02_lib` 가 이 폴더에 같이 예치돼 있다.
-#  변수 표는 `README.md` §2 에 있다.
+#  Paths to files inside the repository are resolved relative to __file__: a_lib, bamlite and p02_lib are deposited in this folder.
+#  The table of variables is in README.md, section 'Environment variables'.
 _HERE = os.path.dirname(os.path.abspath(__file__))
 
 
@@ -34,11 +34,11 @@ def _need(k):
     except KeyError:
         raise SystemExit(
             "environment variable %s is not set; it is required by %s. "
-            "The deposited copy has no default; see README.md section 2."
+            "The deposited copy has no default; see README.md, section 'Environment variables'."
             % (k, os.path.basename(__file__)))
 
 SRCD = os.path.join(_need("RDNA_FHMM_DIR"), "m6a_readunit")
-#  쓰는 폴더다 — 발행 입력 폴더를 가리키면 그 표를 덮는다.
+#  This is written to: if it points at the published input folder, those tables are overwritten.
 HF = _need("RDNA_FIBERSEQ_DIR")
 OUT = os.path.join(HF, "01_latest_results", "REF2_20261011_m6a_in_unit_by_state_cut508.tsv")
 sys.path.insert(0, _HERE)
@@ -49,9 +49,9 @@ import a_lib as L                                      # noqa: E402
 
 # ─────────────────────────────────────────────────────────────────
 # Loader that splits low and high methylation at `beta <= 0.508`
-#   · a13 과 같은 키를 돌려준다 : (sample, src, read_id, slot, array_pos) -> 'L'/'H'
-#   · U(보류)가 없다 — 모든 유닛이 둘 중 하나로 불린다
-#   · 강건성 근거 : CHECK_20261012m_기준3종_강건성.tsv (18 조합 전부 같은 부호)
+#   · It returns the same key as a13: (sample, source, read_id, slot, array_pos) -> 'L' or 'H'.
+#   · There is no undecided class: every unit is called one or the other.
+#   · The robustness evidence is in the three-criteria robustness check, where all 18 combinations give the same sign.
 CUT508 = 0.508
 
 
@@ -76,8 +76,8 @@ GMM = _load_state_cut508()
 print("GMM %d" % len(GMM))
 ML = 128
 
-num = collections.Counter()      # (plat, state, unit_pos) -> m6A 인 분자 수
-den = collections.Counter()      # (plat, state, unit_pos) -> 그 자리를 가진 분자 수
+num = collections.Counter()      # (platform, state, unit position) -> the number of molecules carrying m6A
+den = collections.Counter()      # (platform, state, unit position) -> the number of molecules covering that position
 chk_m = chk_t = 0
 nrow = 0
 for p in sorted(glob.glob(os.path.join(SRCD, "*.tsv.gz"))):

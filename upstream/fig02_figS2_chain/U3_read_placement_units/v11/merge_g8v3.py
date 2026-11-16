@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# G8v3 placement merge (2026-09-11), by data source, read-stored, coding part included
+# G8v3 placement merge, by data source, read-stored, coding part included
 #   Inputs (all stored placement reads, all passed the source check):
 #     junction   : JX_G8_UNITS_main_* (610 slots whose old reference = latest canonical) + JX_G8_UNITS_c2_* (6 slots with consensus2 canonical)
 #                  columns: sample read slot job source strand array_pos f0 f1 bnd_start bnd_end verify varlist
@@ -9,7 +9,7 @@
 #     - a junction position is used only with 3 or more reads at the same (individual, source, slot, position) (original rjfreq2 rule)
 #     - consensus = token read count >= 0.35 x depth, compared on UNIT, depth 3 or more, only units with map check OK/OK_FILLED
 #     - read units only OK/OK_FILLED/OK_EDGE/OK_MIDDEL (input = .mid.tsv after recall_edge -> recall_mid). NO_FULL_READEND/NOALN/SEQ_MISMATCH are removed from the depth
-#   Changes: data source added to the key, junction excludes HG00384 and HG01150 (their assignment table is an alignment self-reference readslot)
+#   Differences from mergemap7: data source in the key, junction excludes HG00384 and HG01150 (their assignment table is an alignment self-reference readslot)
 #   Output: READMAP_G8V3_BYSOURCE.tsv (per position read ids, consensus, map, spacer and gene part separately)
 #   Arguments: collected folder (JX_G8_UNITS_*, AO_G8_UNITS_*), cmp folder (DUAL, G8v3 map)
 import io

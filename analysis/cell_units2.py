@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
-"""유닛 보조표 v2 : 유전자부 β · array_pos(배치기 정렬 좌표) · 고정 구역 (2026-10-12)
+"""Unit side table v2 : gene-body β, array_pos (coordinate from the placement alignment), fixed zones
 
-기존 UNIT_<label>.tsv 와 같은 unit_key("smp|read|k")를 쓴다 -> 이어 붙일 수 있다.
-  유전자부 = 유닛 끝 119 bp = [TSS, TSS+118]  (TSS = 유닛 안 마지막 GTCTACGGC · 유닛 = ... + 118)
-  array_pos : 배치기 BAM 의 정렬(참조 K562r_h1 등)에서 TSS 의 참조 좌표 -> MAP_G8 의 유닛 구간
-              (1 = 원위 · N = 근위). 정렬이 방향·클립을 이미 갖고 있다.
-usage: python cell_units2.py LABEL BAM SMP [MAPFILE MAPSAMPLE]   (여러 BAM 은 ; 로 이어 쓴다)
+Uses the unit_key ("smp|read|k") of the existing UNIT_<label>.tsv, so the two can be joined.
+  gene body = the last 119 bp of the unit = [TSS, TSS+118]  (TSS = the last GTCTACGGC in the unit; the unit ends at TSS + 118)
+  array_pos : the reference coordinate of the TSS in the placement BAM alignment (reference K562r_h1 and so on) -> the unit interval of MAP_G8
+              (1 = distal, N = proximal). The alignment already carries orientation and clipping.
+usage: python cell_units2.py LABEL BAM SMP [MAPFILE MAPSAMPLE]   (several BAMs are joined with ;)
 """
 import io
 import os
@@ -35,7 +35,7 @@ def _need(k):
         raise SystemExit(
             "environment variable %s is not set; it is required by %s." % (k, _SELF)
             + chr(10)
-            + "The deposited copy has no default; see README.md section 2")
+            + "The deposited copy has no default; see README.md, section 'Environment variables'")
     return v
 
 
@@ -76,7 +76,7 @@ def parse_c(seq, mm, ml):
     return out
 
 
-# 유닛 지도
+# Unit map
 UMAP = {}
 NSLOT = {}
 if MAPF:
@@ -97,7 +97,7 @@ if MAPF:
 
 
 def q2r(r, qpos):
-    """저장된 query 좌표 -> 참조 좌표(0-based) · 클립/삽입이면 None."""
+    """stored query coordinate -> reference coordinate (0-based); None at a clip or an insertion."""
     q = 0
     rp = r.reference_start
     for op, ln in r.cigartuples or []:
@@ -165,7 +165,7 @@ for bp, smp in zip(BAMS, SMPS):
                 except IndexError:
                     slot = ""
                 if slot in UMAP:
-                    pos_s = tss + 4                                   # 닻 9-mer 의 가운데
+                    pos_s = tss + 4                                   # The middle of the 9-mer anchor
                     orig_pos = (L - 1 - pos_s) if aflip else pos_s
                     st_pos = (L - 1 - orig_pos) if r.is_reverse else orig_pos
                     rp = q2r(r, st_pos)

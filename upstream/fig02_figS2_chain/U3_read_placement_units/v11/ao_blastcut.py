@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
-# Cut ARRAY_ONLY reads into G8 units without alignment (local WSL, 2026-09-12)
+# Cut ARRAY_ONLY reads into G8 units without alignment (run on local WSL)
 #   ① raw reads : the saved fastq (aoreads/*.fastq.gz, raw 4-line check passed 12,862/12,862)
 #   ② unit boundaries : find the 5S gene (119bp) in the read sequence with blastn, same settings G8v3 used to cut the canonical
 #                 (-task blastn -word_size 9 -evalue 1e-5 -dust no, HSP extended to the full gene length)
 #                 G8 unit = base after the previous gene end ~ next gene end ([spacer p][gene p+1])
 #   ③ variants : same method as the G8v3 map and ao_g8cut (minimap2 asm20 --cs=long, end fill, reconstruction check)
 #   ④ numbering : actual position, add the start number to the unit index within the read (long stretches with a missed gene are skipped by counting units from length).
-#            (2026-09-12: the saved placement wrongly renumbered units after those dropped within a read, so use the actual position)
+#            (the saved placement renumbers units after those dropped within a read, so the actual position is used)
 #            start number and direction = the best-matching position when fitting the read's unit variant chain to the G8v3 canonical map (that slot) (same principle as the original place(),
 #            except missing units are also counted in the index). Slot and range come from the saved placement (±5 units). Agreement with the saved variant list is written only as a reference column
 #   arguments : work folder (local_blast), cmp folder (AOJV*.tsv, maps), number of parallel jobs

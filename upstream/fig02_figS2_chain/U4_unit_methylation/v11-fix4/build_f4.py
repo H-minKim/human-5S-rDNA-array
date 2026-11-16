@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-# Build v11-fix4 (control order , 2026-09-22,)
+# Build v11-fix4
 #   Only the HG008-T, GIAB_SOMATIC_ONT rows are switched to CpG-only (CPGONLY=1). No other row changes by a single character.
 #   1) raw : 12 files in the v11-fix2 methylation raw folder (R2 below) → in the 4 READUNIT and SITE files of 58-58 ao/jx only the HG008-T GIAB block is replaced, the other 8 files are copied unchanged
-#   2) merged table : run merge_meth.py(4bc9cf68) on a folder holding only the HG008-T GIAB rows to get just that block, then splice it into the V11F2 merged table
+#   2) merged table : run merge_meth.py(b1c07d14) on a folder holding only the HG008-T GIAB rows to get just that block, then splice it into the V11F2 merged table
 #      (the merge_meth key is (sample, source, slot, array_pos), so rows of other samples are unaffected. Pilot : the CPGONLY=0 version must equal the V11F2 block)
 #   3) combined tables : replace the dataset=v11 block of the extra1, extra2 and extra1+extra2 combined tables with V11F4
 import io, os, sys, gzip, shutil, hashlib, subprocess, collections
@@ -90,11 +90,11 @@ for fn in sorted(os.listdir(R2)):
 
 # ---------------- 2. merged table ----------------
 MERGE = C + "/merge_meth.py"
-assert md5b(open(MERGE, "rb").read()) == "0ad651bd8314335432c779105c5133a7"
+assert md5b(open(MERGE, "rb").read()) == "b1c07d144232966d3ab7155da15057ad"
 
 
 def merge_key_only(tag, ao_ru, jx_ru):
-    """Build an input folder holding only the HG008-T GIAB READUNIT rows and run merge_meth. v11 rule : file names _a_jx and _b_ao (the file read first wins DUAL, i.e. junction first). The first run read _ao first and the pilot did not match"""
+    """Build an input folder holding only the HG008-T GIAB READUNIT rows and run merge_meth. v11 rule : file names _a_jx and _b_ao (the file read first wins DUAL, i.e. junction first)."""
     d_in = Q + "/merged_%s/in" % tag
     d_out = Q + "/merged_%s/out" % tag
     os.makedirs(d_in, exist_ok=False)

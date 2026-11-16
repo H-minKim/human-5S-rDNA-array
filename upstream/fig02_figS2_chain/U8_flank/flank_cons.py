@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# build flanks from read consensus (2026-09-14)
+# build flanks from read consensus
 #
 #   material: <sample>_h<slot>.<L|R>.fa extracted by flank_reads.py
 #          L = up to just before the canonical start (anchor at the end side), R = from just after the canonical end (anchor at the front side)
@@ -22,7 +22,7 @@ import collections
 NL = chr(10)
 TAB = chr(9)
 D = os.path.expanduser(sys.argv[1] if len(sys.argv) > 1 else "~/flankread")
-OUT = os.path.expanduser(os.environ.get("OUT", "~/flankcons"))
+OUT = os.path.expanduser(os.environ["OUT"])
 CAP = int(os.environ.get("CAP", "50000"))
 MINDEP = int(os.environ.get("MINDEP", "2"))
 os.makedirs(OUT, exist_ok=True)

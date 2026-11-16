@@ -1,6 +1,6 @@
 #!/bin/bash
-# 유인원 정렬 준비 (노드에서) : 조립본 내려받기 + 색인. cmsearch 표·구조표·modkit 은 지휘 스크립트가 옮겨준다
-#   인자 : 종키(예 gorilla_mGorGor1) · 접근번호(예 GCA_029281585.3)
+# Preparing the ape alignments (on the compute node): download and index the assembly. The cmsearch tables, structure tables and modkit output are moved in by the driver script.
+#   Arguments: species key (e.g. gorilla_mGorGor1), accession (e.g. GCA_029281585.3).
 set -u
 SP="${1:?종키}"
 ACC="${2:?접근번호}"

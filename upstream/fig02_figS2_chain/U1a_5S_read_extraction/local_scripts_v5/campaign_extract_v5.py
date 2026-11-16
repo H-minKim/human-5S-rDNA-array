@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""ONT extraction v5, single BBDuk k-mer gate (tRNA removed, streaming blastn removed).
+"""ONT extraction v5, single BBDuk k-mer gate (no tRNA, no streaming blastn).
 
-Why it changed (all measured, on the same 383MB input)
-  - Truth = the 2,262 reads that the current pipeline called ARRAY and kept.
-      BBDuk k31 hdist1 (discriminating segment NTS)  188 MB/s, recall 1.0000, false positives 8   (the first measurement that chose the gate. The values actually run are k=25 hdist=2 = lines 26-27, ONT tandem span>500 recall k31h1 0.9158, k25h2 1.0000)
+Benchmark of the gate (all measured, on the same 383MB input)
+  - Truth = the 2,262 reads that the blastn-based pipeline called ARRAY and kept.
+      BBDuk k31 hdist1 (discriminating segment NTS)  188 MB/s, recall 1.0000, false positives 8   (the measurement that chose the gate. The values actually run are k=25 hdist=2 = lines 26-27, ONT tandem span>500 recall k31h1 0.9158, k25h2 1.0000)
       blastn ws=16                          8 MB/s, recall 1.0000, false positives 728
       megablast ws=28                      14 MB/s, recall 0.9881 (27 missed)
-    -> switching the streaming gate to BBDuk is 23 times faster with no recall loss.
-  - The earlier note "k-mer selection unsuitable" referred to **dispersed pseudogenes** diverged by 76-92%.
-    The array reads kept now are nearly identical to the canonical sequence, so k-mers work perfectly.
+    -> BBDuk as the streaming gate is 23 times faster with no recall loss.
+  - k-mer selection is unsuitable only for **dispersed pseudogenes** diverged by 76-92%.
+    The array reads kept here are nearly identical to the canonical sequence, so k-mers work perfectly.
   - blastn runs only on passing reads (~0.3% of all) to fill the 5s.tsv fields, the cost is negligible.
   - tRNA excluded. MM/ML tags are kept as is.
 """

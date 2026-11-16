@@ -7,7 +7,7 @@ Reference files (every md5 checked against measurement):
     canon list 02_<canon>\\hap_seq_node_v8.tsv                     bc11cdc3aec7d0245cce26f899f5725f
     merged     07_<merged>\\READMAP_V11_BYSOURCE.tsv                 bdf4504e57d18f6695e8e01714a39351
     methyl     08_<methyl>\\out\\READMAP_METH_V11.tsv                40143744a85c92a2217875ecb1d17666
-The earlier release (*_G8V4* in DATA_LATEST) is not used: the map and merged table frames were misaligned.
+The *_G8V4* release in DATA_LATEST is not used: its map and merged table frames are misaligned.
 
 The canonical unit sequence is **identical** to the old version (measured).
   canon_ctx.fa = [canonical unit last 200][canonical unit 2240][canonical unit first 200], so the middle is cut out.
@@ -27,17 +27,17 @@ Analysis set filters
     stage    : exclude B_ (canonical invalid) and E_ (canonical mismatch) - the stage table is STAGE_ALL_V11.tsv,
                recomputed on v11 by `stage_v11.py` (rules unchanged from stage_all4.py). The union edition is primary, stage_rep also exists.
     no_break : exclude slots with n_break>0 in SUM (15 slots in v11)
-    hg002_2 : excluded (canonical changed to the T2T paternal, but 0 read units)
+    hg002_2 : excluded (canonical is the T2T paternal, with 0 read units)
     verify   : OK only (exclude the 13 v11 NO_FULL)
     n_unit   : exclude units with alt=N
 """
 import io, os, re, hashlib, collections
 import numpy as np
 
-# Version v11-fix2 (2026-09-17) - canonical and G8 map are fix1, ARRAY_ONLY units, merged table and methylation are fix2 (section 5 of each version definition .md)
-V = (__import__("os").environ["RDNA_DATA_ROOT"] + r"\for_paper\08_versions\v11-fix2")            # merged table, methylation, read x unit methylation raw
-V1 = (__import__("os").environ["RDNA_DATA_ROOT"] + r"\for_paper\08_versions\v11-fix1")           # canonical, G8 map
-V0 = (__import__("os").environ["RDNA_DATA_ROOT"] + r"\for_paper\08_versions\v11")                 # canonical file list (hap_seq_node_v8 - file name unchanged in fix1 and fix2)
+# Version v11-fix2 - canonical and G8 map are fix1, ARRAY_ONLY units, merged table and methylation are fix2 (section 5 of each version definition .md)
+V = (__import__("os").environ["RDNA_DATA_ROOT"] + r"/for_paper/08_versions/v11-fix2")            # merged table, methylation, read x unit methylation raw
+V1 = (__import__("os").environ["RDNA_DATA_ROOT"] + r"/for_paper/08_versions/v11-fix1")           # canonical, G8 map
+V0 = (__import__("os").environ["RDNA_DATA_ROOT"] + r"/for_paper/08_versions/v11")                 # canonical file list (hap_seq_node_v8 - file name unchanged in fix1 and fix2)
 MAPF = os.path.join(V1, "03_maps", "g8canonv11f1", "CONSENSUS_MAP_G8_full.tsv")
 MAP_MD5 = "bb68fe3a2a23945fe919efe8fd405a7b"
 SUMF = os.path.join(V1, "03_maps", "g8canonv11f1", "CONSENSUS_SUM_G8_full.tsv")
@@ -46,12 +46,11 @@ READMAPF = os.path.join(V, "07_merged", "READMAP_V11F2_BYSOURCE.tsv")
 READMAP_MD5 = "a3f379c91b00f81b54c43a5158794b11"
 METHF = os.path.join(V, "08_methylation", "out", "READMAP_METH_V11F2.tsv")
 METH_MD5 = "eb8d77649a8f54baccdcfe8e3dbc22f1"
-# methylation merged table moved to the fix4 edition (default F4, `V11_METH=F2` reverts)
-#   Measured: same rows and columns (55,599, 12), symmetric difference of the 3-column key sets 0, keys with different values 237
+# methylation merged table: the fix4 edition by default (`V11_METH=F2` selects the fix2 edition)
+#   F2 and F4 have the same rows and columns (55,599, 12), symmetric difference of the 3-column key sets 0, keys with different values 237
 #          all 237 lie outside the h1 cohort - sites with different values inside h1: 0 (largest Δ is HG008-T = cancer)
-# Two-stage gate: h1 chain tables 269 / 269 unchanged (F2 and F4 give the same result)
-#     ⇒ no risk in moving to the newer canonical. Cancer and trio presets may change, so state F2 explicitly for those.
-V4 = (__import__("os").environ["RDNA_DATA_ROOT"] + r"\for_paper\08_versions\v11-fix4")
+#   The h1 chain tables are the same with F2 and F4 (269 / 269). Cancer and trio presets may differ, so state F2 explicitly for those.
+V4 = (__import__("os").environ["RDNA_DATA_ROOT"] + r"/for_paper/08_versions/v11-fix4")
 METHF4 = os.path.join(V4, "08_methylation", "out", "READMAP_METH_V11F4.tsv")
 METH4_MD5 = "fc7042fc9ef3b1ff03729bcece4aff12"
 METHF2, METH2_MD5 = METHF, METH_MD5
@@ -61,8 +60,8 @@ METHSITEF = os.path.join(V, "08_methylation", "out", "METH_SITE_V11F2.tsv.gz")
 CTXF = os.path.join(V1, "03_maps", "g8canonv11f1", "canon_ctx.fa")
 HSNF = os.path.join(V0, "02_canonical", "hap_seq_node_v8.tsv")
 CANDIR = os.path.join(V1, "02_canonical", "cmp4d_v11_fix1")
-STAGEF = (__import__("os").environ["RDNA_DATA_ROOT"] + r"\5S_position_variant_work\2026-09-17_v11_fix2\STAGE_ALL_V11F2.tsv")
-OUT = (__import__("os").environ["RDNA_DATA_ROOT"] + r"\5S_position_variant_work\2026-09-17_v11_fix2")
+STAGEF = (__import__("os").environ["RDNA_DATA_ROOT"] + r"/5S_position_variant_work/2026-09-17_v11_fix2/STAGE_ALL_V11F2.tsv")
+OUT = (__import__("os").environ["RDNA_DATA_ROOT"] + r"/5S_position_variant_work/2026-09-17_v11_fix2")
 
 def md5(p):
     h = hashlib.md5()
@@ -81,7 +80,7 @@ assert CAN[2121:2141] == "GTCTACGGCCATACCACCCT", "유전자부 시작이 다르�
 assert CAN[:20] == "TTTTCTTTGGCTTTTTGCTG", "유닛 앞머리가 다르다"
 assert CAN[2204] == "T" and CAN[2234] == "T", "U84C/2235 자리 염기가 다르다"
 
-# Repeat blocks - rule from poscat.py lines 17-29 (same as the old version)
+# Repeat blocks - rule from poscat.py lines 17-29
 _runs = []
 for m in re.finditer(r"(.)\1{3,}", CAN): _runs.append((m.start() + 1, m.end()))
 for k in (2, 3, 4, 5, 6):
@@ -134,14 +133,14 @@ PRESETS = {
     "primary": dict(germline=True, drop_stage=("B_", "E_"), no_break=True, drop_hg002_2=True),
     "ok_only": dict(germline=True, keep_stage=("OK",), no_break=True, drop_hg002_2=True),
     "all":     dict(germline=False, drop_stage=(), no_break=False, drop_hg002_2=False),
-    # added - tiers of the common cohort rule (control ). Only intersects primary with the tier list.
+    # tiers of the common cohort rule: primary intersected with the tier list.
     #   primary 564 ∩ H1 = 557 (= all of H1), primary 564 ∩ H3 = 490 (= all of H3, the same set as H2 within this base)
-    #   The three existing presets have no "tier" key, so the tier branch of keep_slot never runs (primary output unchanged).
+    #   The three presets above have no "tier" key, so the tier branch of keep_slot does not run for them.
     "h1":      dict(germline=True, drop_stage=("B_", "E_"), no_break=True, drop_hg002_2=True, tier="H1"),
     "h3":      dict(germline=True, drop_stage=("B_", "E_"), no_break=True, drop_hg002_2=True, tier="H3"),
 }
 
-TIERF = (__import__("os").environ["RDNA_DATA_ROOT"] + r"\rDNA_registry\registry\TIERS_H0H3_SLOTS_2026-10-05.tsv")
+TIERF = (__import__("os").environ["RDNA_DATA_ROOT"] + r"/rDNA_registry/registry/TIERS_H0H3_SLOTS_2026-10-05.tsv")
 TIER_MD5 = "fc34c6326111d7ad797e34ed0a954b4c"
 _TIER_CACHE = {}
 
@@ -225,7 +224,7 @@ def load(preset="primary", check_md5=True, verbose=True, **kw):
                      else ("G8 이름표 그대로" if META["polarity"] == "g8" else "경고: 게놈 극성과 반대"))))
     return dict(U), ASM, META
 
-# ---------- new: methylation ----------
+# ---------- methylation ----------
 DEDUP_DEFAULT = os.environ.get("V11_METH_DEDUP", "pool").lower()
 
 def load_meth(check_md5=True, min_reads=1, verbose=True, dedup=None):
@@ -233,7 +232,7 @@ def load_meth(check_md5=True, min_reads=1, verbose=True, dedup=None):
        beta_read_median, n_reads, n_calls, n_meth, data_source)
        The site key is array_pos, the same as the map (genomic distal based). Proximal index is N-array_pos+1.
 
-       2026-10-06 - some sites have rows from two data sources (measured)
+       Some sites have rows from two data sources (measured)
          The merged table `*_BYSOURCE` has two data sources for 19 (individual, slot) pairs.
          So keying on the 3 columns `(sample,slot,array_pos)` makes `M[k] = …` overwrite silently,
          and which row wins is set by file line order (not by a rule).
@@ -246,7 +245,7 @@ def load_meth(check_md5=True, min_reads=1, verbose=True, dedup=None):
                  It uses the same scale as the main table (= hard call), so only this keeps the scale consistent.
                  `n_reads`, `n_calls` and `n_meth` are summed too, and `data_source` is joined with "+".
          "deep"        : the one source with larger `n_reads`
-         "last"        : for reproducing the old incident - last row in the file (do not use in new analyses)
+         "last"        : last row in the file, what the silent overwrite gives (not for analyses)
        Measured effect (h1, 49,886 sites with methylation): overlap is 1.56%
          overall mean β last 0.662407, deep 0.662443, pool 0.662462 → shift 0.000055
     """

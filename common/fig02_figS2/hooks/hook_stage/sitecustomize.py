@@ -9,4 +9,4 @@ sys.path.insert(0, __import__("os").environ.get("V11_CODE", __import__("os").pat
 import v11_io as G
 G.OUT = STAGE
 assert os.path.normcase(os.path.abspath(G.OUT)) != os.path.normcase(
-    os.path.abspath((__import__("os").environ["RDNA_DATA_ROOT"] + r"/5S_position_variant_work/2026-09-17_v11_fix2"))), "정본 경로 방지"
+    os.path.abspath((__import__("os").environ["RDNA_DATA_ROOT"] + r"/5S_position_variant_work/2026-09-17_v11_fix2"))), "canonical path guard"

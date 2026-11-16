@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
-# array 마다 다시 모으기 v2 — 반영
-#   ① 등급을 그 array 의 상위 25% / 하위 25% 로 (고정 문턱 0.35/0.70 대신 · 사분위는 그 array 의 read-유닛 β 에서)
-#   ② mat / pat 를 합친다 (금화조 하플로 쌍 — 같은 좌위로 묶음)
-#   ③ 모든 종 : 시아망 포함 (단 시아망은 호출기가 dorado 로 달라 표에 적어 둔다)
-#   나머지 호출 규칙은 그대로 : 5mC = ML>=128 · flag&0x904 제외 · mapq 무여과 · n_calls >= 그 묶음 중앙값 x 0.5 · 보노보 6.3.8
-#   산출 : tables/PERARRAY_WITHIN_UNIT_v3.tsv.gz · tables/PERARRAY_META_v3.tsv · tables/PERARRAY_UNIT_BETA_v3.tsv.gz(유닛 β 분포)
+# Collecting per array, with these rules:
+#   1) the classes are that array's top and bottom quartile, not fixed thresholds at 0.35 and 0.70, with the quartiles taken from that array's read-unit beta;
+#   2) the maternal and paternal copies are merged, for the zebra finch haplotype pairs, as one locus;
+#   3) every species is included, the siamang among them, although the siamang is noted in the table as having been basecalled with dorado instead;
+#   The remaining calling rules: 5mC at ML >= 128, flag & 0x904 excluded, no mapq filter, n_calls >= 0.5 times that locus's median, and the bonobo on guppy 6.3.8.
+#   Outputs: tables/PERARRAY_WITHIN_UNIT_v3.tsv.gz, tables/PERARRAY_META_v3.tsv and tables/PERARRAY_UNIT_BETA_v3.tsv.gz for the unit beta distribution.
 import io, os, sys, glob, re, struct, collections
 import numpy as np
 import pandas as pd
@@ -17,7 +17,7 @@ def _need(k):
     v = _os_need.environ.get(k)
     if not v:
         _sys_need.exit("environment variable %s is not set (the deposited copy has no default; "
-                       "see README.md, section 'How to run it')" % k)
+                       "see README.md, section 'Environment variables')" % k)
     return v
 
 
@@ -73,22 +73,22 @@ def label(aid, chrom, a0, a1):
 WU, MET, UB = [], [], []
 for ko, sp in SPK:
     Asp = load_species(sp)
-    STRAND = {}                                   # g8map 의 array strand (유닛 안 좌표를 g8 틀로 맞출 때 씀)
+    STRAND = {}                                   # the array strand from the g8 map, used to bring the within-unit coordinate into the g8 frame
     for f_ in sorted(glob.glob(B + "/02_consensus_map/%s/*.g8map.tsv" % sp)):
         if not re.search(r"_[0-9]+_[0-9]+[.]g8map[.]tsv$", f_.replace("\\", "/")):
             continue
         g_ = pd.read_csv(f_, sep="\t", usecols=["array_id", "strand"])
         STRAND[g_.array_id.iloc[0]] = g_.strand.iloc[0]
-    # ---- 유닛 β (read x 유닛) : 사분위·여과 기준
+    # ---- unit beta, per read x unit: the basis of the quartiles and the filter
     fs = sorted(glob.glob(B + "/03_reads/%s/*.read_unit.tsv" % sp) + glob.glob(B + "/03_reads/%s/*.read_unit.tsv.gz" % sp))
     D = pd.concat([pd.read_csv(f, sep="\t") for f in fs], ignore_index=True)
     D = D[D.context == "CG"].copy()
-    med = D.groupby("array_id").n_calls.transform("median")      # 중앙값은 모든 read 에서
+    med = D.groupby("array_id").n_calls.transform("median")      # the median is taken over all the reads
     D = D[D.n_calls >= 0.5 * med].copy()
     if sp == "bonobo_mPanPan1":
         D = D[~D.read_id.isin(B637)].copy()
     D["b"] = D.n_5mC / D.n_calls
-    # ---- 묶음(좌위) 정의 : 금화조는 mat/pat 를 합친다
+    # ---- defining the locus: for the zebra finch the maternal and paternal copies are merged
     grp_of = {}
     for aid in Asp:
         if aid not in set(D.array_id):
@@ -101,8 +101,8 @@ for ko, sp in SPK:
         key = lab
         grp_of[aid] = (key, a0, a1, lab)
     if sp == "zfinch_v03_dip":
-        # mat / pat 를 합친다 : 염색체 이름(_mat/_pat 뗀 것)마다, 시작 좌표 순서 로 짝을 맞춘다
-        #   (유닛 수는 하플로마다 달라서 짝짓기 기준이 될 수 없다 — chr4 132/77 · chr9 70/41)
+        # The maternal and paternal copies are merged by chromosome name, with the _mat and _pat suffix stripped, pairing them in order of start coordinate
+        #   (the unit count differs between haplotypes and so cannot serve as the pairing key: chr4 has 132 against 77 and chr9 70 against 41).
         byhap = collections.defaultdict(list)
         for aid, (key, a0, a1, lab) in grp_of.items():
             base = re.sub(r"_(mat|pat)$", "", lab)
@@ -117,11 +117,11 @@ for ko, sp in SPK:
             nsame = len([1 for (b, h) in byhap if b == base])
             newkey = "%s%s (mat+pat)" % (base, ("" if len([1 for x in byhap.get((base, "mat"), [])]) <= 1 else " #%d" % (i + 1)))
             grp_of[aid] = (newkey, a0, a1, lab)
-    # 이름표 유일화 : 서로 다른 array 가 같은 이름표로 묶이면 안 된다
-    #   (제브라 36,223,097 과 36,238,873 이 'chr4 · 36.2 Mb' 로 같아져 두 array 가 한 묶음이 되는 버그가 있었다)
+    # the labels are made unique, so that two different arrays cannot fall under one label
+    #   (zebrafish 36,223,097 and 36,238,873 would both render as "chr4 · 36.2 Mb" and be merged into one locus).
     cnt_lab = collections.Counter(k for k, _a0, _a1, _l in grp_of.values())
     dup = {k for k, c in cnt_lab.items() if c > 1}
-    if dup and sp != "zfinch_v03_dip":            # 금화조는 mat/pat 를 일부러 합치므로 건드리지 않는다
+    if dup and sp != "zfinch_v03_dip":            # the zebra finch maternal and paternal copies are merged deliberately and are left alone here
         for aid, (key, a0, a1, lab) in list(grp_of.items()):
             if key in dup:
                 for nd in (2, 3, 4):
@@ -135,7 +135,7 @@ for ko, sp in SPK:
         groups[key].append(aid)
     if sp != "zfinch_v03_dip":
         assert all(len(v) == 1 for v in groups.values()), "이름표가 아직 겹친다 : %s" % [k for k, v in groups.items() if len(v) > 1]
-    # ---- 묶음마다 사분위
+    # ---- the quartiles, per locus
     cut, CLS, TIE = {}, {}, {}
     rngq = np.random.default_rng(0)
     for key, aids in groups.items():
@@ -144,7 +144,7 @@ for ko, sp in SPK:
         q1, q3 = float(np.quantile(b, 0.25)), float(np.quantile(b, 0.75))
         cut[key] = (q1, q3)
         TIE[key] = float((b >= 0.999).mean())
-        # 순위 기준 : 동점은 씨앗 0 의 무작위 순서로 섞어 아래 25% / 위 25% 를 정확히 가른다
+        # Ranking: ties are shuffled in a random order from seed 0, so that the bottom and top 25% are cut exactly.
         order = np.lexsort((rngq.random(len(b)), b))
         n = len(b)
         lo_n, hi_n = int(round(0.25 * n)), int(round(0.25 * n))
@@ -155,7 +155,7 @@ for ko, sp in SPK:
             CLS[(aid_, rid_, int(ap_))] = lb
         for a in aids:
             UB.append((ko, key, a, len(b), round(q1, 5), round(q3, 5)))
-    # ---- BAM 한 번 훑어 유닛 안 프로파일 (묶음 단위로 누적)
+    # ---- one pass over the BAM for the within-unit profile, accumulated per locus
     bychrom = collections.defaultdict(list)
     for aid in grp_of:
         bychrom[Asp[aid]["chrom"]].append(aid)
@@ -243,7 +243,7 @@ for ko, sp in SPK:
                 if not good.any():
                     continue
                 ui2, call2, rp2 = ui[good], call[good], rp[good]
-                # 유닛 안 좌표는 g8 틀 : array strand 를 맞춰 뒤집어야 유전자가 유닛 끝에 온다
+                # the within-unit coordinate is in the g8 frame: the array strand must be applied so that the gene falls at the end of the unit
                 inu = (rp2 - v["us"][ui2] + 1) if STRAND[aid] == "+" else (v["ue"][ui2] - rp2 + 1)
                 gate = 0.5 * MEDC.get(aid, 0)
                 L = st["L"]
@@ -254,7 +254,7 @@ for ko, sp in SPK:
                     if n_ < gate:
                         continue
                     cls = CLS.get((aid, rid, int(v["pos"][u])), None)
-                    if cls is None:          # read_unit 표에 없는 read-유닛(드묾) — 등급 없이 ALL 에만
+                    if cls is None:          # a read-unit absent from the read_unit table, which is rare, is counted only in ALL and given no class
                         cls = "MID"
                     pos = np.clip(inu[w].astype(np.int64), 1, L)
                     np.add.at(st["acc"]["ALL"][0], pos, 1.0)
@@ -269,7 +269,7 @@ for ko, sp in SPK:
     for key, aids in groups.items():
         st = ACC[key]
         L = st["L"]
-        # 칸으로 묶지 않는다 — 값이 있는 CpG 자리 그대로 내보낸다(빈 칸 때문에 선이 끊기던 문제)
+        # Nothing is binned: the CpG positions that carry a value are emitted as they are, so the lines do not break at empty bins.
         nall = st["acc"]["ALL"][0][1:L + 1]
         sites = np.flatnonzero(nall > 0) + 1
         for cls in ("ALL", "HIGH", "LOW"):

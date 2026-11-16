@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Answers to questions - reproduce the majority-type path of figx9_12_prep.py exactly, then measure 9,10,11,12
+# Reproduces the majority-type path of figx9_12_prep.py exactly, then measures Q9, Q10, Q11 and Q12
 import io, os, sys, collections
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 import numpy as np, pandas as pd

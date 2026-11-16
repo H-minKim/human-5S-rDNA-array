@@ -9,7 +9,7 @@ import os, re, sys, csv, subprocess, collections, array
 import pysam
 P = os.path.expanduser("~/p11_v11"); W = os.path.join(P, "K562MK_NOALIGN"); os.makedirs(W, exist_ok=True)
 FQ = os.environ.get("FQ", os.path.join(P, "AO_K562r/fq/K562r.hit.fq")); UNIT = os.path.expanduser("~/s5s_tuc/ref/unit_canon.fa")
-MK = os.path.join(W, "P11_K562_MARKERS_NEWZONE_2026-10-13.tsv")       # the marker table uploaded from the local machine
+MK = os.path.join(W, "P11_K562_MARKERS_NEWZONE_2026-10-13.tsv")       # the marker table, copied into this folder before the run
 G0, G1, MINCALL, MLT = 2122, 2240, 3, 128
 COMP = str.maketrans("ACGTN", "TGCAN")
 markers = [r for r in csv.DictReader(open(MK), delimiter="\t")]

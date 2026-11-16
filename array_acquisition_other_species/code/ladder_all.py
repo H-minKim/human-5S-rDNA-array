@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
-# 77 array 전부 : 자기-도트플롯 옵셋 사다리로 반복 주기를 직접 판정한다
-#   진짜 탠덤 = 옵셋 히스토그램이 p · 2p · 3p ... 로 서는 사다리 + 옵셋 p 의 정렬량이 조각 길이에 육박
-#   (사람 실측 : 옵셋 2240 에 147,862 bp / 조각 150,000 · HSP 66 개
-#    붉은털원숭이 : 최상위 옵셋도 7,714 bp 뿐 · HSP 2,898 개 = 사다리 없음)
-#   유닛·cmsearch·공개 서열 전부 안 쓰고 array 서열만 본다
-#   산출 : LADDER_ALL.tsv
+# All 77 arrays: the repeat period is called directly from the offset ladder of a self dot plot.
+#   A genuine tandem array gives an offset histogram standing at p, 2p, 3p and so on, with the aligned length at offset p approaching the length of the fragment.
+#   (Measured in human: 147,862 bp at offset 2240 out of a 150,000 bp fragment, over 66 HSPs.
+#    In rhesus the top offset carries only 7,714 bp over 2,898 HSPs, which is no ladder at all.)
+#   Neither the units, nor cmsearch, nor any published sequence is used: only the array sequence itself.
+#   Output: LADDER_ALL.tsv
 # MIT License · Copyright (c) 2026 Hungmin Kim
 import io
 import os
@@ -28,7 +28,7 @@ print("%-50s %7s %6s %7s %8s %5s %5s  %s" % ("array_id", "slice", "HSP", "주기
 def ladder(off, slen):
     if not off:
         return 0, 0, 0, []
-    # 후보 : 정렬량 상위 옵셋 가운데 가장 작은 것부터
+    # candidates: starting from the smallest among the offsets with the greatest aligned length
     cand = [k for k, v in off.most_common(12) if k >= MINP]
     best = (0, 0, 0, [])
     for p in sorted(cand):

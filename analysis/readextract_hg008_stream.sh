@@ -1,10 +1,10 @@
 #!/bin/bash
 # s3://giab/data_somatic/HG008/Liss_lab/Northeastern_ONT-std_20240422/
-#   단계 : ① read 추출 (HG008)
-# HG008 3샘플 — 전량 스트리밍으로 통일 (길이필터본 금지: T 와 N 의 조건이 달라져 편향)
-#   T   : CHM13v2.0 정렬 BAM 149GB
-#   N-D : ubam 4 개 (90GB급)
-#   N-P : ubam 3 개 (46-50GB급)
+#   Step 1: read extraction, HG008.
+# All three HG008 samples are streamed in full. A length-filtered copy must not be used: it would put T and N under different conditions and bias the comparison.
+#   T: a CHM13v2.0-aligned BAM of 149 GB.
+#   N-D: four unaligned BAMs, about 90 GB.
+#   N-P: three unaligned BAMs, 46-50 GB.
 set -u
 LOG=~/hg008_queue.log
 echo "[$(date -u +%F\ %H:%M)] v2 대기 시작 — 전량 스트리밍 통일" >> "$LOG"
@@ -23,7 +23,7 @@ cp -f ~/s5s_ont/{5S_unit_discseg.fa,5S_gene_query.fa,campaign_extract_v5.py,tand
 cp -f ~/s5s_ont/gene_db.* . 2>/dev/null
 BASE="https://giab.s3.amazonaws.com/data_somatic/HG008/Liss_lab"
 DIR="Northeastern_ONT-std_20240422"
-one(){ # $1=라벨 $2=URL
+one(){ # $1=label $2=URL
   L=$1; U=$2
   [ -f "done/${L}.done" ] && return
   while [ "$(df -BG / | tail -1 | awk '{print $4}' | tr -d G)" -lt 40 ]; do sleep 300; done

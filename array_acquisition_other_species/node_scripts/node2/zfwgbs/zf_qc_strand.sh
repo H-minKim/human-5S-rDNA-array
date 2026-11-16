@@ -1,11 +1,11 @@
 #!/bin/bash
-# 변환 검사 v2 — 양쪽 가닥 서명을 다 본다
-#   지난 검사는 R1 의 C 비율만 봤다. 그런데 바이설파이트 read 는 가닥에 따라 모양이 다르다:
-#     C→T 가닥 : C 가 적고 T 가 많다   (지난 검사가 잡던 것)
-#     G→A 가닥 : G 가 적고 A 가 많다 (C 는 정상 20% 로 보인다)
-#   비방향성·PBAT 라이브러리이거나 R1/R2 가 바뀌어 올라와 있으면
-#   변환이 잘 된 자료를 "미변환" 으로 거짓 탈락시킨다.
-#   PRJNA734348 난모세포는 이 프로젝트에서 유일한 난모세포 바이설파이트 자료라 반드시 확인한다.
+# Conversion check: both strand signatures are examined.
+#   Looking only at the C fraction of R1 is not enough, because a bisulfite read looks different depending on the strand:
+#     the C-to-T strand is low in C and high in T, which is what a C-only check detects
+#     the G-to-A strand is low in G and high in A, and its C fraction looks like a normal 20%
+#   With a non-directional or PBAT library, or with R1 and R2 submitted the other way round,
+#   properly converted data would be rejected as unconverted.
+#   The PRJNA734348 oocytes are the only oocyte bisulfite data available here, so they are checked explicitly.
 set -u
 cd ~/zfwgbs || exit 1
 mkdir -p qc logs
@@ -22,8 +22,8 @@ for X in "SRR14703401 난모세포_ctrl_rep1" "SRR14703403 난모세포_ctrl_rep
       NR%4==2{ n=length($0); tot+=n
         c=gsub(/C/,"C"); t=gsub(/T/,"T"); g=gsub(/G/,"G"); a=gsub(/A/,"A")
         C+=c; T+=t; G+=g; A+=a
-        if(100*c/n<=5) ct++          # C→T 가닥 서명
-        if(100*g/n<=5) ga++          # G→A 가닥 서명
+        if(100*c/n<=5) ct++          # C→T strand signature
+        if(100*g/n<=5) ga++          # G→A strand signature
         k++ }
       END{ if(tot==0){exit}
         cp=100*C/tot; tp=100*T/tot; gp=100*G/tot; ap=100*A/tot

@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
-# array 단위 차등 메틸 — 표 · 검정 (같은 개체·같은 라이브러리 안에서만)
-#   표본 단위 = read. read 값 = 그 read 가 그 array(또는 좌위)에서 낸 CpG 메틸 비율.
-#   ① 좌위 표 : 좌위별 전체/코딩/스페이서 비율 + read 부트스트랩 95%
-#   ② 검정 : read 값(CpG ≥ MINC)에 대해 좌위가 설명하는 분산 비율 η² + 좌위 라벨 순열(2,000) p
-#            + 핵심 대비(금화조 chr9 vs 나머지 · 제브라 chr18 vs chr4) 차이와 부트스트랩 95%
-#   금화조 chr2 : mat/pat array 가 바이트 동일 → 하플로타입 배정 불가 → 두 하플로타입을 합쳐 좌위 1 개로
-#   제브라 ONT : chr4 array 는 read 가 적은 것이 많아 read ≥ MINR 인 array 만 좌위로 · chr18 1 개
+# Differential methylation at the array level: the tables and the tests, made only within one individual and one library.
+#   The sampling unit is the read, and a read's value is the CpG methylation fraction it gives over that array, or locus.
+#   1) The locus table: the whole-array, coding and spacer fractions per locus, with a read-level bootstrap 95% interval.
+#   2) The tests: over the read values with at least MINC CpG sites, the fraction of variance the locus explains as eta squared, with a p value from 2,000 permutations of the locus label,
+#            plus the key contrasts, zebra finch chr9 against the rest and zebrafish chr18 against chr4, with their differences and bootstrap 95% intervals.
+#   Zebra finch chr2: the maternal and paternal arrays are byte-identical, so a haplotype cannot be assigned and the two are merged into one locus.
+#   Zebrafish ONT: many chr4 arrays carry few reads, so only arrays with at least MINR reads count as a locus, against the single chr18 array.
 # MIT License · Copyright (c) 2026 Hungmin Kim
 import collections
 import csv
@@ -15,8 +15,8 @@ import numpy as np
 rng = np.random.default_rng(0)
 D = "$RDNA_OTHERSP_DIR/data_v2/13_array_level_diff/"
 T = "\t"
-MINC = 10      # read 값으로 쓰려면 그 좌위에서 CpG 10 개 이상
-MINR = 20      # 좌위로 검정에 넣으려면 read 20 개 이상
+MINC = 10      # to be used as a read value, the read must carry at least 10 CpG sites at that locus
+MINR = 20      # to enter the test as a locus, at least 20 reads are required
 NB = 2000
 NP = 2000
 
@@ -87,7 +87,7 @@ for sp in ("zfinch", "zebrafish"):
                               "%.3f" % frac(c), *ci(bc), "%.3f" % frac(sp_), *ci(bsp), "%.3f" % med]) + "\n")
             if len(rv) >= MINR:
                 keep[(loc, ch)] = rv[:, 1] / rv[:, 0]
-        # ② η² + 순열 (read 값, 좌위 라벨)
+        # 2) eta squared and the permutation, over the read values against the locus label
         def eta2(groups):
             allv = np.concatenate(groups)
             gm = allv.mean()
@@ -109,7 +109,7 @@ for sp in ("zfinch", "zebrafish"):
         def contrast(a, b_, name, test, nl):
             ba = rng.choice(a, size=(NB, len(a))).mean(1)
             bb = rng.choice(b_, size=(NB, len(b_))).mean(1)
-            dd = ba - bb        # 독립 표본, 정렬 전 차이
+            dd = ba - bb        # independent samples, with the difference taken before any alignment
             sd = np.sqrt(((len(a) - 1) * a.var(ddof=1) + (len(b_) - 1) * b_.var(ddof=1)) / (len(a) + len(b_) - 2))
             tst.write(T.join([sp, s, test, str(nl), str(len(a) + len(b_)), "", "", name, "%+.3f" % (a.mean() - b_.mean()),
                               "%+.3f" % np.percentile(dd, 2.5), "%+.3f" % np.percentile(dd, 97.5), "%.2f" % ((a.mean() - b_.mean()) / sd)]) + "\n")

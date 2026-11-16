@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-r"""3-way split of variant origin (canonical definition, fork 4815ef09 code/V2_apply.py)
+r"""3-way split of variant origin (canonical definition)
 
    cohort = slots with >= 30 units (NS), f = number of slots carrying the token / NS, fT = 0.10
    multi-individual shared type  f >= fT                  <- 'shared between haplotypes' = inherited

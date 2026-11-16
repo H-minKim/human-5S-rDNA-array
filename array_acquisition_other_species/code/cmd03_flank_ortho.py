@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-# "array_pos 1 쪽 flank" 가 사람의 어느 쪽 flank 와 상동인가 — 공유 k-mer 로 판정
-#   정본 fasta 는 [flank5 20kb][array][flank3 20kb] 이고 유전자(전사) 방향으로 저장돼 있다.
-#   그러므로 flank5 = array_pos 1 쪽이다(06_units_from_canonical 의 canon_start 로 확인: pos1 ≈ 22 kb).
-#   판정 : 종 flank5 의 k-mer 집합을 사람 flank5 / flank3 집합과 견준다(양 가닥 · 자카드와 적중수 둘 다).
+# Which human flank is the flank on the array_pos 1 side homologous to? Decided by shared k-mers.
+#   The canonical fasta is [flank5 20kb][array][flank3 20kb] and is stored in the gene, that is transcription, orientation.
+#   flank5 is therefore the array_pos 1 side, as confirmed by canon_start in 06_units_from_canonical, where position 1 lies at about 22 kb.
+#   The test: the k-mer set of a species' flank5 is compared against the human flank5 and flank3 sets, on both strands, by Jaccard and by hit count.
 # A call needs one side clearly larger than the other; otherwise it is recorded as unknown.
 # MIT License · Copyright (c) 2026 Hungmin Kim
 import glob
@@ -13,7 +13,7 @@ import sys
 K = 21
 FL = 20000
 S = os.path.dirname(os.path.abspath(__file__))
-SRC = sys.argv[1]          # 정본 fasta 사본 폴더 (C:)
+SRC = sys.argv[1]          # the folder holding the copies of the canonical fasta files
 COMP = str.maketrans("ACGTN", "TGCAN")
 
 
@@ -35,7 +35,7 @@ def kset(s):
         w = s[i:i + K]
         if "N" in w:
             continue
-        out.add(min(w, rc(w)))        # 가닥 중립
+        out.add(min(w, rc(w)))        # strand-neutral
     return out
 
 

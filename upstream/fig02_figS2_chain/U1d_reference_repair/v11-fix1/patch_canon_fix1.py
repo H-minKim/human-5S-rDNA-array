@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-# [v11-fix1 copy 2026-09-16: source cmp4d_v11, output cmp4d_v11_fix1 as a real copy (no symbolic links), map g8canonv10, anchors given directly. Otherwise unchanged]
-# Canonical v10, surgical replacement (2026-09-13)
+# [v11-fix1: source cmp4d_v11, output cmp4d_v11_fix1 as a real copy (no symbolic links), map g8canonv10, anchors given directly]
+# Canonical v10, surgical replacement
 #   Based on v8 (original assembly), only the 7 broken sites are joined as [assembly front anchor][read consensus middle][assembly back anchor].
-#   No rollback: the problem in v9 was 'replacing up to the anchors with the consensus', not the repair itself (SPLICE_MID2.tsv).
+#   The consensus replaces only the middle, not the anchors (SPLICE_MID2.tsv).
 #   Storage orientation: the .fa in cmp4d holds the sequence before flipping. Windows built in map orientation are written back reversed (rc).
 import io
 import os
@@ -10,7 +10,7 @@ import glob
 import shutil
 import collections
 
-H = "/home/ubuntu"
+H = os.environ["NODE_HOME"]   # the compute node's home directory
 NL = chr(10)
 TAB = chr(9)
 CMP = {"A": "T", "T": "A", "G": "C", "C": "G", "N": "N"}

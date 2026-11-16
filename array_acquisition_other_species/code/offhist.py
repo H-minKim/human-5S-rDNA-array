@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-# array 조각 자기-정렬 옵셋 히스토그램을 그대로 저장한다 (판정은 따로)
-#   앞 판의 결함 : 기본 주기와 그 배수(고차반복) 가운데 정렬량이 큰 쪽을 골라, 500 bp 유닛 array 에
-#                 1,520(=3 유닛) 이 주기로 찍혔다. 둘은 따로 내야 한다
-#   산출 : OFFHIST.tsv — array_id · 조각길이 · HSP수 · "옵셋:정렬bp" 전부 (옵셋 <= 30000 · 정렬 >= 300)
+# Store the offset histogram of the array fragment's self-alignment as it is; the call is made separately.
+#   The base period and its multiple, the higher-order repeat, must be reported separately: taking whichever of the two carries more aligned length
+#                 records 1,520, that is 3 units, as the period of an array with a 500 bp unit.
+#   Output: OFFHIST.tsv, holding array_id, the fragment length, the HSP count and every "offset:aligned bp" pair, for offsets up to 30000 and at least 300 bp aligned.
 # MIT License · Copyright (c) 2026 Hungmin Kim
 import io
 import os

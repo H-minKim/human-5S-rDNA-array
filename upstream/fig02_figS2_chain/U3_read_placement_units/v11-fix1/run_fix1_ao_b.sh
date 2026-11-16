@@ -1,6 +1,6 @@
 #!/bin/bash
-# v11-fix1 ARRAY_ONLY edition 2, redone with G6 map correction edition 2 (mkg6map_fix1b: removes only units that were actually lost).
-#   Edition 1 outputs (the AO parts of ~/fix1/aog8f1, aoblastf1, bfinalf1, finalf1) are kept, not deleted. Edition 2 goes to new folders *_b.
+# v11-fix1 ARRAY_ONLY with the G6 map correction of mkg6map_fix1b (removes only units that were actually lost).
+#   Outputs go to new folders *_b (~/fix1/aog8f1b, aoblastf1b, bfinalf1b, finalf1b).
 set -eu
 S="${1:?개체}"; NP="${2:-4}"
 cd ~

@@ -1,9 +1,9 @@
 #!/bin/bash
-# 유닛 내부 구성 : 유닛을 300 bp 창으로 잘라 그 종 게놈 전체에 몇 번 나오는지 센다
-#   창이 게놈 곳곳에 수백~수천 번 나오면 = 흩어진 반복요소 (사람이면 AluY), array 안에서만 나오면 = array 고유 구간
-#   대표 유닛은 array_struct.py 가 뽑은 units.fa 의 가운데 유닛 (틀 : 1-119 가 5S 유전자, 그 뒤가 스페이서)
-#   인자 : 종키 · (선택) array 이름 접두사 (기본 arr0)
-#   산출 : ~/xsp/struct/win_<species>.tsv  (창시작 · 창끝 · 정렬수 · array밖 정렬수)
+# The internal composition of the unit: it is cut into 300 bp windows and each window is counted across that species' whole genome.
+#   A window occurring hundreds or thousands of times genome-wide is a dispersed repeat element (AluY in human); one occurring only inside the array is specific to the array.
+#   The representative unit is an interior unit of units.fa from array_struct.py, in the frame where 1-119 is the 5S gene and the spacer follows.
+#   Arguments: species key, and optionally the array name prefix (default arr0).
+#   Output: struct/win_<species>.tsv (window start, window end, alignments, alignments outside any array).
 # MIT License · Copyright (c) 2026 Hungmin Kim
 set -u
 SP="${1:?종키}"

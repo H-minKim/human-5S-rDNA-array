@@ -1,19 +1,19 @@
 # -*- coding: utf-8 -*-
 # Maps the Atlas transcribed-region table onto the unit frame used here
-#   입력 : 05_requests\Atlas_reply_2026-09-30\{CHM13_consensus_units.fa, transcribed_parts_for_drawing.tsv}
-#   방법 : 좌표를 받아쓰지 않는다. 전사부 서열을 꺼내 우리 유닛 2 배본에 양가닥 지역정렬한다.
-#          (Atlas 의 convert_coords.py 와 같은 방식 · Bio.Align.PairwiseAligner)
-#   그리고 합의 서열 전체도 정렬해 두 틀 사이 위상 오프셋을 따로 잰다.
-#   좌표계 : 우리 canonical = P10_SUBUNIT_FRAMES.json 의 canon
-#            (RNU2·SST1·DXZ4 는 항등 · 5S 는 1357-p 역방향 · D4Z4 는 +336 / +826 회전)
+#   Input: 05_requests/Atlas_reply_2026-09-30/{CHM13_consensus_units.fa, transcribed_parts_for_drawing.tsv}
+#   Method: the coordinates are not taken on trust. The transcribed sequence is extracted and locally aligned to both strands of a doubled copy of our unit.
+#          (the same approach as Atlas's convert_coords.py; Bio.Align.PairwiseAligner)
+#   The whole consensus sequence is also aligned, to measure the phase offset between the two frames separately.
+#   Coordinate frame: our canonical = the canon of P10_SUBUNIT_FRAMES.json
+#            (RNU2, SST1 and DXZ4 are the identity; 5S is 1357-p reversed; D4Z4 is rotated by +336 / +826)
 import io, json, os
 from Bio.Seq import Seq
 from Bio.Align import PairwiseAligner
 
 def _need(_v):
     """No defaults are set: the script stops if a variable is missing.
-    이 글이 읽는 자료의 뿌리는 README.md 의
-    "Running this code" 절에 적혀 있다."""
+    The roots of the data this script reads are listed in the
+    "Running this code" section of README.md."""
     import os as _o, sys as _s
     _x = _o.environ.get(_v)
     if not _x:
@@ -65,7 +65,7 @@ AL = PairwiseAligner(mode="local", match_score=2, mismatch_score=-3,
 
 
 def locate(q, unit):
-    """q 를 unit(2 배본·양가닥)에 지역정렬 -> (start, end, strand, score, coverage) 1-based"""
+    """local alignment of q to unit (doubled copy, both strands) -> (start, end, strand, score, coverage) 1-based"""
     L = len(unit)
     dbl = unit + unit
     best = None

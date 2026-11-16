@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
-# → INTEGRATED_13SITES.tsv (기탁본은 14 행 뒤판 · 그 소스는 미보존)
-#   단계 : S1 I 상류
+# -> INTEGRATED_13SITES.tsv. The deposited copy is the later 14-row version, whose source is not preserved.
+#   Step: S1 I upstream.
 #   Method document : analysis/METHOD_CONSENSUS_MAP_G8_REBUILD.md
 
 # -*- coding: utf-8 -*-
-# 통합 : 삽입/결실(앵커·DP 축) + 구조 이상(배치자리 축 · 역위 양성대조 포함) 을 한 그림으로
+# Combined: insertions and deletions on the anchor and DP axes, together with structural anomalies on the placed-position axis including the inversion positive control, in one figure.
 # Output : INTEGRATED_STRUCTURAL.md and INTEGRATED_13SITES.tsv
 import io, os, collections, statistics
 K = os.environ["RDNA_HANDOFF_AD6468DD"]; B = chr(92)

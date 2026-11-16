@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
-# Transcribed from the run record: the code ran as a shell heredoc or a one-line command, so no script file existed on disk.
 # Step 1 of FASTA_REF_MAP_2026-10-07b.tsv: picks the 22 empty rows to fill (length match + sample name in file name, unique)
-# refmap_fill_measure.py was a read-only measurement, not the producer.
-# Machine paths are given by RDNA_DATA_ROOT / RDNA_WORK_DIR (no default); the computing lines are unchanged.
+# Machine paths are given by RDNA_DATA_ROOT / RDNA_WORK_DIR (no default).
 import sys, pandas as pd, re
 sys.stdout.reconfigure(encoding='utf-8',errors='replace')
 S=__import__('os').environ['RDNA_DATA_ROOT']+'/v11_readvar/'; FIG=S+'03_figures/paper_Fig/'

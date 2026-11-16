@@ -1,14 +1,10 @@
 # -*- coding: utf-8 -*-
-# ② redo: fill FASTA_REF_MAP (22 rows)
-#   why redo: the "3 fillable" of 10-07 was a bug in my own matching code.
-#     `norm()` stripped only the `c2seq_`, `hiarr_`, `arr_` prefixes and the `_l0` suffix, so
-#     the forms `_f2`, `_f3`, `_f4`, `_f5`, `_f6`, `_sw2`, `_sub250`, `_p1`, `_p2` were counted as 0 candidates.
-#     Moreover it required `slot_in_name == slot`, but slots in file names cannot be trusted (v143 trap).
-#   fixed criteria (not relying on names)
+# Step 2: fill FASTA_REF_MAP (22 rows)
+#   criteria (not relying on names: slots in file names cannot be trusted)
 #     ⑴ `fasta_len` == `FLANK_OFFSET.ref_len`  <- the very safeguard that v145 uses
 #     ⑵ among the candidates of that length, the one with the individual name in its file name must be unique
 #     ⑶ it must differ from the ref_len of the partner slot (if equal it is ambiguous, measured 0 cases)
-#   neither the original nor the 10-07 version (3 rows) is overwritten. Output goes under a `_b` name
+#   the input map is not overwritten. Output goes under a `_b` name
 import io, os, sys, hashlib
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 import pandas as pd

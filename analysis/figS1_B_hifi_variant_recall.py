@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
-# Fig S1 B 의 입력 표 `FIG2_data_hifi.tsv` 를 만드는 글
+# Builds FIG2_data_hifi.tsv, the input table for Supplementary Figure 1B.
 #
-#   이 글도 2026-09-30 01:47:56 에 셸 heredoc 으로 돌았고 저장되지 않았다
-#   (`FIG2_data_unitcmp` 보다 19 초 뒤 · 같은 작업의 둘째 토막이다).
-#   바꾼 것 : heredoc 껍데기를 벗기고 입력·출력 자리를 환경변수로 뺐다.
+#@DROP
+#@DROP
+#   The input and output locations come from environment variables.
 #
-#   입력 하나 : `03_result_tables\2026-09-07_map_test\JXHIFI_ALL.tsv.gz`
+#   One input: 03_result_tables/2026-09-07_map_test/JXHIFI_ALL.tsv.gz
 import io, os, sys, gzip, collections
 sys.stdout.reconfigure(encoding="utf-8")
 
@@ -16,7 +16,7 @@ TABLE_DIR = os.environ.get("TABLE_DIR",
 OUT = os.environ.get("HIFI_OUT",
                      os.path.join(TABLE_DIR, "FIG6_canonical_test_table", "rawdata", "FIG2_data_hifi.tsv"))
 
-# ──────────────────────── 아래는 원문 그대로 ────────────────────────
+# ────────────────────────────────────────────────────────────────
 LAB = {"asmunits3": "HPRC", "arr": "hifiasm", "fill60": "hifiasm+fill", "tier1ref": "span",
        "resub2": "resub2", "refix": "refix", "sweep31": "sweep31", "nopurge": "nopurge",
        "resub": "resub"}

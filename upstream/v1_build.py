@@ -1,34 +1,34 @@
 # -*- coding: utf-8 -*-
-# v11 자료로 read x 유닛 메틸 표를 다시 만든다 (옛 2026-09-09_readvar 의 ru/ru_cmp 대체)
+# Build the read x unit methylation table from the v11 data.
 #
-# 원천 : $RDNA_DATA_ROOT\for_paper\08_versions\v11\08_methylation\raw\METH_READUNIT_*.tsv.gz  (6 파일 · 1,019,408 행 · as-ran value in ENV_RDNA.tsv)
-#   컬럼 : sample data_source cfg kind slot array_pos read_id strand n_cpg n_meth beta calls
-#   calls = "유닛내좌표:ML값(0-255)" 목록
+# Source: for_paper/08_versions/v11/08_methylation/raw/METH_READUNIT_*.tsv.gz under the data root (6 files, 1,019,408 rows; the as-run value is in ENV_RDNA.tsv)
+#   Columns: sample, data_source, cfg, kind, slot, array_pos, read_id, strand, n_cpg, n_meth, beta, calls
+#   calls is a list of "within-unit coordinate:ML value (0-255)"
 #
-# 좌표틀 함정 (이번에 실측으로 잡은 것)
-#   calls 의 유닛내좌표는 그 슬롯 자신의 유닛 프레임이다 (정본 2,240 이 아님).
-#   유닛 길이가 슬롯마다 다르다(2,226~2,248 …). 그냥 정본 CpG 와 맞추면 적중률 0.27 뿐이고
-#   한 자리 밀어도 0.44 다. 자리이동 하나로는 절대 안 맞는다 — 유닛 안에서 indel 이 쌓이기 때문.
-#   ⇒ 지도의 varlist 로 유닛마다 슬롯좌표 -> 정본좌표 대응을 만들어야 한다.
-#   검산: 2240 + ΣI − ΣD == unit_len 이 57,228 UNIT 중 57,151 (99.87%) 에서 성립 (실측).
+# The coordinate frame:
+#   the within-unit coordinate of calls is in that slot's own unit frame, not the canonical 2,240.
+#   The unit length differs between slots (2,226 to 2,248). Matching it against the canonical CpG sites directly gives a hit rate of only 0.27,
+#   and shifting by one position gives 0.44. No single shift can ever make it fit, because indels accumulate within the unit.
+#   The map's variant list must therefore be used to build a slot-to-canonical coordinate mapping per unit.
+#   Check: 2240 + sum(I) - sum(D) == unit_len holds for 57,151 of 57,228 units, 99.87%.
 #
-# MLCUT = 128 (v11 노드 코드와 같게). beta_call 은 v11 의 beta 와 일치해야 한다 — 대조한다.
-# 구획 (정본 2,240) : AluY 1-318(25) · NTS1 319-1178(78) · GA 1179-1551(29)
-#                      NTS2 1552-2121(58, 끝 90bp 2032-2121 = 프로모터 12) · 유전자 2122-2240(9)
-# 극성 : array_pos 1 = 게놈 원위. 이름(근위/원위)은 옛 판과 뒤집혔을 수 있으므로
-#   여기서는 ap_dj(=array_pos) 와 ap_pj(=N-array_pos+1) 두 축을 다 저장하고 이름을 붙이지 않는다.
+# MLCUT = 128, as in the v11 node code. beta_call must equal the beta of v11, and is checked against it.
+# The segments, in the canonical 2,240: AluY 1-318 (25 CpG sites), NTS1 319-1178 (78), GA 1179-1551 (29),
+#                      NTS2 1552-2121 (58, of which the last 90 bp, 2032-2121, is the promoter with 12), and the gene 2122-2240 (9).
+# Polarity: array_pos 1 is the genomic distal end.
+#   Both axes are stored, ap_dj (= array_pos) and ap_pj (= N - array_pos + 1).
 import io, os, re, gzip, sys, glob, time, collections
 import numpy as np
 import pandas as pd
 
-V = __import__("os").environ["RDNA_DATA_ROOT"] + r"\for_paper\08_versions\v11"
+V = __import__("os").environ["RDNA_DATA_ROOT"] + r"/for_paper/08_versions/v11"
 OUT = __import__("os").environ["RDNA_DATA_ROOT"] + r"\v11_readvar"
 CANON = __import__("os").environ["CANON_FA"]
-MAP = os.path.join(V, r"03_maps\g8canonv10\CONSENSUS_MAP_G8_full.tsv")
-RAW = os.path.join(V, r"08_methylation\raw")
+MAP = os.path.join(V, r"03_maps/g8canonv10/CONSENSUS_MAP_G8_full.tsv")
+RAW = os.path.join(V, r"08_methylation/raw")
 SH = os.path.join(OUT, "shard")
 os.makedirs(SH, exist_ok=True)
-LOG = io.open(os.path.join(OUT, r"04_logs\V1_BUILD.txt"), "w", encoding="utf8", newline="\n")
+LOG = io.open(os.path.join(OUT, r"04_logs/V1_BUILD.txt"), "w", encoding="utf8", newline="\n")
 MLCUT = 128
 
 
@@ -44,10 +44,10 @@ def P(s=""):
 canon = "".join(x.strip() for x in io.open(CANON, encoding="utf8") if x[0] != ">")
 CPG = sorted(i + 1 for i in range(len(canon) - 1) if canon[i:i + 2] == "CG")
 CPGSET = set(CPG)
-CPGORD = {p: i for i, p in enumerate(CPG)}          # 정본 CpG 순번 (홀짝 반분할용)
+CPGORD = {p: i for i, p in enumerate(CPG)}          # the canonical CpG index, for the odd/even half split
 SEG = [("alu", 1, 318), ("nts1", 319, 1178), ("ga", 1179, 1551),
        ("nts2", 1552, 2121), ("gene", 2122, 2240)]
-UPS = (2032, 2121)                                   # 프로모터 (NTS2 끝 90bp)
+UPS = (2032, 2121)                                   # the promoter, the last 90 bp of NTS2
 SEGOF = {}
 for nm, a, b in SEG:
     for p in CPG:
@@ -65,11 +65,11 @@ P("  정본 CpG %d · 구획 %s · 프로모터 %d"
 P("  calls 좌표는 슬롯 자신의 유닛 프레임 -> varlist 로 정본좌표에 옮긴다")
 P()
 
-# ---------------------------------------------------------------- 지도 읽기
+# ---------------------------------------------------------------- reading the map
 IN = re.compile(r"^(\d+)I(\d+)$")
 DE = re.compile(r"^(\d+)D(\d+)$")
 UNITN = {}          # (sample, slot) -> N
-UMAP = {}           # (sample, slot, ap) -> (슬롯좌표 -> 정본좌표) 배열
+UMAP = {}           # (sample, slot, ap) -> an array mapping slot coordinate to canonical coordinate
 t0 = time.time()
 nu = nbad = 0
 with io.open(MAP, encoding="utf8") as h:
@@ -92,7 +92,7 @@ with io.open(MAP, encoding="utf8") as h:
                 m = DE.match(v)
                 if m:
                     dele[int(m.group(1))] = int(m.group(2))
-        # 정본 1..2240 을 훑으며 슬롯좌표를 부여 -> 슬롯좌표별 정본좌표 배열
+        # the canonical sequence is traversed from 1 to 2240 assigning slot coordinates, giving the canonical coordinate per slot coordinate
         arr = np.zeros(ul + 2, dtype=np.int16)
         sp = 1; cp = 1; skip = 0
         while cp <= 2240 and sp <= ul:
@@ -105,7 +105,7 @@ with io.open(MAP, encoding="utf8") as h:
             if cp in ins:
                 for _ in range(ins[cp]):
                     if sp <= ul:
-                        arr[sp] = 0        # 삽입 염기는 정본에 대응 없음
+                        arr[sp] = 0        # an inserted base has no canonical counterpart
                         sp += 1
             cp += 1
         if sp - 1 != ul:
@@ -116,7 +116,7 @@ P("  지도 UNIT %s · 길이 불일치 %d (%.4f) · %.0f 초"
   % (format(nu, ","), nbad, nbad / max(nu, 1), time.time() - t0))
 P()
 
-# ---------------------------------------------------------------- read-유닛
+# ---------------------------------------------------------------- the read-units
 files = sorted(glob.glob(os.path.join(RAW, "METH_READUNIT_*.tsv.gz")))
 P("  원천 파일 %d" % len(files))
 P()
@@ -203,7 +203,7 @@ A = pd.concat([pd.read_parquet(x) for x in sorted(glob.glob(os.path.join(SH, "*.
 P("  합계 %s 행" % format(len(A), ","))
 P()
 
-# ---------------------------------------------------------------- DUAL 정리
+# ---------------------------------------------------------------- resolving DUAL
 P("=" * 104)
 P("[QC] 관문 점검")
 P("=" * 104)
@@ -229,7 +229,7 @@ P()
 A["ap_dj"] = A.ap.astype("int32")
 A["ap_pj"] = (A.N - A.ap + 1).astype("int32")
 A.loc[A.N <= 0, "ap_pj"] = -1
-A.to_parquet(os.path.join(OUT, r"02_tables\ru_v11.parquet"), index=False)
+A.to_parquet(os.path.join(OUT, r"02_tables/ru_v11.parquet"), index=False)
 P("  저장: 02_표\\ru_v11.parquet")
 P()
 P("=" * 104)

@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
-# Fig S1 A 의 입력 표 `FIG2_data_unitcmp.tsv` 를 만드는 글
+# Builds FIG2_data_unitcmp.tsv, the input table for Supplementary Figure 1A.
 #
-#   이 글은 2026-09-30 01:47:35 에 셸 heredoc 으로 한 번 돌았고 파일로 저장되지 않았다.
-#   셈은 한 줄도 바꾸지 않았다 — 바꾼 것은 셋뿐이다 :
-#     ⑴ heredoc 껍데기(`cd $S && python - <<'PY'`)를 벗겼다
-#     ⑵ 입력·출력 자리를 환경변수로 뺐다 (원래는 스크래치 폴더의 상대 이름이었다)
-#     ⑶ `# -*- coding -*-` 와 이 머리글을 더했다
-#   원문 md5(기록에서 꺼낸 그대로) : ccd1b588014d
+#@DROP
+#@DROP
+#@DROP
+#   The input and output locations come from environment variables.
+#@DROP
+#@DROP
 #
-#   입력 둘은 `FIG6_canonical_test_table\rawdata\` 에 보존돼 있다 :
+#   The two inputs are kept under FIG6_canonical_test_table/rawdata/ :
 #     `genepos.tsv` · `pubspan2_pairs.tsv`
 import io, os, sys, collections, statistics
 sys.stdout.reconfigure(encoding="utf-8")
@@ -20,7 +20,7 @@ S = os.environ.get("UNITCMP_DIR", os.path.join(TABLE_DIR, "FIG6_canonical_test_t
 OUT = os.environ.get("UNITCMP_OUT", os.path.join(S, "FIG2_data_unitcmp.tsv"))
 
 # ──────────────────────────────────────────────────────────────────────
-# 검정 ① : 짝별 유닛 수 차 · 길이 차        아래는 원문 그대로
+# Test 1: the difference in unit count and in length, per pair.
 # ──────────────────────────────────────────────────────────────────────
 G = {}
 f = io.open(os.path.join(S, "genepos.tsv"), encoding="utf8")

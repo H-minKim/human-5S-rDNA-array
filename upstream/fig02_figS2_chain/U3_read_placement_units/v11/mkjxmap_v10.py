@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# junction-only map: coordinates of only the 7 operated slots are returned to the old canonical coordinates (2026-09-13)
+# junction-only map: coordinates of only the 7 operated slots are returned to the old canonical coordinates
 #
 #   Why: junction reads are not re-aligned. The stored alignments are on the old canonical.
 #        But the coordinates of the new map are on the new canonical, so they disagree in the 7 operated slots

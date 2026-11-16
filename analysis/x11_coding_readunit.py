@@ -1,18 +1,18 @@
 # -*- coding: utf-8 -*-
-# read x 유닛 메틸을 coding(5S 유전자 cmsearch 구간) / 나머지(스페이서)로 나눠 다시 센다.
+# Recount the read x unit methylation split into the coding part, the cmsearch 5S gene interval, and the remainder, the spacer.
 #
-#   기존 03_reads/*.read_unit.tsv 는 유닛 전체 CpG 만 합쳐 두어 coding 만 따로 볼 수 없다.
-#   그래서 배치 BAM(04_bam)의 MM/ML 을 직접 읽는다 (로컬에 samtools/pysam/modkit 없음 → 순수 파이썬 BAM 파서).
-#   호출 규칙은 units_matrix_g8.py 와 같게 맞춘다 :
-#     보조/이차 제외(0x900) · mapq 로 거르지 않음 · 참조 CpG 자리만(정방향 read = 참조 C 다음 G ·
-#     역방향 read = 참조 G 앞 C, 자리는 G) · 5mC 호출 = mod_qual >= 0.5 (ML >= 128) ·
-#     유닛 = g8map chrom_start..chrom_end (1기반 양끝 포함)
-#   유전자 = cmsearch RF00001 포함(!) 히트 중 그 유닛 구간과 겹치는 것 (1기반 양끝 포함)
-#   참조 서열 = 01_canonical/<species>/<array>.fa (flank 20kb · strand=- 이면 역상보 → 되돌려 씀)
+#   The existing read_unit.tsv files pool all the CpG sites of a unit, so the coding part cannot be examined on its own.
+#   The MM/ML of the placed BAMs is therefore read directly, with a pure-Python BAM parser, samtools, pysam and modkit not being available locally.
+#   The calling rules match units_matrix_g8.py:
+#     supplementary and secondary alignments excluded with 0x900, no mapq filter, reference CpG positions only (on a forward read a reference C followed by G,
+#     on a reverse read a reference G preceded by C, with the position taken at the G), a 5mC call at mod_qual >= 0.5 (ML >= 128), and
+#     the unit as chrom_start..chrom_end from the g8 map, 1-based and inclusive.
+#   The gene is any cmsearch RF00001 hit, inclusive of those marked !, overlapping that unit interval, 1-based and inclusive.
+#   The reference is 01_canonical/<species>/<array>.fa, with 20 kb of flank; on the minus strand it is stored reverse-complemented and is flipped back before use.
 #
-#   검산 : 유닛 전체 (n_calls, n_5mC) 가 기존 read_unit.tsv 와 같아야 한다. 다르면 멈춘다(판정은 로그).
-#   인자 : [종키 ...]  (없으면 전 종)  ·  --pilot 이면 검산만
-#   산출 : 10_other_species/tables/OTHERSP_READUNIT_CODING.tsv.gz · 로그 X11_CODING_BUILD.txt
+#   Check: the whole-unit (n_calls, n_5mC) must equal the existing read_unit.tsv. A difference stops the run, and the verdict goes to the log.
+#   Arguments: species keys, or all species if none are given; --pilot runs the check only.
+#   Outputs: 10_other_species/tables/OTHERSP_READUNIT_CODING.tsv.gz and the log X11_CODING_BUILD.txt.
 import io, os, sys, gzip, glob, struct, re, collections
 import numpy as np
 import pandas as pd
@@ -25,7 +25,7 @@ def _need(k):
     v = _os_need.environ.get(k)
     if not v:
         _sys_need.exit("environment variable %s is not set (the deposited copy has no default; "
-                       "see README.md, section 'How to run it')" % k)
+                       "see README.md, section 'Environment variables')" % k)
     return v
 
 
@@ -58,7 +58,7 @@ def read_fa(p):
 
 
 def load_species(sp):
-    """array 마다 : 정방향 참조(numpy uint8) · 0기반 시작 좌표 · 유닛 구간 · 유전자 구간"""
+    """per array : forward reference (numpy uint8), 0-based start coordinate, unit intervals, gene intervals"""
     A = {}
     tbl = collections.defaultdict(list)
     for L in io.open(B + "/cms_tbl/%s.tbl" % sp, encoding="utf8"):
@@ -72,7 +72,7 @@ def load_species(sp):
     for c in tbl:
         tbl[c].sort()
     for f in sorted(glob.glob(B + "/02_consensus_map/%s/*.g8map.tsv" % sp)):
-        if not re.search(r"_[0-9]+_[0-9]+[.]g8map[.]tsv$", f):   # 대체 지도(.k2.g8map.tsv 등) 제외 — 본 지도만
+        if not re.search(r"_[0-9]+_[0-9]+[.]g8map[.]tsv$", f):   # alternative maps such as .k2.g8map.tsv are excluded; only the main map is used
             continue
         g = pd.read_csv(f, sep="\t")
         aid = g.array_id.iloc[0]
@@ -84,7 +84,7 @@ def load_species(sp):
         f5, f3, strand, chrom, a0, a1 = int(m.group(1)), int(m.group(2)), m.group(3), m.group(4), int(m.group(5)), int(m.group(6))
         if strand == "-":
             s = s.encode().translate(COMP)[::-1].decode()
-        # 정방향 참조 첫 글자의 1기반 좌표
+        # the 1-based coordinate of the first base of the forward reference
         lo1 = a0 - (f5 if strand == "+" else f3)
         if len(s) != (a1 - a0 + 1) + f5 + f3:
             P("   ! 길이 불일치 %s len=%d 기대=%d" % (aid, len(s), (a1 - a0 + 1) + f5 + f3))
@@ -171,7 +171,7 @@ def process(sp, sample, bam, A, acc):
         if (ops == 5).any():
             STAT["hardclip"] += 1
             continue
-        # 질의 -> 참조 (0기반)
+        # query -> reference, 0-based
         q2r = np.full(lseq, -1, dtype=np.int64)
         q, rr = 0, pos0
         for o, n in zip(ops.tolist(), lens.tolist()):
@@ -185,7 +185,7 @@ def process(sp, sample, bam, A, acc):
         nib = np.empty(2 * len(b), dtype=np.uint8); nib[0::2] = b >> 4; nib[1::2] = b & 15
         codes = nib[:lseq]                       # 1=A 2=C 4=G 8=T 15=N
         rev = bool(flag & 16)
-        # 원래 read 방향에서의 C 위치
+        # the position of the C in the original read orientation
         ocodes = NIBCOMP[codes][::-1] if rev else codes
         cpos = np.flatnonzero(ocodes == 2)
         ml = T["ML"]; mi = 0
@@ -213,7 +213,7 @@ def process(sp, sample, bam, A, acc):
                 STAT["mm_overflow"] += 1
                 break
             m_idx, m_ml = cpos[k], vals[:, mc.index("m")]
-            if mode == ".":                          # 생략된 C = 비메틸로 간주(modkit inferred 와 같게)
+            if mode == ".":                          # an omitted C counts as unmethylated, as modkit infers it
                 full = np.zeros(len(cpos), dtype=np.uint8)
                 full[k] = m_ml
                 m_idx, m_ml = cpos, full
@@ -225,7 +225,7 @@ def process(sp, sample, bam, A, acc):
         ref0, mlv = ref0[ok], m_ml[ok]
         for aid in bychrom[chrom]:
             a = A[aid]
-            k0 = ref0 - (a["lo1"] - 1)            # 정방향 참조 배열 안 0기반 자리
+            k0 = ref0 - (a["lo1"] - 1)            # the 0-based position within the forward reference array
             inr = (k0 >= 1) & (k0 < len(a["seq"]) - 1)
             if not inr.any():
                 continue
@@ -269,7 +269,7 @@ for sp in SPS:
         STAT.clear()
         process(sp, smp, bam, A, acc)
         D = pd.DataFrame(acc, columns=COLS)
-        # 같은 read 가 array 두 번 이상 걸리면 합친다 (units_matrix 도 read·유닛 키로 합산)
+        # where one read overlaps the array more than once the parts are summed, as units_matrix also sums on the read and unit key
         D = D.groupby(["species_key", "sample", "read_id", "mapq", "array_id", "array_pos", "n_gene_hits"],
                       as_index=False).sum()
         rs = ref[ref["sample"].astype(str).isin([smp, smp.replace(".g12", "")])]

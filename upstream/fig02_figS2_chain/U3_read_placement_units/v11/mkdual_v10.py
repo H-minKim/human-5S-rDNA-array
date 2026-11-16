@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
-# Regenerate the DUAL list, based on the new ARRAY_ONLY placement (2026-09-13)
+# Build the DUAL list from the ARRAY_ONLY placement
 #   DUAL = reads accepted as ARRAY_ONLY that are also in the junction assignment table (HAP_READ_FINAL).
 #   They are removed from the ARRAY_ONLY side so that the same read is not counted twice in the combined set.
-#   Same rule as the old dual*.py: union of HAP_READ_FINAL.tsv and .pairingspace.tsv, rows whose 5th field is not "-".
-#   What changed: the AO read list is taken directly from the new AOJV table instead of the old aoreads*.txt.
-#   The original DUAL is not touched. Output goes to a new folder.
+#   Rule: union of HAP_READ_FINAL.tsv and .pairingspace.tsv, rows whose 5th field is not "-".
+#   The AO read list is taken directly from the AOJV table.
+#   The existing DUAL is not touched. Output goes to a new folder.
 import io
 import os
 
-H = "/home/ubuntu/"
+H = os.environ["NODE_HOME"] + "/"   # the compute node's home directory
 NL = chr(10)
 TAB = chr(9)
 OUT = H + "dual_v10"

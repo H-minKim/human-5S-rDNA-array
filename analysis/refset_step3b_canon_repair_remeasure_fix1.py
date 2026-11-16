@@ -1,19 +1,19 @@
 # -*- coding: utf-8 -*-
-# 수리 뒤 read 사건 재측정 (18→0 · 10→4)
-#   단계 : ③b 정본 수리 검정 (수정1)
+# Re-measuring the read events after the repair: 18 became 0 and 10 became 4.
+#   Step 3b: the test of the canonical repair, revision 1.
 
 # -*- coding: utf-8 -*-
-# read 유닛 삽입/결실 전수 v2 (2026-09-16) — junction 을 flank 로 직접 찾아 앵커로 쓴다
-#   v1 과 다른 점
-#   (a) TUC array 구간에 기대지 않는다 (TUC 는 40유닛 탠덤 참조 정렬이라 긴 read 에서 구간이 안쪽에서 멈춤)
-#   (b) read 첫 유전자 앞 꼬리 · 마지막 유전자 뒤 꼬리(각 ≤20kb)를 그 개체 flank(flank_final2, junction 쪽 20kb)에 붙여
-#       원위 꼬리 → 원위 flank(L_), 근위 꼬리 → 근위 flank(R_) 이고 flank 의 junction 끝까지(≤JTOL) 닿으면 junction 확정
-#   (c) junction 확정 쪽은 유전자 적중을 junction 안쪽 EDGE 까지로 제한 (퇴화 유사 유전자 −238/+481 제외)
-#   (d) junction→첫(마지막) 유전자 끝 거리 − 정본 끝 조각(원위 off_prox · 근위 off_dist) = k×2240 ±KTOL 이면
-#       빈 유닛 k 개 + junction 토큰(JD/JP). 토큰 짝 = 점수 JSC · 앵커 ANCH 유닛으로 셈. 토큰은 유닛과 짝 불가
-#   (e) 양성 대조 : 사건 없는 read 에서 무작위 위치 + junction 바로 옆에 −1/+1 · −2 → 위치(정본 번호·끝까지 거리) 기록
-#   나머지(유전자 분할·빈 유닛·끊김·변이·DP·슬롯 판정·사건 인정·음성 대조)는 v1 과 같다.
-#   인자 : 병렬수 [개체 목록(쉼표) — 파일럿]
+# Exhaustive insertions and deletions in read units, finding the junction directly from the flank and using it as the anchor.
+#   The design:
+#   a) It does not rely on the TUC array interval; TUC aligns against a 40-unit tandem reference, so on a long read the interval stops short of the ends.
+#   b) The tail before the read's first gene and after its last, each up to 20 kb, is aligned to that individual's flank (the 20 kb nearest the junction), so that
+#       a distal tail matching the distal flank or a proximal tail matching the proximal flank, reaching the junction end of that flank within JTOL, fixes the junction.
+#   c) On the side where the junction is fixed, gene hits are restricted to within EDGE of the junction, which excludes the degenerate pseudogenes at -238 and +481.
+#   d) If the distance from the junction to the end of the first or last gene, minus the canonical end fragment, equals k x 2240 within KTOL,
+#       it is recorded as k empty units plus a junction token (JD or JP). A token pairing scores JSC and counts as ANCH anchor units; a token cannot pair with a unit.
+#   e) Positive control: in reads with no event, -1, +1 and -2 are injected at random positions and immediately beside the junction, and the position is recorded as the canonical index and the distance to the end.
+#   Everything else is unchanged: the gene split, empty units, breaks, variants, the dynamic programming, the slot call, event acceptance and the negative control.
+#   Arguments: the number of parallel jobs, and optionally a comma-separated list of individuals for a pilot run.
 import io, os, re, sys, gzip, glob, random, socket, subprocess, collections, statistics, multiprocessing
 NL = chr(10); TAB = chr(9); H = os.path.expanduser("~"); hn = socket.gethostname()
 NP = int(sys.argv[1]) if len(sys.argv) > 1 else 8
@@ -69,7 +69,7 @@ def load_map(smp):
     return out, FIX
 
 def flank_ref(smp, W):
-    """개체 슬롯별 원위(L_)·근위(R_) flank 의 junction 쪽 20kb (지도 방향). 없으면 None"""
+    """the 20 kb on the junction side of the distal (L_) and proximal (R_) flank of each individual slot (map orientation). None if absent"""
     p = os.path.join(W, "flank.fa"); n = 0
     with io.open(p, "w", newline=NL) as g:
         for (s, sl), fn in FN.items():
@@ -167,7 +167,7 @@ def dp(R, Mv, base):
     for i in range(1, n + 1): S1[i][0] = -(GO + GE * (i - 1)) - (50.0 if isinstance(R[i - 1], str) else 0.0); B1[i][0] = 1 if i > 1 else 0
     for i in range(1, n + 1):
         a = R[i - 1]; r0, r1, r2 = S0[i], S1[i], S2[i]; p0, p1, p2 = S0[i - 1], S1[i - 1], S2[i - 1]
-        tokA = 50.0 if isinstance(a, str) else 0.0          # read 토큰은 삽입으로 버릴 수 없음
+        tokA = 50.0 if isinstance(a, str) else 0.0          # a read token cannot be discarded as an insertion
         for j in range(1, m + 1):
             b = Mv[j - 1]; sc = score(a, b, base)
             tokB = 50.0 if (isinstance(b, str) and 1 < j < m) else 0.0
@@ -179,7 +179,7 @@ def dp(R, Mv, base):
             if y0 >= y1 and y0 >= y2: r1[j] = y0; B1[i][j] = 0
             elif y1 >= y2: r1[j] = y1; B1[i][j] = 1
             else: r1[j] = y2; B1[i][j] = 2
-            tb = 50.0 if isinstance(b, str) else 0.0             # 정본 토큰은 결실로 건너뛸 수 없음 (양끝 무료는 시작·끝 열에서)
+            tb = 50.0 if isinstance(b, str) else 0.0             # a canonical token cannot be skipped as a deletion; the free ends are handled in the first and last columns
             z0, z1, z2 = r0[j - 1] - GO - tb, r1[j - 1] - GO - tb, r2[j - 1] - GE - tb
             if z0 >= z1 and z0 >= z2: r2[j] = z0; B2[i][j] = 0
             elif z1 >= z2: r2[j] = z1; B2[i][j] = 1
@@ -197,7 +197,7 @@ def dp(R, Mv, base):
     return best, ops[::-1]
 
 def events(ops, aps, R):
-    """사건 = 연속 I 또는 D. 앵커 = 앞뒤 짝 수 (junction 토큰 짝은 ANCH 로 셈)"""
+    """event = a run of I or of D. anchor = number of matched pairs before and after (a junction token pair counts as ANCH)"""
     w = [(ANCH if isinstance(R[o[1]], str) else 1) if o[0] == "M" else 0 for o in ops]
     tot = sum(w); ev = []; seen = 0; k = 0
     while k < len(ops):
@@ -234,7 +234,7 @@ def work(smp):
     if flip:
         HT2 = gene_hits(dict((k, rc(SEQ[k])) for k in flip), W, "b")
         for k in flip: SEQ[k] = rc(SEQ[k]); HT[k] = HT2.get(k, [])
-    # ── junction 찾기 : 꼬리를 flank 에
+    # -- find the junction: align the tail to the flank
     E0 = {k: gene_ends(HT.get(k, []), -10 ** 9, 10 ** 9) for k in SEQ}
     FR = flank_ref(smp, W); JL, JR = {}, {}
     if FR:
@@ -335,7 +335,7 @@ def work(smp):
         rows.append([smp, k, str(u_tuc), fl, st, slk, str(len(SEQ[k])), str(nU), str(nP), str(nB), str(len(segs)), su, basis,
                      "%.4f" % mg_out, "%.2f" % tot[su], "%.2f" % (tot[oth] if oth else 0), "%.3f" % (statistics.mean(qlist[su]) if qlist[su] else 0),
                      str(acc), "|".join("%s%d@%s" % (e[1], e[2], e[3]) for e in EV[su]) or "-", ";".join(SP[su]) or "-", jinfo])
-    # ── 양성 대조 : 무작위 위치 + junction 옆 · 위치 기록
+    # -- positive control: random positions and beside the junction, with the position recorded
     for R, sl, ops in ctrl_todo[:80]:
         mv, aps = MAPS[sl]; n_ = aps[-1] - 1
         idx_ap = {o[1]: aps[o[2]] for o in ops if o[0] == "M"}
@@ -355,7 +355,7 @@ def work(smp):
                 sc, o2 = dp(R2, mv, base); ev = events(o2, aps, R2)
                 hit = any(e[0] == want_[0] and e[1] == want_[1] and e[3] >= ANCH and e[4] >= ANCH for e in ev)
                 ctrl.append(["pos_%s_%s" % (kind, where), smp, sl, str(len(R2)), "1" if hit else "0", str(sum(1 for e in ev if e[3] >= ANCH and e[4] >= ANCH)), str(ap), str(dend), "D" if ap <= n_ - ap + 1 else "P"])
-    # ── 음성 대조 : 지도에서 뗀 가짜 read (+끝이면 토큰) + 실측 잡음
+    # -- negative control: a synthetic read taken from the map, with a token if it reaches an end, plus the measured noise
     pk = statistics.mean(keep_n) if keep_n else 0.6; ad = statistics.mean(add_n) if add_n else 2.0
     for t in range(60):
         sl = random.choice(sorted(MAPS)); mv, aps = MAPS[sl]; core = mv[1:-1]

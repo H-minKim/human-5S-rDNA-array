@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-# BAM 의 한 구역에서 CpG 메틸 비율을 낸다 (MM/ML 직접 · mapq 로 거르지 않음)
-#   같은 BAM 안에서 array 와 옆 구역을 비교하는 내부 대조용이다.
-#   조직·호출기·파이프라인이 같으므로 차이가 곧 구역의 차이다.
-#   인자 : bam chrom start end [라벨]
+# Report the CpG methylation fraction over one region of a BAM, reading MM/ML directly and with no mapq filter.
+#   This is an internal control, comparing an array with the region beside it within the same BAM.
+#   The tissue, the basecaller and the pipeline being the same, the difference is the difference between the regions.
+#   Arguments: bam, chrom, start, end, [label].
 # MIT License · Copyright (c) 2026 Hungmin Kim
 import sys
 import pysam

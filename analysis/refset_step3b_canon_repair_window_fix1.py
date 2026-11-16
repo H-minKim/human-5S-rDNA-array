@@ -1,19 +1,19 @@
 # -*- coding: utf-8 -*-
-# 수술 창 (앵커 직접 지정판)
-#   단계 : ③b 정본 수리 (수정1 · 2 자리)
-# Reason: no machine-specific path is left in the code. A default would leave such a path on this line, so none is set.
+# The splice window, with the anchors given explicitly.
+#   Step 3b: canonical-unit repair (revision 1, 2 sites).
+# NODE_HOME has no default.
 #       to run : export NODE_HOME=/home/<user>
 
 # -*- coding: utf-8 -*-
-# [v11-수정1 사본 2026-09-16 : 지도 g8canonv10 · 정본 cmp4d_v11 · 앵커 직접 지정 · 입력 ~/fix1/pol · 출력 ~/fix1/splice. 그 밖 불변]
-# 수술식 교체 v2 — 앵커를 위치로 고정한다 (2026-09-13)
+# Revision 1: map g8canonv10, canonical cmp4d_v11, anchors given explicitly, input fix1/pol, output fix1/splice. Everything else unchanged.
+# Surgical replacement v2: the anchors are fixed by position.
 #
-#   v1 의 실패 : 앵커 유닛을 합의 전체에서 '최고 정합률' 로 찾았더니 탠덤 안 다른 사본에 붙었다
-#                (NA20282 : 합의 3유닛인데 뒤 앵커가 가운데 유닛에 붙어 진짜 유닛 하나를 삼킴 -> 2유닛)
-#   고침      : 합의는 정의상 [앞앵커 ... 뒤앵커] 구간이다. 앞앵커는 합의의 맨 앞 HSP,
-#               뒤앵커는 맨 뒤 HSP 로 고정한다. 그리고 '합의에서 앵커 밖으로 남는 bp' 를 찍어
-#               정말 끝에 붙었는지 확인한다(0 에 가까워야 한다).
-#   검정      : ① 남는 bp ② 앵커 정합률(조립본 기준 100) ③ 끊김 ④ 유닛 수 = 합의와 같아야
+#   Searching the whole consensus for the best-matching anchor unit lands on a different copy in the tandem array
+#                (in NA20282 the consensus holds 3 units but the right anchor matched the middle one, swallowing a real unit and leaving 2).
+#   Instead: the consensus is by definition the interval [left anchor ... right anchor]. The left anchor is the first HSP of the consensus
+#               and the right anchor is the last HSP. The number of bp left over beyond the anchors is then printed
+#               to confirm the anchors really sit at the ends; it should be close to 0.
+#   Checks: 1) leftover bp, 2) anchor identity (100 against the assembly), 3) breaks, 4) the unit count must equal the consensus.
 import io
 import os
 import subprocess
@@ -66,7 +66,7 @@ def canon(smp, sl):
 
 
 def hsps(q, t, tag):
-    """덮음 >= 98% 인 HSP 전부 (pident, sstart, send)"""
+    """every HSP with coverage >= 98% (pident, sstart, send)"""
     qf = os.path.join(W, "q_%s.fa" % tag)
     io.open(qf, "w", newline=NL).write(">q" + NL + q + NL)
     tf = os.path.join(W, "t_%s.fa" % tag)
@@ -158,10 +158,10 @@ for (smp, sl, ap, apR) in SITES:
     if not h1 or not h2:
         print("%-9s %-3s 앵커가 합의에 안 붙음 — 건너뜀" % (smp, sl))
         continue
-    b1 = min(h1, key=lambda x: x[1])          # 맨 앞 HSP = 앞 앵커
-    b2 = max(h2, key=lambda x: x[2])          # 맨 뒤 HSP = 뒤 앵커
-    left_over = b1[1] - 1                     # 합의에서 앞 앵커 앞에 남는 bp
-    right_over = len(cons) - b2[2]            # 뒤 앵커 뒤에 남는 bp
+    b1 = min(h1, key=lambda x: x[1])          # the first HSP is the left anchor
+    b2 = max(h2, key=lambda x: x[2])          # the last HSP is the right anchor
+    left_over = b1[1] - 1                     # bp of the consensus left over before the left anchor
+    right_over = len(cons) - b2[2]            # bp left over after the right anchor
     mid = cons[b1[2]:b2[1] - 1] if b2[1] - 1 > b1[2] else ""
     new_win = u1 + mid + u2
     old_win = A[a0 - 1:a1]

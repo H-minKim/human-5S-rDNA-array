@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-r"""Recurrent mutation vs copying (2026-10-16: compute (1) and (2) and make the tables first)
+r"""Recurrent mutation vs copying (computes (1) and (2) and writes the tables)
    Set: same as P08_X7 (middle window 0.2-0.8, haplotypes with 23 or more units in the window, variants = substitutions and deletions, insertions excluded)
    (1) Co-sharing: unit pairs (i,j) that BOTH carry a rare variant A (cohort unit frequency < 1%) vs pairs (i,j') at the same distance where only ONE carries A.
       The fraction of other variants B, carried by at least one of the two units, that are present in BOTH units, by |pos_B - pos_A| bin.
@@ -7,7 +7,7 @@ r"""Recurrent mutation vs copying (2026-10-16: compute (1) and (2) and make the 
       Interval estimate = haplotype cluster bootstrap, 500 rounds
    (2) Variant kinds: cohort-rare (< 1%) variants are split into those in only 1 unit of the array vs those shared by 2 or more units, and the composition of kinds is compared.
       If recurrent (hotspot), CpG C>T would concentrate on the shared side
-   Read only. Output goes to the scratchpad"""
+   Read only. Output goes to the working folder"""
 import os, sys, io, collections, pickle, time
 import numpy as np
 from scipy import stats
@@ -108,7 +108,7 @@ for s, UA in PACK:
     H.append(acc)
 H = np.array(H)     # hap x strat x bin x cls x (shared, cand)
 np.save(os.path.join(OUT, "COSHARE_BSTRAT_H.npy"), H)   # for the figure draft (haplotype-level bootstrap redone in the figure code)
-# input table for the final figure (2026-10-16), (shared count, candidate count) per haplotype, B layer, distance bin and class
+# input table for the final figure: (shared count, candidate count) per haplotype, B layer, distance bin and class
 with io.open(os.path.join(OUT, "COSHARE_PERHAP.tsv"), "w", encoding="utf8", newline="\n") as gp:
     gp.write("# 희귀 변이 A(코호트 유닛 빈도 < 1%) 공동 공유 · H1 557 가운데 창(0.2-0.8 · 창 유닛 23 이상) · 생산 COSHARE_BSTRAT.py · "
              "cls 0 = A 를 함께 가진 쌍 · 1 = 같은 거리에서 한쪽만 가진 쌍 · bin 1-10·11-100 은 같은 사건 혼입이라 그림에서 뺀다\n")

@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-# Fig 4 세트의 결과를 엑셀(원자료 제출용)로 -
+# Write the results of the Figure 4 set to Excel, for submission as Source Data.
 #
-# 규칙 : 수는 표에서 읽는다(내 기억에서 적지 않는다), 행마다 출처 파일과 md5 를 함께 적는다.
-# 말은 영어로(논문에 그대로 낼 수 있게).
+# The rules: every number is read from a table and never written from memory, and each row records its source file and md5.
+# The wording is in English, so that it can be submitted as it stands.
 import collections
 import hashlib
 import io
@@ -34,7 +34,7 @@ def tsv(p):
     return rows
 
 
-# ── 배치표에서 칸 ↔ 패널 파일을 기계로 읽는다
+# -- the cell-to-panel-file mapping is read from the layout table by machine
 _src = io.open(os.path.join(SP, "assemble_v9_2026-10-18.py"), encoding="utf8").read()
 _ns = {"__file__": os.path.join(SP, "assemble_v9_2026-10-18.py")}
 exec(compile(_src[:_src.index("def fetch(")], "head", "exec"), _ns)
@@ -56,7 +56,7 @@ def panels(rows):
     return sorted(out, key=lambda t: t[0])
 
 
-# ── 칸 설명 (영어) - 수는 넣지 않는다. 수는 Key_numbers 에 출처와 함께 둔다.
+# -- the cell descriptions, in English. No numbers: those live in Key_numbers with their sources.
 WHAT = {
  ("Fig 4", "A"): "Read-unit methylation beta along the array axis: 20 proximal units, the interior, 20 distal units",
  ("Fig 4", "B"): "Distribution of unit methylation beta (same cohort as A), drawn vertically next to A",
@@ -176,7 +176,7 @@ sheet("Panels", ["Figure", "Panel", "Panel file (stem)", "What the panel shows",
       prows, [18, 8, 44, 86, 26],
       note="One row per panel of the four figures. Panel letters are those drawn in the figure.")
 
-# ── 3. Key numbers (전부 표에서 읽는다)
+# -- 3. Key numbers, every one read from a table
 krows = []
 p = os.path.join(T4, "FIG4_V3_NUMBERS.tsv")
 for r in tsv(p)[1:]:
@@ -194,7 +194,7 @@ sheet("Key_numbers",
       note="Numbers that the figure or the Results text quotes. Read from the file in the "
            "last two columns; not retyped by hand.")
 
-# ── 4. Arrays (P10) - G~L 과 S6 의 바탕 수
+# -- 4. Arrays (P10), the figures behind G to L and S6
 p = os.path.join(P10, "P10_ARRAYS.tsv")
 KO2EN = {"이봉": "bimodal", "단봉": "unimodal"}
 rows = [[KO2EN.get(x, x) for x in r] + [os.path.basename(p), md5(p)] for r in tsv(p)[1:]]
@@ -202,7 +202,7 @@ sheet("Arrays_P10", tsv(p)[0] + ["Source file", "md5"], rows, [16, 30, 26, 24, 1
       note="Per-array summary used by Fig 4 G-L and Suppl. Fig S6 "
            "(unit counts, mixture components, Ashman D, cuts).")
 
-# ── 5. Transcripts - 2026-10-20 에 고친 자리
+# -- 5. Transcripts
 p = os.path.join(ATL, "TRANSCRIBED_FOR_PANEL_A.tsv")
 hd = tsv(p)[0]
 keep = ["array_our", "feature", "grade", "cons_strand", "canon_segments", "canon_len", "wraps", "note"]
@@ -215,7 +215,7 @@ sheet("Transcripts", keep + ["Source file", "md5"], rows,
            "part2_next_unit because it runs past the unit end into the next unit. "
            "The figure draws one lane per transcript.")
 
-# ── 6. Atlas summary (전사체 수의 근거)
+# -- 6. Atlas summary, the basis of the transcript counts
 p = os.path.join(ATL, "ATLAS_TRANSCRIBED_IN_OUR_FRAME.tsv")
 if os.path.exists(p):
     hd = tsv(p)[0]
@@ -224,7 +224,7 @@ if os.path.exists(p):
           note="The Atlas reply counted per transcript, not per drawn part. "
                "This sheet is the evidence that DXZ4 has two transcripts.")
 
-# ── 6b. Cohorts (P10) - ARRAY_COHORT_2026-10-18.txt 의 표를 그대로 읽는다
+# -- 6b. Cohorts (P10), reading the table of ARRAY_COHORT_2026-10-18.txt as it is
 p = os.path.join(T4, "ARRAY_COHORT_2026-10-18.txt")
 rows = []
 if os.path.exists(p):
@@ -254,7 +254,7 @@ if os.path.exists(p):
           [34, 12, 40, 14],
           note="How many samples come from each data source in the figure set.")
 
-# ── 6d. 뺀 칸 G 의 수 + F 의 네 곡선 - 칸은 뺐어도 수는 남긴다
+# -- 6d. the per-element high minus low beta, which no panel draws, and the four curves of F
 import subprocess
 
 
@@ -296,7 +296,7 @@ if "| element |" in _o:
                "(md5 0599c32be6b0) with the original code path. States are defined by the beta cut "
                "0.508, NOT by two modes within a site.")
 
-# ── 6e. 이름이 같은 두 집합 - 섞이면 없는 수가 된다
+# -- 6e. two sets with the same name, which become a number that does not exist if they are mixed
 DISP = os.path.join(_need("RDNA_METH_BLOCKS_DIR"),
                     "dispersed_vs_array_cut0508", "DISP_SITES_TABLE.tsv")
 rows = []

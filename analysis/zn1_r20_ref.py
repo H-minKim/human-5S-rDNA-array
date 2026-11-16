@@ -1,17 +1,17 @@
 # -*- coding: utf-8 -*-
-"""r20 을 레퍼런스 문턱으로 다시 만든다 — F2 (a)(b) 가 이 표를 읽는다 (2026-10-11).
+"""r20 with the reference threshold; F2 (a)(b) read this table.
 
-바꾸는 것 하나뿐 : `actuation` 의 정의
-   옛 : MSP 가 덮은 염기 / 호출된 염기      ← 문턱 없음 (레퍼런스에 없는 지표)
-   새 : large MSP(>150 bp) 가 덮은 염기 / 호출된 염기
+The definition of `actuation`
+   r20  : bases covered by MSPs / called bases               (no threshold)
+   here : bases covered by large MSPs (>150 bp) / called bases
         *"The cutoff for identifying di-nucleosomes and large MSPs was 210 and 150"*
 
-나머지는 r20 과 똑같이 둔다 — 그래야 전/후를 같은 자리에서 맞댈 수 있다
-   · 구역 : far −1500..−1000 · mid −900..−400 · up −300..−1 · gene 0..+118  (TSS 기준)
-   · 자리별 윤곽 : 유닛 안 1..2241 에 유닛마다 자기 TSS 를 OFF=2123 에 맞춰 쌓는다
-   · 검정 : 개체 단위 Wilcoxon 부호순위 (저메틸 ↔ 고메틸)
-   · 제외 : PacBio fibertools 2 개체 · PacBio 자리이동 슬롯 2 개
-배치는 본표 a23 과 같다(정본 좌표).
+Everything else is as in r20, so the two can be compared at the same positions
+   - zones : far -1500..-1000, mid -900..-400, up -300..-1, gene 0..+118  (from the TSS)
+   - per-position profile : positions 1..2241 of the unit, each unit stacked with its own TSS at OFF=2123
+   - test : Wilcoxon signed-rank per individual (low against high methylation)
+   - excluded : 2 PacBio fibertools individuals, 2 PacBio slots with shifted positions
+The layout is that of the main table a23 (canonical coordinates).
 """
 import io
 import os
@@ -21,8 +21,8 @@ import numpy as np
 from scipy.stats import wilcoxon
 
 # The data and output roots are environment variables with no default (CONVENTIONS, "the deposited copy wins").
-#  저장소 안 파일로 가는 길은 `__file__` 에서 상대로 푼다 — `a_lib`·`bamlite`·`p02_lib` 가 이 폴더에 같이 예치돼 있다.
-#  변수 표는 `README.md` §2 에 있다.
+#  Paths to files inside the repository are resolved relative to __file__: a_lib, bamlite and p02_lib are deposited in this folder.
+#  The table of variables is in README.md, section 'Environment variables'.
 _HERE = os.path.dirname(os.path.abspath(__file__))
 
 
@@ -32,10 +32,10 @@ def _need(k):
     except KeyError:
         raise SystemExit(
             "environment variable %s is not set; it is required by %s. "
-            "The deposited copy has no default; see README.md section 2."
+            "The deposited copy has no default; see README.md, section 'Environment variables'."
             % (k, os.path.basename(__file__)))
 
-#  쓰는 폴더다 — 발행 입력 폴더를 가리키면 그 표를 덮는다.
+#  This is written to: if it points at the published input folder, those tables are overwritten.
 W = _need("RDNA_RESULTMAP_DIR")
 sys.path.insert(0, _HERE)
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8',
@@ -48,13 +48,13 @@ SHIFT = {("HG02559", "2"), ("HG03672", "1")}
 UNIT, _ = L.load_units()
 GMM = L.load_state_gmm()
 
-# (plat, smp, state, region) -> [large bp, 호출 bp]
+# (platform, sample, state, region) -> [large bp, called bp]
 RG = collections.defaultdict(lambda: np.zeros(2))
-# (plat, state, unit_pos) -> [large bp, 호출 bp, 분자]
+# (platform, state, unit position) -> [large bp, called bp, molecules]
 PR = collections.defaultdict(lambda: np.zeros(3))
 nread = 0
 for smp, src, rid, slot, arr, lo, us in L.iter_reads(UNIT, 0, 0):
-    plat = "ONT" if src.startswith("UCSC") else "PacBio"   # 그림이 찾는 이름 (2026-10-12 고침)
+    plat = "ONT" if src.startswith("UCSC") else "PacBio"   # the names the figure looks for
     if src == "PACBIO_FIBERSEQ" and (smp in L.PB_EXCL or (smp, slot) in SHIFT):
         continue
     nread += 1
@@ -88,7 +88,7 @@ for smp, src, rid, slot, arr, lo, us in L.iter_reads(UNIT, 0, 0):
             if k:
                 v = RG[(plat, smp, st, nm)]
                 v[0] += int(sb[m].sum()); v[1] += k
-        # 자리별 윤곽 : TSS 를 OFF 에 맞춘다
+        # the profile by position, with the TSS aligned to OFF
         tgt = OFF + rel
         inr = ok & (tgt >= 1) & (tgt <= ULEN)
         if inr.any():
@@ -100,7 +100,7 @@ for smp, src, rid, slot, arr, lo, us in L.iter_reads(UNIT, 0, 0):
                 PR[(plat, st, int(t_))][2] += 1
 print("read %d · 구역 칸 %d · 자리 칸 %d" % (nread, len(RG), len(PR)))
 
-# ───────── unified (구역 · 개체 Wilcoxon)
+# ───────── unified: per zone, with a Wilcoxon over individuals
 OUT1 = os.path.join(W, "r20_actuation_unified_REF.tsv")
 rows = []
 for plat in ("ONT", "PacBio"):
@@ -134,7 +134,7 @@ for r in rows:
     print("   %-5s %-6s %4d %9.5f %9.5f %9.5f %10.2e%s"
           % (r[1], r[2], r[3], r[4], r[5], r[6], r[7], "" if r[7] < 0.01 else "  n.s."))
 
-# ───────── profile (자리별)
+# ───────── the profile, by position
 OUT2 = os.path.join(W, "r20_actuation_profile_REF.tsv")
 with io.open(OUT2, "w", encoding="utf8", newline=chr(10)) as g:
     g.write("# 자리별 actuation = large MSP(>150bp) 덮은 염기 / 호출 염기 "

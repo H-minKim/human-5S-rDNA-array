@@ -1,18 +1,18 @@
 # -*- coding: utf-8 -*-
-# 사용자 주장 검정 (2026-09-27) :
-#   "5S 는 이봉된 저메틸/고메틸 유닛의 비율이 바뀌며 전이한다,
-#    DXZ4 는 유닛 수준의 메틸 수준 자체가 0.3 씩 계단처럼 오른다"
+# A test of the claim:
+#   5S makes its transition by changing the proportion of bimodally separated weakly and highly methylated units,
+#    whereas in DXZ4 the methylation level itself rises in steps of about 0.3 at the level of the unit.
 #
-# 왜 새 코드인가 — 먼저 확인한 것 :
-#   원 코드 p10_19_unit_steps.py 는 염기단위 P10_CPG_ALL.tsv.gz 를 쓰는데
-#   그 파일에는 5S · D4Z4_4q · D4Z4_10q 세 family 만 있다(실측 : 행수 610만/352만/237만, 나머지 0).
-#   그래서 DXZ4 · RNU2 · SST1 은 계단 표에 아예 없었다. z 판(잡음 표준화)은 염기단위가 필요해 못 늘린다.
-#   그러나 절대크기판(P10_UNIT_STEPS_ABS)의 정의는 유닛 beta 만 쓴다 → 유닛 집계표
-#   P10_FRAME_ALL.tsv 로 여섯 array 전부에 같은 정의를 적용할 수 있다.
-#   대조 : 5S · D4Z4 는 정본 ABS 표와 나란히 찍어 재현되는지 본다(5S 정본은 핵 하위원소 제한판이라
-#            값이 같을 수 없다 — 그 차이도 같이 적는다).
-#   DXZ4 는 여성에서 두 X 를 합치면 오해되므로 (sample,hap)=염색체 단위로도 따로 낸다.
-#   정본 표를 건드리지 않는다 — 02_output_tables\array_steps_extended\ 로만 쓴다.
+# Why this is a separate script:
+#   p10_19_unit_steps.py uses the per-base P10_CPG_ALL.tsv.gz,
+#   which holds only the three families 5S, D4Z4_4q and D4Z4_10q (6.10, 3.52 and 2.37 million rows; the rest are 0).
+#   DXZ4, RNU2 and SST1 are therefore absent from its step table. The z version, which standardises by the noise, needs per-base data and cannot be extended.
+#   The absolute-size version (P10_UNIT_STEPS_ABS) is defined on the unit beta alone, so the same definition
+#   can be applied to all six arrays from the per-unit table P10_FRAME_ALL.tsv.
+#   Control: for 5S and D4Z4 the result is printed alongside the canonical ABS table to see whether it reproduces. The canonical 5S
+#            figure is restricted to a sub-element and so cannot match exactly; that difference is reported as well.
+#   In a female, pooling the two X chromosomes misleads for DXZ4, so the result is also reported per chromosome, keyed on (sample, hap).
+#   The canonical tables are not touched; output goes only to 02_output_tables/array_steps_extended/ .
 import io, os, sys, collections, statistics
 
 
@@ -20,7 +20,7 @@ def _need(_v):
     """The deposited copy has no default paths. Stop when a root variable is missing."""
     _x = os.environ.get(_v)
     if not _x:
-        sys.exit("environment variable %s is not set; see README.md section Figures after 30 October 2026" % _v)
+        sys.exit("environment variable %s is not set; see README.md, section 'Environment variables'" % _v)
     return _x
 
 
@@ -35,7 +35,7 @@ DIRN = {"5S": ("distal",), "D4Z4_4q": ("proximal",), "D4Z4_10q": ("proximal",),
         "DXZ4": ("distal", "proximal"), "RNU2": ("distal", "proximal"), "SST1": ("distal", "proximal")}
 MINCPG = 10
 
-MINC, COVMIN = 20, 0.9        # 완전유닛 (fig39·fig43·fig47 과 같은 규칙 · 2026-10-04)
+MINC, COVMIN = 20, 0.9        # complete units, by the same rule as fig39, fig43 and fig47
 _TOTB = collections.defaultdict(collections.Counter)
 with io.open(os.path.join(SRC, "P10_FRAME_ALL.tsv"), encoding="utf8") as _f:
     _h = _f.readline().rstrip(chr(10)).split(chr(9))
@@ -59,7 +59,7 @@ def _complete(g, ix):
     cp = CPGB.get(fam) or set()
     return bool(cp) and len(bs & cp) / float(len(cp)) >= COVMIN
 
-# ---------- 유닛 beta : read 단위로 (원 정의와 같은 단위 = read 안 이웃 유닛 쌍)
+# ---------- unit beta, per read, which is the unit of the original definition: pairs of neighbouring units within a read
 SER = collections.defaultdict(dict)       # (fam, sample, hap, read) -> {(dirn, p): beta}
 CH = {}
 with io.open(os.path.join(SRC, "P10_FRAME_ALL.tsv"), encoding="utf8") as f:
@@ -74,7 +74,7 @@ with io.open(os.path.join(SRC, "P10_FRAME_ALL.tsv"), encoding="utf8") as f:
         if not u.lstrip("-").isdigit() or not nu.isdigit():
             continue
         nc = int(g[ix["n_cpg"]])
-        if not _complete(g, ix):      # 완전유닛만 (MINCPG 10 대신 · 2026-10-04)
+        if not _complete(g, ix):      # complete units only
             continue
         d, N = int(u), int(nu)
         if d > N:
@@ -99,7 +99,7 @@ def per_read(fam, dirn, hi, chrom=None):
 
 
 def absrow(pr):
-    """원 정의 그대로 : 총상승>0.15 인 read 만, 상승을 걸음 크기 세 칸으로 나눈다"""
+    """The original definition : only reads with a total rise >0.15, and the rise is split into three step-size bins"""
     tot, mx, nup, a, b, c = [], [], [], 0.0, 0.0, 0.0
     for rs in pr:
         t = sum(rs)
@@ -154,8 +154,8 @@ for ch in sorted({CH[k] for k in CH if k[0] == "DXZ4"}):
 io.open(os.path.join(OUT, "STEPS_UNITLEVEL_ALL6.tsv"), "w", encoding="utf8",
         newline="\n").write("\n".join(LINES) + "\n")
 
-# ---------- ② 전이 방식 : "두 상태의 비율" 인가 "수준의 이동" 인가
-#   같은 read 안에서 오르는 구간의 유닛 beta 가 (i) 0.15/0.86 두 값만 쓰는가 (ii) 중간값을 쓰는가
+# ---------- 2) the form of the transition: a changing proportion of two states, or a shift in level?
+#   Within one read, over the rising stretch, does the unit beta take only the two values 0.15 and 0.86, or does it take intermediate ones?
 print()
 print("전이 구간 유닛 beta 가 두 값만 쓰는가 (중간칸 0.35-0.65 의 몫)")
 print("%-9s %-9s %8s %8s %8s %8s %8s" % ("family", "방향", "유닛", "<=0.25", "중간", ">=0.75", "골(.45-.55)"))
@@ -183,7 +183,7 @@ for fam in FAMS:
 io.open(os.path.join(OUT, "TRANSITION_ZONE_UNITDIST.tsv"), "w", encoding="utf8",
         newline="\n").write("\n".join(L3) + "\n")
 
-# ---------- ③ DXZ4 염색체별 (여성 두 X 를 합치지 않는다)
+# ---------- 3) DXZ4 per chromosome, without pooling a female's two X chromosomes
 UB = collections.defaultdict(list)
 for k, d in SER.items():
     if k[0] != "DXZ4":

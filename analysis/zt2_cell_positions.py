@@ -1,17 +1,17 @@
 # -*- coding: utf-8 -*-
-"""칸마다 유닛 자리 수를 센다 — '자리 하나당 평균' 을 내려고.
+"""Count the unit positions per bin, to give a mean per position.
 
-사용자 지적 : *"(a) 가운데 부분에서 갯수 접힌 거 아니야? 유닛당 평균으로 해 줘."*
+The profile reports the mean per unit position, not the count per bin.
 
-맞는 지적이다. 지금 (a) 의 `분자수` 는 칸이 넓을수록 커진다 —
-   가운데 칸은 유닛 자리를 4.9 개 묶으므로, 그 중 하나만 걸친 분자도 1 로 센다.
-   ⇒ 끝 칸(자리 1 개)과 같은 자가 아니다.
+The molecule count of a bin grows with the width of the bin:
+   a middle bin merges 4.9 unit positions, and a molecule that touches only one of them still counts as 1,
+   so it is not on the same ruler as an end bin (1 position).
 
-고치는 법 : 자리 하나당 평균 깊이 = (그 칸의 read x 유닛 관측 수) ÷ (그 칸이 묶은 자리 수)
-   · read x 유닛 관측 수 = a13 의 줄 수 (= 합친 프로파일의 `유닛수`)
-   · 자리 수 = 그 칸에 떨어지는 서로 다른 (개체, 슬롯, array_pos) 의 수
-a01 트랙을 다시 안 읽어도 된다 — a13 한 번 읽기로 둘 다 나온다.
-칸 규칙은 zg1 과 똑같이 둔다(E=20 · NB=10).
+Mean depth per position = (read x unit observations in the bin) / (positions merged in the bin)
+   - read x unit observations = the number of rows of a13 (the unit count of the pooled profile)
+   - positions = the number of distinct (individual, slot, array_pos) falling in the bin
+The a01 tracks need not be read again: one read of a13 gives both.
+The bin rule is that of zg1 (E=20, NB=10).
 """
 import io
 import os
@@ -20,8 +20,8 @@ import gzip
 import collections
 
 # The data and output roots are environment variables with no default (CONVENTIONS, "the deposited copy wins").
-#  저장소 안 파일로 가는 길은 `__file__` 에서 상대로 푼다 — `a_lib`·`bamlite`·`p02_lib` 가 이 폴더에 같이 예치돼 있다.
-#  변수 표는 `README.md` §2 에 있다.
+#  Paths to files inside the repository are resolved relative to __file__: a_lib, bamlite and p02_lib are deposited in this folder.
+#  The table of variables is in README.md, section 'Environment variables'.
 _HERE = os.path.dirname(os.path.abspath(__file__))
 
 
@@ -31,10 +31,10 @@ def _need(k):
     except KeyError:
         raise SystemExit(
             "environment variable %s is not set; it is required by %s. "
-            "The deposited copy has no default; see README.md section 2."
+            "The deposited copy has no default; see README.md, section 'Environment variables'."
             % (k, os.path.basename(__file__)))
 
-#  쓰는 폴더다 — 발행 입력 폴더를 가리키면 그 표를 덮는다.
+#  This is written to: if it points at the published input folder, those tables are overwritten.
 A = _need("RDNA_ACCESS_DIR")
 HF = _need("RDNA_FIBERSEQ_DIR")
 OUT = os.path.join(HF, "01_latest_results", "REF2_20261012_by_cell_positions_and_depth.tsv")
@@ -52,7 +52,7 @@ for (smp, slot, ap) in UNIT:
 
 
 def slot_cell(ap, n):
-    """zg1 과 같은 규칙."""
+    """The rule of zg1."""
     if n < 2 * E + 4:
         return None
     if ap <= E:
@@ -70,8 +70,8 @@ def lab(c):
     return "근위%d" % (2 * E + NB - c)
 
 
-OBS = collections.Counter()                       # (src, cell) -> read x 유닛 관측 수
-POS = collections.defaultdict(set)                # (src, cell) -> {(개체, 슬롯, 자리)}
+OBS = collections.Counter()                       # (source, cell) -> the number of read x unit observations
+POS = collections.defaultdict(set)                # (source, cell) -> the set of (individual, slot, position)
 nline = 0
 with gzip.open(os.path.join(A, "a13_unit_state_gmm.tsv.gz"), "rt", encoding="utf8") as f:
     head = f.readline().rstrip(chr(10)).split(chr(9))

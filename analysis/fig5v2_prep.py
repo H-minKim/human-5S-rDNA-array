@@ -1,17 +1,17 @@
 # -*- coding: utf-8 -*-
-# Fig 5 (v2) 자료 — 구역을 정본 8 구역으로 다시 센다 (근위가 왼쪽)
-#   ① 먼저 원 표(TRIO_SRCDEF_PAIRZONE)를 합본 READMAP 으로 재현 해 방향·셈법을 확인한다
-#   ② 그 다음 같은 셈법으로 8 구역을 만든다
-#   구역 정본 : Z1 근1-3 · Z2 근4-10 · Z3 근11-17 · ZI 내부 · Z4 원11-22 · Z5 원9-10 · Z6 원3-8 · Z7 원1-2
+# Fig 5 (v2) data: the zones are recounted as the canonical eight, with proximal on the left.
+#   1) First reproduce the original table (TRIO_SRCDEF_PAIRZONE) from the merged READMAP, to confirm the orientation and the counting.
+#   2) Then build the eight zones with that same counting.
+#   The canonical zones: Z1 proximal 1-3, Z2 proximal 4-10, Z3 proximal 11-17, ZI interior, Z4 distal 11-22, Z5 distal 9-10, Z6 distal 3-8, Z7 distal 1-2.
 import io, os, sys
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 import numpy as np, pandas as pd
 from scipy import stats
-# 자료 뿌리는 환경변수 하나로 (2026-10-21 · 저장소 공개 준비)
-#   안 주면 지금까지 쓰던 자리를 그대로 쓴다 — 돌아가는 것이 달라지지 않는다.
+# The data roots come from environment variables.
+#   They have no default: the script stops with a message if one is not set.
 DATA_ROOT = os.environ["DATA_ROOT"]
 T = DATA_ROOT + "/02_tables/"
-# 표를 읽고 쓰는 자리 — 저장소에서는 표가 코드 옆에 없으므로 환경변수로 받는다 (2026-10-21)
+# Where the tables are read and written. The tables are not deposited next to the code, so these paths come from the environment.
 HERE = os.environ.get("TABLE_DIR", os.path.dirname(os.path.abspath(__file__)))
 LOG = io.open(os.path.join(HERE, "FIG5V2_PREP.txt"), "w", encoding="utf8", newline="\n")
 def P(s=""): print(s, flush=True); LOG.write(str(s) + "\n"); LOG.flush()
@@ -30,17 +30,17 @@ R["hap"] = R["sample"].astype(str) + "|" + R.slot.astype(str)
 NM = R.groupby("hap").array_pos.max().to_dict()
 R["N"] = R.hap.map(NM)
 
-# ---------- ① 방향 확인 : 원위 끝이 더 꺼져 있어야 한다 ----------
+# ---------- 1) orientation check: the distal end must be the more depleted one ----------
 a1 = R[R.array_pos == 1].beta_call.median()
 aN = R[R.array_pos == R.N].beta_call.median()
 P()
 P("[방향] array_pos 1 의 β 중앙 %.3f · array_pos N 의 β 중앙 %.3f → %s"
   % (a1, aN, "array_pos 1 = 원위 (정본 규칙과 같음)" if a1 < aN else "반대 — 아래 셈법을 뒤집어야 한다"))
 FLIP = a1 >= aN
-R["ad"] = R.N - R.array_pos + 1 if FLIP else R.array_pos      # 원위 끝에서 센 번호
-R["ap"] = R.array_pos if FLIP else R.N - R.array_pos + 1      # 근위 끝에서 센 번호
+R["ad"] = R.N - R.array_pos + 1 if FLIP else R.array_pos      # index counted from the distal end
+R["ap"] = R.array_pos if FLIP else R.N - R.array_pos + 1      # index counted from the proximal end
 
-# ---------- 원 표 재현 (4 구역) ----------
+# ---------- reproducing the original table (4 zones) ----------
 def zone4(ap, ad):
     if ap <= 10: return "근위1-10"
     if ap <= 20: return "근위11-20"
@@ -61,9 +61,9 @@ def zone8(ap, ad):
 
 R["z4"] = [zone4(a, d) for a, d in zip(R.ap, R.ad)]
 def zone5(ap, ad):
-    """공통 5 구역 (2026-10-16) = 정본 8 구역을 묶은 것
-       Z1 / Z2+Z3 / ZI / Z4 / Z5+Z6+Z7. 새 경계를 만들지 않았다.
-       main (E)(F)(G) · FigX26 과 같은 조건식 이어야 한다."""
+    """Five common zones = the eight canonical zones merged
+       Z1 / Z2+Z3 / ZI / Z4 / Z5+Z6+Z7. No new boundary is introduced.
+       The condition must be the one used by main (E)(F)(G) and FigX26."""
     if ap <= ad:
         if ap <= 3:  return "근위 1-3"
         if ap <= 17: return "근위 4-17"
@@ -112,7 +112,7 @@ for z in Z4ORD:
 P("   ⇒ 값이 가까우면 셈법이 같은 것이다 (중앙값 비교 · 짝 %d vs %d)"
   % (PZ0[["child", "child_slot", "parent"]].drop_duplicates().shape[0], len(pairs)))
 
-# ---------- ② 8 구역 ----------
+# ---------- 2) the eight zones ----------
 Z8ORD = ["Z1 근위1-3", "Z2 근위4-10", "Z3 근위11-17", "ZI 내부",
          "Z4 원위11-22", "Z5 원위9-10", "Z6 원위3-8", "Z7 원위1-2"]
 P8 = pair_table("z8", Z8ORD)
@@ -136,8 +136,8 @@ for z in Z8ORD:
 SM = pd.DataFrame(rows)
 SM.to_csv(os.path.join(HERE, "FIG5V2_SUMMARY8.tsv"), sep="\t", index=False, float_format="%.6g")
 
-# ---------- ②-b 공통 5 구역 (supple J 가 쓰는 것) ----------
-#   정본 8 구역을 묶은 것 : Z1 / Z2+Z3 / ZI / Z4 / Z5+Z6+Z7 — 새 경계를 만들지 않았다.
+# ---------- 2b) the common five zones, as used by Supplementary J ----------
+#   These group the canonical eight: Z1 / Z2+Z3 / ZI / Z4 / Z5+Z6+Z7. No new boundary is introduced.
 Z5ORD = ["근위 1-3", "근위 4-17", "내부", "원위 11-22", "원위 1-10"]
 P5 = pair_table("z5", Z5ORD)
 P5.to_csv(os.path.join(HERE, "FIG5V2_PAIRZONE5.tsv"), sep="\t", index=False, float_format="%.5f")
@@ -162,7 +162,7 @@ SM5 = pd.DataFrame(rows5)
 SM5.to_csv(os.path.join(HERE, "FIG5V2_ZONE5.tsv"), sep="\t", index=False, float_format="%.6g")
 P("   [저장] FIG5V2_PAIRZONE5.tsv · FIG5V2_ZONE5.tsv")
 
-# ---------- ③ flank 전달은 잴 수 있나 ----------
+# ---------- 3) can transmission in the flank be measured ----------
 P()
 P("[③ flank 전달] 0–2 kb / 2–50 kb 가 전달되는지")
 FH = pd.read_csv(T + "FLANK_METH_HAP_A0_CLEAN.tsv", sep="\t")

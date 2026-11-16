@@ -1,10 +1,10 @@
 #!/bin/bash
-# 문턱 5 판 m6A·CpG 재추출 — 코드 fsmeth_v12c.py (f1b83605) · 옛 폴더는 건드리지 않음
+# Extract m6A and CpG at the 5-site threshold, with fsmeth_v12c.py (f1b83605).
 export PATH=$PATH:~/miniconda3/bin:~/bin; cd ~; H=$(hostname)
 for d in ~/fsmeth_v12c ~/pbmeth_v12d ~/pbft_v12b; do [ -e $d ] && { echo "이미 있음 $d"; exit 1; }; done
 D=~/aog8v12fs3 CFG=AOJV_FS LABEL=UCSC_ONT_FIBERSEQ OUT=~/fsmeth_v12c FINAL="~/fsfinal_v12c/AO_G8_UNITS_$H.final.tsv" python3 ~/fsmeth_v12c.py > ~/fsmeth_v12c.run.log 2>&1
 D=~/aog8v12pb2 CFG=AOJV_PB LABEL=PACBIO_FIBERSEQ OUT=~/pbmeth_v12d FINAL="~/pbfinal_v12b/AO_G8_UNITS_$H.final.tsv" python3 ~/fsmeth_v12c.py > ~/pbmeth_v12d.run.log 2>&1
-# ft 재호출판 (원자료 m6A 없는 두 개체가 이 노드에 있을 때만)
+# the fibertools recall version, only where the two individuals whose raw data has no m6A are on this node
 for s in HG03672 HG02624; do
   [ -f ~/aog8v12pb2/sam/$s.AOJV_PB.sam ] || continue
   mkdir -p ~/pbft_v12b; cp -r ~/pbft_v12/rg ~/pbft_v12b/ 2>/dev/null

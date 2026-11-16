@@ -1,33 +1,33 @@
 # -*- coding: utf-8 -*-
 # → pubspan2_pairs.tsv
-#   단계 : S1 A 상류
+#   Step: S1 A upstream.
 #   Method document : analysis/METHOD_CONSENSUS_MAP_G8_REBUILD.md
 
 # -*- coding: utf-8 -*-
-# 짝 목록 v3 — 사용자 규칙 두 개를 넣는다
-#   ① 관통 read 는 유닛을 덜 셀 수 있다 (blastn 이 유전자 HSP 를 놓치면 그 유닛이 사라진다)
-#      그래서 유닛 수만 보지 말고 길이 ÷ 유닛길이(2,240) 로도 대본다
-#   ② 관통 후보가 여럿이면 가장 잘 맞는 것을 쓴다 (±1 안에서만 고르지 않는다)
-#   짝짓기 점수 = |길이차(유닛 환산)| 을 1순위, |유닛수차| 를 2순위
-#   정본 유닛 수도 조립본 fasta 를 units_of() 로 직접 센 값을 쓴다 (관통과 같은 방법)
+# The pair list, with two further rules:
+#   1) An array-spanning read can undercount units: if blastn misses a gene HSP that unit disappears,
+#      so the pairing also compares length divided by the unit length of 2,240, not the unit count alone.
+#   2) Where several spanning reads are candidates, the best-matching one is used, rather than only those within +-1.
+#   The pairing score ranks on the absolute length difference in units first, and the absolute unit-count difference second.
+#   The canonical unit count is also counted directly from the assembly fasta with units_of(), the same way as for the spanning read.
 import io, os, collections
 
 V = os.environ["RDNA_V11"]
 S = os.path.dirname(os.path.abspath(__file__))
 UNIT = 2240.0
 
-# 지도 UNIT 개수 (비교용)
+# the unit count from the map, for comparison
 cnt = collections.Counter()
-f = io.open(os.path.join(V, r"03_maps\g8canonv10\CONSENSUS_MAP_G8_full.tsv"), encoding="utf8")
+f = io.open(os.path.join(V, r"03_maps/g8canonv10/CONSENSUS_MAP_G8_full.tsv"), encoding="utf8")
 h = f.readline().rstrip("\n").split("\t"); ix = {k: i for i, k in enumerate(h)}
 for x in f:
     r = x.rstrip("\n").split("\t")
     if r[ix["seg_type"]] == "UNIT":
         cnt[(r[0], r[1])] += 1
 
-# 정본 슬롯 -> 파일
+# canonical slot -> file
 src = {}
-for x in io.open(os.path.join(V, r"02_canonical\hap_seq_node_v8.tsv"), encoding="utf8"):
+for x in io.open(os.path.join(V, r"02_canonical/hap_seq_node_v8.tsv"), encoding="utf8"):
     r = x.rstrip("\n").split("\t")
     if len(r) >= 3:
         src[(r[0], r[1])] = r[2]
@@ -41,8 +41,8 @@ def rd(fn):
     return d
 
 
-measured = rd("canon_units.tsv")        # 정본 조립본 : 유닛수, bp
-cand = rd("cmp4d_units.tsv")            # 관통 후보  : 유닛수, bp
+measured = rd("canon_units.tsv")        # canonical assembly: unit count, bp
+cand = rd("cmp4d_units.tsv")            # spanning candidate: unit count, bp
 
 body = lambda fn: fn.split("__")[-1]
 
@@ -61,7 +61,7 @@ for fn, (n, l) in cand.items():
         continue
     span[body(fn).split("_")[1]].append((fn, n, l))
 
-# 지도 vs 조립본 실측 차이
+# the measured difference between the map and the assembly
 dif = collections.Counter()
 for (smp, slot), fn in src.items():
     a = cnt.get((smp, slot), 0); b = measured.get(fn, (0, 0))[0]
@@ -91,9 +91,9 @@ for p in pairs:
     by[p[0]].append(p)
 
 out = []
-# 개체 안에서 (슬롯 x 후보) 를 모두 만들고 잘 맞는 것부터 1:1 로 붙인다.
-#   강제로 붙이지 않는다 — 문턱(길이 1 유닛 이내 또는 유닛수 +-1) 을 넘으면 안 붙이고 사유를 남긴다
-#   (후보 1 개인 개체의 두 번째 슬롯이 엉뚱한 후보를 먹는 것을 막는다)
+# Within an individual every (slot, candidate) pair is formed and matched one to one, best match first.
+#   No match is forced: beyond the threshold (within one unit of length, or +-1 in unit count) the pair is left unmatched and the reason recorded,
+#   which stops the second slot of an individual with one candidate from taking the wrong one.
 for smp, ps in by.items():
     combos = []
     for smp2, slot, kd, nu, lu, fn in ps:

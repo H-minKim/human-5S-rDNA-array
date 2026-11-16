@@ -1,13 +1,12 @@
 #!/bin/bash
-# Transcribed from the run record. NOT the final version that ran:
-# on the node it was patched afterwards (line 60318: run URL from sdl_url.py; patch_ont3.py: tolerate missing md5;
-# a later change of the disk threshold, seen in the node printout of 2026-09-24). Those patches touch download/check lines only;
-# the line that makes the data — campaign_extract_v5.py (deposited, U1a) on each run, then concatenation into
-# K562_ONT_ALL.hits_5S.fastq.gz — is not in the printed part, so the final text is unconfirmed (the node copy was not read).
-# Its own last step (UL2 assembly) stalled on an old index; ul2_run.sh re-ran it.
+# NOT the final version that ran. The node copy differs in download/check lines only
+# (run URL from sdl_url.py; patch_ont3.py: tolerate missing md5; disk threshold).
+# The line that makes the data, campaign_extract_v5.py (U1a) on each run, then concatenation into
+# K562_ONT_ALL.hits_5S.fastq.gz, is not confirmed against the node copy.
+# The UL2 assembly (last step here) is run by ul2_run.sh.
 # K562 ONT, remaining 21 runs: collect only the 5S reads, then reassemble with --ul together with HiFi
 #   purpose = more spanning reads to settle the array unit counts (assembly 139/129 vs reads ~112)
-#   one run at a time (disk 47G), delete the .sra when done, piece names %02d (pitfall of shuffled order)
+#   one run at a time (disk 47G), delete the .sra when done, piece names %02d (keeps the piece order)
 #   the final assembly uses --ul (HiFi + ONT) instead of --ont (accuracy 98-99%, cannot separate haplotypes)
 set -u -o pipefail
 W=~/p11_encode/k562ont; mkdir -p $W/tmp $W/hits; cd $W

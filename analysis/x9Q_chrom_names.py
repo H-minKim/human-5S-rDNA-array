@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
-# 접근번호 → 염색체 번호 표
-#   자료 폴더에는 유인원·애기장대의 염색체 이름이 없고 접근번호만 있었다(제브라·금화조는 이름이 있다).
-#   NCBI eutils esummary(db=nuccore) 로 확인해 적는다 — 추정하지 않는다. 조회일 2026-10-06.
+# A table mapping accession to chromosome number.
+#   The data folder holds no chromosome names for the great apes or Arabidopsis, only accessions; the zebrafish and zebra finch do have names.
+#   The names are confirmed through NCBI eutils esummary (db=nuccore) and written down rather than inferred. Queried 6 October 2026.
 #     https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=nuccore&id=<accession>&retmode=json
-#   검산 : 같은 조회에서 받은 서열 길이(slen)가 우리 표의 염색체길이와 글자까지 같아야 한다.
-#   산출 : tables/CHROM_NAMES.tsv
+#   Check: the sequence length (slen) returned by that same query must match the chromosome length in our table exactly.
+#   Output: tables/CHROM_NAMES.tsv
 import io, os, sys
 import pandas as pd
 
@@ -16,7 +16,7 @@ def _need(k):
     v = _os_need.environ.get(k)
     if not v:
         _sys_need.exit("environment variable %s is not set (the deposited copy has no default; "
-                       "see README.md, section 'How to run it')" % k)
+                       "see README.md, section 'Environment variables')" % k)
     return v
 
 
@@ -28,7 +28,7 @@ try:
 except Exception:
     pass
 REASON = "접근번호→염색체 번호(NCBI esummary 2026-10-06)"
-# (접근번호, 종, NCBI 가 적은 organism, 염색체, NCBI slen)
+# (accession, species, the organism as NCBI records it, chromosome, NCBI slen)
 ROWS = [("CM054679.2", "수마트라오랑우탄", "Pongo abelii", "chr1", 233795519),
         ("CM054630.2", "보르네오오랑우탄", "Pongo pygmaeus", "chr1", 230807400),
         ("CM055446.2", "고릴라", "Gorilla gorilla gorilla", "chr1", 243847345),

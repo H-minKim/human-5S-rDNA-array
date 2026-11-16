@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-# read unit insertions/deletions, full census v2 (2026-09-16): find the junction directly with the flank and use it as an anchor
-#   Differences from v1
+# read unit insertions/deletions, full census: find the junction directly with the flank and use it as an anchor
 #   (a) does not rely on the TUC array interval (TUC is an alignment to a 40-unit tandem reference, so on long reads the interval stops inside)
 #   (b) the tail before the first gene and the tail after the last gene of the read (each <=20kb) are aligned to that individual's flank (flank_final2, 20kb on the junction side),
 #       distal tail -> distal flank (L_), proximal tail -> proximal flank (R_), and if it reaches the junction end of the flank (<=JTOL) the junction is confirmed
@@ -8,7 +7,6 @@
 #   (d) if the distance junction -> end of the first (last) gene - the canonical end piece (distal off_prox, proximal off_dist) = k x 2240 +-KTOL,
 #       k empty units + a junction token (JD/JP). Token pair = score JSC, counted as anchor ANCH units. Tokens cannot pair with units
 #   (e) positive control: on reads without events, -1/+1 and -2 at a random position + right next to the junction -> record the position (canonical number, distance to the end)
-#   The rest (gene splitting, empty units, breaks, variants, DP, slot calls, event acceptance, negative control) is the same as v1.
 #   Arguments: number of workers [list of individuals (comma separated), pilot]
 import io, os, re, sys, gzip, glob, random, socket, subprocess, collections, statistics, multiprocessing
 NL = chr(10); TAB = chr(9); H = os.path.expanduser("~"); hn = socket.gethostname()

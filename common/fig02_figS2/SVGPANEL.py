@@ -203,7 +203,7 @@ def _ink_x(g, skip_above=None):
     return (min(xs), max(xs)) if xs else None
 
 
-REGION = "mid+ink"        # midline region, widened up to EXT only on the side where its own ink spills over ('mid' = old rule)
+REGION = "mid+ink"        # midline region, widened up to EXT only on the side where its own ink spills over
 EXT = 40.0
 PAD = 3.0
 
@@ -499,11 +499,6 @@ def needed_defs(root, g):
         i = e.get("id")
         if i and i not in byid: byid[i] = e
     inside = {e.get("id") for e in g.iter() if e.get("id")}   # what is already inside g is not fetched
-    # Deferred fix (2026-10-19 decision 'fit it in the next time you re-render for another reason'): need.pop() below takes from a set, so
-    #   the clipPath order changes from run to run depending on PYTHONHASHSEED -> the composite md5 varies even with the same content (main_en 3da9c603c4 vs 47992e07ea).
-    #   Fix = sort the order of taking (for example use a list with need = sorted(...) or sort order by id). Until then, compare versions by png.
-    #   Until then, do not use the svg version hash either (, the shared svg version-hash tool): if ids are renumbered in order of appearance and the definition order changes, it breaks.
-    #   The number of ids does not catch it either (swapping two definitions still gives 606,  test). After the fix, record the version hash and the png md5 together.
     need, got, order = _ref_ids(g) - inside, set(inside), []
     while need:
         i = need.pop()
@@ -513,7 +508,7 @@ def needed_defs(root, g):
         if e is None: continue
         order.append(copy.deepcopy(e))          # the original tree is not touched
         need |= (_ref_ids(e) - got)
-    # fix (user 'redraw it now', the deferred fix above): export sorted by id instead of the order taken (set order, depends on PYTHONHASHSEED) -> deterministic output
+    # export sorted by id, not in the order taken (need.pop() takes from a set, so that order depends on PYTHONHASHSEED) -> deterministic output
     return sorted(order, key=lambda e: e.get("id") or "")
 
 

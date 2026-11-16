@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
-# 5S array : read x 유닛 메틸 행렬 — 종 공통판 (zf_units.py 일반화, 2026-09-11)
-#   유닛 경계 = cmsearch 5S hit 시작점 (array 안 이웃 hit 시작 사이 = 유닛 하나) — bp/주기 환산 금지
-#   맥락 = 참조 서열로 판정 (CG / CHG / CHH). + 가닥 C : 뒤 1 = G -> CG, 뒤 2 = G -> CHG, 아니면 CHH
-#                                           - 가닥 (참조 G) : 앞 1 = C -> CG, 앞 2 = C -> CHG, 아니면 CHH
-#   호출 = mod_qual >= 0.5 -> 그 변형 (m = 5mC · h = 5hmC). 한 자리에 m 행과 h 행이 따로 온다 (modkit extract full)
-#   MAPQ 로 거르지 않는다 (탠덤 array 는 mapq0 이 정상) — mapq 열로 남긴다
-#   입력 : --fa 참조 · --bed array BED(0-based) · --tbl cmsearch tblout(쉼표로 여럿) · --samples 쉼표
-#          --bam 경로틀({s}=표본) · --meth modkit extract full tsv 경로틀({s}) · --out 산출 폴더
-#   산출 : <표본>.read_unit.tsv · 5S_unit_summary.tsv · 5S_array_summary.tsv
+# 5S array: read x unit methylation matrix, the cross-species version.
+#   Unit boundary = the start of a cmsearch 5S hit; one unit spans two neighbouring hit starts within an array. Never convert bp / period into a unit count.
+#   Context is decided from the reference sequence (CG / CHG / CHH). For a C on the + strand: next base G -> CG, second next G -> CHG, otherwise CHH.
+#                                           For the - strand (reference G): previous base C -> CG, second previous C -> CHG, otherwise CHH.
+#   A call is mod_qual >= 0.5 for that modification (m = 5mC, h = 5hmC). modkit extract full emits separate m and h rows for the same position.
+#   No MAPQ filter (mapq 0 is normal in a tandem array); mapq is kept as a column instead.
+#   Inputs: --fa reference, --bed array BED (0-based), --tbl cmsearch tblout (comma-separated), --samples comma-separated.
+#          --bam path template ({s} = sample), --meth path template for the modkit extract full tsv ({s}), --out output folder.
+#   Outputs: <sample>.read_unit.tsv, 5S_unit_summary.tsv, 5S_array_summary.tsv.
 # MIT License · Copyright (c) 2026 Hungmin Kim
 import io
 import os
@@ -89,9 +89,9 @@ for smp in a.samples.split(","):
     for L in r.stdout.splitlines():
         x, q = L.split(TAB)
         MQ[x] = int(q)
-    # 흘려 읽기 (애기장대 모든 맥락은 수천만 행이라 자리를 다 메모리에 둘 수 없다)
-    #   입력은 read_id · ref_position 순으로 정렬돼 있어야 한다 (호출 쪽에서 sort). 같은 자리의 m · h 행을 모아 한 자리로 센다
-    #   정렬 검사 : 끝난 read 가 다시 나오거나 read 안에서 위치가 뒤로 가면 멈춘다 (조용한 이중 계산 방지)
+    # Streamed: all contexts in Arabidopsis run to tens of millions of rows, so the positions cannot all be held in memory.
+    #   The input must be sorted by read_id then ref_position (the caller sorts it). The m and h rows for one position are collected and counted as a single site.
+    #   Sort check: stop if a finished read reappears or if a position moves backwards within a read, which would silently double-count.
     RU = collections.defaultdict(lambda: [0, 0, 0.0, 0])  # (read, array, unit, ctx) -> n, n_5mC, sum_p5mC, n_5hmC
 
     def add_site(rid, chrom, pos0, sd, d):

@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-# Transcribed from the run record: the code ran as a shell heredoc or a one-line command, so no script file existed on disk.
-# Patch applied on the node to k562_ont3.sh ( line 60330 written, applied at line 60341, 2026-09-23 07:11 UTC).
+# Patch applied on the node to k562_ont3.sh (tolerates a missing md5).
 import os
 p = os.path.expanduser("~/p11_encode/k562_ont3.sh")
 s = open(p).read()

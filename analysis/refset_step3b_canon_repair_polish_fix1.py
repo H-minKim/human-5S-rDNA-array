@@ -1,20 +1,20 @@
 # -*- coding: utf-8 -*-
-# 백본 폴리싱 합의
-#   단계 : ③b 정본 수리 (수정1 · 2 자리)
-# Reason: no machine-specific path is left in the code. A default would leave such a path on this line, so none is set.
+# The backbone-polishing consensus.
+#   Step 3b: canonical-unit repair (revision 1, 2 sites).
+# NODE_HOME has no default.
 #       to run : export NODE_HOME=/home/<user>
 
 # -*- coding: utf-8 -*-
-# [v11-수정1 사본 2026-09-16 : 지도 g8canonv10 · 정본 cmp4d_v11 · 자리 = 앵커 직접 지정 (HG00133 h2 119/129 · HG03270 h1 40/47). 그 밖 불변]
-# 백본 폴리싱 합의 (2026-09-12) — mafft MSA 판이 탠덤에서 키메라를 만들어 교체.
-#   방식(racon 과 같은 원리 · racon/medaka 가 노드에 없어 직접 구현)
-#     ① 조각 중 길이 중앙값 read 를 백본으로 고른다
-#     ② 나머지 조각을 minimap2 로 백본에 붙인다 (map-ont · 이차정렬 없음)
-#     ③ 백본 자리마다 read 염기 다수결 (치환·결실·삽입 모두 반영) -> 다듬은 서열
-#     ④ 다듬은 것을 새 백본으로 삼아 한 번 더 (2 회)
-#   MSA 를 안 쓰므로 유닛 하나만큼 미끄러진 read 가 합의를 오염시키지 않는다.
-#   검정 : 앵커 유닛 구간(앞 2kb · 뒤 2kb)을 조립본과 맞대어 염기 정확도를 잰다.
-#   인자 : 조각폴더 출력폴더
+# Revision 1: map g8canonv10, canonical cmp4d_v11, with the sites given as explicit anchors (HG00133 h2 119/129 and HG03270 h1 40/47). Everything else unchanged.
+# The backbone-polishing consensus. A multiple alignment with mafft produces chimeras in a tandem array and is not used.
+#   The method follows the same principle as racon, implemented directly because racon and medaka are not installed on the node:
+#     1) the fragment of median length becomes the backbone;
+#     2) the remaining fragments are aligned to it with minimap2, map-ont and no secondary alignments;
+#     3) a majority over the read bases at each backbone position, taking substitutions, deletions and insertions, gives the polished sequence;
+#     4) the polished sequence becomes the new backbone and the process repeats once, for two rounds in all.
+#   Because no multiple alignment is used, a read offset by one whole unit cannot contaminate the consensus.
+#   Test: the anchor intervals, 2 kb at each end, are compared with the assembly to measure base accuracy.
+#   Arguments: fragment folder, output folder.
 import io
 import os
 import re
@@ -67,7 +67,7 @@ for L in f:
 SITE = {}
 for (smp_, sl_, aL_, aR_) in [("HG00133", "2", 119, 129), ("HG03270", "1", 40, 47)]:
     v = dict((x[0], x) for x in U[(smp_, sl_)])
-    gsum = sum(v[a + 1][1] - v[a][2] - 1 for a in range(aL_, aR_))      # 앵커 사이 빈틈 합 (기록용)
+    gsum = sum(v[a + 1][1] - v[a][2] - 1 for a in range(aL_, aR_))      # the total gap between the anchors
     SITE[(smp_, sl_, aL_)] = (v[aL_][1], v[aR_][2], gsum)
 
 
@@ -96,8 +96,8 @@ def gene_ends(seq, tag):
         else:
             s_, e_ = b - (GLEN - qe), a + (qs - 1)
         hits.append((max(1, s_), min(len(seq), e_), int(g[2]),
-                     (qs - 1) + (GLEN - qe)))   # 네 번째 = 확장량
-    # F 방식 (2026-09-13) — 1kb 격자를 구간 겹침 + 조각 판정으로
+                     (qs - 1) + (GLEN - qe)))   # fourth field = the amount of extension
+    # Method F: a 1 kb grid, by interval overlap plus a per-fragment call.
     FRAG = 5
     LOx = 2100
     keep = []
@@ -129,7 +129,7 @@ def brk(ends):
 
 
 def polish(backbone, reads, tag):
-    """백본에 read 를 붙여 자리별 다수결로 다듬는다 (치환·결실·삽입)"""
+    """align the reads to the backbone and polish by per-position majority vote (substitution, deletion, insertion)"""
     bf = os.path.join(W, "b_%s.fa" % tag)
     io.open(bf, "w", newline=NL).write(">b" + NL + backbone + NL)
     qf = os.path.join(W, "q_%s.fa" % tag)

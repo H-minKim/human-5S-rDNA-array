@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
-# 유인원 5S array 유닛별 변이표 (바깥군 대조용)
-#   변이 토큰은 전부 **그 종의 정본 유닛**(02_reference_units) 대비다. 사람 정본 대비가 아니다.
-#   ① READLEVEL : read(=분자) × 유닛. 원본 06_units_from_reads/*.read_unit_seq.tsv 의 varlist 를 그대로 옮긴다
-#      (mm2 로 종 정본 유닛에 정렬한 뒤 뽑은 토큰 · 형식 `<위치><염기>` 치환 · `<위치>I<n>`·`<위치>D<n>` 삽입/결실)
-#   ② CONSENSUS : 유닛 자리(array_pos) × read 합의. 07_consensus_from_reads 의 varlist_cons · varlist_strict
-#   ③ COORDS : array_pos ↔ 염색체 좌표 · 가닥 (방향 규약 근거)
-#   ④ REFUNITS : 종별 정본 유닛 FASTA(+ 사람 CHM13)
-#   유닛 수 규약 : 온전 유닛만 · array_pos 1 = 첫 온전 유닛(v11 과 같음). 양 끝 부분 유닛은 세지 않았다.
+# Per-unit variant tables for the great ape 5S arrays, for use as an outgroup comparison.
+#   Every variant token is relative to that species' own reference unit, from 02_reference_units, and never to the human canonical unit.
+#   1) READLEVEL: read, that is molecule, by unit. The varlist of the source 06_units_from_reads/*.read_unit_seq.tsv is carried across unchanged
+#      (the tokens taken after aligning to that species' reference unit with minimap2, in the form <position><base> for a substitution and <position>I<n> or <position>D<n> for an insertion or deletion).
+#   2) CONSENSUS: unit position (array_pos) by read consensus, taking varlist_cons and varlist_strict from 07_consensus_from_reads.
+#   3) COORDS: array_pos against chromosome coordinate and strand, which is the basis of the orientation convention.
+#   4) REFUNITS: the reference unit FASTA per species, plus human CHM13.
+#   Unit-count convention: complete units only, with array_pos 1 the first complete unit, as in v11. The partial units at either end are not counted.
 # MIT License · Copyright (c) 2026 Hungmin Kim
 import csv
 import glob
@@ -23,7 +23,7 @@ REFLEN = {}
 for r in csv.DictReader(io.open(R + "02_reference_units/REFERENCE_UNITS_INDEX.tsv", encoding="utf8"), delimiter=T):
     REFLEN[r["species_key"]] = r["refunit_len"]
 
-# ① read 수준
+# 1) the read level
 o = io.open(OUT + "APE_UNIT_VARIANTS_READLEVEL.tsv", "w", encoding="utf8", newline="\n")
 o.write(T.join(["species", "sample", "molecule_id", "slot", "array_id", "array_pos", "unit_len", "canon_len",
                 "spans_unit", "frac_covered", "mapq", "n_var", "variant"]) + "\n")
@@ -37,7 +37,7 @@ for sp in APES:
             n1 += 1
 o.close()
 
-# ② 유닛 자리 합의 수준
+# 2) the per-unit-position consensus level
 o = io.open(OUT + "APE_UNIT_VARIANTS_CONSENSUS.tsv", "w", encoding="utf8", newline="\n")
 o.write(T.join(["species", "sample", "slot", "array_id", "array_pos", "canon_len", "depth_median", "n_reads_span",
                 "n_var_cons", "variant_cons", "n_var_strict", "variant_strict", "n_var_asm", "concordance_strict"]) + "\n")
@@ -51,7 +51,7 @@ for sp in APES:
             n2 += 1
 o.close()
 
-# ③ 좌표 (방향 근거) — 사람 CHM13 포함
+# 3) the coordinates, the basis of the orientation, including human CHM13
 o = io.open(OUT + "APE_UNIT_COORDS.tsv", "w", encoding="utf8", newline="\n")
 o.write(T.join(["species", "array_id", "array_pos", "unit_len", "chrom", "chrom_start", "chrom_end",
                 "array_strand", "canon_start", "canon_end"]) + "\n")
@@ -64,7 +64,7 @@ for sp in APES + ["human_CHM13v2"]:
             n3 += 1
 o.close()
 
-# ④ 종별 정본 유닛 FASTA
+# 4) the reference unit FASTA per species
 keep, name = [], None
 for L in io.open(R + "02_reference_units/REFERENCE_UNITS_ALL.fa", encoding="utf8"):
     if L.startswith(">"):

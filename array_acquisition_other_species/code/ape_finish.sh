@@ -1,8 +1,8 @@
 #!/bin/bash
-# 유인원 마무리 지휘 (로컬 백그라운드)
-#   ① 세 노드의 선별(각 2 종)이 끝나기를 기다린다
-#   ② 그 노드가 맡은 종의 조립본·cmsearch 표·구조표·modkit 을 노드에 갖춰 준다 (선별 결과는 그 노드에 있으니 옮기지 않는다)
-#   ③ 노드에서 ape_align.sh 두 종을 차례로 : fastq(MM/ML) -> 정렬 -> array read BAM -> modkit -> read x 유닛 행렬
+# Driving the ape runs to completion, in the background locally:
+#   1) wait for the selection on all three nodes, two species each, to finish;
+#   2) put that node's assembly, cmsearch table, structure table and modkit output in place on it (the selection output is already there and is not moved);
+#   3) run ape_align.sh for its two species in turn on the node: fastq with MM/ML, then alignment, then the array read BAM, then modkit, then the read x unit matrix.
 set -u
 K=$NODE_KEY
 S="-n -i $K -o StrictHostKeyChecking=no -o ConnectTimeout=25"
@@ -24,7 +24,7 @@ for i in $(seq 1 400); do
 done
 echo "== 선별 끝 $(date -u +%H:%M) UTC · flowcell 별 (이름 · 걸린 read · MM 있는 read · 종료코드 · 초)"
 for ip in $W $B $A; do ssh $S ubuntu@$ip 'cat ~/xsp/ape/*/*.done 2>/dev/null | sort'; done
-# 작은 파일 옮기기 (구조표 · cmsearch 표 · modkit)
+# moving the small files: the structure table, the cmsearch table and modkit
 for ip in $A $B; do
   ssh $S ubuntu@$W "tar cf - -C ~/xsp/struct ALL.struct.tsv" | ssh $R ubuntu@$ip 'mkdir -p ~/xsp/struct && tar xf - -C ~/xsp/struct'
   if [ "$(ssh $S ubuntu@$ip 'ls ~/xsp/tools/modkit 2>/dev/null | wc -l')" -lt 1 ]; then

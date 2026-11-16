@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
-# 대주제 A 논문용 그림 ① — array 마다 유닛 β 분포 곡선 (막대그래프가 아니라 분포)
+# Figure 1 for topic A: the distribution of unit beta per array, drawn as a curve rather than as bars.
 # The layout follows that of human Fig. 3 A4 :
-#     · β 0~1 을 50 칸(폭 0.02) 히스토그램 · y = 그 칸에 든 유닛 비율(밀도 x 칸폭) · 선형축
-#     · 봉우리·꺼진 몫은 표에서 읽어 그 자리에서 쓴다 — 하드코딩 없음
-#   층 : read x 유닛(분자) · β = n_5mC/n_calls (하드콜 ML>=128) · context=CG
-#   여과 : 잘 덮인 유닛만(n_calls >= array 중앙값 x 0.5) · 보노보 guppy 6.3.8 만 · 시아망 제외
-#   부류 세 가지를 나눠 그린다 :
-#     (1) 유인원 5 종 — array 안에서 유닛이 이봉
-#     (2) 애기장대 — 전부 고메틸(단봉)
-#     (3) 금화조·제브라피시 — array 안은 단봉인데 array 끼리 갈린다(array 수준 이봉)
-#   산출 : figures/FigA_unit_beta_distribution.{png,svg,pdf} · tables/FIGDATA_A_unit_beta_hist.tsv · tables/FIGDATA_A_array_summary.tsv
+#     · beta from 0 to 1 in 50 bins of width 0.02; y is the fraction of units in that bin, the density times the bin width, on a linear axis.
+#     · The peaks and the hypomethylated fraction are read from the table at the point of use; nothing is hard-coded.
+#   Layer: read x unit, that is molecules, with beta = n_5mC / n_calls as a hard call at ML >= 128, in CG context.
+#   Filter: well-covered units only, n_calls >= 0.5 times the array median; the bonobo on guppy 6.3.8 alone; the siamang excluded.
+#   Three classes are drawn separately:
+#     1) five great ape species, where the units within an array are bimodal;
+#     2) Arabidopsis, uniformly highly methylated and unimodal;
+#     3) zebra finch and zebrafish, unimodal within an array but separating between arrays, that is bimodal at the array level.
+#   Outputs: figures/FigA_unit_beta_distribution.{png,svg,pdf}, tables/FIGDATA_A_unit_beta_hist.tsv and tables/FIGDATA_A_array_summary.tsv
 import io, os, sys, glob, collections
 import numpy as np
 import pandas as pd
@@ -26,7 +26,7 @@ def _need(k):
     v = _os_need.environ.get(k)
     if not v:
         _sys_need.exit("environment variable %s is not set (the deposited copy has no default; "
-                       "see README.md, section 'How to run it')" % k)
+                       "see README.md, section 'Environment variables')" % k)
     return v
 
 
@@ -56,7 +56,7 @@ def P(s=""):
     LOG.flush()
 
 
-# ---------------------------------------------------------------- 자료
+# ---------------------------------------------------------------- data
 V2 = pd.read_csv(NEW + "/tables/OTHERSP_READUNIT_PERARRAY_v2_bonobo638.tsv", sep="\t")
 V2 = V2[V2.array_id.notna() & (V2.종 != "사람 v11 (참고)")]
 BC = pd.read_csv(NEW + "/tables/BONOBO_READ_BASECALLER.tsv", sep="\t")
@@ -75,7 +75,7 @@ SPKEY = {"고릴라": "gorilla_mGorGor1", "보노보": "bonobo_mPanPan1", "침�
 
 
 def arr_label(aid):
-    """array 이름표 — 염색체 이름이 자료에 있는 종만 이름으로, 없으면 접근번호 그대로"""
+    """array label: the chromosome name for species whose data carry chromosome names, otherwise the accession as is"""
     tail0 = aid.split("__")[1]
     acc0, s0, e0 = tail0.rsplit("_", 2)
     if aid in ZNAME and isinstance(ZNAME[aid], str):
@@ -85,17 +85,17 @@ def arr_label(aid):
     k = (acc, int(s), int(e))
     if k in FNAME:
         return FNAME[k]
-    return acc                                   # 이름 자료 없음 → 접근번호
+    return acc                                   # no name available, so the accession is used
 
 
-# ---------------------------------------------------------------- read x 유닛 적재 → array 마다 히스토그램
+# ---------------------------------------------------------------- load read x unit, then one histogram per array
 HIST, SUMM = {}, []
 for sp_ko, sp in SPKEY.items():
     fs = sorted(glob.glob(B + "/03_reads/%s/*.read_unit.tsv" % sp) +
-                glob.glob(B + "/03_reads/%s/*.read_unit.tsv.gz" % sp))   # 애기장대는 .gz 로 보관돼 있다
+                glob.glob(B + "/03_reads/%s/*.read_unit.tsv.gz" % sp))   # the Arabidopsis table is stored gzipped
     D = pd.concat([pd.read_csv(f, sep="\t") for f in fs], ignore_index=True)
     D = D[D.context == "CG"].copy()
-    med = D.groupby("array_id").n_calls.transform("median")      # 모든 read 로 중앙값 먼저
+    med = D.groupby("array_id").n_calls.transform("median")      # the median is taken over all the reads first
     D = D[D.n_calls >= 0.5 * med].copy()
     if sp == "bonobo_mPanPan1":
         D = D[~D.read_id.isin(B637)].copy()
@@ -128,7 +128,7 @@ os.makedirs(TMP, exist_ok=True)
 H.to_csv(TMP + "/FIGDATA_A_unit_beta_hist.tsv", sep="\t", index=False, encoding="utf8", lineterminator="\n")
 S.to_csv(TMP + "/FIGDATA_A_array_summary.tsv", sep="\t", index=False, encoding="utf8", lineterminator="\n")
 
-# ---------------------------------------------------------------- 그림
+# ---------------------------------------------------------------- figure
 fig = plt.figure(figsize=(16.5, 12.4))
 gs = gridspec.GridSpec(3, 15, figure=fig, height_ratios=[1.0, 1.12, 0.62], hspace=0.62, wspace=2.1,
                        top=0.885, bottom=0.085, left=0.085, right=0.955)
@@ -139,7 +139,7 @@ def draw_curve(ax, aid, color, lw=1.6, label=None, alpha=1.0):
     ax.plot(ctr, HIST[aid], "-", color=color, lw=lw, label=label, alpha=alpha)
 
 
-# (1) 유인원 5 종 — array 안 이봉
+# 1) the five great ape species, bimodal within an array
 for i, ko in enumerate(APES):
     ax = fig.add_subplot(gs[0, 3 * i:3 * i + 3])
     r = S[S.종 == ko].iloc[0]
@@ -162,11 +162,11 @@ for i, ko in enumerate(APES):
 fig.text(0.012, 0.930, "a   유인원 5 종 — array 안에서 유닛이 두 봉우리 (꺼진 분자 + 켜진 분자)",
          fontsize=12.5, fontweight="bold", va="top")
 
-# (2)(3) 애기장대 · 금화조 · 제브라
+# 2) and 3) Arabidopsis, zebra finch and zebrafish
 fig.text(0.012, 0.625, "b   애기장대는 전부 고메틸(단봉) · 금화조·제브라피시는 array 안은 단봉이고 array 끼리 갈린다",
          fontsize=12.5, fontweight="bold", va="top")
 panels = [("애기장대", "#1E8449", slice(0, 5)), ("금화조", "#B7950B", slice(5, 10)), ("제브라피시", "#2471A3", slice(10, 15))]
-OUTLIER = {}        # 이름표는 자료가 정한다 : 그 종 array 평균 β 중앙값보다 0.08 이상 낮은 array
+OUTLIER = {}        # the labelling is set by the data: an array whose mean beta is at least 0.08 below that species' median array
 for ko in ("애기장대", "금화조", "제브라피시"):
     g = S[S.종 == ko]
     OUTLIER[ko] = set(g[g.평균β < g.평균β.median() - 0.08].array_id)
@@ -192,7 +192,7 @@ for ko, col, sl in panels:
         ax.text(0.03, 0.90 - 0.09 * j, "%s  (평균 β %.2f · n=%s)" % (t.이름표, t.평균β, format(t.n_read유닛, ",")),
                 transform=ax.transAxes, fontsize=7.8, color="#B03A2E", va="top")
 
-# (4) array 평균 β — array 수준 갈림
+# 4) the mean beta per array, which separates at the array level
 ax = fig.add_subplot(gs[2, :])
 order = ["제브라피시", "금화조", "애기장대"] + APES[::-1]
 colr = {"애기장대": "#1E8449", "금화조": "#B7950B", "제브라피시": "#2471A3"}

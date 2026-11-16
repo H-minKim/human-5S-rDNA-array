@@ -1,23 +1,22 @@
 # -*- coding: utf-8 -*-
-# 위 배정의 최종 통합
-#   단계 : ① 하플로타입 확정
+# Final integration of the assignments above.
+#   Step 1: fix the haplotypes.
 
 # -*- coding: utf-8 -*-
-# flank read 하플로타입 전역 배정 — 최종 통합 (2026-09-06)
+# Global haplotype assignment for the flank reads: the final integration.
 #
-#  세 근거를 합친다. 우선순위는 증거의 직접성 순이다.
-#    ① 관통(SPAN) read — 한 분자가 flank-to-flank 를 지났다. 가장 직접적
-#    ② 부/모 유래     — 독립 자료. 단 v5 라벨과 이을 때 순도 검사를 통과해야 한다
-#    ③ 변이 지문 사슬  — 지도 varlist 와 read 유닛 변이를 |S∩V|−|S−V| 로 대조
-#                        (chainplace.py/loo2.py 의 검증된 규칙. LOO k=8 에서 100%)
+#  Three lines of evidence are combined, in order of how direct the evidence is:
+#    1) a spanning read, where one molecule crossed from flank to flank: the most direct;
+#    2) inheritance from a parent, an independent dataset, which must pass a purity check when joined to the existing labels;
+#    3) the chain of variant fingerprints, comparing the map's variant list with the read's unit variants as |S intersect V| - |S - V|
+#                        (the validated rule of chainplace.py and loo2.py; leave-one-out accuracy 100% at k = 8).
 #
-#  전역 라벨은 우리 consensus map 의 슬롯(1/2)에 맞춘다.
-#    ①② 는 v5 의 prox 번호를 기준으로 삼았으므로 슬롯과 다를 수 있다.
-#    ③ 은 지도에 직접 붙였으므로 슬롯 그 자체다. 그래서 ③ 이 있으면
-#    그것으로 ①② 의 라벨을 슬롯으로 옮긴다.
+#  The global label is aligned to the slot, 1 or 2, of our consensus map.
+#    Lines 1 and 2 are referenced to the earlier proximal numbering and so may differ from the slot.
+#    Line 3 is aligned to the map directly and so is the slot itself, so where line 3 exists
+#    it is used to carry the labels of lines 1 and 2 onto the slots.
 #
-#  "자료가 있다" 와 "그 자료로 판정이 됐다" 를 분리해서 센다.
-#    (부모 자료 99 개체를 그대로 세어 200/64 라는 틀린 수를 두 번 냈다)
+#  Having the data and having reached a call from it are counted separately.
 import io
 import os
 import collections
@@ -25,7 +24,7 @@ import collections
 S = os.environ["RDNA_S"]
 NL = "\n"
 
-# ---- ①② 의 결과 (hapglobal.py) ----
+# ---- the result of lines 1 and 2, from hapglobal.py ----
 PREV = {}
 for i, L in enumerate(io.open(os.path.join(S, "HAP_READ_GLOBAL.tsv"), encoding="utf8")):
     if i == 0:
@@ -34,7 +33,7 @@ for i, L in enumerate(io.open(os.path.join(S, "HAP_READ_GLOBAL.tsv"), encoding="
     if len(f) >= 6:
         PREV[(f[0], f[1], f[2])] = (f[3], f[4], f[5])
 
-# ---- ③ 변이 지문 사슬 : (개체, side, side_hap) -> 슬롯 ----
+# ---- line 3, the variant fingerprint chain: (individual, side, side haplotype) -> slot ----
 LK = collections.defaultdict(dict)
 MG = collections.defaultdict(dict)
 NRD = collections.defaultdict(dict)
@@ -50,7 +49,7 @@ for p in ("lk_0.tsv", "lk_1.tsv", "lk_2.tsv"):
         MG[f[0]][(f[1], f[2])] = int(f[4])
         NRD[f[0]][(f[1], f[2])] = int(f[5])
 
-# ③ 이 모순 없는 개체만 채택 : prox 두 군이 서로 다른 슬롯, dist 도 마찬가지
+# Line 3 is accepted only for individuals where it is consistent: the two proximal groups fall in different slots, and likewise the distal ones.
 CHAIN = {}
 BAD = []
 for s, d in LK.items():
@@ -64,7 +63,7 @@ for s, d in LK.items():
         continue
     CHAIN[s] = d
 
-# ---- 통합 ----
+# ---- integration ----
 OUT = io.open(os.path.join(S, "HAP_READ_FINAL.tsv"), "w", encoding="utf8", newline=NL)
 OUT.write("sample\tread\tside\tside_hap\tslot\tevidence\tmargin\n")
 n = collections.Counter()
@@ -78,11 +77,11 @@ for (smp, rid, side), (sh, gh, ev) in sorted(PREV.items()):
         slot = CHAIN[smp].get((side, sh), "-")
         mg = MG[smp].get((side, sh), 0)
         e = "chain"
-        # ①② 가 있으면 일치 여부를 기록한다 (교차검증)
+        # where lines 1 and 2 exist, whether they agree is recorded, as a cross-check
         if ev in ("span", "parent") and gh != "-":
             e = "chain+" + ev
     elif ev in ("span", "parent") and gh != "-":
-        # 지문이 없으면 v5 prox 번호 기준 라벨을 그대로 쓴다 (슬롯과 다를 수 있다)
+        # with no fingerprint, the label on the earlier proximal numbering is kept, which may differ from the slot
         slot = gh
         e = ev + "_v5label"
     n[e] += 1
@@ -114,7 +113,7 @@ print("     시도한 개체 : %d · 모순 없이 채택 : %d · 배제 : %d" %
 for s, why in BAD:
     print("       %-11s %s" % (s, why))
 print()
-# 교차검증 : ③ 과 ①② 가 겹치는 개체에서 서로 맞는가
+# cross-check: for individuals covered by both line 3 and lines 1 and 2, do they agree?
 ok = dis = 0
 det = []
 for s in CHAIN:

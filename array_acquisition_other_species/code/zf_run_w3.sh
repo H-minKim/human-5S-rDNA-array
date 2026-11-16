@@ -1,6 +1,6 @@
 #!/bin/bash
 # Zebrafish 5S read and methylation extraction (run where CPU is free)
-#   ① GRCz12tu(NCBI GCA_049306965.1) · modkit 준비  ② zf_extract.sh 실행
+#   1) prepare GRCz12tu (NCBI GCA_049306965.1) and modkit; 2) run zf_extract.sh
 # The two BED files must be uploaded to ~/xsp/zf/ beforehand (made by the preparation script)
 set -u
 X=$HOME/xsp

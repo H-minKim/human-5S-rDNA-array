@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-r"""P08 XB2: fixes the distance definition error of XB
-   XB error: divergent units were removed and the units were renumbered before counting distance => 'distance 1' mixed in pairs that were originally 2-3 apart
-   Fix (same convention as X5): keep the original numbering, and use only pairs whose two ends are both non-divergent
+r"""P08 XB2: distance on the original unit numbering
+   Renumbering the units after removing divergent ones would mix pairs that are 2-3 apart into 'distance 1'
+   Convention (same as X5): keep the original numbering, and use only pairs whose two ends are both non-divergent
    The null uses the same convention: shuffle the order with labels following the units, and apply the same mask after shuffling
    Output: for each of the two sets (all / divergent excluded), the observed curve and its own null band"""
 import os, sys, io, pickle

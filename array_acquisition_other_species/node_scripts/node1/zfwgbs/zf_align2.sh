@@ -1,8 +1,8 @@
 #!/bin/bash
-# 제브라피시 WGBS 정렬 — 작은 발자국판
-#   · --upto 로 앞 800 만 read 쌍만 쓴다(array 평균에는 충분: 전장 약 1.6x, array 800kb 에 read 수천)
-#   · --parallel 2 로 임시파일을 줄인다
-#   · 임시는 zfwgbs/tmp 에 두고, 디스크 25G 미만이면 스스로 멈춘다
+# Zebrafish WGBS alignment, the small-footprint version.
+#   · --upto takes only the first 8 million read pairs, which is enough for an array mean: about 1.6x over the whole genome, which is still thousands of reads over the 800 kb array.
+#   · --parallel 2 reduces the temporary files.
+#   · The temporary files go to zfwgbs/tmp, and the run stops itself below 25 GB of free disk.
 cd ~/zfwgbs
 export PATH=$HOME/zfwgbs/Bismark-0.24.2:$PATH
 mkdir -p bam logs tmp

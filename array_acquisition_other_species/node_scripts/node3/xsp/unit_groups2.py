@@ -1,18 +1,18 @@
 # -*- coding: utf-8 -*-
-# array 안 유닛이 한 종류인가 여러 종류인가 — 2 판 (연관 기반 · 귀무 대조 · 위치 응집 병기)
-#   1 판의 결함 : 변이 패턴이 다르기만 하면 나눠서 사람 array 가 6 그룹으로 갈렸다(무작위 변이도 패턴은 다르다)
-#   판정 기준 : "변이가 블록으로 같이 다니는가"
-#     · 한 종류 array = 변이가 유닛마다 독립적으로 흩어진다 (연관 없음)
-#     · 하위 종류 존재 = 여러 변이가 같은 유닛들에 함께 나타난다 (강한 연관)
-#   방법
-#     1) 다형성 변이 : 유닛의 10~90% 에 있는 변이
-#     2) 변이쌍 연관 phi · |phi| >= 0.8 이면 연결
-#     3) 연결 성분이 3 개 이상이면 '블록'. 가장 큰 블록의 패턴으로 유닛을 나눈다
-#     4) 귀무 대조 : 변이마다 같은 빈도로 유닛을 무작위 재배치해 같은 절차를 NPERM 회 — 우연 블록 수를 적는다
-#     5) 위치 응집 : 그룹이 array 위에서 이어져 있는가(구역 분화) vs 섞여 있는가(유닛 종류)
-#        같은 그룹인 이웃 유닛쌍의 관측/기대 비 + 순열 p
-#   유닛 20 개 미만이면 판정하지 않는다 (빈도 추정이 거칠다)
-#   인자 : 종키 fasta 지도폴더 출력폴더 [셔플 횟수=50]
+# Are the units within an array of one type or several? Version 2, based on association, with a null control and positional clustering reported alongside.
+#   Splitting whenever the variant patterns merely differ is not used: it cuts a human array into 6 groups, since random variants also give different patterns.
+#   The criterion: do the variants travel together as a block?
+#     · In a single-type array the variants are scattered independently across units, with no association.
+#     · The presence of subtypes means several variants appear together in the same units, a strong association.
+#   method
+#     1) A polymorphic variant is one present in 10-90% of units.
+#     2) the association phi between variant pairs; |phi| >= 0.8 links them
+#     3) a connected component of at least 3 counts as a block, and the units are divided by the pattern over the largest block
+#     4) null control: the units are reassigned at random at the same frequency per variant and the whole procedure repeated NPERM times, recording the number of blocks arising by chance
+#     5) Positional clustering: are the groups contiguous along the array (zonation) or interleaved (unit types)?
+#        plus the observed over expected ratio of neighbouring unit pairs in the same group, with a permutation p value
+#   No call is made with fewer than 20 units, the frequency estimates being too coarse.
+#   Arguments: species key, fasta, map folder, output folder, [shuffles = 50].
 # MIT License · Copyright (c) 2026 Hungmin Kim
 import io
 import os
@@ -33,7 +33,7 @@ rc = lambda s: "".join(COMP.get(x, "N") for x in reversed(s))
 
 
 def blocks(cols, n, thr=0.8, minsize=3):
-    # cols : 변이마다 그 변이를 가진 유닛 인덱스 집합 · 연관 |phi| >= thr 로 잇고 성분을 만든다
+    # cols: per variant, the set of unit indices carrying it. They are linked at an association |phi| >= thr and the components built.
     m = len(cols)
     adj = collections.defaultdict(set)
     for i in range(m):
@@ -66,7 +66,7 @@ def blocks(cols, n, thr=0.8, minsize=3):
 
 
 def adjacency_same(lab, order):
-    # array 순서에서 이웃한 두 유닛의 그룹이 같은 횟수
+    # the number of times two neighbouring units in array order fall in the same group
     s = 0
     for a, b in zip(order, order[1:]):
         if lab[a] is not None and lab[a] == lab[b]:
@@ -152,7 +152,7 @@ for fn in sorted(os.listdir(MAPD)):
     pv = (sum(1 for x in nulls if x >= obs) + 1.0) / (len(nulls) + 1.0)
     base.update({"pos_clustering_ratio": "%.2f" % ratio, "pos_clustering_p": "%.3f" % pv,
                  "pos_pattern": "구역 분화(이어져 있음)" if (ratio >= 1.5 and pv <= 0.05) else "섞여 있음"})
-    # 그룹별 참조 유닛
+    # the reference unit per group
     regs, meta = [], []
     for k, (p, mem) in enumerate(grp):
         for i in mem:

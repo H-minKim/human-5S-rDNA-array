@@ -1,31 +1,31 @@
 # -*- coding: utf-8 -*-
-# 정본 flank 검정 (조립본 flank ↔ 정본 양끝이 맞는가)
-#   단계 : 참조세트 검정
-#   포함 판단 : Fig S1 이 주장하는 참조세트 품질의 근거를 내는 검정이라 넣는다.
+# Testing the canonical flanks: do the assembly flanks match the two ends of the canonical sequence?
+#   Step: validating the reference set.
+#   Produces the evidence for the reference-set quality in Supplementary Figure 1.
 
 # -*- coding: utf-8 -*-
-# flank read 만으로 만든 consensus 와 지도 서열을 대조한다 (2026-09-06)
+# Compare a consensus built from the flank reads alone against the map sequence.
 #
-#  묻는 것 (사용자)
-#    "배정된 flank read 의 서열만으로 consensus map 을 만들어,
-#     우리가 아는 read 로 만든 서열과 지도 서열을 비교하자"
+#  The question:
+#    build a consensus map from the sequences of the assigned flank reads alone,
+#     and compare that read-derived sequence with the map sequence.
 #
-#  왜 의미가 있나
-#    지도 서열은 조립본에서 왔다 (공개조립본 64.3% · 우리 hifiasm 33.2% · 관통 2.5%).
-#    read 는 독립 자료다. 둘이 맞으면 지도가 그 개체의 진짜 분자를 담고 있다는 뜻이고,
-#    어긋나면 지도(=조립본)나 read 배정 둘 중 하나가 틀린 것이다.
+#  Why this matters:
+#    the map sequence comes from assemblies (64.3% public, 33.2% our hifiasm, 2.5% spanning reads),
+#    while the reads are an independent dataset. Agreement means the map holds that individual's real molecule;
+#    disagreement means either the map, that is the assembly, or the read assignment is wrong.
 #
-#  방법
-#    ① HAP_READ_FINAL.tsv 로 read 를 슬롯에 배정 (flank read 만, 이미 확정된 것)
-#    ② 각 read 를 유닛으로 자르고 유닛별 변이집합을 낸다
-#    ③ 사슬 배치로 read 가 지도의 몇 번 유닛부터인지 정한다
-#       (chainplace.py 규칙: 점수 |S∩V|−|S−V| · 연속 K 유닛 · LOO k=8 에서 100%)
-#    ④ 유닛마다 그 자리를 덮은 read 들의 변이를 모아 다수결 consensus 를 만든다
-#    ⑤ 지도의 varlist 와 대조 — 재현율·정밀도
+#  method
+#    1) Assign the reads to slots from HAP_READ_FINAL.tsv, using only the flank reads already resolved.
+#    2) Cut each read into units and compute the variant set per unit.
+#    3) Place each read by chain alignment to determine which map unit it starts at
+#       (the chainplace.py rule: score |S intersect V| - |S - V| over K consecutive units; leave-one-out accuracy 100% at k = 8).
+#    4) Per unit, pool the variants of the reads covering that position and take a majority consensus.
+#    5) Compare against the map's variant list, as recall and precision.
 #
-#  ONT read 는 ~99% 라 개별 변이엔 잡음이 있다. 그래서 빈도로 층화해서 본다
-#    (앞서 실측: 고빈도 변이는 정밀도 99.3%, 저빈도는 23.5%).
-#  배치가 불확실한 read 는 뺀다 (margin 하한).
+#  ONT reads are about 99% accurate, so an individual variant carries noise; the result is therefore stratified by frequency
+#    (measured: precision is 99.3% for high-frequency variants and 23.5% for low-frequency ones).
+#  Reads whose placement is uncertain are excluded, by a lower bound on the margin.
 import io
 import os
 import re
@@ -43,7 +43,7 @@ NL = "\n"
 TH = os.environ.get("TH", "4")
 TAG = os.environ.get("TAG", "x")
 K = int(os.environ.get("K", "8"))
-MINMG = int(os.environ.get("MINMG", "1"))     # 배치 최소 마진
+MINMG = int(os.environ.get("MINMG", "1"))     # the minimum placement margin
 CMP = str.maketrans("ACGTacgtNn", "TGCAtgcaNn")
 
 
@@ -207,13 +207,13 @@ for smp in smps:
             m = j & 3
             j += 1
             if m == 0:
-                # HAP_READ_FINAL.tsv 의 read ID 는 전체 UUID(36자)다.
-                #   자르면 매칭이 통째로 실패한다 (실측: 배치 0 건).
+                # The read IDs in HAP_READ_FINAL.tsv are full 36-character UUIDs.
+                #   Truncating them makes the matching fail entirely.
                 rid = L[1:].split()[0]
             elif m == 1 and rid in want:
                 seqs[rid] = L.strip()
-    # 유닛 자리마다 read 변이를 모은다
-    COV = collections.defaultdict(list)      # (slot, unit) -> [변이집합]
+    # the read variants are pooled per unit position
+    COV = collections.defaultdict(list)      # (slot, unit) -> list of variant sets
     nplace = nskip = 0
     for rid, slot in sorted(want.items()):
         sq = seqs.get(rid)
@@ -235,7 +235,7 @@ for smp in smps:
         nplace += 1
         for t, v in enumerate(ch):
             COV[(slot, i0 + t)].append(v)
-    # 유닛마다 다수결 consensus 를 만들어 지도와 대조
+    # a majority consensus is built per unit and compared with the map
     for (slot, u), lst in sorted(COV.items()):
         M = MAP.get((smp, slot), {}).get(u)
         if M is None:

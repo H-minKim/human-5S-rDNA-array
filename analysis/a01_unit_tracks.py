@@ -1,20 +1,20 @@
 # -*- coding: utf-8 -*-
-"""A1 — ft nucleosome/MSP 호출을 read-유닛 트랙(unit_pos 1..unit_len)으로 옮긴다.
+"""A1: move the ft nucleosome/MSP calls onto read-unit tracks (unit_pos 1..unit_len).
 
-입력  ft_pilot\\<sample>.<cfg>.<src>.nuc.bam   (ft add-nucleosomes v0.13 기본값)
-규약 (p03 실측)
-  Ma:Z:<len>;nuc.:<s1>-<l>,...;msp.:... — 시작 1기반 · 원본 read 방향(MM 과 같음)
-  역정렬이면 SEQ 좌표 sp = len-1-op · SEQ→정본 CIGAR(M/=/X) · 정본→유닛 MAP_V11
-유닛은 M6A_READUNIT in_final=Y 인 (read, slot, array_pos) 만.
-출력  a01_tracks\\<sample>.<src>.tsv.gz
+Input   ft_pilot\\<sample>.<cfg>.<src>.nuc.bam   (ft add-nucleosomes v0.13 defaults)
+Convention (measured in p03)
+  Ma:Z:<len>;nuc.:<s1>-<l>,...;msp.:... : starts are 1-based, in the original read orientation (as MM)
+  on a reverse alignment the SEQ coordinate is sp = len-1-op; SEQ to canonical by CIGAR (M/=/X); canonical to unit by MAP_V11
+Units are only the (read, slot, array_pos) with in_final=Y in M6A_READUNIT.
+Output  a01_tracks\\<sample>.<src>.tsv.gz
   sample src slot array_pos read_id unit_len track
-  track 한 글자 = unit_pos 1.. : N nucleosome · M MSP · . 호출 없음(끝 45bp·삭제·read 밖)
-사용: python a01_unit_tracks.py <nuc.bam 경로> ...
+  track, one character per unit_pos 1.. : N nucleosome, M MSP, . no call (45 bp at the ends, deletion, outside the read)
+usage: python a01_unit_tracks.py <path to nuc.bam> ...
 """
 import io, os, sys, gzip, bisect, collections
 # The data and output roots are environment variables with no default (CONVENTIONS, "the deposited copy wins").
-#  저장소 안 파일로 가는 길은 `__file__` 에서 상대로 푼다 — `a_lib`·`bamlite`·`p02_lib` 가 이 폴더에 같이 예치돼 있다.
-#  변수 표는 `README.md` §2 에 있다.
+#  Paths to files inside this repository are resolved relative to `__file__` - `a_lib`, `bamlite` and `p02_lib` are deposited in this same folder.
+#  The table of variables is in `README.md`, section 'Environment variables'.
 _HERE = os.path.dirname(os.path.abspath(__file__))
 
 
@@ -24,7 +24,7 @@ def _need(k):
     except KeyError:
         raise SystemExit(
             "environment variable %s is not set; it is required by %s. "
-            "The deposited copy has no default; see README.md section 2."
+            "The deposited copy has no default; see README.md, section 'Environment variables'."
             % (k, os.path.basename(__file__)))
 
 sys.path.insert(0, _HERE)
@@ -32,12 +32,12 @@ from bamlite import read_bam
 from p02_lib import seq2ref
 
 R = _need("RDNA_V12_CANON_DIR")
-#  쓰는 폴더다 — 발행 입력 폴더를 가리키면 그 표를 덮는다.
+#  This is the folder it writes to - pointing it at a published input folder would overwrite those tables.
 OUT = _need("RDNA_A01_TRACKS_OUT_DIR")
 os.makedirs(OUT, exist_ok=True)
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace",
                               line_buffering=True)
-#  파일 이름 라벨 (RFC1918 사설 대역 · 주소가 아니다) · `NODE_LABELS` 로 덮어쓸 수 있다
+#  File-name labels (RFC1918 private range; not addresses) - can be overridden with `NODE_LABELS`
 HOST = {"w3": "ip-172-31-58-58", "iB": "ip-172-31-32-12", "iA": "ip-172-31-57-143"}
 if os.environ.get("NODE_LABELS"):
     HOST = dict(kv.split("=", 1) for kv in os.environ["NODE_LABELS"].split(",") if "=" in kv)
@@ -57,7 +57,7 @@ _FINAL = None
 
 
 def final_units(sample, src):
-    """M6A_READUNIT in_final=Y (read, slot, array_pos) — 한 번만 읽어 둔다."""
+    """M6A_READUNIT in_final=Y (read, slot, array_pos), read once and kept."""
     global _FINAL
     if _FINAL is None:
         _FINAL = collections.defaultdict(set)
@@ -94,7 +94,7 @@ def run(bam):
             c["read_no_calls"] += 1
             continue
         n = len(r["seq"]); rev = bool(r["flag"] & 16)
-        lab = bytearray(b"." * n)                   # SEQ 좌표
+        lab = bytearray(b"." * n)                   # SEQ coordinates
         for key, ch in (("nuc", 78), ("msp", 77)):
             for a, l in sec.get(key, []):
                 for op in range(a, min(a + l, n)):

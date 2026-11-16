@@ -1,19 +1,18 @@
 # -*- coding: utf-8 -*-
-# Fiber-seq read 배치 — hifiasm 합의지도(CONSENSUS_MAP_G6)에 사슬 점수로 농는다 (2026-09-11)
+# Fiber-seq read placement: the reads are placed on the hifiasm consensus map (CONSENSUS_MAP_G6) by a chain score.
 #
-#  왜 다시 하나
-#    앞서는 관통 read 만 썼는데, Fiber-seq read 중 관통(양쪽 flank>=300bp)은
-#    3.6% 뿐이다(실측). 나머지를 다 버렸다.
-#    사슬 배치는 flank 없는 read 도 놓으므로 arr_span>=12유닛 인 31.6% 를 쓴다.
+#  Why chain placement:
+#    among the Fiber-seq reads only 3.6% span the array with at least 300 bp of flank on both sides.
+#    Chain placement places a read with no flank as well, so the 31.6% with an array span of at least 12 units can be used.
 #
-#  게이트는 일반 ONT 에서 검정된 것을 그대로 쓴다
+#  The gates are the ones already validated on ordinary ONT data:
 #    K=12 · Δ>=10 · MINARR=26,880
-#    짝지음 검정(같은 read 1,067개): K=12 97.52% vs K=16 97.63%,
-#    Δ>=10 둘 다 통과한 957개 중 판정이 갈린 것 0건 · 귀무 둘 다 0.00%
+#    on a pairing test over 1,067 identical reads, K = 12 gave 97.52% against 97.63% for K = 16,
+#    and of the 957 passing both at a margin of at least 10, none was called differently; the null was 0.00% for both.
 #
-#  MAXFL 기본값을 무제한으로 둔다
-#    Fiber-seq read 는 HAP_READ_FINAL 에 없어 junction 배치 상대가 없다.
-#    겹칠 상대가 없으므로 flank 있는 read 를 버릴 이유가 없다.
+#  MAXFL is left unlimited by default:
+#    a Fiber-seq read is absent from HAP_READ_FINAL and so has no junction placement to collide with.
+#    With nothing to overlap, there is no reason to discard a read carrying flank.
 #
 import io
 import os
@@ -25,10 +24,10 @@ import random
 import subprocess
 import collections
 
-W = os.path.expanduser(os.environ.get("W", "~/fsplace"))
+W = os.path.expanduser(os.environ["W"])
 os.makedirs(W, exist_ok=True)
 R = os.path.expanduser("~/s5s_tuc/ref")
-CMPD = os.path.expanduser(os.environ.get("CMPD", "~/cmp4d"))
+CMPD = os.path.expanduser(os.environ["CMPD"])
 NL = "\n"
 TH = os.environ.get("TH", "6")
 TAG = os.environ.get("TAG", "x")
@@ -53,13 +52,13 @@ def rd(p):
 FP = rd(os.path.join(R, "FLANK_proximal_50000.fa"))
 FD = rd(os.path.join(R, "FLANK_distal_50000.fa"))
 SEQF = {}
-HSNF = os.path.expanduser(os.environ.get("HSNF", "~/hap_seq_node.tsv"))
+HSNF = os.path.expanduser(os.environ["HSNF"])
 for x in io.open(HSNF, encoding="utf8"):
     f = x.rstrip(NL).split("\t")
     if len(f) >= 3 and f[0] != "sample":
         SEQF[(f[0], f[1])] = f[2]
 RCF = {}
-SUMF = os.path.expanduser(os.environ.get("SUMF", "~/CONSENSUS_SUM_G6.tsv"))
+SUMF = os.path.expanduser(os.environ["SUMF"])
 for i, x in enumerate(io.open(SUMF, encoding="utf8")):
     if i == 0:
         continue
@@ -68,7 +67,7 @@ for i, x in enumerate(io.open(SUMF, encoding="utf8")):
         RCF[(f[0], f[1])] = (f[5] == "Y")
 UB = collections.defaultdict(list)
 MAPV = collections.defaultdict(dict)
-MAPF = os.path.expanduser(os.environ.get("MAPF", "~/CONSENSUS_MAP_G6.tsv"))
+MAPF = os.path.expanduser(os.environ["MAPF"])
 f = io.open(MAPF, encoding="utf8")
 h = f.readline().rstrip(NL).split("\t")
 ix = dict((n, i) for i, n in enumerate(h))
@@ -85,17 +84,17 @@ CS = re.compile(r"([:*+-])([A-Za-z0-9]+)")
 
 
 def tuc_targets(smp):
-    """Fiber-seq 판정표에서 array 를 충분히 문 read 를 고른다.
+    """Choose the reads that hold enough of the array from the Fiber-seq call table.
 
-    일반 ONT 판과 다른 점 — 판정표 위치만 다르다
-      일반 ONT : ~/{s5s_ont_tuc,new44_tuc,kgp_tuc,giab_tuc,s5s_tuc}/out/<sample>.bound.tsv
-      Fiber-seq: ~/fs41/out/<sample>.bound.tsv   (열 구성은 동일)
+    Difference from the ordinary ONT version: only the location of the call table
+      ordinary ONT : ~/{s5s_ont_tuc,new44_tuc,kgp_tuc,giab_tuc,s5s_tuc}/out/<sample>.bound.tsv
+      Fiber-seq    : ~/fs41/out/<sample>.bound.tsv   (same columns)
 
-    flank 제한을 걸지 않는다 (MAXFL 기본 무제한)
-      Fiber-seq read 에는 junction 배치가 없다 — HAP_READ_FINAL 이 일반 ONT read 로만
-      만들어져 있어 Fiber-seq read 는 그 표에 없다. 겹칠 상대가 없으므로
-      flank 있는 read 를 버릴 이유가 없다. 실측: 관통(양쪽 flank>=300bp) 은 3.6% 뿐이라
-      flank 제한을 걸면 대부분을 잃는다.
+    No flank limit is applied (MAXFL unlimited by default)
+      Fiber-seq reads have no junction placement: HAP_READ_FINAL is built from ordinary ONT reads
+      only, so Fiber-seq reads are not in that table. With nothing to overlap,
+      there is no reason to drop reads with flank. Measured: spanning reads (flank >=300 bp on both sides) are only 3.6%,
+      so a flank limit would lose most of them.
     """
     out = set()
     p = os.path.expanduser("~/fs41/out/%s.bound.tsv" % smp)
@@ -181,9 +180,9 @@ _dp = os.path.join(W, "done.txt")
 if os.path.exists(_dp):
     DONE = set(x.strip() for x in io.open(_dp, encoding="utf8") if x.strip())
 OUT = io.open(os.path.join(W, "fsjx_%s.tsv" % TAG), "a", encoding="utf8", newline=NL)
-# 유닛별 변이 목록 — read-합의 지도 재료 (자리만으로는 서열 비교 불가)
+# the per-unit variant list, the material for the read consensus map; positions alone cannot be compared as sequence
 VOU = io.open(os.path.join(W, "fsjv_%s.tsv" % TAG), "a", encoding="utf8", newline=NL)
-# others 는 개체마다 새로 만든다(아래 루프 안) — 모듈 수준 캐시는 결함이었다.
+# "others" is rebuilt for each individual inside the loop below; a module-level cache would be wrong here.
 for smp in [x.strip() for x in io.open(sys.argv[1], encoding="utf8") if x.strip()]:
     if smp in DONE:
         continue
@@ -191,8 +190,8 @@ for smp in [x.strip() for x in io.open(sys.argv[1], encoding="utf8") if x.strip(
     slots = sorted(s for (a, s) in UB if a == smp)
     if not want or len(slots) < 2:
         continue
-    # Fiber-seq read 는 압축되지 않은 .hit.fq 다 (헤더에 MM/ML 메틸 태그가 붙어 있다).
-    #   read id 는 공백 분리 첫 토큰이라 태그가 있어도 그대로 읽힌다.
+    # the Fiber-seq reads are uncompressed .hit.fq files, with the MM/ML methylation tags on the header line.
+    #   The read id is the first whitespace-separated token, so it reads correctly even with the tags present.
     p = os.path.expanduser("~/fs41/out/%s.hit.fq" % smp)
     if not (os.path.exists(p) and os.path.getsize(p) > 1000):
         continue
@@ -285,7 +284,7 @@ for smp in [x.strip() for x in io.open(sys.argv[1], encoding="utf8") if x.strip(
     if not REC:
         io.open(_dp, "a", encoding="utf8", newline=NL).write(smp + NL)
         continue
-    # 개체마다 재계산 (v11 aoplace_v3fix 와 같은 수정)
+    # recomputed per individual
     others = sorted(set(a for (a, s) in UB if a != smp))
     flat = [s for _r, _c, seg, _q in REC for _u, s in seg]
     V = varof(flat, "%s_%s" % (TAG, smp))
@@ -302,7 +301,7 @@ for smp in [x.strip() for x in io.open(sys.argv[1], encoding="utf8") if x.strip(
         r0 = place(vs, MAPV[(smp, ctg)])
         if not r0:
             continue
-        # 귀무 대조를 배치마다 건다 (사후가 아니라 실시간)
+        # the null control is applied at placement time rather than afterwards
         o = random.Random(rid).choice(others)
         os_ = sorted(s for (a, s) in UB if a == o)
         nm = 0
@@ -317,22 +316,22 @@ for smp in [x.strip() for x in io.open(sys.argv[1], encoding="utf8") if x.strip(
             nfail += 1
             continue
         npass += 1
-        # 배치 성공 — 이 read 가 덮은 유닛들을 기록
+        # placement succeeded: the units this read covered are recorded
         N = UB[(smp, ctg)][0][3]
-        # 유닛 기록을 K 에서 끊지 않는다 (2026-09-09 수정)
-        #   자리는 앞 K 유닛으로 이미 확정됐고, 나머지 유닛은 연속이므로
-        #   위치가 r0[0]+t 로 자동으로 따라온다. 그런데 원래는 버렸다.
-        #   실측: read 가 실제로 걸친 유닛 중앙 23.6 개인데 16 개만 적어 35.9% 손실.
-        #   단, K 번째 이후는 배치 점수에 쓰이지 않은 구간이므로
-        #     scored 열로 구분해 표시한다 (검정 전까지 섞어 쓰지 않기 위해).
+        # the unit record is not truncated at K.
+        #   The position was already fixed by the first K units, and the remaining units being consecutive,
+        #   their positions follow automatically as r0[0] + t.
+        #   A read spans a median of 23.6 units; recording only 16 would lose 35.9%.
+        #   The units beyond the Kth did not contribute to the placement score, however,
+        #     so they are marked in the scored column, to keep them apart.
         for t, (u, _s) in enumerate(seg):
-            # scored = 1 이면 배치 점수에 쓰인 앞 K 유닛, 0 이면 그 이후
+            # scored = 1 marks the first K units, which contributed to the placement score, and 0 those beyond
             sc_ = 1 if t < K else 0
             OUT.write("%s\t%s\t%s\t%d\t%d\t%d\t%d\t%d\t%s\t%d%s"
                       % (smp, rid[:16], ctg, r0[0] + t, N + 1 - (r0[0] + t),
                          r0[1], nm, dlt, mq, sc_, NL))
-            # read-합의 지도를 만들려면 변이 목록이 있어야 한다.
-            #   자리(array_pos)만으로는 서열을 비교할 수 없다.
+            # building a read consensus map requires the variant list:
+            #   the position (array_pos) alone cannot be used to compare sequence.
             vl = ",".join(sorted(ch[t][1])) if ch[t][1] else "-"
             VOU.write("%s\t%s\t%s\t%d\t%s\t%d%s"
                       % (smp, rid[:16], ctg, r0[0] + t, vl, sc_, NL))

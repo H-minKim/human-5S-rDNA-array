@@ -1,5 +1,5 @@
 #!/bin/bash
-# 깊이 올린 BAM 으로 read 단위 메틸을 다시 잰다
+# Re-measure the per-read methylation from the deeper BAMs.
 set -u
 cd ~/zfwgbs || exit 1
 until grep -q DEEPEN_DONE deepen.out 2>/dev/null; do sleep 90; done

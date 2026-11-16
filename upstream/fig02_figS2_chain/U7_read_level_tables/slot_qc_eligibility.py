@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
-# Transcribed from the run record: the code ran as a shell heredoc or a one-line command, so no script file existed on disk.
 # Writes SLOT_QC.tsv in the 02 tables folder (590 HPRC-ONT slots, eligible 510), read by v13_L1_read_unit.py.
 # Eligible = N>=30, no map break, covered positions/N >= 0.8, reads per position >= 5, gate pass >= 0.85, reads >= 10.
-# Machine paths are given by RDNA_DATA_ROOT / RDNA_WORK_DIR (no default); the computing lines are unchanged.
+# Machine paths are given by RDNA_DATA_ROOT / RDNA_WORK_DIR (no default).
 import numpy as np, pandas as pd, os, io
 OUT=__import__("os").environ["RDNA_DATA_ROOT"]+"/v11_readvar"; V=__import__("os").environ["RDNA_DATA_ROOT"]+"/for_paper/08_versions/v11"
 A=pd.read_parquet(os.path.join(OUT,"02_tables","ru_v11.parquet"))

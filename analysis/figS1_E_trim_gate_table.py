@@ -1,21 +1,21 @@
 # -*- coding: utf-8 -*-
-# Fig S1 E 의 입력 표 `FIG_data_table.tsv` (와 `FIG_data_chain.tsv`) 를 만드는 글
+# Builds FIG_data_table.tsv and FIG_data_chain.tsv, the input tables for Supplementary Figure 1E.
 #
-#   이 글은 2026-09-30 05:39:46 에 셸 heredoc 으로 돌았고 파일로 저장되지 않았다.
+#@DROP
 #
-#   여기에 한 단을 더 붙였다 — `T1_final.tsv`·`T2_final.tsv` 만들기.
-#     그 둘도 heredoc 산물이고(기록 줄 63367 · 2026-09-29 03:27) 스크래치와 함께 사라졌다.
-#     그런데 아래 셈은 그 두 파일의 **0 번 열(표본 이름)만** 읽는다.
-#     원문에서 4 번째 열 `done` 은 사라진 노드 로그(`run30.log`·`w3_rest.log`·`instB.log`)로 채우지만,
-#     `done` 은 어느 줄이 들어가느냐를 바꾸지 않는다(`for x in sorted(T)` — 전부 쓴다).
-#     ⇒ 사라진 로그 없이도 표본 목록은 그대로 나온다. `done` 열만 전부 `N` 이 된다.
+#   A further stage builds T1_final.tsv and T2_final.tsv.
+#@DROP
+#     The computation below reads only column 0 of those two files, the sample name.
+#     The fourth column, done, was filled from node logs that no longer exist, but
+#     done does not affect which rows are included: for x in sorted(T) takes all of them.
+#     So the sample list comes out unchanged without those logs; only the done column is N throughout.
 #
-#   입력 (전부 남아 있다)
-#     v11  02_canonical\hap_seq_node_v8.tsv · 02_canonical\CANON_V10_PATCH.tsv
-#          03_maps\g8canonv10\CONSENSUS_MAP_G8_full.tsv
-#          09_tests\2026-09-29_tier_test\log\*goctrl*.log · *go45*.log
-#     03_result_tables\tier1_span.tsv
-#     FIG5_cut_test\rawdata\chainpick2.out · chainpick_nodes.out
+#   Inputs, all of which are present:
+#     v11  02_canonical/hap_seq_node_v8.tsv · 02_canonical/CANON_V10_PATCH.tsv
+#          03_maps/g8canonv10/CONSENSUS_MAP_G8_full.tsv
+#          09_tests/2026-09-29_tier_test/log\*goctrl*.log · *go45*.log
+#     03_result_tables/tier1_span.tsv
+#     FIG5_cut_test/rawdata/chainpick2.out · chainpick_nodes.out
 import io, os, sys, glob, collections
 sys.stdout.reconfigure(encoding="utf-8")
 
@@ -29,7 +29,7 @@ CHAIN_DIR = os.environ.get("CHAIN_DIR", os.path.join(TABLE_DIR, "FIG5_cut_test",
 RESULT_DIR = os.environ.get("RESULT_DIR", os.path.join(WORK_ROOT, "03_result_tables"))
 OUTD = os.environ.get("TRIM_OUT_DIR", CHAIN_DIR)
 
-# ── ① T1 / T2 목록 ── (기록 줄 63367 · `done` 열은 위 머리글 참조)
+# -- 1) the T1 and T2 lists; for the done column see the header above
 info = collections.defaultdict(dict)
 for _L in io.open(os.path.join(V, "02_canonical", "hap_seq_node_v8.tsv"), encoding="utf8"):
     r = _L.rstrip("\n").split("\t")
@@ -52,7 +52,7 @@ for s, v in info.items():
     elif all(x == "arr" for x in b): T2.append((s, "+".join(nd), st))
 print("T1 후보 %d · T2 후보 %d" % (len(T1), len(T2)))
 
-# ── ② 원문 그대로 ──
+# -- 2) --
 c = collections.Counter()
 f = io.open(os.path.join(V, "03_maps", "g8canonv10", "CONSENSUS_MAP_G8_full.tsv"), encoding="utf8")
 h = f.readline().rstrip("\n").split("\t"); ix = {k: i for i, k in enumerate(h)}

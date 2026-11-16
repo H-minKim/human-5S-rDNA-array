@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
-# 제브라피시 5S array 전수 표 — 염색체 · 크기 · 유닛 · 메틸 · flank 대비
-#   제브라피시는 5S 가 두 갈래로 알려져 있다
-#     chr4  = 모계형(난자 전용 · 체세포에서 침묵)
-#     chr18 = 체세포형(배아 발생 중 켜져 체세포에서 발현)
-#   우리 자료는 성체 뇌(체세포) 6 개체다. array 마다 그 둘 중 어디에 해당하는지,
-#   그리고 array 가 제 주변(flank 100 kb)보다 높은지 낮은지를 한 표에 놓는다.
-#   인자 : data_v2 폴더 출력.tsv
+# An exhaustive table of the zebrafish 5S arrays: chromosome, size, units, methylation, and the contrast with the flank.
+#   Two kinds of 5S are known in the zebrafish:
+#     chr4 is the maternal type, used in the oocyte and silent in the soma;
+#     chr18 is the somatic type, switched on during embryogenesis and expressed in the soma.
+#   Our data is adult brain, that is somatic, from 6 individuals. This table records, per array, which of the two it corresponds to,
+#   and whether the array is higher or lower than its own surroundings, the 100 kb of flank.
+#   Arguments: the data_v2 folder and out.tsv.
 # MIT License · Copyright (c) 2026 Hungmin Kim
 import io
 import os
@@ -20,9 +20,9 @@ B, OUT = sys.argv[1], sys.argv[2]
 CH = {}
 for i, acc in enumerate(["CM1111%02d.1" % (79 + k) for k in range(25)]):
     CH[acc] = "chr%d" % (i + 1)
-# 실제 접근번호는 CM111179.1 부터 연속 — 위 생성식과 맞춘다
+# the actual accessions run consecutively from CM111179.1, which the expression above matches
 CH = dict(("CM%d.1" % (111179 + k), "chr%d" % (k + 1)) for k in range(25))
-# array 요약(메틸)
+# the array summary, the methylation
 MET = collections.defaultdict(list)
 for r in csv.DictReader(io.open(os.path.join(B, "03_reads", "zebrafish_GRCz12tu",
                                              "5S_array_summary.tsv"), encoding="utf8"), delimiter=TAB):
@@ -36,13 +36,13 @@ if os.path.exists(p):
         if r["species_key"] != "zebrafish_GRCz12tu" or r["frac_5mC"] == "-":
             continue
         AVF[r["array_id"]][r["sample"]][r["region"]] = (float(r["frac_5mC"]), int(r["n_c"]))
-# 참조유닛 제원
+# the specification of the reference unit
 PR = {}
 for r in csv.DictReader(io.open(os.path.join(B, "00_catalog", "REFUNIT_PARAMS_MERGED.tsv"),
                                 encoding="utf8"), delimiter=TAB):
     if r["species"] == "zebrafish_GRCz12tu":
         PR[r["array_id"]] = r
-# 유닛 종류 판정
+# the unit-type call
 UT = {}
 p = os.path.join(B, "00_catalog", "UNIT_REF_TABLE.tsv")
 if os.path.exists(p):

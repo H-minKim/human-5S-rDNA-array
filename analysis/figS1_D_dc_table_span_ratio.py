@@ -1,19 +1,19 @@
 # -*- coding: utf-8 -*-
-# 정정판 : d 는 read 가 덮은 서로 다른 array_pos 의 개수로 센다
-#   (앞 판은 AO/JX·cfg 가 겹쳐 같은 read 를 여러 번 세어 d/c 가 2~4 까지 나왔다)
+# d is counted as the number of distinct array_pos values a read covers.
+#   Counting rows instead double-counts a read across the two placements and configurations, which drove d/c as high as 2-4.
 import io, os, gzip, glob, collections, statistics
 
 # -- (repo) paths come from the environment --------------------------------
-#   기본값이 분석 때 쓴 경로와 같다 ⇒ 작업 폴더에서는 전과 똑같이 돈다.
-#   그림 내용은 한 글자도 바뀜이 없다 — png 화소로 맞대어 확인한다.
+#   The roots are required; the output and table directories fall back to this file's folder.
+#@DROP
 V = os.environ["V_ROOT"]
 
-MAP = os.path.join(V, r"03_maps\g8canonv10\CONSENSUS_MAP_G8_full.tsv")
-HSN = os.path.join(V, r"02_canonical\hap_seq_node_v8.tsv")
-RAW = os.path.join(V, r"08_methylation\raw")
-# 원본은 자기 스크립트 폴더에 썼다. 이 사본은 `analysis/` 에 있으므로 그대로 두면
-#   코드 저장소 안에 자료 파일이 생긴다(이 저장소는 코드만 담는다).
-#   ⇒ `DC_OUT` 으로 자리를 가리킬 수 있게 한다. 기본값은 전과 같다(스크립트 옆).
+MAP = os.path.join(V, r"03_maps/g8canonv10/CONSENSUS_MAP_G8_full.tsv")
+HSN = os.path.join(V, r"02_canonical/hap_seq_node_v8.tsv")
+RAW = os.path.join(V, r"08_methylation/raw")
+# The original wrote next to itself. This copy lives in analysis/, so writing there
+#   would create a data file inside the code repository, which holds code only.
+#   DC_OUT therefore sets the location, defaulting to this file's folder.
 OUT = os.environ.get("DC_OUT",
                      os.path.join(os.path.dirname(os.path.abspath(__file__)), "DC_TABLE.tsv"))
 

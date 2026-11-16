@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
-# 종별 5S array 구조 실측 : flank-array-flank 인가 + 유닛 내부 구성
-#   array = cmsearch hit 를 10 kb 이내로 묶고 3 copy 이상 (5S_array_catalog 와 같은 규칙)
-#   유닛 = 이웃 hit 시작점 사이 구간 (유전자 자리에 앵커)
-#   유전자/스페이서 = hit 구간 / 그 나머지 — GC · CpG 밀도를 따로 잰다
-#   flank = array 양옆 FL bp — 그 안의 5S hit 수 · N 수 · 접합체 끝까지 거리
-#   산출 : <종>.struct.tsv (array 한 줄) · <종>.units.fa (가운데 유닛 최대 30) · <종>.flanks.fa (양쪽)
-#   인자 : 종이름 fasta tblout 출력폴더 [flank bp = 20000]
+# Measuring the 5S array structure per species: whether it is flank-array-flank, and the internal composition of the unit.
+#   An array groups cmsearch hits within 10 kb and needs at least 3 copies, the same rule as the 5S array catalogue.
+#   A unit is the interval between neighbouring hit starts, anchored on the gene.
+#   Gene and spacer are the hit interval and the remainder; GC and CpG density are measured separately for each.
+#   The flank is FL bp on each side of the array; the 5S hit count, the N count and the distance to the end of the contig are recorded.
+#   Outputs: <species>.struct.tsv (one row per array), <species>.units.fa (up to 30 interior units) and <species>.flanks.fa (both sides).
+#   Arguments: species name, fasta, tblout, output folder, [flank bp = 20000].
 # MIT License · Copyright (c) 2026 Hungmin Kim
 import io
 import os
@@ -108,7 +108,7 @@ for ai, (c, hits) in enumerate(ARR):
         sseq.append(u[gl:])
     gg, gc_ = gc_cpg("".join(gseq))
     sg, sc_ = gc_cpg("".join(sseq))
-    # 유닛끼리 얼마나 같은가 : 가운데 유닛 하나를 기준으로 나머지와 자리별 일치
+    # How similar the units are: one interior unit is taken as the reference and the others compared to it position by position.
     ident = "NA"
     us = [u for _n, u in units if u]
     if len(us) >= 3:

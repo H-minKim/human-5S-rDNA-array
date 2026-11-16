@@ -1,20 +1,20 @@
 # -*- coding: utf-8 -*-
-"""지표 ① · ④ — 분모가 깊이인 m6A (2026-10-10).
+"""Measures (1) and (4): m6A with depth as the denominator.
 
-내가 틀렸던 것 : *"못 만든다"* 고 적었는데, 노드의 `M6A_SITE_*.tsv.gz` 가 바로 그 양이다.
-   열 : sample | data_source | slot | array_pos | unit_pos | mod_strand | n | n_m6a | frac
-        n     = 그 염기를 덮은 분자 수 (깊이)
-        n_m6a = 그 염기가 m6A 인 분자 수
-        frac  = n_m6a / n  = "그 염기에서 m6A 인 분자의 비율"
-   ⇒ 레퍼런스 정의 그대로다 : *"counting total occurrences across all molecules at a bp
+The `M6A_SITE_*.tsv.gz` tables on the node hold this quantity.
+   columns : sample | data_source | slot | array_pos | unit_pos | mod_strand | n | n_m6a | frac
+        n     = number of molecules covering that base (depth)
+        n_m6a = number of molecules with m6A at that base
+        frac  = n_m6a / n  = "the fraction of molecules with m6A at that base"
+   This is the reference definition : *"counting total occurrences across all molecules at a bp
       and dividing by the coverage at that bp"*
 
-우리가 전에 쓰던 `m6A 농도` 는 분모가 A 자리 수였다. 다른 양이다.
+The `m6A concentration` has the number of A sites as its denominator. It is a different quantity.
 
-내는 것
-  ① 자리별(array 안) m6A 비율 — 원위 절대 15 · 가운데 상대 10 · 근위 절대 15
-  ④ 유닛 안 자리별(unit_pos) 프로파일 — 구역마다
-합치는 법 : pooled (sum n_m6a / sum n) — 분자를 다 합친다
+Written
+  (1) m6A fraction per position (inside the array): 15 distal absolute, 10 middle relative, 15 proximal absolute
+  (4) profile per position inside the unit (unit_pos), per zone
+Pooling : pooled (sum n_m6a / sum n), all molecules together
 """
 import io
 import os
@@ -25,7 +25,7 @@ import collections
 import numpy as np
 
 # The data and output roots are environment variables with no default (CONVENTIONS, "the deposited copy wins").
-#  변수 표는 `README.md` §2 에 있다.
+#  The table of variables is in README.md, section 'Environment variables'.
 
 def _need(k):
     try:
@@ -33,19 +33,19 @@ def _need(k):
     except KeyError:
         raise SystemExit(
             "environment variable %s is not set; it is required by %s. "
-            "The deposited copy has no default; see README.md section 2."
+            "The deposited copy has no default; see README.md, section 'Environment variables'."
             % (k, os.path.basename(__file__)))
 
 W = _need("RDNA_FHMM_DIR")
 SRCD = os.path.join(W, "m6a_site")
 R = os.path.join(_need("RDNA_V12_CANON_DIR"), "02_canonical")
-#  쓰는 폴더다 — 발행 입력 폴더를 가리키면 그 표를 덮는다.
+#  This is written to: if it points at the published input folder, those tables are overwritten.
 HF = _need("RDNA_FIBERSEQ_DIR")
 O1 = os.path.join(HF, "01_latest_results", "REF2_20261010d_m6a_depth_denominator_by_position.tsv")
 O2 = os.path.join(HF, "01_latest_results", "REF2_20261010e_m6a_depth_denominator_in_unit.tsv")
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8',
                               errors='replace', line_buffering=True)
-E, NB = 20, 10      # : 끝은 20 까지
+E, NB = 20, 10      # the ends run to 20
 NCELL = 2 * E + NB
 
 NMAX = collections.Counter()

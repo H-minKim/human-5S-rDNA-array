@@ -1,6 +1,6 @@
 #!/bin/bash
-# Potok 2013 계열 정렬이 끝나면 곧바로 구역별 메틸을 잰다
-#   같은 표(ZFMETH.tsv)에 이어 붙인다 — 라벨 앞에 P_ 를 붙여 Jiang 계열과 구분한다.
+# As soon as the Potok 2013 alignments finish, measure the methylation per region.
+#   The results are appended to the same table, ZFMETH.tsv, with the labels prefixed P_ to distinguish them from the Jiang series.
 set -u
 cd ~/zfwgbs || exit 1
 until grep -q POTOK_DONE potok.out 2>/dev/null; do sleep 60; done

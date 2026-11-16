@@ -1,8 +1,8 @@
 #!/bin/bash
-# 애기장대 ATRun3 (PromethION R10.4.1 · SUP v5.0.0 basecall · 메틸 태그 없음) read -> Col-CC 정렬(PAF) -> 5S array 에 걸친 read id
-#   정렬 = minimap2 map-ont --secondary=no · 보조정렬도 걸침으로 인정 · MAPQ 로 거르지 않는다
-#   pod5 에서 신호를 찾으려면 fastq id = pod5 id 여야 한다 -> 전체 id 목록 · 쪼갠 read(pi:Z) 수도 센다
-#   산출 : all.ids · ath.ids · sup.colcc.paf.gz · select_summary.txt
+# Arabidopsis ATRun3 (PromethION R10.4.1, SUP v5.0.0 basecalls, no methylation tags): align the reads to Col-CC (PAF) and take the ids of reads overlapping a 5S array.
+#   Alignment = minimap2 map-ont --secondary=no. A supplementary alignment also counts as overlapping. No MAPQ filter.
+#   Finding the signal in the pod5 files requires the fastq id to equal the pod5 id, so the full id list is kept and split reads (pi:Z) are counted.
+#   Outputs: all.ids, ath.ids, sup.colcc.paf.gz, select_summary.txt.
 # MIT License · Copyright (c) 2026 Hungmin Kim
 set -u
 H=~/xsp/ath

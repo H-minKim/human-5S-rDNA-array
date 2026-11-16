@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
-# 대주제 A 논문용 그림 ② — 종마다 5S array 가 염색체 어디에 있나 + 반복 유닛 모식도(길이와 유전자만)
-#   자료(전부 읽기만 · 타종 자료 루트) :
-#     · 염색체(콘티그) 길이·array 좌표 : 00_catalog/5S_array_structure.tsv (contig_len · array_start/end · period_med · gene_len_med)
-#     · 전체 array 목록(분석에 안 쓴 것 포함) : 00_catalog/5S_array_catalog.tsv
-#     · 염색체 이름 : 제브라 00_catalog/ZEBRAFISH_ALL_ARRAYS.tsv(chrom_name) · 금화조 06_aux/zfinch_5S_array_meth_summary.tsv(chrom_bigwig)
-#       유인원·애기장대는 이름표 자료가 없어 접근번호 그대로 적는다(추정하지 않음).
+# Figure 2 for topic A: where the 5S arrays sit on the chromosome in each species, with a schematic of the repeat unit showing only its length and its gene.
+#   Data, all read-only, under the other-species root:
+#     · chromosome or contig length and array coordinates: 00_catalog/5S_array_structure.tsv (contig_len, array_start and array_end, period_med, gene_len_med);
+#     · the full array catalogue including those not analysed: 00_catalog/5S_array_catalog.tsv;
+#     · chromosome names: for zebrafish 00_catalog/ZEBRAFISH_ALL_ARRAYS.tsv (chrom_name), for zebra finch 06_aux/zfinch_5S_array_meth_summary.tsv (chrom_bigwig).
+#       For the great apes and Arabidopsis no name data exists, so the accession is written as it is and nothing is inferred.
 # · arrays used = tables/FIGDATA_A_array_summary.tsv (53, siamang excluded)
-#   그리지 않는 것 : 중심절(센트로미어) — 이 자료에 위치가 없다.
-#   산출 : figures/FigA1_array_chromosome_map.{png,svg,pdf} · tables/FIGDATA_A1_chrom_map.tsv
+#   Not drawn: the centromere, whose position is not in this data.
+#   Outputs: figures/FigA1_array_chromosome_map.{png,svg,pdf} and tables/FIGDATA_A1_chrom_map.tsv
 import io, os, sys
 import numpy as np
 import pandas as pd
@@ -25,7 +25,7 @@ def _need(k):
     v = _os_need.environ.get(k)
     if not v:
         _sys_need.exit("environment variable %s is not set (the deposited copy has no default; "
-                       "see README.md, section 'How to run it')" % k)
+                       "see README.md, section 'Environment variables')" % k)
     return v
 
 
@@ -76,7 +76,7 @@ def cname(aid, acc):
     k = (a, int(s_), int(e_))
     if k in FNAME:
         return str(FNAME[k])
-    return acc                      # 이름 자료 없음
+    return acc                      # no name data
 
 
 rows = []
@@ -100,7 +100,7 @@ TMP = os.environ.get("TEMP", ".") + "/x29"
 os.makedirs(TMP, exist_ok=True)
 M.to_csv(TMP + "/FIGDATA_A1_chrom_map.tsv", sep="\t", index=False, encoding="utf8", lineterminator="\n")
 
-# ---------------------------------------------------------------- 그림
+# ---------------------------------------------------------------- figure
 NCH = {ko: M[M.종 == ko].염색체.nunique() for ko, _ in SP}
 H = [max(0.85, NCH[ko] * 0.46) for ko, _ in SP]
 fig = plt.figure(figsize=(15.5, 1.05 * sum(H) + 2.6))
@@ -140,18 +140,18 @@ for i, (ko, sp) in enumerate(SP):
         ax.title.set_fontweight("bold")
     else:
         ax.set_title(ttl, fontsize=9.6, loc="left", fontweight="bold", color="#222", pad=6)
-    if i == len(SP) - 1:                       # 눈금자
+    if i == len(SP) - 1:                       # scale bar
         ax.plot([0, 50], [-len(chroms) + 0.1] * 2, "-", color="#333", lw=1.4)
         ax.text(25, -len(chroms) + 0.22, "50 Mb", fontsize=7.6, ha="center", color="#333")
 
-    # 유닛 모식도 — 길이와 유전자만
+    # the unit schematic, showing only the length and the gene
     ax2 = fig.add_subplot(gs[i, 1])
-    gu = g[g.분석에씀 == "Y"]                      # 모식도는 분석에 쓴 array 의 유닛만
+    gu = g[g.분석에씀 == "Y"]                      # the schematic covers only the units of the arrays that were analysed
     cnt = gu.유닛길이.value_counts()
     dom = int(cnt.index[0])
     ul = [dom]
     far = sorted(set(gu.유닛길이), key=lambda v: -max(v / dom, dom / v))
-    if far and max(far[0] / dom, dom / far[0]) >= 1.2:   # 다른 유형은 길이가 1.2 배 넘게 다를 때만 따로 그린다
+    if far and max(far[0] / dom, dom / far[0]) >= 1.2:   # another type is drawn separately only where its length differs by more than 1.2-fold
         ul.append(int(far[0]))
     rng = (int(gu.유닛길이.min()), int(gu.유닛길이.max()))
     for j, u in enumerate(ul[:2]):

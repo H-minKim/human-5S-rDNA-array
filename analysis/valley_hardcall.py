@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-# 하드콜 β 분포의 골을 다시 잰다
-#   바탕은 `fig40_claim_A_B.py` 패널 a 와 똑같다 :
-#     RU.tsv.gz · HPRC_ONT_submissions · n_cpg>=20 · H2 슬롯 · ao/jx 중복제거(jx 우선) · 하드콜 β
-#   다른 것은 칸 폭뿐 : 0.02 (그림) → 0.005 · 0.002 · 0.001
-#   읽기만 한다. 아무것도 쓰지 않는다(표 하나만 모래상자에).
+# Re-measure the trough of the hard-call beta distribution.
+#   The basis is identical to panel a of fig40_claim_A_B.py:
+#     RU.tsv.gz, HPRC_ONT_submissions, n_cpg >= 20, H2 slots, duplicates removed between the two placements with the junction one preferred, and the hard-call beta.
+#   Only the bin width differs: 0.02 in the figure, against 0.005, 0.002 and 0.001 here.
+#   Read-only; nothing is written except one table into a sandbox.
 import collections
 import gzip
 import io
@@ -14,8 +14,8 @@ import pandas as pd
 
 def _need(_v):
     """No defaults are set: the script stops if a variable is missing.
-    이 글이 읽는 자료의 뿌리는 README.md 의
-    "Running this code" 절에 적혀 있다."""
+    The roots of the data this script reads are listed in the
+    "Running this code" section of README.md."""
     import os as _o, sys as _s
     _x = _o.environ.get(_v)
     if not _x:
@@ -60,7 +60,7 @@ def valley(bw, lo=0.20, hi=0.80, smooth=0):
     dens = hist / hist.sum()
     mid = (edges[:-1] + edges[1:]) / 2.0
     d = dens
-    if smooth:                      # 이동평균 (칸 수 smooth)
+    if smooth:                      # a moving average over this many bins
         k = np.ones(smooth) / smooth
         d = np.convolve(dens, k, mode="same")
     m = (mid >= lo) & (mid <= hi)
@@ -81,7 +81,7 @@ for bw, sm in ((0.02, 0), (0.005, 0), (0.005, 3), (0.002, 0), (0.002, 5), (0.001
           % (tag, v, dmin, "%.3f - %.3f" % fl, v - 0.508))
 print()
 
-# 0.508 이 골 바닥에서 얼마나 떨어져 있나 (칸 0.002, 평활 5)
+# how far 0.508 lies from the bottom of the trough, at a bin width of 0.002 and a smoothing of 5
 v, dmin, fl, hist, mid, dens = valley(0.002, smooth=5)
 k = np.ones(5) / 5
 d = np.convolve(dens, k, mode="same")
@@ -89,11 +89,11 @@ i508 = int(0.508 / 0.002)
 print("칸 0.002(평활 5) 기준 : 골 바닥 %.4f (몫 %.5f) · 0.508 자리의 몫 %.5f · 비 %.3f"
       % (v, dmin, d[i508], d[i508] / dmin if dmin else float("nan")))
 print()
-# 컷을 0.508 로 둘 때와 실측 골로 둘 때 꺼진 몫이 얼마나 달라지나
+# how much the hypomethylated fraction differs between a cut at 0.508 and a cut at the measured trough
 for cut in (0.508, round(v, 4)):
     print("   컷 %.4f → 꺼진 read-유닛 몫 %.4f%%" % (cut, 100.0 * (b <= cut).mean()))
 print()
-# 부트스트랩 : 골 위치가 얼마나 흔들리나
+# bootstrap: how much the position of the trough moves
 rng = np.random.default_rng(20261007)
 vs = []
 for _ in range(200):

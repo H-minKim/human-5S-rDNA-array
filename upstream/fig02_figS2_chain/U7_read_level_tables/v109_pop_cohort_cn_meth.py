@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# v109 (2026-09-23) array features by ancestry (population): (1) cohort definition (2) CN (unit count N) (3) methylation zone metrics
+# v109 array features by ancestry (population): (1) cohort definition (2) CN (unit count N) (3) methylation zone metrics
 #   data: L2_HAP_UNIT.parquet in the table folder (02_*) (combined haplotype x unit table, includes pop/super_pop)
 #   labels: existing pop.panel (1kGP 2504) + 1kGP_3202_ped_population_2026-09-23.txt in the reference folder (05_*) (extended 3202, public ftp)
 #          filled only after first confirming that the roster agrees with the 170 existing labels (170/170).

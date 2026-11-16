@@ -3,7 +3,7 @@ r"""Main Fig 2 cells q and r - panels A and B of FIG_F8m.py, each at cell size (
    Data and computation are the same rows as FIG_F8m.py panel A (ZP_gap_shape) and B (F8X2_pairs, F8X2_null, F8X2_sites)
    Only the look changed: figure size, font size (shared by main-text cells), line width, axis label line breaks, annotation position, no panel title
    Content check: CMPART.py (old fig_F8_mechanism axes 0 and 1 ↔ these two figures)
-Output: $FIGOUT\cellF2_q_gap.png/svg, cellF2_r_exchange.png/svg, CELL_F2qr_source_values.tsv
+Output: $FIGOUT/cellF2_q_gap.png/svg, cellF2_r_exchange.png/svg, CELL_F2qr_source_values.tsv
 """
 import io, os, sys
 import numpy as np
@@ -49,19 +49,19 @@ for r in R:
 fig, ax = CS.cell_at("q")   # margins and size come from the single cellstyle.ROWS table (aligned plot frames)
 W = 0.27; x = np.arange(len(gg))
 ax.bar(x - W, obs, W, color=CT, label=CS.L("관측", "Observed"), zorder=3)
-ax.bar(x, nf, W, color="#aab7b8", label=CS.L("귀무 ① 자유 배치", "Null (1) free"), zorder=3)   # English legend was longer than the frame, so shortened (meaning given in the Legend)
+ax.bar(x, nf, W, color="#aab7b8", label=CS.L("귀무 ① 자유 배치", "Null (1) free"), zorder=3)   # short English legend, to fit the frame (meaning given in the Legend)
 ax.bar(x + W, n2, W, color="none", edgecolor="#566573", lw=0.5, label=CS.L("귀무 ② 최소 2 칸 띄움", "Null (2) ≥2 apart"), zorder=3)
-# 'remove the numbers above the bars' - value text removed (values are in the value table) (old: count '%d' above the observed bars)
+# no value text above the bars (values are in the value table)
 i1 = gg.index(1)
 # The arrow annotation 'gap 1 has only %s cases (%.4f)' is not drawn on the figure; it is in the legend
 rec("A", "간격 1 (그림에서 뺀 주석 · Legend 로)", "간격 1 은 %s 건뿐 (%.4f)" % (R[i1][H["obs"]], obs[i1]), "ZP_gap_shape.tsv")
 ax.set_xticks(x); ax.set_xticklabels([str(v) for v in gg])
-ax.set_xlabel(CS.L("말단형 사이 간격 (유닛)", "Terminal-unit gap")); ax.set_ylabel(CS.L("간격 몫", "Fraction of gaps"))   # axis label on one line and shorter (old: share taken by that gap)
-ax.set_yticks([0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7])          # original ticks as is (range from the original formula below)
+ax.set_xlabel(CS.L("말단형 사이 간격 (유닛)", "Terminal-unit gap")); ax.set_ylabel(CS.L("간격 몫", "Fraction of gaps"))   # axis label on one line
+ax.set_yticks([0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7])          # fixed ticks (the range is set below)
 ax.set_ylim(0, max(max(obs), max(nf), max(n2)) * 1.26)
-# user 'go with a lower limit of 4.8' : legend text grew to 4.8 pt, so in the Korean edition the last line 'Null (2) at least 2 units apart' overflows the cell on the right by 3.9 pt → in the Korean edition only, the legend's left edge moves 5.6 pt left of the frame's left line (panel letter K sits at -22 to -16 pt from the frame's left, so they do not touch)
+# with legend text at 4.8 pt, the last line 'Null (2) at least 2 units apart' of the Korean edition would overflow the cell on the right by 3.9 pt, so in the Korean edition only, the legend's left edge is 5.6 pt left of the frame's left line (panel letter K sits at -22 to -16 pt from the frame's left, so they do not touch)
 ax.legend(loc="lower left", bbox_to_anchor=(0.0 if _EN else -0.11, 1.01), borderaxespad=0.0, frameon=False,   # above the plot, aligned to the left line (so it does not cover the bar numbers)
-          fontsize=CS.FS_LEG - (0.8 if _EN else 0.4), handlelength=1.0, borderpad=0.0, labelspacing=0.15)   # borderpad 0.25 → 0 (Helvetica, the Korean-edition legend overflowed the top of the cell, and with a frameless legend only the inner padding shrinks)
+          fontsize=CS.FS_LEG - (0.8 if _EN else 0.4), handlelength=1.0, borderpad=0.0, labelspacing=0.15)   # borderpad 0 keeps the Korean-edition legend inside the top of the cell (Helvetica, and with a frameless legend only the inner padding shrinks)
 CS.legend_fit_above(fig, ax, ax.get_legend())
 CS.save(fig, OUT, "cellF2_q_gap")
 
@@ -87,13 +87,13 @@ for ki, k in enumerate(KS):
                 fmt="none", ecolor="#2c3e50", elinewidth=0.5, capsize=1.5, zorder=4)
     ax.text(ki, v + 0.03, "%.3f\n짝 %s" % (v, format(int(r[H["짝수"]]), ",")), ha="center",
             fontsize=CS.FS_ANN - 0.4, color=KC[k], weight="bold", linespacing=1.1)
-_ENTK = {"말단형-말단형": "term.–\nterm.", "비말단형-비말단형": "non-t.–\nnon-t.", "말단형-비말단형": "term.–\nnon-t."}   # the cell got wider, so two horizontal lines (old: rotated 90°)   # short ticks for the English edition (meaning given in the Legend)
+_ENTK = {"말단형-말단형": "term.–\nterm.", "비말단형-비말단형": "non-t.–\nnon-t.", "말단형-비말단형": "term.–\nnon-t."}   # two horizontal lines   # short ticks for the English edition (meaning given in the Legend)
 ax.set_xticks(xs); ax.set_xticklabels([CS.L(k.replace("-", "\n"), _ENTK[k]) for k in KS], linespacing=1.1,
                                       rotation=0, ha="center")   # tick number size = shared by the figure   # in the English edition 'non-terminal-type' is long, so it is laid flat
-ax.set_xlim(-0.50, len(KS) - 1 + 0.64)                       # the first bar's value text (pair count) touched the y axis → horizontal margin
-ax.set_yticks([0.0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2])              # original ticks as is
+ax.set_xlim(-0.50, len(KS) - 1 + 0.64)                       # horizontal margin so the first bar's value text (pair count) does not touch the y axis
+ax.set_yticks([0.0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2])              # fixed ticks
 ax.set_ylim(0, 1.18)
-ax.set_ylabel(CS.L("이웃 교환율 (자카드)", "Exchange rate (Jaccard)"))   # axis label on one line and shorter (old: neighbour exchange rate at sites polymorphic on both sides (Jaccard))
+ax.set_ylabel(CS.L("이웃 교환율 (자카드)", "Exchange rate (Jaccard)"))   # axis label on one line
 Hs2, Rs2 = read("F8X2_sites.tsv")
 _tot = len(Rs2)
 _keep = sum(1 for r in Rs2 if r[Hs2["채택"]] == "1")

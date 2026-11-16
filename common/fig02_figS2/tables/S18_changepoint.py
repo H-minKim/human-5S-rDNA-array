@@ -3,7 +3,7 @@
 S18: segments **each array separately** (change-point detection) and looks at which segment grows as arrays get longer.
 
 Why global clustering is not enough
-  S13 to S17 clustered units globally and then looked at positions, so they never asked directly 'where is the boundary of this array'.
+  S13 to S17 cluster units globally and then look at positions, so they do not ask directly 'where is the boundary of this array'.
   Here the units of each haplotype are laid out in proximal -> distal order and **change points are searched within that array.**
 
 Algorithm

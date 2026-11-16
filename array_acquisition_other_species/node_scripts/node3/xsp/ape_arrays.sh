@@ -1,9 +1,9 @@
 #!/bin/bash
-# 유인원 등 추가 종 : T2T 조립본 내려받기 -> Rfam RF00001 cmsearch -> 5S array 목록 (다른 종과 같은 규칙)
-#   규칙은 종에 무관 : hit 사이 10 kb 이내면 한 array · 3 copy 이상 · copy 수 = hit 수 (bp/주기 환산 금지)
-#   씨앗만 종마다 다르다 : 여기서는 공변 모형(RF00001)이 그 역할을 한다 (사람 NTS 씨앗은 쓰지 않는다)
-#   인자 : "접근번호:이름" 목록 파일 · cmsearch 코어 수
-#   산출 : ~/xsp/cms/<name>.tbl · ~/xsp/5S_array_catalog_apes.tsv (append)
+# Additional species including the great apes: download the T2T assembly -> cmsearch with Rfam RF00001 -> the 5S array catalogue, under the same rules as the other species.
+#   The rules do not depend on the species: hits within 10 kb form one array, at least 3 copies, and copy number equals the hit count. Never derive it from bp / period.
+#   Only the seed differs between species; here the covariance model RF00001 plays that role, and the human NTS seed is not used.
+#   Arguments: a list file of "accession:name", and the number of cmsearch cores.
+#   Outputs: cms/<name>.tbl and 5S_array_catalog_apes.tsv (appended to).
 # MIT License · Copyright (c) 2026 Hungmin Kim
 set -u
 X=~/xsp

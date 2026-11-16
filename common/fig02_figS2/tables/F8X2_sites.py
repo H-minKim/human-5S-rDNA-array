@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 r"""Neighbour exchange rate, choosing positions by a principle (instead of removing the 12 diagnostic positions by hand)
 
-User definition
+Definition
   positions used = only variant positions that satisfy both conditions at the same time
     (1) pooling the terminal-type units of all individuals and all positions, the position is polymorphic
        (among terminal-type units there are both units that carry it and units that do not)

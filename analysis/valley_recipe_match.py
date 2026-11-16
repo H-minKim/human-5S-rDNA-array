@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 # The two measurements differ : `haplotype effect` 0.508 (54,472 units) against 0.495 here (778,798 read-units)
-#   ⇒ 조리법을 그쪽과 똑같이 맞춰 본다 : 칸 0.005 · 이동평균 5 칸 · 탐색 0.20-0.80
-#   ⇒ 그리고 집계 단위(read-유닛 ↔ 유닛)를 바꿔 가며 같은 조리법으로 잰다
-#      (기억 : "집계 범위를 바꿔 보기 전에 출처불명 금지")
+#   The recipe is matched exactly: bin width 0.005, a 5-bin moving average, and a search over 0.20-0.80.
+#   The same recipe is then applied with the unit of aggregation changed between the read-unit and the unit,
+#      which must be done before any difference is attributed to an unknown cause.
 import collections
 import gzip
 import os
@@ -12,8 +12,8 @@ import pandas as pd
 
 def _need(_v):
     """No defaults are set: the script stops if a variable is missing.
-    이 글이 읽는 자료의 뿌리는 README.md 의
-    "Running this code" 절에 적혀 있다."""
+    The roots of the data this script reads are listed in the
+    "Running this code" section of README.md."""
     import os as _o, sys as _s
     _x = _o.environ.get(_v)
     if not _x:
@@ -48,7 +48,7 @@ for i, L in enumerate(gzip.open(RU, "rt", encoding="utf8")):
         best[k] = (f[6], float(f[9]), f[0], f[1], f[3])
 
 readunit = np.array([v[1] for v in best.values()])
-# 유닛 수준 : 같은 (sample, slot, 유닛번호) 의 read 들을 하나로
+# at the unit level, the reads sharing a (sample, slot, unit index) are collapsed into one
 g = collections.defaultdict(list)
 for v in best.values():
     g[(v[2], v[3], v[4])].append(v[1])

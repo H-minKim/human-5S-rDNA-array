@@ -1,9 +1,9 @@
 #!/bin/bash
-# 같은 연구(PRJNA188516) 안에서 계열을 닫는다 — 대조군 보강
-#   지금까지 알(SRR837875)만 이 연구 것이고 체세포 대조(장·심장)는 다른 연구였다.
-#   이 연구 하나 안에 : 알 · 정자 · 16세포(ZGA 전) · 1k세포(ZGA 무렵) · Germring(6hpf) · 정소
-#   가 다 있으므로 연구·플랫폼 차이를 빼고 비교할 수 있다.
-#   앞 작업(zf_more_eggs.sh)이 끝난 뒤 이어서 돈다.
+# Close the series within one study, PRJNA188516, by strengthening the controls.
+#   The somatic controls, gut and heart, come from another study than the egg (SRR837875).
+#   This one study holds egg, sperm, 16-cell before ZGA, 1k-cell around ZGA, germ ring at 6 hpf, and testis,
+#   so the comparison can be made without any difference of study or platform.
+#   It runs after zf_more_eggs.sh has finished.
 set -u
 cd ~/zfwgbs
 export PATH=$HOME/zfwgbs/Bismark-0.24.2:$PATH

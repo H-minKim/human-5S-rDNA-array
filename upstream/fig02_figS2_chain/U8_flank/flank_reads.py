@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Extract flank sequences from junction reads + test whether the two haplotypes separate by flank alone (2026-09-14)
+# Extract flank sequences from junction reads + test whether the two haplotypes separate by flank alone
 #
 #   Reference frame : rc(distal flank 5000) + [canonical] + rc(proximal flank 5000)
 #   Reads were not trimmed, the part outside the reference is still in the SAM as soft-clip (measured median 50kb, max 345kb)
@@ -22,7 +22,7 @@ import socket
 NL = chr(10)
 TAB = chr(9)
 H = os.path.expanduser("~")
-OUT = os.path.expanduser(os.environ.get("OUT", "~/flankread"))
+OUT = os.path.expanduser(os.environ["OUT"])
 os.makedirs(OUT, exist_ok=True)
 CIG = re.compile(r"(\d+)([MIDNSHP=X])")
 FL = 5000                      # flank length contained in the reference

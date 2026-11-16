@@ -1,19 +1,19 @@
 # -*- coding: utf-8 -*-
-r"""그림이 읽을 표 셋을 한 패스로 낸다.
+r"""Writes the three tables the figure reads, in one pass.
 
-① `HMM_20261029_alu_by_zone.tsv` — 보충 (c) 가 읽을 표. 창 다섯.
-     `far`·`mid`·`up`·`gene` 는 발행 표와 같아야 한다(검산) ·
-     `alu` 는 `alu_own`(제 유닛 염기만)이다 — 나머지 넷이 `own_frac 1.0000` 이므로
-     그래야 다섯 창이 같은 자 위에 선다.
-② `HMM_20261029_paired_molecule_fraction.tsv` — 본문 (g) 범례의 `31.8% / 20.9%` 를
-     FiberHMM 판에서 다시 잰다 (적힌 값은 ft 판 `CHECK_20261012s` 였다).
-③ `HMM_20261029_label_rate_ratio.tsv` — 범례의 `2.80 배` 를 갈음한다.
-     `2.80` 은 어느 표에서도 재현되지 않았다(생성기 다섯 군데에 글자로만).
-     발행 표 `REF2_20261011_m6a_in_unit_by_state_cut508.tsv`(= 본문 (d)(e) 가 그리는 표)
-     에서 깊이가중 평균으로 재면 ONT 2.19 · PacBio 1.45 로 플랫폼마다 다르다
-     ⇒ 한 수로 적을 수 없다. 표로 내고 범례가 읽게 한다.
+(1) `HMM_20261029_alu_by_zone.tsv`: the table for supplementary panel (c). Five windows.
+     `far`, `mid`, `up` and `gene` must equal the published table (checked);
+     `alu` is `alu_own` (bases of the unit's own only): the other four have `own_frac 1.0000`,
+     so the five windows are on the same ruler.
+(2) `HMM_20261029_paired_molecule_fraction.tsv`: the paired molecule fractions quoted in the legend of main panel (g),
+     measured on the FiberHMM calls.
+(3) `HMM_20261029_label_rate_ratio.tsv`: the labelling rate ratio quoted in the legend.
+     It is measured per platform:
+     from the published table `REF2_20261011_m6a_in_unit_by_state_cut508.tsv` (the table main panels (d)(e) draw),
+     the depth-weighted mean is ONT 2.19 and PacBio 1.45,
+     so it is written as a table that the legend reads, not as one number.
 
-자·관문은 `zy7_make_hmm_tables.py` 를 그대로 베낀다 — 바꾸면 발행 넷이 안 맞는다.
+The rulers and gates are copied from `zy7_make_hmm_tables.py`; changing them breaks agreement with the four published tables.
 """
 import io
 import os
@@ -25,8 +25,8 @@ import numpy as np
 from scipy.stats import wilcoxon
 
 # The data and output roots are environment variables with no default (CONVENTIONS, "the deposited copy wins").
-#  저장소 안 파일로 가는 길은 `__file__` 에서 상대로 푼다 — `a_lib` 이 이 폴더에 같이 예치돼 있다.
-#  변수 표는 `README.md` §2 에 있다.
+#  Paths to files inside the repository are resolved relative to __file__; a_lib is deposited in this folder.
+#  The table of variables is in README.md, section 'Environment variables'.
 _HERE = os.path.dirname(os.path.abspath(__file__))
 
 
@@ -36,15 +36,15 @@ def _need(k):
     except KeyError:
         raise SystemExit(
             "environment variable %s is not set; it is required by %s. "
-            "The deposited copy has no default; see README.md section 2."
+            "The deposited copy has no default; see README.md, section 'Environment variables'."
             % (k, os.path.basename(__file__)))
 
 MY = _need("RDNA_FHMM_DIR")
 FH = os.path.join(MY, "data", "fhmm")
-#  쓰는 폴더다 — 발행 입력 폴더를 가리키면 그 표를 덮는다.
+#  This is written to: if it points at the published input folder, those tables are overwritten.
 HF = _need("RDNA_FIBERSEQ_DIR")
 R = os.path.join(HF, "01_latest_results")
-#  산출도 그 폴더에 둔다 (as-ran 은 캠페인 폴더였다 — `zy7` 과 같은 자리로 모았다).
+#  The output goes to that folder as well, which collects it in the same place as zy7.
 OUTD = R
 NL = chr(10)
 TB = chr(9)
@@ -53,7 +53,7 @@ CUT, MINCOV, LARGE = 0.508, 1800, 150
 
 REG = [("alu", -2122, -1805), ("far", -1500, -1000), ("mid", -900, -400),
        ("up", -300, -1), ("gene", 0, 118)]
-OWNONLY = {"alu"}                     # 이 창만 제 유닛 염기로 센다
+OWNONLY = {"alu"}                     # only this window is counted in the bases of its own unit
 
 sys.path.insert(0, _HERE)
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8',
@@ -176,7 +176,7 @@ def tally(nm):
 
 RES = collections.OrderedDict((nm, tally(nm)) for nm, _a, _b in REG)
 
-# ── ① 구역별 (창 다섯)
+# -- 1) per zone, over the five windows
 O1 = os.path.join(OUTD, "HMM_20261029_alu_by_zone.tsv")
 with io.open(O1, "w", encoding="utf8", newline=NL) as g:
     g.write("# FiberHMM 판 — 구역별 large MSP(>150bp) 덮은 염기 · 개체 단위 Wilcoxon" + NL)
@@ -194,7 +194,7 @@ with io.open(O1, "w", encoding="utf8", newline=NL) as g:
             g.write(TB.join(["region", plat, nm, str(r[0]), "%.5f" % r[1],
                              "%.5f" % r[2], "%.5f" % r[3], "%.3g" % r[4]]) + NL)
 
-# ── ② 짝 분자 비율 (FiberHMM 판)
+# -- 2) the paired-molecule fraction, on the FiberHMM measure
 O2 = os.path.join(OUTD, "HMM_20261029_paired_molecule_fraction.tsv")
 PAIRPCT = {}
 with io.open(O2, "w", encoding="utf8", newline=NL) as g:
@@ -210,7 +210,7 @@ with io.open(O2, "w", encoding="utf8", newline=NL) as g:
         PAIRPCT[plat] = 100.0 * b / a if a else float("nan")
         g.write(TB.join([plat, str(a), str(b), "%.4f" % PAIRPCT[plat]]) + NL)
 
-# ── ③ 표지율 배수 (발행 표에서)
+# -- 3) the fold change in marker rate, from the published table
 O3 = os.path.join(OUTD, "HMM_20261029_label_rate_ratio.tsv")
 P3 = os.path.join(R, "REF2_20261011_m6a_in_unit_by_state_cut508.tsv")
 rows3 = []
@@ -245,7 +245,7 @@ with io.open(O3, "w", encoding="utf8", newline=NL) as g:
         g.write(TB.join([plat, "%.4f" % o["L"][0], "%.4f" % o["H"][0],
                          "%.4f" % LAB[plat], str(o["L"][1]), str(o["H"][1])]) + NL)
 
-# ───────────────────────────────── 검산
+# ───────────────────────────────── checks
 print()
 print(ST + ST + " 검산 ① 발행 네 창이 그대로 재현되는가 (alu 는 새 창)")
 pub = {}
