@@ -165,13 +165,13 @@ def nums(s): return collections.Counter(x.replace(",", "") for x in NUM.findall(
 def en(s):
     s = s.strip()
     if not HAN.search(s): return s
-    if s not in TR: raise SystemExit("사전에 없음 : %r" % s)
+    if s not in TR: raise SystemExit("not in the dictionary : %r" % s)
     t = TR[s]
     a, b = nums(s), nums(t)
     miss = a - b
     miss = collections.Counter({k: v for k, v in miss.items() if k not in DROP_OK.get(s, set())})
     extra = b - a
-    if miss or extra: raise SystemExit("숫자 어긋남 %r\n  원문 %s\n  영어 %s\n  빠짐 %s 더함 %s" % (s, dict(a), dict(b), dict(miss), dict(extra)))
+    if miss or extra: raise SystemExit("number mismatch %r\n  source %s\n  English %s\n  missing %s added %s" % (s, dict(a), dict(b), dict(miss), dict(extra)))
     assert not HAN.search(t), t
     return t
 
@@ -209,9 +209,9 @@ for fig, rs in PANELS.items():
     ws.append(["Series types: line (x, y); scatter points (x, y); bars / rectangles (position, height); filled band (x, lower and upper edge); "
                "line segments (e.g. error bars: start and end); reference line (horizontal or vertical guide; x or y in axes fraction 0 to 1); "
                "image (matrix); text in panel (value labels, cell numbers, annotations). Names come from the panel legend; an empty name means the object has no legend entry."])
-    ws.append(["Panel letters follow the current figure. Composite: %s; extraction code srcdata.py md5 %s; generated %s."
+    ws.append(["Panel letters follow the current figure. Composite: %s; extraction code srcdata.py md5 %s."
                % (" and ".join("%s.png md5 %s%s" % (c, md5(os.path.join(P, "merged_Fig2_2026-10-10", c + ".png"))[:12], pg) for c, pg in comp),
-                  CODE_MD5, datetime.date.today().isoformat())])
+                  CODE_MD5)])
     ws.append([])
     hdr = ["Panel", "Sheet", "Panel content", "Denominator / cohort", "Unit of aggregation", "Definition (measure)", "Cut / threshold", "Orientation",
            "x-axis label", "y-axis label", "Legend entries", "Series blocks", "Data rows", "Panel image (English)", "Panel image md5 (png)"]
@@ -290,7 +290,7 @@ for fig, rs in PANELS.items():
     wb2 = load_workbook(out, read_only=True)
     ko = [(s.title, c.coordinate if hasattr(c, "coordinate") else "?", c.value) for s in wb2.worksheets for row in s.iter_rows() for c in row
           if isinstance(c.value, str) and HAN.search(c.value)]
-    print("■ %s · 시트 %d · 한글 칸 %d · md5 %s" % (fname, len(wb2.worksheets), len(ko), md5(out)[:10]))
+    print("%s, sheets %d, Korean cells %d, md5 %s" % (fname, len(wb2.worksheets), len(ko), md5(out)[:10]))
     assert not ko, ko[:5]
 for fig, letter, cell, nb, nr in report:
-    print("   %-5s %s %-24s 묶음 %3d · 줄 %6d" % (fig, letter, cell, nb, nr))
+    print("   %-5s %s %-24s groups %3d, lines %6d" % (fig, letter, cell, nb, nr))

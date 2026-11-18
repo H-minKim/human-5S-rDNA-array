@@ -8,7 +8,7 @@ import os
 DIAG12 = ("D1096:1", "635CT", "1164GA", "740GA", "DB43:2", "DB16:17", "488GC", "DB46:10", "DB58:1", "R1752CG", "R405CG", "R347CG")
 TMIN = 10
 MODE = os.environ.get("TERM_DEF", "k10")
-assert MODE in ("k10", "D1096"), "TERM_DEF 는 k10 또는 D1096"
+assert MODE in ("k10", "D1096"), "TERM_DEF is k10 or D1096"
 
 
 def n_diag(toks):

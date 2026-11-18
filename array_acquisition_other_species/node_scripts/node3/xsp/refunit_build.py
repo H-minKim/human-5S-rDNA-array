@@ -8,7 +8,7 @@
 #   Representative unit: a per-position majority over the units of modal length, then a check from the sequence that the gene lies at the end of the unit.
 #   Outputs: refunit/<array_id>.unit.fa, refunit/<array_id>.gene.fa, REFUNIT_PARAMS.tsv.
 #   Arguments: species key, fasta, tblout, structure table, output folder.
-# MIT License · Copyright (c) 2026 Hungmin Kim
+# MIT License. Copyright (c) 2026 Hyungmin Kim
 import io
 import os
 import sys
@@ -184,7 +184,7 @@ for (c, s0, e1, strand) in ARR:
     P.write(TAB.join([SP, aid, c, str(s0), str(e1), major, str(len(gg)), str(pm), str(LO), str(HI), str(PAD), str(CTX),
                       str(len(units)), str(brk), str(ml), str(gl), str(gstart), atend, "%.1f" % idp,
                       gepct, medid, usable, ";".join(why)]) + NL)
-    print("%s : 유전자HSP %d · 주기 %d (LO %d HI %d) · 유닛 %d (끊김 %d) · 대표 %d bp · 유전자 끝 %s (자리 %s · 일치 %.1f%%)"
+    print("%s : gene HSP %d, period %d (LO %d HI %d), units %d (broken %d), representative %d bp, gene end %s (position %s, identity %.1f%%)"
           % (aid, len(gg), pm, LO, HI, len(units), brk, ml, atend, gstart, idp))
     for x in (rp,):
         try:

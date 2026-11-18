@@ -109,25 +109,25 @@ OUT.close()
 
 tot = ok["배정"] + ok["서열없음"]
 print("=" * 80)
-print("  2단계. 서열 배정 — 확정 하플로타입 %d" % tot)
+print("  Stage 2. Sequence assignment: confirmed haplotypes %d" % tot)
 print("=" * 80)
-print("  서열 배정됨 : %d (%.1f%%) · 서열 없음 %d" %
+print("  sequence assigned: %d (%.1f%%), no sequence %d" %
       (ok["배정"], 100.0 * ok["배정"] / tot, ok["서열없음"]))
 print()
-print("  배정된 서열의 출처")
+print("  source of assigned sequences")
 for k, v in kcnt.most_common():
     print("     %-12s %4d (%5.1f%%)" % (KNAME[k], v, 100.0 * v / ok["배정"]))
 print()
-print("  === 서열이 없어 다음 순위로 내려간 건 ===")
+print("  === cases that fell to the next rank for lack of a sequence ===")
 for s, h, b in demoted:
-    print("     %-11s 순위%d 채택 %3d 유닛 (%s) — 상위 군집엔 서열이 없었다" %
+    print("     %-11s rank%d adopted %3d units (%s): the higher-ranked cluster had no sequence" %
           (s, h["rank"], b["u"], KNAME[b["kind"]]))
-print("  내려간 건 : %d" % len(demoted))
+print("  cases that fell: %d" % len(demoted))
 print()
 if miss:
-    print("  서열 없는 슬롯 %d 건 (유닛 수만 남김 — 재조합관통 단독 등)" % len(miss))
+    print("  slots without sequence %d (only the unit count kept: recombined spanning alone, etc.)" % len(miss))
     for s, h in miss:
-        print("     %-12s %3d 유닛  [%s]  그 개체의 서열 후보: %s" %
+        print("     %-12s %3d units  [%s]  sequence candidates of that individual: %s" %
               (s, h["u"], h["m"],
                ",".join("%s%d" % (c["kind"], c["u"]) for c in sorted(
                    IDX.get(s, []), key=lambda c: c["u"])) or "없음"))

@@ -66,12 +66,12 @@ def cut_block(s, tag):
     """cut out only the group `<g id="tag">`, counting matching tags"""
     i = s.find('<g id="%s">' % tag)
     if i < 0:
-        raise SystemExit("못 찾음 : " + tag)
+        raise SystemExit("not found: " + tag)
     j, depth = i, 0
     while True:
         m = GRE.search(s, j)
         if not m:
-            raise SystemExit("짝이 안 맞는다 : " + tag)
+            raise SystemExit("pairs do not match: " + tag)
         depth += 1 if m.group(0) == "<g" else -1
         j = m.end()
         if depth == 0:
@@ -127,7 +127,7 @@ def _resize(m):
 s = io.open(os.path.join(SRC, D5 + ".svg"), encoding="utf8").read()
 n_before = s.count("<text")
 s, ncut = cut_block(s, "axes_33")
-print("D5 : axes_33 %d 자 잘라냄" % ncut)
+print("D5: axes_33 %d characters cut out" % ncut)
 
 keep = set()
 ax = [m.start() for m in re.finditer(r'<g id="axes_\d+">', s)] + [len(s)]
@@ -154,7 +154,7 @@ for t in sorted(drop, key=lambda z: -z["span"][0]):
     out = out[:t["span"][0]] + out[t["span"][1]:]
 out = TEXT.sub(_resize, out)
 io.open(os.path.join(DST, D5 + ".svg"), "w", encoding="utf8", newline=NL).write(out)
-print("D5 : 글 %d -> %d (솎음 %d) · 크기 %.2f px" %
+print("D5: texts %d -> %d (thinned %d), size %.2f px" %
       (n_before, out.count("<text"), len(drop), T))
 
 # ──────────────────────────────── panel A (D1)
@@ -184,7 +184,7 @@ for m in re.finditer(r'<path d="M\s*([-\d.]+)\s+([-\d.]+)\s*(L[^"]*?)z', s1, re.
     if max(bx) < XR0 - 1:
         bars.append(max(bx))
 XCUT = max(bars)
-print("D1 : x 창 %.1f -> %.1f (데이터 %.0f -> %.0f bp)"
+print("D1: x window %.1f -> %.1f (data %.0f -> %.0f bp)"
       % (XR0, XCUT, (XR0 - XL0) / 0.29340, (XCUT - XL0) / 0.29340))
 # a) pull in the right line of the frame and the background
 blk = s1[i1:]
@@ -201,7 +201,7 @@ while True:
     if not gone:
         break
     s1, _c = cut_block(s1, gone)
-    print("D1 : 창 밖 눈금 %s 뺌" % gone)
+    print("D1: ticks outside the window %s dropped" % gone)
 # c) remove the x-axis name, "array unit coordinate (v11 canonical; ...)", and
 # the panel title, "a) which part of the array unit ...".
 # (v11 is an internal release name, not a scientific term.)
@@ -211,7 +211,7 @@ for _t in sorted([t for t in texts(s1)
                   if "coordinate" in t["text"] or t["text"].startswith("a) which part")],
                  key=lambda z: -z["span"][0]):
     s1 = s1[:_t["span"][0]] + s1[_t["span"][1]:]
-    print("D1 : 뺀 글 %r" % _t["text"][:46])
+    print("D1: dropped text %r" % _t["text"][:46])
 
 # d) the bar colours are set to the paper's segment palette, matching the panels above and below
 # (the source panel has its own orange-to-blue palette; the colours of Figures 4E, 4F and 5 replace it).
@@ -286,7 +286,7 @@ new1 = re.sub(r'viewBox="0 0 [\d.]+ [\d.]+"',
 new1 = new1.replace('<g id="figure_1">',
                     '<g id="figure_1" transform="translate(%.3f,0)">' % DX, 1)
 io.open(os.path.join(DST, D1 + ".svg"), "w", encoding="utf8", newline=NL).write(new1)
-print("D1 : 줄 이름 x %.1f -> %.1f · 통째로 %.1f 밀고 폭 %.1f -> %.1f"
+print("D1: row label x %.1f -> %.1f, whole shifted by %.1f and width %.1f -> %.1f"
       % (lab[0]["x"], NEWX, DX, W1, NEWW))
 
 
@@ -333,7 +333,7 @@ def rebuild_pdf(name, dx=0.0, neww=None, newh=None, cut=None, box=None,
         for x0, y0, x1, y1, c in band:
             pg.draw_rect(pymupdf.Rect(x0 + dx, y0, x1 + dx, y1),
                          color=None, fill=_rgb(c), width=0)
-        print("   구획 색 띠 %d 칸" % len(band))
+        print("   segment color band %d cells" % len(band))
     for _cx, _y0, _y1 in leads:
         pg.draw_line(pymupdf.Point(_cx + dx, _y0), pymupdf.Point(_cx + dx, _y1),
                      color=(0.604, 0.639, 0.694), width=0.5)
@@ -346,10 +346,10 @@ def rebuild_pdf(name, dx=0.0, neww=None, newh=None, cut=None, box=None,
                             graphics=(pymupdf.PDF_REDACT_LINE_ART_REMOVE_IF_TOUCHED
                                       if box else
                                       pymupdf.PDF_REDACT_LINE_ART_REMOVE_IF_COVERED))
-        print("   지운 자리 %s" % (cut,))
+        print("   erased positions %s" % (cut,))
     if box:
         pg.draw_rect(pymupdf.Rect(*box), color=(0, 0, 0), width=0.8)
-        print("   틀을 다시 그림 %s" % (box,))
+        print("   frame redrawn %s" % (box,))
     sv = io.open(os.path.join(DST, name + ".svg"), encoding="utf8").read()
     pg.insert_font(fontname="ari", fontfile=AR)
     pg.insert_font(fontname="arib", fontfile=ARB)
@@ -369,7 +369,7 @@ def rebuild_pdf(name, dx=0.0, neww=None, newh=None, cut=None, box=None,
     d.save(os.path.join(DST, name + ".tmp.pdf"), deflate=True, garbage=3)
     d.close()
     os.replace(os.path.join(DST, name + ".tmp.pdf"), q)
-    print("%-36s pdf : 옛 글자층 %d 덩이 걷고 %d 개 다시 적음" % (name, n0, put))
+    print("%-36s pdf: %d blocks of the existing text layer stripped, %d written again" % (name, n0, put))
 
 
 rebuild_pdf(D5, cut=CUT33)

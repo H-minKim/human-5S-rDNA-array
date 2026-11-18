@@ -3,11 +3,11 @@
 #   Input: the MM/ML of the batch BAMs (junction in placed_bam, ARRAY_ONLY in placed_bam_g8), exactly as they came off the read.
 #          Unit boundaries: unit_start and unit_end from the CONSENSUS_MAP (canonV8).
 #   The coordinate rules, verified against sequence in the pilot at a CpG hit rate of 0.986:
-#     · MM is in the original read orientation. For a reverse alignment the SAM SEQ is flipped, so
+#     - MM is in the original read orientation. For a reverse alignment the SAM SEQ is flipped, so
 #       the original coordinate op is mapped to the SEQ coordinate sp = len(SEQ) - 1 - op, and then to reference coordinates through the CIGAR.
-#     · A C on a reverse read lands on the G of the forward canonical sequence, so 1 is subtracted to bring it onto the C of the CpG.
+#     - A C on a reverse read lands on the G of the forward canonical sequence, so 1 is subtracted to bring it onto the C of the CpG.
 #       Without this correction the hit rate falls to 0.65.
-#     · A junction BAM is in the frame [flank 5000][canonical][flank 5000], so 5000 is subtracted from the reference coordinate; ARRAY_ONLY is used as is.
+#     - A junction BAM is in the frame [flank 5000][canonical][flank 5000], so 5000 is subtracted from the reference coordinate; ARRAY_ONLY is used as is.
 #   Outputs, gzipped:
 #     METH_READUNIT_<node>.tsv.gz: individual, source, configuration, slot, unit index, read, strand, CpG count, methylated count, beta, calls.
 #         calls is a list of "position within unit:value" with the value 0-255 as the raw ML, so any part of any read can be inspected directly.
@@ -23,7 +23,6 @@ import bisect
 import subprocess
 import collections
 
-#  The compute node's home directory. "ubuntu" is the default account name of the AMI, not a person's name.
 H = os.environ["NODE_HOME"]   # the compute node's home directory
 NL = chr(10)
 TAB = chr(9)
@@ -193,4 +192,4 @@ for k in sorted(SITE):
 SI.close()
 for k, v in sorted(T.items()):
     print("  %-16s %d" % (k, v))
-print("  자리 %d" % len(SITE))
+print("  positions %d" % len(SITE))

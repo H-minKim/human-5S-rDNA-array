@@ -6,8 +6,8 @@ s = open(p).read()
 old = '  if [ "$got" != "$md5" ]; then'
 new = '  if [ "$md5" = "NOMD5" ]; then log "$acc md5 모름 - 크기만 확인"; elif [ "$got" != "$md5" ]; then'
 if new.split(";")[0] in s:
-    print("이미 패치됨")
+    print("already patched")
 else:
-    assert old in s, "패턴 못 찾음"
+    assert old in s, "pattern not found"
     open(p, "w").write(s.replace(old, new, 1))
-    print("패치 완료")
+    print("patch done")

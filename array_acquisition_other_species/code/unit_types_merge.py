@@ -3,7 +3,7 @@
 #   In the G8 frame a unit is [spacer][gene] with the gene at the end, so a position beyond unit_length - 120 lies in the gene.
 #   The length difference between the group representative sequences is recorded as well.
 #   Argument: the 00_catalog folder.
-# MIT License · Copyright (c) 2026 Hungmin Kim
+# MIT License. Copyright (c) 2026 Hyungmin Kim
 import io
 import os
 import sys

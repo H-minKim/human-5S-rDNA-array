@@ -65,4 +65,4 @@ for L in fm:
         dropped += 1
 O.close()
 print("%s -> %s" % (MAPF, OUTF))
-print("  그대로 %d · 좌표 되돌림 %d · 뺀 행(수술 창과 겹침) %d" % (kept, moved, dropped))
+print("  unchanged %d, coordinates mapped back %d, dropped rows (overlap the repair window) %d" % (kept, moved, dropped))

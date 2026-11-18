@@ -13,7 +13,7 @@
 #   Also counted: units whose event pattern matches neither group pattern, that is mixed ones.
 #
 # Arguments: array_id, map (g8mr.tsv), group members (members.tsv), species key, output folder.
-# MIT License · Copyright (c) 2026 Hungmin Kim
+# MIT License. Copyright (c) 2026 Hyungmin Kim
 import io
 import os
 import re
@@ -142,11 +142,11 @@ ds = sorted(diffs)
 mm = max(abs(x) for x in ds) if ds else 1
 nmid = sum(1 for x in ds if abs(x) < 0.2 * mm)
 purep = sum(1 for i in range(n) if top and (key[i] == top[0] or (len(top) > 1 and key[i] == top[1])))
-print("%-46s 유닛 %3d · 사건 %2d · 패턴순수 %3d(%4.1f%%) · 점수차 가운데 %3d(%4.1f%%) · %s"
+print("%-46s units %3d, events %2d, pattern-pure %3d(%4.1f%%), score difference in the middle %3d(%4.1f%%), %s"
       % (AID[:46], n, len(evv), purep, 100.0 * purep / n, nmid, 100.0 * nmid / n,
          " ".join("%s=%d" % (k, v) for k, v in sorted(fin.items()))))
 hist = collections.Counter()
 for x in ds:
     hist[int(round(10.0 * x / mm))] += 1
-print("      점수차 분포(-10=grp2 쪽 ... +10=grp1 쪽) : "
+print("      score-difference distribution (-10=grp2 side ... +10=grp1 side) : "
       + " ".join("%d:%d" % (b, hist[b]) for b in sorted(hist)))

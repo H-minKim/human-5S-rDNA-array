@@ -6,14 +6,15 @@
 #            plus the key contrasts, zebra finch chr9 against the rest and zebrafish chr18 against chr4, with their differences and bootstrap 95% intervals.
 #   Zebra finch chr2: the maternal and paternal arrays are byte-identical, so a haplotype cannot be assigned and the two are merged into one locus.
 #   Zebrafish ONT: many chr4 arrays carry few reads, so only arrays with at least MINR reads count as a locus, against the single chr18 array.
-# MIT License · Copyright (c) 2026 Hungmin Kim
+# MIT License. Copyright (c) 2026 Hyungmin Kim
+import os
 import collections
 import csv
 import io
 import numpy as np
 
 rng = np.random.default_rng(0)
-D = "$RDNA_OTHERSP_DIR/data_v2/13_array_level_diff/"
+D = os.environ["RDNA_OTHERSP_DIR"] + "/data_v2/13_array_level_diff/"
 T = "\t"
 MINC = 10      # to be used as a read value, the read must carry at least 10 CpG sites at that locus
 MINR = 20      # to enter the test as a locus, at least 20 reads are required
@@ -142,4 +143,4 @@ for sp in ("zfinch", "zebrafish"):
                 tst.write(T.join([sp, s, "chr4 array 끼리 η²", str(len(c4)), str(sum(len(g) for g in c4)), "%.3f" % e, "%.4f" % p, "", "", "", "", ""]) + "\n")
 tab.close()
 tst.close()
-print("완료")
+print("done")

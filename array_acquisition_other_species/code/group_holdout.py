@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 # An independent check on the call that several types are present: the block variants are split as events into an odd and an even half,
 #   the units are partitioned separately from each half, and the two partitions are compared.
-#   · If the subtypes (haplotypes) are real, half the variants still produce the same partition.
-#   · If it is noise, the two partitions disagree.
+#   - If the subtypes (haplotypes) are real, half the variants still produce the same partition.
+#   - If it is noise, the two partitions disagree.
 #   Agreement is the Adjusted Rand Index (0 = chance, 1 = identical) plus the fraction of unit pairs that agree.
 #   Also reported: how many positions the group representative sequences actually differ at, and the variant frequency within and outside each group.
 #   Arguments: the map folder, [EVGAP = 20].
-# MIT License · Copyright (c) 2026 Hungmin Kim
+# MIT License. Copyright (c) 2026 Hyungmin Kim
 import io
 import os
 import re
@@ -95,7 +95,7 @@ def partition(V, n, sel):
     return lab
 
 
-print("%-46s %5s %6s %6s %7s %7s %s" % ("array", "유닛", "블록변이", "사건", "ARI", "쌍일치", "홀/짝 그룹크기"))
+print("%-46s %5s %6s %6s %7s %7s %s" % ("array", "유닛", "블록변이", "사건", "ARI", "pair match", "홀/짝 그룹크기"))
 for fn in sorted(os.listdir(MAPD)):
     if not fn.endswith(".g8map.tsv"):
         continue

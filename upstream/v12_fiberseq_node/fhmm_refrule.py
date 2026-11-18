@@ -69,17 +69,17 @@ for k, (lo, hi) in COV.items():
     if np.any((idx > R_MINP) & (idx < R_MAXP)):
         nref += 1
 
-print("read x 유닛 %d · 레퍼런스 규칙 양성 %d (%.2f%%)"
+print("read x unit %d, reference-rule positive %d (%.2f%%)"
       % (ntot, nref, 100.0 * nref / max(ntot, 1)))
 szs = np.array(szs)
 if len(szs):
-    print("TF footprint %d · 크기 중앙 %.0f (25~75%% %.0f~%.0f)"
+    print("TF footprints %d, median size %.0f (25~75%% %.0f~%.0f)"
           % (len(szs), np.median(szs), *np.percentile(szs, [25, 75])))
 print()
-print("== TF footprint 중심 분포 (20 bp 칸 · TSS 기준) ==")
+print("== distribution of TF footprint centers (20 bp bins, relative to TSS) ==")
 for a in range(-200, 200, 20):
     i0, i1 = a - TLO, a + 20 - TLO
     n = HTF[i0:i1].sum()
     c = NCO[i0:i1].mean()
-    print("  %+5d..%+5d  TF %6.0f   덮개 %7.0f   섬유당 %.4f"
+    print("  %+5d..%+5d  TF %6.0f   coverage %7.0f   per fiber %.4f"
           % (a, a + 19, n, c, n / max(c, 1)))

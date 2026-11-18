@@ -2,8 +2,8 @@
 #  The dispersed curve of Fig 4G recombined over a set of sites (the same 29 sites as S5)
 #    Rule = prof() / group_get() of `$RDNA_WORK_ROOT/code/disp_03_analyze.py`:
 #      for each bin (50 bp, 45 bins) the sum of meth over the sum of n (adding sites and halves 0+1); an empty bin where sum of n < 30
-#    Input = `dispersed_vs_array_cut0508/DISP_SITE_BINS_ALL.tsv` (the folder Claim_G reads; cut 0.508)
-#    (1) whether the group rows of DISP_PROFILES.tsv are reproduced with the current 28 sites (cover_pattern of generation 58 = five segments)
+#    Input = `dispersed_vs_array_cut0508/DISP_SITE_BINS_ALL.tsv` (cut 0.508)
+#    (1) whether the group rows of DISP_PROFILES.tsv are reproduced with the current 28 sites (cover_pattern = five segments)
 #    (2) the curve over the same 29 sites as S5 -> DISP_PROFILES_S42SET29_2026-10-31.tsv (same shape; kind=group; name=S42SET29)
 #  Usage: python -B f4g_profile_2026-10-31.py <output folder>
 import collections
@@ -69,7 +69,7 @@ for st in ("low", "high"):
             assert a is None and t == "", (st, b, a, t)
             continue
         worst = max(worst, abs(round(a, 4) - float(t)))
-print("① 28 자리 재현 : 칸별 최대 |차| (4 자리 반올림 뒤) %.4f" % worst)
+print("(1) reproduction of the 28 positions: max |difference| per bin (after rounding to 4 decimals) %.4f" % worst)
 assert worst == 0.0
 
 #  (2) the 29 sites of S5
@@ -78,7 +78,7 @@ S29 = sorted(r["site"] for r in B)
 assert len(S29) == 29 and set(S29) <= set(S58)
 for s in S29:
     assert S58[s]["cover_pattern"] == [r for r in B if r["site"] == s][0]["cover_pattern"], s
-print("② 29 자리 · 58 판 좌위 합 %d · 다섯 구획 %d · 28 과 겹침 %d · 28 에만 %s · 29 에만 %s" % (
+print("(2) 29 positions, locus total of the 58 panels %d, five segments %d, overlap with 28 %d, only in 28 %s, only in 29 %s" % (
     sum(int(S58[s]["n_loci"]) for s in S29), sum(1 for s in S29 if S58[s]["cover_pattern"].count("+") == 4),
     len(set(S28) & set(S29)), sorted(set(S28) - set(S29)), sorted(set(S29) - set(S28))))
 rows = ["kind\tname\tstate\t" + "\t".join("b%d" % b for b in range(NB))]
@@ -106,10 +106,10 @@ for st in ("low", "high"):
         vb = [b_[b][0] for b in ib if b_[b][0] is not None]
         out.append("%s %s→%s" % (nm, "%.3f" % (sum(va) / len(va)) if va else "-", "%.3f" % (sum(vb) / len(vb)) if vb else "-"))
     diff = [abs(a[b][0] - b_[b][0]) for b in range(NB) if a[b][0] is not None and b_[b][0] is not None]
-    print("  %-4s 28→29 : %s · 칸 최대 |차| %.3f · 빈 칸 %d→%d" % (
+    print("  %-4s 28->29: %s, max bin |difference| %.3f, empty bins %d->%d" % (
         st, " · ".join(out), max(diff), sum(v is None for v, _n, _k in a), sum(v is None for v, _n, _k in b_)))
 print("Σn (low+high) 28 %d · 29 %d" % (sum(p[1] for st in ("low", "high") for p in prof(S28, st)),
                                        sum(p[1] for st in ("low", "high") for p in prof(S29, st))))
-print("입력 md5 BINS %s · SITES %s · PROFILES %s · rule2 %s" % (
+print("input md5 BINS %s, SITES %s, PROFILES %s, rule2 %s" % (
     md5(os.path.join(D, "DISP_SITE_BINS_ALL.tsv")), md5(os.path.join(D, "DISP_SITES_TABLE.tsv")),
     md5(os.path.join(D, "DISP_PROFILES.tsv")), md5(K)))

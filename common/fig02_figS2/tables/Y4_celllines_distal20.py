@@ -18,7 +18,6 @@ import v11_io as G
 import termdef as TD   # terminal-type definition (10 or more of the 12 diagnostic variants)
 from Bio import Align
 # cell line units are also called with the 12 diagnostic variants. Align globally to CAN, call v4 tokens and count with TD.n_diag
-#   (test Y4ALN_TEST_1031: 12 units with the context-1096 deletion = 12 units with alignment D1096:1, those 12 have 11-12 diagnostics, the other 103 units have 0-4)
 _AL = Align.PairwiseAligner(mode="global", match_score=2, mismatch_score=-3, open_gap_score=-5, extend_gap_score=-1)
 def aln_tokens(s):
     a = _AL.align(G.CAN, s)[0]
@@ -53,7 +52,7 @@ def read_fa(p):
 def kset(s): return set(s[i:i + K] for i in range(len(s) - K + 1))
 def jac(a, b): return len(a & b) / max(len(a | b), 1)
 files = sorted(glob.glob(os.path.join(SRC, "*_distal20.fa")))
-print("파일 %d : %s" % (len(files), ", ".join(os.path.basename(f) for f in files)))
+print("files %d : %s" % (len(files), ", ".join(os.path.basename(f) for f in files)))
 g = io.open(os.path.join(OUT, "Y4_cellline_units.tsv"), "w", encoding="utf8", newline="\n")
 g.write("assembly\tdepth\tunit_name\tlen\tcall_1096\tcall_635\ttype\tjac_to_prev\tn_diag12\n")
 summ = []
@@ -92,17 +91,17 @@ for p in files:
 g.close()
 g = io.open(os.path.join(OUT, "Y4_cellline_summary.tsv"), "w", encoding="utf8", newline="\n")
 g.write("assembly\tn_units\tterminal_depths\tgaps\tjac_lag1\tjac_lag2\tjac_lag3\tn_groups\tn_uncalled\n")
-print("\n=== 세포주 원위 20 유닛 ===")
-print("  조립본                유닛  말단형 자리        간격      닮음 간격1  간격2  간격3   그룹수")
+print("\n=== cell lines, distal 20 units ===")
+print("  assembly              units terminal-type positions  gaps    similarity gap1  gap2  gap3   n_groups")
 for r in summ:
     g.write("%s\t%d\t%s\t%s\t%.4f\t%.4f\t%.4f\t%d\t%d\n" % r)
     print("  %-20s %4d  %-16s %-8s %8.3f %6.3f %6.3f %7d" % (r[0], r[1], r[2], r[3], r[4], r[5], r[6], r[7]))
 g.close()
 allg = [x for r in summ for x in ([int(y) for y in r[3].split(",")] if r[3] != "—" else [])]
-print("\n  모든 세포주 간격 모음 : " + (" · ".join("%d 칸 %d" % (k, v) for k, v in sorted(collections.Counter(allg).items())) if allg else "말단형 2 개 이상인 조립본 없음"))
+print("\n  gaps pooled over all cell lines : " + (" · ".join("%d 칸 %d" % (k, v) for k, v in sorted(collections.Counter(allg).items())) if allg else "말단형 2 개 이상인 조립본 없음"))
 d = [r[5] - r[4] for r in summ]
-print("  간격2 − 간격1 (조립본별) : " + " · ".join("%+.3f" % x for x in d) + "  · 평균 %+.4f" % np.mean(d))
-print("\n저장 :", OUT)
+print("  gap2 − gap1 (per assembly) : " + " · ".join("%+.3f" % x for x in d) + "  · 평균 %+.4f" % np.mean(d))
+print("\nsaved :", OUT)
 
 # the deposited table(s) carry English column names and values (common/fig02_figS2/taben.py)
 import sys as _s, os as _o

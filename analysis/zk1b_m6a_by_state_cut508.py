@@ -49,9 +49,9 @@ import a_lib as L                                      # noqa: E402
 
 # ─────────────────────────────────────────────────────────────────
 # Loader that splits low and high methylation at `beta <= 0.508`
-#   · It returns the same key as a13: (sample, source, read_id, slot, array_pos) -> 'L' or 'H'.
-#   · There is no undecided class: every unit is called one or the other.
-#   · The robustness evidence is in the three-criteria robustness check, where all 18 combinations give the same sign.
+#   - It returns the same key as a13: (sample, source, read_id, slot, array_pos) -> 'L' or 'H'.
+#   - There is no undecided class: every unit is called one or the other.
+#   - The robustness evidence is in the three-criteria robustness check, where all 18 combinations give the same sign.
 CUT508 = 0.508
 
 
@@ -116,8 +116,8 @@ for p in sorted(glob.glob(os.path.join(SRCD, "*.tsv.gz"))):
                 chk_m += abs(k_ - int(x[h["n_m6a"]])); chk_t += int(x[h["n_m6a"]])
             except Exception:
                 pass
-print("쓴 read x 유닛 %d" % nrow)
-print("검산 : ML>=%d 로 센 m6A 와 표의 n_m6a 차이 합 %d / %d (%.3f%%)"
+print("read x unit used %d" % nrow)
+print("check: summed difference between m6A counted at ML>=%d and n_m6a of the table %d / %d (%.3f%%)"
       % (ML, chk_m, chk_t, 100.0 * chk_m / max(1, chk_t)))
 
 rows = []
@@ -126,8 +126,8 @@ for (plat, st, up), d in sorted(den.items()):
         continue
     rows.append((plat, st, up, 100.0 * num[(plat, st, up)] / d, d))
 with io.open(OUT, "w", encoding="utf8", newline=chr(10)) as g:
-    g.write("# 유닛 안 자리별 m6A — 분모는 깊이(그 자리를 덮은 분자 수) · 상태별" + chr(10))
-    g.write("# m6A 판정 = ML >= %d · 검산 : 표의 n_m6a 와 차이 %.3f%%"
+    g.write("# m6A by position within the unit: denominator is depth (number of molecules covering the position), by state" + chr(10))
+    g.write("# m6A call = ML >= %d, check: difference from n_m6a of the table %.3f%%"
             % (ML, 100.0 * chk_m / max(1, chk_t)) + chr(10))
     g.write(chr(9).join(["플랫폼", "상태", "unit_pos", "m6a_분자비율_%", "깊이"]) + chr(10))
     for r in rows:
@@ -137,7 +137,7 @@ for plat in ("ONT", "PacBio"):
     for st in ("L", "H"):
         v = np.array([r[3] for r in rows if r[0] == plat and r[1] == st])
         if len(v):
-            print("   %-7s %s : 자리 %4d · 평균 %6.2f%%"
+            print("   %-7s %s: positions %4d, mean %6.2f%%"
                   % (plat, "저메틸" if st == "L" else "고메틸", len(v), v.mean()))
 print()
-print("적었다 ->", os.path.basename(OUT))
+print("written ->", os.path.basename(OUT))

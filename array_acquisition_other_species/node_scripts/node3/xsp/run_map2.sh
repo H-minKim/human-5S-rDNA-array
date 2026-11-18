@@ -6,5 +6,5 @@ for sp in human_CHM13v2 chimp_mPanTro3 bonobo_mPanPan1 gorilla_mGorGor1 orang_su
 done
 head -1 smap2/MAP_SUMMARY_human_CHM13v2.tsv > smap2/MAP_SUMMARY.tsv
 for f in smap2/MAP_SUMMARY_*.tsv; do case $f in *"/MAP_SUMMARY.tsv") continue;; esac; tail -n +2 $f >> smap2/MAP_SUMMARY.tsv; done
-echo "2판 끝 $(date -u +%H:%M) UTC · array $(($(wc -l < smap2/MAP_SUMMARY.tsv)-1))"
-awk -F"\t" "NR>1{t+=\$8; m+=\$9; b+=\$10; n+=\$11} END{printf \"유닛 합 %d : minimap2 %d · blastn %d · 실패 %d (%.2f%%)\n\", t, m, b, n, 100*n/t}" smap2/MAP_SUMMARY.tsv
+echo "version 2 finished $(date -u +%H:%M) UTC, array $(($(wc -l < smap2/MAP_SUMMARY.tsv)-1))"
+awk -F"\t" "NR>1{t+=\$8; m+=\$9; b+=\$10; n+=\$11} END{printf \"unit total %d : minimap2 %d, blastn %d, failed %d (%.2f%%)\n\", t, m, b, n, 100*n/t}" smap2/MAP_SUMMARY.tsv

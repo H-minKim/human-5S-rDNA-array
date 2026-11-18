@@ -5,7 +5,7 @@ mkdir -p grp2
 for d in mapcur/*/; do
   sp=$(basename "$d")
   fa=asm/${sp}.fna
-  [ -f "$fa" ] || { echo "SKIP $sp (fasta 없음)"; continue; }
+  [ -f "$fa" ] || { echo "SKIP $sp (fasta none)"; continue; }
   echo "=== $sp ==="
   python3 unit_groups2.py "$sp" "$fa" "$d" grp2 50
 done

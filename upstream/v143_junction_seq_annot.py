@@ -30,7 +30,7 @@ alu = canon[0:318]                                   # v100 SEG : ("alu", 1, 318
 KM = set()
 for i in range(len(alu) - KS + 1):
     KM.add(alu[i:i + KS]); KM.add(rc(alu[i:i + KS]))
-P("[0] 정본 유닛 %d bp · alu 구간 %d bp · 16-mer 씨앗 %d 개" % (len(canon), len(alu), len(KM)))
+P("[0] canonical unit %d bp, alu segment %d bp, 16-mer seeds %d" % (len(canon), len(alu), len(KM)))
 
 O = pd.read_csv(OFF, sep="\t", dtype={"slot": str})
 key = {(r.sample, str(r.slot)): r for r in O.itertuples(index=False)}
@@ -93,15 +93,15 @@ with tarfile.open(TAR) as tf:
                 if hit[p]: a[2] += 1
         for (side, b), (bp, cg, al) in acc.items():
             rows.append(dict(sample=smp, slot=slot, side=side, b=b, bp=bp, n_cpg=cg, n_alu=al))
-        if n_ok % 50 == 0: P("   %d 하플로 ... %s|%s" % (n_ok, smp, slot))
+        if n_ok % 50 == 0: P("   %d haplotypes ... %s|%s" % (n_ok, smp, slot))
 F = pd.DataFrame(rows)
 F.to_csv(T + "/JUNCTION_SEQ_ANNOT.tsv", sep="\t", index=False)
-P("[1] 저장 02_tables/JUNCTION_SEQ_ANNOT.tsv · 하플로 %d · 행 %d" % (n_ok, len(F)))
+P("[1] saved 02_tables/JUNCTION_SEQ_ANNOT.tsv, haplotypes %d, rows %d" % (n_ok, len(F)))
 g = F.groupby(["side", "b"]).agg(bp=("bp", "sum"), cg=("n_cpg", "sum"), al=("n_alu", "sum"))
 g["cpg_per_kb"] = 1000 * g.cg / g.bp; g["alu_frac"] = g.al / g.bp
 for side in ("근위", "원위"):
     s = g.loc[side].sort_index()
     sel = [x for x in (-4000, -2000, -1000, 0, 500, 1000, 2000, 4000, 6000, 10000, 20000, 30000, 40000) if x in s.index]
     P("   %s CpG/kb : %s" % (side, " ".join("%d:%.1f" % (k, s.loc[k, "cpg_per_kb"]) for k in sel)))
-    P("   %s Alu 비율: %s" % (side, " ".join("%d:%.2f" % (k, s.loc[k, "alu_frac"]) for k in sel)))
+    P("   %s Alu fraction: %s" % (side, " ".join("%d:%.2f" % (k, s.loc[k, "alu_frac"]) for k in sel)))
 LOG.close()

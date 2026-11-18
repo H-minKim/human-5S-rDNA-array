@@ -60,12 +60,12 @@ _H2 = set(_TI[_TI.tier == "H2"]["sample"] + "|" + _TI[_TI.tier == "H2"]["slot"])
 R = R[(R.fam != "HPRC") | (R.hap.isin(_H2))].copy()
 U = R.groupby(["fam", "sample", "hap", "ap", "N"], as_index=False).b.mean()
 H = U[U.fam == "HPRC"].b.values
-print("HPRC 유닛 %s" % format(len(H), ","))
+print("HPRC units %s" % format(len(H), ","))
 np.random.seed(20261025)
 print()
-print("## HPRC 를 작게 뽑아 보면 — `figx25` 의 같은 자")
+print("## HPRC subsampled to small sizes: same measure as `figx25`")
 print()
-print("| 뽑은 유닛 수 | 봉우리수 중앙 | 봉우리수 범위 | 골 중앙 | 골 범위 |")
+print("| units sampled | median number of peaks | range of number of peaks | median trough | trough range |")
 print("|---|--:|--:|--:|--:|")
 for n in (1265, 719, 546, 465, 228, 5000, 47483):
     if n > len(H):
@@ -78,11 +78,11 @@ for n in (1265, 719, 546, 465, 228, 5000, 47483):
         pk.append(a)
         vl.append(b)
     print("| %s%s | %d | %d - %d | %.4f | %.3f - %.3f |"
-          % (format(n, ","), " (전수)" if n == len(H) else "",
+          % (format(n, ","), " (full set)" if n == len(H) else "",
              int(np.median(pk)), min(pk), max(pk),
              float(np.median(vl)), min(vl), max(vl)))
 print()
-print("견줄 값 — 1kGP 합친 것 : 봉우리 16 · 골 0.1860 (1,265 유닛)")
-print("           1kGP R9      : 봉우리 23 · 골 0.3924 (  719 유닛)")
-print("           1kGP R10     : 봉우리  6 · 골 0.5192 (  546 유닛)")
-print("           GIAB 합친 것 : 봉우리  7 · 골 0.5810 (  465 유닛)")
+print("compare to 1kGP pooled  : peaks 16, trough 0.1860 (1,265 units)")
+print("           1kGP R9      : peaks 23, trough 0.3924 (  719 units)")
+print("           1kGP R10     : peaks  6, trough 0.5192 (  546 units)")
+print("           GIAB pooled  : peaks  7, trough 0.5810 (  465 units)")

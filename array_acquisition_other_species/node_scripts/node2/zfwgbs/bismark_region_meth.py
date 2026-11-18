@@ -11,7 +11,7 @@
 #
 #   Arguments: bam, label, regions.tsv, out.tsv.
 #     The region list is name, chrom, start, end, tab separated.
-# MIT License · Copyright (c) 2026 Hungmin Kim
+# MIT License. Copyright (c) 2026 Hyungmin Kim
 import io
 import os
 import sys
@@ -77,4 +77,4 @@ for L in io.open(REG, encoding="utf8"):
                       str(chh), "%.4f" % (chhm / float(chh)) if chh else "-"]) + NL)
 o.close()
 b.close()
-print("%s 완료" % LAB)
+print("%s done" % LAB)

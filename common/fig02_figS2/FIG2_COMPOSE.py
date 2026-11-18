@@ -145,9 +145,9 @@ def layout(spec, keys, aspect, y0=None):
     else:
         y = lay(rows_of(spec), MARGIN, W - 2 * MARGIN, y0)
     got = [c[0] for c in cells]
-    assert len(got) == len(set(got)), "한 칸이 두 번 놓였다 : %s" % got
+    assert len(got) == len(set(got)), "a panel is placed twice : %s" % got
     miss = sorted(k for k in keys if k not in set(got))
-    assert not miss, "줄 묶음에서 빠진 칸 : %s" % miss
+    assert not miss, "panels missing from the row groups : %s" % miss
     return cells, y
 
 ROWS = [["a", "b"],                       # Variants by position, variant load by array position
@@ -254,7 +254,7 @@ def compose(figdir, tab, out, which="Fig2", title=None):
     plan = load_plan(tab, which.split("-")[0])
     if "-" in which:                                 # one page of a figure or part of the main figure, only the cells placed in that layout
         ks = spec_keys(SPEC[which])
-        assert set(ks) <= set(plan), ("구성표에 없는 칸", sorted(set(ks) - set(plan)))
+        assert set(ks) <= set(plan), ("panels not in the composition table", sorted(set(ks) - set(plan)))
         plan = {k: plan[k] for k in ks}
     subs, asp, miss = {}, {}, []
     for k in plan:
@@ -328,7 +328,7 @@ if __name__ == "__main__":
       for lang, d in (("ko", "그림"), ("en", "그림_영어판")):
         o = os.path.join(OUT, "%s_%s.svg" % (stem, lang))
         built, miss, w, h = compose(os.path.join(P, d), TAB, o, which=which, title=None)
-        print("■ %-7s %s · 칸 %d · 빠진 칸 %s · 폭 %.1f pt · 높이 %.1f pt"
+        print("%-7s %s, panels %d, missing panels %s, width %.1f pt, height %.1f pt"
               % (which, lang, len(built), miss or "없음", w, h))
         print("   %s · %d B" % (o, os.path.getsize(o)))
         # Overlap check
@@ -337,4 +337,4 @@ if __name__ == "__main__":
             for j in range(i + 1, len(built)):
                 _, x1, y1, w1, h1 = built[i]; _, x2, y2, w2, h2 = built[j]
                 if x1 < x2 + w2 and x2 < x1 + w1 and y1 < y2 + h2 and y2 < y1 + h1: bad += 1
-        print("   칸끼리 겹침 %d 쌍" % bad)
+        print("   overlapping panel pairs %d" % bad)

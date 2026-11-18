@@ -39,17 +39,17 @@ if os.path.exists(p3):
         except: pass
 mine = {r[0]: (F(r, "top_lineage_share"), F(r, "p_lineage")) for r in R}
 com = [x for x in S3 if x in mine and S3[x][0] == S3[x][0] and mine[x][0] == mine[x][0]]
-print("=== S3 계통 검정값과 대조 ===")
+print("=== comparison with the S3 lineage test values ===")
 if com:
     a = np.array([S3[x][0] for x in com]); b = np.array([mine[x][0] for x in com])
     d = np.abs(a - b)
-    print("  공통 변이 %d · 최다계통 점유 차이 : 중앙 %.4f · 최대 %.4f · 0.05 이내 %.1f%%"
+    print("  common variants %d, top-lineage share difference : median %.4f, max %.4f, within 0.05 %.1f%%"
           % (len(com), np.median(d), d.max(), 100 * (d <= 0.05).mean()))
     sa = np.array([S3[x][1] < 0.05 for x in com]); sb = np.array([mine[x][1] < 0.05 for x in com])
-    print("  유의 판정 일치 %.1f%% (S3 유의 %d · 이번 %d)" % (100 * (sa == sb).mean(), sa.sum(), sb.sum()))
-    print("  ※ S3 는 순열 300 · 여기는 500 이라 p 가 완전히 같지는 않다(점유율은 같아야 한다)")
+    print("  significance call agreement %.1f%% (S3 significant %d, here %d)" % (100 * (sa == sb).mean(), sa.sum(), sb.sum()))
+    print("  note: S3 uses 300 permutations and this run uses 500, so p is not exactly equal (the shares must be equal)")
 else:
-    print("  공통 변이 없음")
+    print("  common variants: none")
 
 # ---------- (1) recompute calls ----------
 cnt_old = collections.Counter(r[H["origin_call"]] for r in R)
@@ -76,8 +76,8 @@ g.close()
 
 cnt = collections.Counter(r[H["origin_call"]] for r in R)
 print("")
-print("=== 판정 (효과크기 문턱 %.2f 적용 후) ===" % EFF_MIN)
-print("  판정            변이수   효과 중앙   배열당 사본 중앙   보유 하플로 중앙   재발문맥")
+print("=== calls (after applying effect-size threshold %.2f) ===" % EFF_MIN)
+print("  call            variants   effect median   copies per array median   carrier haplotypes median   recurrence context")
 for c, n in cnt.most_common():
     sub = [r for r in R if r[H["origin_call"]] == c]
     eff = [F(r, "top_lineage_share") - F(r, "top_lineage_null") for r in sub]
@@ -87,11 +87,11 @@ for c, n in cnt.most_common():
         np.median([F(r, "units_per_carrier_array") for r in sub]),
         np.median([F(r, "n_haplotypes") for r in sub]),
         100 * np.mean([r[H["recurrence_context"]] == "Y" for r in sub])))
-print("  (문턱 적용 전: %s)" % dict(cnt_old))
+print("  (before applying the threshold: %s)" % dict(cnt_old))
 
 # ---------- (3) representative examples: near the median effect size ----------
 print("")
-print("=== 판정별 대표 예시 (효과크기 중앙 근처에서 뽑음) ===")
+print("=== representative examples by call (drawn near the effect-size median) ===")
 for c in ("계승형", "재발시사형", "분산형", "조상형"):
     sub = [r for r in R if r[H["origin_call"]] == c]
     if not sub: continue
@@ -102,7 +102,7 @@ for c in ("계승형", "재발시사형", "분산형", "조상형"):
         med = np.nanmedian(eff)
         sub = [sub[i] for i in np.argsort(np.abs(eff - med))[:3]]
     for r in sub:
-        print("  %-12s %-12s 유닛 %6s · 배열 %4s · 배열당 %5s · 최다계통 %s (귀무 %s) p=%s · 재발문맥 %s" % (
+        print("  %-12s %-12s units %6s, arrays %4s, per array %5s, top lineage %s (null %s) p=%s, recurrence context %s" % (
             c, r[0], r[H["n_units"]], r[H["n_haplotypes"]], r[H["units_per_carrier_array"]],
             r[H["top_lineage_share"]] or "-", r[H["top_lineage_null"]] or "-",
             r[H["p_lineage"]] or "-", r[H["recurrence_context"]]))
@@ -131,4 +131,4 @@ g = io.open(src, "w", encoding="utf8", newline="\n")
 for f in out: g.write("\t".join(f) + "\n")
 g.close()
 print("")
-print("그룹표 갱신:", src)
+print("group table updated:", src)

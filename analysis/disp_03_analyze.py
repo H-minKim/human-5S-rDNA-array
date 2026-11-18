@@ -221,19 +221,19 @@ for s, inf in INFO.items():
         BIMO.get(s, {}).get("call", ""), f_(statistics.pstdev(sv)) if len(sv) > 1 else "",
         "\t".join(f_(lo[e[0]]) for e in EL), "\t".join(f_(hi[e[0]]) for e in EL)))
 O.close()
-print("자리 %d 개 (좌위>=%d · 개체>=%d)" % (len(KEEP), MIN_LOCI, MIN_SMP))
+print("positions %d (loci>=%d, individuals>=%d)" % (len(KEEP), MIN_LOCI, MIN_SMP))
 pc = collections.Counter(PAT[s] for s in KEEP)
-print("\n[① 덮는 유닛 부분] 패턴별 자리 수 · 좌위 수 · 주 구조그룹")
+print("\n[(1) covered unit part] by pattern: number of positions, number of loci, main structure group")
 PG = collections.defaultdict(list)
 for s in KEEP:
     PG[PAT[s]].append(s)
 for p_, ss in sorted(PG.items(), key=lambda kv: -sum(INFO[s]["n"] for s in kv[1])):
     mg = collections.Counter(SITES.get(s, {}).get("main", "?") for s in ss)
-    print("  %-34s 자리 %3d · 좌위 %7d · 구조 %s" % (p_, len(ss), sum(INFO[s]["n"] for s in ss),
+    print("  %-34s positions %3d, loci %7d, structure %s" % (p_, len(ss), sum(INFO[s]["n"] for s in ss),
                                                ", ".join("%s %d" % x for x in mg.most_common(4))))
 
 # ---------- (2) bimodal / unimodal ----------
-print("\n[② 자리별 이봉/단봉] (좌위 β, NTS1+NTS2+코딩 CpG>=10 · GMM Ashman D>2 & BC>0.555 & 작은성분>=5%)")
+print("\n[(2) bimodal/unimodal by position] (locus β, NTS1+NTS2+coding CpG>=10, GMM Ashman D>2 & BC>0.555 & minor component>=5%)")
 rows = []
 for s in KEEP:
     lb = LB.get(s, [])
@@ -242,8 +242,8 @@ for s in KEEP:
         rows.append((PAT[s], s, bm, statistics.mean(lb), len(lb)))
 cc = collections.Counter((p_, r["call"]) for p_, s, r, m, n in rows)
 for p_ in sorted(set(x[0] for x in rows)):
-    print("  %-34s 이봉 %3d · 단봉 %3d" % (p_, cc[(p_, "이봉")], cc[(p_, "단봉")]))
-print("\n  이봉 자리 (좌위 수 많은 순)")
+    print("  %-34s bimodal %3d, unimodal %3d" % (p_, cc[(p_, "이봉")], cc[(p_, "단봉")]))
+print("\n  bimodal positions (by number of loci, descending)")
 for p_, s, r, m, n in sorted([x for x in rows if x[2]["call"] == "이봉"], key=lambda x: -x[4])[:20]:
     sm = SITES.get(s, {})
     print("   %s %s:%.2fM %-10s n=%6d mean %.2f | components %.2f / %.2f (w_lo %.2f) D %.2f BC %.2f | source %s"
@@ -276,7 +276,7 @@ for st in ("low", "high"):
     for p in ("distal1_10", "interior", "proximal1_10"):
         dump("array_v11", p, st, A_POS[(p, st)])
 
-print("\n[③] 덮음 패턴(그룹) × 상태 : 하위유닛 평균 β  (흩어진 / array v11 같은 상태)  · 칸 모양 상관 · 반쪽 재현")
+print("\n[(3)] coverage pattern (group) × state: mean sub-unit β  (dispersed / array v11 same state), bin shape correlation, split-half reproduction")
 for p_, ss in sorted(PG.items(), key=lambda kv: -sum(INFO[s]["n"] for s in kv[1])):
     if sum(INFO[s]["n"] for s in ss) < 2000:
         continue
@@ -288,7 +288,7 @@ for p_, ss in sorted(PG.items(), key=lambda kv: -sum(INFO[s]["n"] for s in kv[1]
         h0, h1 = prof(g, st, (0,)), prof(g, st, (1,))
         sm_, sa = sub_means(pr), sub_means(A_ALL[st])
         dump("group", p_, st, pr)
-        print("  %-30s %-4s | %s | 모양상관 %s · 반쪽 %s"
+        print("  %-30s %-4s | %s | shape correlation %s, split-half %s"
               % (p_, st, " ".join("%s %s/%s" % (k, "%.2f" % sm_[k] if sm_[k] is not None else "-",
                                                    "%.2f" % sa[k]) for k, _a, _z in EL if sm_[k] is not None),
                  "%.2f" % corr(pr, A_ALL[st]) if corr(pr, A_ALL[st]) is not None else "-",
@@ -301,13 +301,13 @@ for s in KEEP:
 OUTP.close()
 
 # ---------- (4) the slope inside AluY and the NTS1 level ----------
-print("\n[④] AluY 안 50bp 칸 (1-300) 과 NTS1 수준")
+print("\n[(4)] 50bp bins inside AluY (1-300) and NTS1 level")
 def aluy(p):
     return [p[b] for b in range(6)]
 for nm, p in (("array v11 LOW", A_ALL["low"]), ("array v11 HIGH", A_ALL["high"]),
               ("array 원위1-10 LOW", A_POS[("distal1_10", "low")]),
               ("array 내부 LOW", A_POS[("interior", "low")])):
-    print("  %-22s AluY %s | NTS1 평균 %.3f" % (nm, " ".join("%.2f" % v if v is not None else " -  " for v in aluy(p)),
+    print("  %-22s AluY %s | NTS1 mean %.3f" % (nm, " ".join("%.2f" % v if v is not None else " -  " for v in aluy(p)),
                                               sub_means(p)["NTS1"]))
 for p_, ss in sorted(PG.items(), key=lambda kv: -sum(INFO[s]["n"] for s in kv[1])):
     if "AluY" not in p_ or sum(INFO[s]["n"] for s in ss) < 2000:
@@ -317,7 +317,7 @@ for p_, ss in sorted(PG.items(), key=lambda kv: -sum(INFO[s]["n"] for s in kv[1]
         pr = prof(g, st)
         if pr[0] is None and pr[3] is None:
             continue
-        print("  %-22s AluY %s | NTS1 평균 %s" % ((p_ + " " + st)[:22],
+        print("  %-22s AluY %s | NTS1 mean %s" % ((p_ + " " + st)[:22],
               " ".join("%.2f" % v if v is not None else " -  " for v in aluy(pr)),
               "%.3f" % sub_means(pr)["NTS1"] if sub_means(pr)["NTS1"] is not None else "-"))
 print("\nsaved DISP_SITES_TABLE.tsv · DISP_PROFILES.tsv")

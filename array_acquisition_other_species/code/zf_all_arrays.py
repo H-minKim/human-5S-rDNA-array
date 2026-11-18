@@ -6,7 +6,7 @@
 #   Our data is adult brain, that is somatic, from 6 individuals. This table records, per array, which of the two it corresponds to,
 #   and whether the array is higher or lower than its own surroundings, the 100 kb of flank.
 #   Arguments: the data_v2 folder and out.tsv.
-# MIT License · Copyright (c) 2026 Hungmin Kim
+# MIT License. Copyright (c) 2026 Hyungmin Kim
 import io
 import os
 import sys
@@ -84,7 +84,7 @@ for aid in sorted(set(list(MET) + list(PR))):
 o.close()
 rows.sort(key=lambda r: (r[2] != "chr18", -(int(r[7]) if str(r[7]).isdigit() else 0)))
 print("%-30s %-7s %8s %7s %6s %8s %8s %9s  %s"
-      % ("array", "염색체", "span", "유닛길이", "유닛", "메틸", "flank", "array-fl", "문헌"))
+      % ("array", "염색체", "span", "유닛길이", "유닛", "meth", "flank", "array-fl", "문헌"))
 for r in rows:
     print("%-30s %-7s %8s %7s %6s %8s %8s %9s  %s"
           % (r[0].split("__")[1][:30], r[2], r[5], r[6], r[7], r[10], r[14], r[15], r[16]))

@@ -87,7 +87,7 @@ names = sorted(set(lab.values()))
 ORDER = {"gene": ["low", "high"], "zonefix": ["원위", "가운데", "근위"]}
 if SCHEME in ORDER:
     names = [n for n in ORDER[SCHEME] if n in names]
-print("%s %s : 층 %s" % (NAME, SCHEME, [(n, sum(1 for v in lab.values() if v == n)) for n in names]))
+print("%s %s: stratum %s" % (NAME, SCHEME, [(n, sum(1 for v in lab.values() if v == n)) for n in names]))
 R = {"name": NAME, "scheme": SCHEME, "strata": []}
 arr = {"rel": S.REL}
 for si, nm in enumerate(names):
@@ -133,21 +133,21 @@ for si, nm in enumerate(names):
         res["confirm"] = None
     R["strata"].append(res)
     bs = res["blind"]["sites"] if res["blind"] else None
-    print("  [%s] n=%d 사건 %d · TFIIIB %.1f×(사건 %d) ICR %.1f×(사건 %d) · flank/core %.2f/%.2f"
+    print("  [%s] n=%d events %d, TFIIIB %.1f×(events %d) ICR %.1f×(events %d), flank/core %.2f/%.2f"
           % (nm, n, res["n_events"], res["b35"]["fold"], res["b35"]["n_events"],
              res["b40"]["fold"], res["b40"]["n_events"], res["dub_m11"], res["dub_p58"]))
     if bs:
-        print("      블라인드 칸 %d · p_격자 TFIIIB %.4f ICR %.4f · p_창 %.4f / %.4f"
+        print("      blind bins %d, p_grid TFIIIB %.4f ICR %.4f, p_window %.4f / %.4f"
               % (res["blind"]["nk"], bs["TFIIIB"]["p_grid"], bs["ICR"]["p_grid"],
                  bs["TFIIIB"]["p_win"], bs["ICR"]["p_win"]))
     else:
-        print("      블라인드 : 사건 %d 문턱을 넘는 칸 없음 -> 검정 불가" % MINEV)
+        print("      blind: no bin exceeds the threshold of %d events -> cannot test" % MINEV)
     if res["confirm"]:
-        print("      확인(호출기 없음) p TFIIIB %.4f ICR %.4f (분자 %d)"
+        print("      confirmation (no caller) p TFIIIB %.4f ICR %.4f (molecules %d)"
               % (res["confirm"]["TFIIIB"]["p"], res["confirm"]["ICR"]["p"], res["confirm_n"]))
 out = os.path.join(DIR, "strata_%s_%s" % (NAME, SCHEME))
 np.savez_compressed(out + ".npz", **arr)
 io.open(out + ".json", "w", encoding="utf8").write(
     json.dumps(R, ensure_ascii=False, indent=1,
                default=lambda o: float(o) if hasattr(o, "item") else str(o)))
-print("저장 ->", out)
+print("saved ->", out)

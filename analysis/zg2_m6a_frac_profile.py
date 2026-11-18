@@ -98,7 +98,7 @@ for p in sorted(glob.glob(os.path.join(SRCD, "*.tsv.gz"))):
             nm[(plat, c)] += k; nn[(plat, c)] += n
             z = zone(c)
             um[(plat, z, up)] += k; un[(plat, z, up)] += n
-print("읽은 행 %d · 자리칸 %d" % (rows_read, len(nn)))
+print("rows read %d, position bins %d" % (rows_read, len(nn)))
 
 
 def lab(c):
@@ -110,8 +110,8 @@ def lab(c):
 
 
 with io.open(O1, "w", encoding="utf8", newline=chr(10)) as g:
-    g.write("# 지표 ① : 그 염기에서 m6A 인 분자의 비율 (분모 = 깊이) — 레퍼런스 정의" + chr(10))
-    g.write("# pooled : sum(n_m6a) / sum(n) · 원위 절대 %d · 가운데 상대 %d · 근위 절대 %d"
+    g.write("# metric (1): fraction of molecules with m6A at that base (denominator = depth), the reference definition" + chr(10))
+    g.write("# pooled: sum(n_m6a) / sum(n), distal absolute %d, interior relative %d, proximal absolute %d"
             % (E, NB, E) + chr(10))
     g.write(chr(9).join(["플랫폼", "자리", "칸번호", "m6a_분자비율_%", "합_n_m6a", "합_n"]) + chr(10))
     for plat in ("ONT", "PacBio"):
@@ -123,7 +123,7 @@ with io.open(O1, "w", encoding="utf8", newline=chr(10)) as g:
                                  str(nm[(plat, c)]), str(nn[(plat, c)])]) + chr(10))
 
 print()
-print("=== 지표 ① : m6A 인 분자 비율 (%) — 분모가 깊이")
+print("=== metric (1): fraction of molecules with m6A (%), denominator is depth")
 for plat in ("ONT", "PacBio"):
     v = [(lab(c), 100.0 * nm[(plat, c)] / nn[(plat, c)]) for c in range(NCELL)
          if nn[(plat, c)] >= 1000]
@@ -135,11 +135,11 @@ for plat in ("ONT", "PacBio"):
             print("      %-12s %6.3f" % (L_, y))
     d = np.mean([y for L_, y in v[:E]]); m = np.mean([y for L_, y in v[E:E + NB]])
     p_ = np.mean([y for L_, y in v[E + NB:]])
-    print("      ---- 원위 평균 %.3f · 가운데 %.3f · 근위 %.3f  (원위/가운데 %.2f 배 · 근위/가운데 %.2f 배)"
+    print("      ---- distal mean %.3f, interior %.3f, proximal %.3f  (distal/interior %.2f-fold, proximal/interior %.2f-fold)"
           % (d, m, p_, d / m, p_ / m))
 
 with io.open(O2, "w", encoding="utf8", newline=chr(10)) as g:
-    g.write("# 지표 ④ : 유닛 안 자리(unit_pos)별 m6A 분자 비율 — 구역마다 · 분모 = 깊이" + chr(10))
+    g.write("# metric (4): fraction of molecules with m6A by position within the unit (unit_pos), per zone, denominator = depth" + chr(10))
     g.write(chr(9).join(["플랫폼", "구역", "unit_pos", "m6a_분자비율_%", "합_n"]) + chr(10))
     for plat in ("ONT", "PacBio"):
         for z in ("원위", "가운데", "근위"):
@@ -151,4 +151,4 @@ with io.open(O2, "w", encoding="utf8", newline=chr(10)) as g:
                                      "%.4f" % (100.0 * um[(plat, z, up)] / n),
                                      str(n)]) + chr(10))
 print()
-print("적었다 ->", os.path.basename(O1), "·", os.path.basename(O2))
+print("written ->", os.path.basename(O1), "·", os.path.basename(O2))

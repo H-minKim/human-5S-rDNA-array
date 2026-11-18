@@ -91,7 +91,7 @@ with gzip.open(os.path.join(A, "a13_unit_state_gmm.tsv.gz"), "rt", encoding="utf
         c = slot_cell(ap, n)
         if c is not None:
             BETA[(x[0], c)].append(b)
-print("beta 칸 %d" % len(BETA))
+print("beta bins %d" % len(BETA))
 
 NCELL = 2 * E + NB
 din_bp = collections.Counter(); lmsp_bp = collections.Counter(); cov_bp = collections.Counter()
@@ -146,7 +146,7 @@ for smp, src, rid, slot, arr, lo, us in L.iter_reads(UNIT, 0, 0):
     for cc in seen:
         n_mol[(src, cc)] += 1
 
-print("칸 %d (원위 %d · 가운데 %d · 근위 %d)" % (NCELL, E, NB, E))
+print("bins %d (distal %d, interior %d, proximal %d)" % (NCELL, E, NB, E))
 
 
 def lab(c):
@@ -174,10 +174,10 @@ for src in ("UCSC_ONT_FIBERSEQ", "PACBIO_FIBERSEQ"):
                      n_mol[(src, c)], cv, len(bs)))
 
 with io.open(OUT, "w", encoding="utf8", newline=chr(10)) as g:
-    g.write("# 모든 read 를 합친 자리별 프로파일 (pooled) — 분자 합 / 분모 합" + chr(10))
-    g.write("# 자리 : 원위 1..%d 절대 · 가운데 %d 칸 상대 · 근위 1..%d 절대 "
-            "(array_pos 1 = 원위/DJ · N = 근위/동원체)" % (E, NB, E) + chr(10))
-    g.write("# di-nuc = >210bp 뉴클레오솜이 덮은 염기 비율 · patch = >150bp large MSP 가 덮은 염기 비율"
+    g.write("# profile by position over all reads combined (pooled): sum of numerators / sum of denominators" + chr(10))
+    g.write("# positions: distal 1..%d absolute, interior %d bins relative, proximal 1..%d absolute "
+            "(array_pos 1 = distal/DJ, N = proximal/centromere)" % (E, NB, E) + chr(10))
+    g.write("# di-nuc = fraction of bases covered by >210bp nucleosomes, patch = fraction of bases covered by >150bp large MSP"
             + chr(10))
     g.write(chr(9).join(["플랫폼", "자리", "칸번호", "dinuc_덮은%", "patch_덮은%",
                          "dinuc_개수_per_kb", "patch_개수_per_kb", "beta",
@@ -189,7 +189,7 @@ with io.open(OUT, "w", encoding="utf8", newline=chr(10)) as g:
                              str(r[8]), str(r[9]), str(r[10])]) + chr(10))
 
 print()
-print("=== 합친 프로파일 (덮은 염기 %)")
+print("=== pooled profile (bases covered %)")
 for plat in ("ONT", "PacBio"):
     sel = [r for r in rows if r[0] == plat]
     if not sel:
@@ -206,4 +206,4 @@ np.savez_compressed(NPZ, E=E, NB=NB,
                        for r in rows[:1] for k, i in (("cell", 2), ("din", 3), ("patch", 4),
                                                       ("dinkb", 5), ("patchkb", 6), ("beta", 7),
                                                       ("nmol", 8))})
-print("적었다 ->", OUT)
+print("written ->", OUT)

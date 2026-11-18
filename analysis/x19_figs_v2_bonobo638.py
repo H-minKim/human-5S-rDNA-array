@@ -46,13 +46,13 @@ def _save(fig, name):
         fig.savefig(base + ".pdf", format="pdf")
     for ext in (".svg", ".pdf"):
         shutil.copy2(base + ext, SVGDIR + "/" + name + ext)
-    P("  저장 : figures/%s .png .svg .pdf (+ 30_그림_SVG 사본)" % name)
+    P("  saved: figures/%s .png .svg .pdf (+ copy in '30_그림_SVG')" % name)
 
 
 def run(fname, reps, tag):
     src = io.open(OUT + "/code/" + fname, encoding="utf8").read()
     for a, b in reps:
-        assert src.count(a) == 1, "%s : 바꿀 문장을 정확히 한 번 못 찾음 — %s" % (fname, a[:60])
+        assert src.count(a) == 1, "%s: the sentence to replace was not found exactly once: %s" % (fname, a[:60])
         src = src.replace(a, b)
     ns = {"__name__": "x19_" + tag, "_save": _save}
     exec(compile(src, fname + "(v2)", "exec"), ns)
@@ -95,7 +95,7 @@ ns = run("x2_fig_meth.py", [
 ], "x2")
 T = ns["T"]
 g = T[T.species_key.isin(["bonobo_mPanPan1", "chimp_mPanTro3", "gorilla_mGorGor1", "orang_bornean_mPonPyg2", "orang_sumatran_mPonAbe1"])]
-P("R1 v2 : 대형 유인원 5 array − flank %+.3f ~ %+.3f (보노보 %+.4f)" % (g.delta.min(), g.delta.max(), T[T.species_key == "bonobo_mPanPan1"].delta.iloc[0]))
+P("R1 v2: great apes 5 array − flank %+.3f ~ %+.3f (bonobo %+.4f)" % (g.delta.min(), g.delta.max(), T[T.species_key == "bonobo_mPanPan1"].delta.iloc[0]))
 
 # ---------------------------------------------------------------- R4 (x10), the ape pages
 ns = run("x10_readunit_per_array.py", [
@@ -107,7 +107,7 @@ ns = run("x10_readunit_per_array.py", [
     ('fig.savefig(OUT + "/figures/Fig_readunit_perarray_%s.png" % page)', '_save(fig, "Fig_readunit_perarray_%s_v2" % page)'),
 ], "x10")
 b = ns["T"][ns["T"].array_id.str.contains("bonobo")].iloc[0]
-P("R4 v2 : 보노보 read-유닛 %d · OFF %.4f · %s · 봉우리 %.2f/%.2f (x17 : OFF 0.0875 · 이봉 0.89/0.13)" % (b.n, b.off, b.call, b.peak1, b.peak2))
+P("R4 v2: bonobo read-units %d, OFF %.4f, %s, peaks %.2f/%.2f (x17: OFF 0.0875, bimodal 0.89/0.13)" % (b.n, b.off, b.call, b.peak1, b.peak2))
 
 # ---------------------------------------------------------------- R5 (x12), the ape pages
 ns = run("x12_coding_perarray.py", [
@@ -120,5 +120,5 @@ ns = run("x12_coding_perarray.py", [
     ('fig.savefig(OUT + "/figures/Fig_coding_readunit_perarray_%s.png" % page)', '_save(fig, "Fig_coding_readunit_perarray_%s_v2" % page)'),
 ], "x12")
 b = ns["T"][ns["T"].array_id.str.contains("bonobo")].iloc[0]
-P("R5 v2 : 보노보 coding read-유닛 %d · coding OFF %.4f · %s (x17 : 0.1217 · 이봉)" % (b.n, b.off, b.call))
+P("R5 v2: bonobo coding read-units %d, coding OFF %.4f, %s (x17: 0.1217, bimodal)" % (b.n, b.off, b.call))
 LOG.close()

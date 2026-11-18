@@ -52,20 +52,20 @@ for k in HK:
     rec.append(dict(key=k, sample=k[0], pop=POP.get(k[0], ("?", "?"))[0], sup=POP.get(k[0], ("?", "?"))[1],
                     src=s[H["canon_src"]], cov3=float(s[H["cov3%"]]), vid=float(s[H["var_ident%"]]),
                     n=int(s[H["n_unit"]]), carrier=int(bool(ds)), dset=ds))
-print("하플로타입 %d (STAGE 대응) · 집단표 있는 것 %d" % (len(rec), sum(1 for r in rec if r["sup"] != "?")))
+print("haplotypes %d (matched to STAGE), with population table entry %d" % (len(rec), sum(1 for r in rec if r["sup"] != "?")))
 
 # ---------- C1 ----------
-print("\n=== C1. 조립 출처 × 집단 × 말단형 보유 ===")
+print("\n=== C1. assembly source × population × terminal-type carriage ===")
 g = io.open(os.path.join(OUT, "ZN_source_population.tsv"), "w", encoding="utf8", newline="\n")
 g.write("source\tsuperpop\tn_hap\tn_carrier\tfrac\n")
 srcs = sorted(set(r["src"] for r in rec))
 sups = [s for s in sorted(set(r["sup"] for r in rec)) if s != "?"]
-print("  출처별 전체 :")
+print("  all, by source :")
 for s in srcs:
     sub = [r for r in rec if r["src"] == s]
-    print("    %-7s 하플로 %3d · 보유 %3d (%.3f)" % (s, len(sub), sum(r["carrier"] for r in sub), np.mean([r["carrier"] for r in sub])))
-print("\n  출처 × 집단 (하플로타입 수 / 보유율) :")
-print("    출처    " + "".join("%16s" % x for x in sups))
+    print("    %-7s haplotypes %3d, carriers %3d (%.3f)" % (s, len(sub), sum(r["carrier"] for r in sub), np.mean([r["carrier"] for r in sub])))
+print("\n  source × population (number of haplotypes / carrier rate) :")
+print("    source    " + "".join("%16s" % x for x in sups))
 for s in srcs:
     line = "    %-7s" % s
     for sp in sups:
@@ -78,19 +78,19 @@ for s in srcs:
 tab = np.array([[sum(1 for r in rec if r["src"] == s and r["sup"] == sp) for sp in sups] for s in srcs], float)
 from scipy.stats import chi2_contingency
 c2, pc, dof, _ = chi2_contingency(tab[tab.sum(1) > 0])
-print("\n  출처 × 집단 독립성 : chi2 %.1f · dof %d · p = %.3g  (%s)" % (
-    c2, dof, pc, "얽혀 있음" if pc < 0.05 else "독립"))
+print("\n  source × population independence : chi2 %.1f, dof %d, p = %.3g  (%s)" % (
+    c2, dof, pc, "confounded" if pc < 0.05 else "독립"))
 g.write("#src_x_pop_chi2\t%.4f\tp\t%.6g\tdof\t%d\n" % (c2, pc, dof))
 
 # ---------- C2 stratification ----------
-print("\n=== C2. 같은 출처 안에서 AFR vs 비AFR ===")
-print("  출처    AFR 하플로 보유율   비AFR 하플로 보유율   Fisher p   오즈비")
+print("\n=== C2. AFR vs non-AFR within the same source ===")
+print("  source  AFR haplotype carrier rate   non-AFR haplotype carrier rate   Fisher p   odds ratio")
 tot_or = []
 for s in srcs:
     a = [r for r in rec if r["src"] == s and r["sup"] == "AFR"]
     b = [r for r in rec if r["src"] == s and r["sup"] not in ("AFR", "?")]
     if len(a) < 5 or len(b) < 5:
-        print("    %-7s 표본 부족 (AFR %d · 비AFR %d)" % (s, len(a), len(b))); continue
+        print("    %-7s sample too small (AFR %d, non-AFR %d)" % (s, len(a), len(b))); continue
     t = [[sum(r["carrier"] for r in a), len(a) - sum(r["carrier"] for r in a)],
          [sum(r["carrier"] for r in b), len(b) - sum(r["carrier"] for r in b)]]
     orr, pf = fisher_exact(t)
@@ -101,23 +101,23 @@ for s in srcs:
         s, len(a), np.mean([r["carrier"] for r in a]), len(b), np.mean([r["carrier"] for r in b]), pf, orr))
 
 # ---------- C3 quality ----------
-print("\n=== C3. 품질 지표가 보유와 얽혀 있나 (보유 vs 비보유) ===")
+print("\n=== C3. are quality metrics confounded with carriage (carrier vs non-carrier) ===")
 for nm, key in (("cov3%", "cov3"), ("var_ident%", "vid"), ("n_unit", "n")):
     a = [r[key] for r in rec if r["carrier"]]
     b = [r[key] for r in rec if not r["carrier"]]
     u, p = mannwhitneyu(a, b)
-    print("    %-12s 보유 중앙 %8.2f · 비보유 %8.2f · Mann-Whitney p = %.3g" % (nm, np.median(a), np.median(b), p))
+    print("    %-12s carrier median %8.2f, non-carrier %8.2f, Mann-Whitney p = %.3g" % (nm, np.median(a), np.median(b), p))
     g.write("#quality\t%s\tcarrier_median\t%.4f\tnoncarrier_median\t%.4f\tp\t%.6g\n" % (nm, np.median(a), np.median(b), p))
-print("\n    같은 항목을 AFR vs 비AFR 로 :")
+print("\n    the same items by AFR vs non-AFR :")
 for nm, key in (("cov3%", "cov3"), ("var_ident%", "vid"), ("n_unit", "n")):
     a = [r[key] for r in rec if r["sup"] == "AFR"]
     b = [r[key] for r in rec if r["sup"] not in ("AFR", "?")]
     u, p = mannwhitneyu(a, b)
-    print("    %-12s AFR 중앙 %8.2f · 비AFR %8.2f · p = %.3g" % (nm, np.median(a), np.median(b), p))
+    print("    %-12s AFR median %8.2f, non-AFR %8.2f, p = %.3g" % (nm, np.median(a), np.median(b), p))
 g.close()
 
 # ---------- D1 nesting ----------
-print("\n=== D1. 깊이 집합이 포개져 있는가 (nested) ===")
+print("\n=== D1. are the depth sets contained in one another (nested) ===")
 sets = collections.Counter(r["dset"] for r in rec if r["dset"])
 uniq = sorted(sets, key=lambda x: (len(x), x))
 n_nested = 0; n_tot = 0
@@ -130,7 +130,7 @@ for a in uniq:
     if cands:
         n_nested += 1
         parent[a] = cands[0]
-print("  집합 %d 가지 · 크기 2 이상 %d 개 중 **한 개 뺀 집합이 실제로 존재** %d (%.3f)" % (
+print("  sets %d kinds, of %d with size 2 or more, **the set minus one element actually exists** %d (%.3f)" % (
     len(uniq), n_tot, n_nested, n_nested / max(n_tot, 1)))
 # Null: random sets from 1..15 with the same size distribution
 kk = [len(a) for a in uniq if len(a) >= 2]
@@ -145,18 +145,18 @@ for _ in range(500):
         if any(len(b) == len(a) - 1 and set(b) < set(a) for b in allu):
             c += 1
     nul.append(c / max(len(us), 1))
-print("  귀무(1-15 에서 무작위 집합) %.3f [%.3f-%.3f] → %s" % (
+print("  null (random sets from 1-15) %.3f [%.3f-%.3f] -> %s" % (
     np.mean(nul), np.percentile(nul, 2.5), np.percentile(nul, 97.5),
-    "관측이 큼 = 포개짐" if n_nested / max(n_tot, 1) > np.percentile(nul, 97.5) else "차이 없음"))
+    "observed is larger = overlapping" if n_nested / max(n_tot, 1) > np.percentile(nul, 97.5) else "차이 없음"))
 
 g = io.open(os.path.join(OUT, "ZN_depthset_census.tsv"), "w", encoding="utf8", newline="\n")
 g.write("depth_set\tsize\tn_hap\tn_indiv\t" + "\t".join(sups) + "\tsubset_parent\n")
-print("\n=== D2. 집합 크기별 집단 분포 ===")
+print("\n=== D2. population distribution by set size ===")
 bysize = collections.defaultdict(lambda: collections.Counter())
 for r in rec:
     if r["dset"] and r["sup"] != "?":
         bysize[len(r["dset"])][r["sup"]] += 1
-print("  말단형 개수   " + "".join("%8s" % s for s in sups) + "     합")
+print("  n_terminal   " + "".join("%8s" % s for s in sups) + "     sum")
 for k2 in sorted(bysize):
     c = bysize[k2]
     print("  %6d        " % k2 + "".join("%8d" % c[s] for s in sups) + "%8d" % sum(c.values()))
@@ -168,7 +168,7 @@ for a in uniq:
 g.close()
 
 # ---------- D3 phylogenetic proximity ----------
-print("\n=== D3. 같은 집합을 가진 하플로타입끼리 계통이 가까운가 (보통 유닛 변이로) ===")
+print("\n=== D3. are haplotypes with the same set closer in lineage (by ordinary-unit variants) ===")
 prof = {}
 for r in rec:
     k = r["key"]
@@ -186,7 +186,7 @@ for i, a in enumerate(car):
             continue
         v = jac(prof[a["key"]], prof[b["key"]])
         (same if a["dset"] == b["dset"] else diff).append(v)
-print("  같은 집합 쌍 %d · 평균 %.4f   |   다른 집합 쌍 %d · 평균 %.4f" % (len(same), np.mean(same), len(diff), np.mean(diff)))
+print("  same-set pairs %d, mean %.4f   |   different-set pairs %d, mean %.4f" % (len(same), np.mean(same), len(diff), np.mean(diff)))
 u, p = mannwhitneyu(same, diff)
 print("  Mann-Whitney p = %.3g" % p)
 # Containment pairs (one is a subset of the other)
@@ -197,18 +197,18 @@ for i, a in enumerate(car):
             continue
         v = jac(prof[a["key"]], prof[b["key"]])
         (sub if (set(a["dset"]) < set(b["dset"]) or set(b["dset"]) < set(a["dset"])) else unrel).append(v)
-print("  포함 관계 쌍 %d · %.4f   |   무관 쌍 %d · %.4f · p = %.3g" % (
+print("  containment pairs %d, %.4f   |   unrelated pairs %d, %.4f, p = %.3g" % (
     len(sub), np.mean(sub), len(unrel), np.mean(unrel), mannwhitneyu(sub, unrel)[1] if sub and unrel else float("nan")))
 
 # ---------- E1 ----------
-print("\n=== E1. 집단 × 배치 패턴 (보유 하플로타입) ===")
+print("\n=== E1. population × placement pattern (carrier haplotypes) ===")
 g = io.open(os.path.join(OUT, "ZN_pattern_by_population_full.tsv"), "w", encoding="utf8", newline="\n")
 g.write("depth_set\t" + "\t".join(sups) + "\ttotal\n")
 tab2 = collections.defaultdict(collections.Counter)
 for r in rec:
     if r["dset"] and r["sup"] != "?":
         tab2[",".join(map(str, r["dset"]))][r["sup"]] += 1
-print("  패턴           " + "".join("%7s" % s for s in sups) + "   합")
+print("  pattern           " + "".join("%7s" % s for s in sups) + "   sum")
 for p in sorted(tab2, key=lambda x: -sum(tab2[x].values()))[:14]:
     c = tab2[p]
     print("  %-14s" % p + "".join("%7d" % c[s] for s in sups) + "%6d" % sum(c.values()))
@@ -216,4 +216,4 @@ for p in sorted(tab2, key=lambda x: -sum(tab2[x].values())):
     c = tab2[p]
     g.write("%s\t%s\t%d\n" % (p, "\t".join(str(c[s]) for s in sups), sum(c.values())))
 g.close()
-print("\n저장 :", OUT)
+print("\nsaved :", OUT)

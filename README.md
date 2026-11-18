@@ -20,8 +20,8 @@ chromatin accessibility one repeat unit at a time.
 **Start from the manifests.** Every `figNN/MANIFEST_*.tsv` has one row per panel
 and gives the script that made the panel's data, the input tables it read, and
 the md5 of each, written as a path inside this repository. That is the route from
-a number in the paper to the file it came from: Supplementary Table S11 lists
-every panel of every figure with the manifest that holds its row.
+a number in the paper to the file it came from: the Index sheet of the paper's Source
+Data file lists every panel of every figure with the sheet that holds its values.
 
 ## What is here and what is not
 
@@ -39,7 +39,7 @@ How much of that is missing, counted: of the 252 manifest rows that name a
 script in a `script` column, 122 name a drawing script that is not here. Seven
 helper modules are imported by code that is here but are themselves not, all of
 them on the figure side or the node side: `cellstyle` (the shared style of the
-eleven `analysis/CELL_F2*.py` figure cells), `FIG2_PREVIEW` and `ARCHIVE_OUT`
+ten `analysis/CELL_F2*.py` figure cells), `FIG2_PREVIEW` and `ARCHIVE_OUT`
 (the Figure 2 build), `_symclean`, `_entrans` and `_width` (the figure-symbol
 hooks), and `bamtext` (two compute-node scripts). A script that imports one of
 them cannot be run from this repository alone; the table it produced is here.
@@ -62,7 +62,7 @@ export HIFI_OUT=/tmp/check/FIG2_data_hifi.tsv
 
 Run with `PYTHONDONTWRITEBYTECODE=1` (or `python -B`) so that no `.pyc` is
 written next to the source. All analyses were carried out in Python with NumPy
-and SciPy; three scripts read BAMs through `pysam`.
+and SciPy; 28 scripts read BAMs through `pysam`.
 
 ## Environment variables
 
@@ -211,7 +211,7 @@ Table S1 (second sheet).
 ## Data sources
 
 All input data are public. The Data availability statement and the Methods of
-the paper describe them in full; Supplementary Tables S1, S5 and S6 give the
+the paper describe them in full; Supplementary Tables S1, S6 and S7 give the
 per-sample detail.
 
 | Data | Accession or location |
@@ -229,11 +229,11 @@ per-sample detail.
 | HPRC Fiber-seq | `s3://human-pangenomics/submissions/`, submissions `UCSC_HPRC_ONT_YEAR1_FIBERSEQ` and `WUSTL_HPRC_PacBio_FiberSeq` |
 | K562 Fiber-seq | ENA PRJEB121523, run ERR17608832 |
 | GM12878 Fiber-seq | `s3://stergachis-manuscript-data/2024/Vollger_et_al/FIRE/GM12878/fire/GM12878.fire.bam` |
-| ENCODE ChIP-seq, ATAC-seq and whole-genome sequence of K562 and GM12878 | file accessions in Supplementary Table S5 |
+| ENCODE ChIP-seq, ATAC-seq and whole-genome sequence of K562 and GM12878 | file accessions in Supplementary Table S6 |
 | GM12878 whole-genome denominator | 1000 Genomes run ERR3239334 |
 | GM12878 GRO-cap | GEO GSE60453 |
 | Annotation sequences | EMBL X12811; RefSeq NR_002716, NM_001306068, NR_147172, NR_147173 |
-| Cross-species ONT reads and reference assemblies | per run in Supplementary Table S6 |
+| Cross-species ONT reads and reference assemblies | per run in Supplementary Table S7 |
 
 ## Limits of reproduction
 
@@ -326,24 +326,26 @@ this table is the translation.
 
 ### Korean names inside the analysis scripts
 
-Every comment in this repository is in English, and so are the docstrings,
-apart from the Korean names and values they quote. Most of the Python scripts
-carry Korean **column names** and **category values**, and most also carry
-Korean **messages**, the text a script prints, writes to its log or report, or
-puts on a working figure. Most of the shell scripts print Korean messages with
-`echo`. This work was written in Korean.
+Every comment in this repository is in English, and so are the docstrings and
+the messages the scripts print, apart from the Korean names and values they
+quote. Most of the Python scripts carry Korean **column names** and
+**category values**, and some carry Korean text that they write into a working
+report or put on a working figure. Some of the shell scripts pass Korean sample
+labels. This work was written in Korean.
 The column names and the category values are identifiers and data, not prose:
 changing them would change what the code compares and looks up.
 
-They do not reach anything deposited here. Measured over this repository:
+They reach 21 of the tables deposited here. Measured over this repository:
 
-* of the 166 deposited tables, **164 contain no Korean character at all**;
-* the two that do are `common/fig02_figS2/EN_DICT.tsv` and
+* of the 196 deposited tables (`.tsv` and `.tsv.gz`), **173 contain no Korean character at all**;
+* two of the 23 that do are `common/fig02_figS2/EN_DICT.tsv` and
   `common/fig02_figS2/EN_WRAP_MAP.tsv`, which are the Korean-to-English
   dictionaries themselves, where the Korean is the data;
-* **no deposited table has a Korean column header**.
+* the other 21 are result tables of the Figure 5 and Figure 7 families in `tables/`,
+  deposited as the scripts write them: 18 have Korean column names and 3 have
+  Korean only in their values.
 
-A producer that works internally in Korean names renames its columns to English
+Apart from those 21, a producer that works internally in Korean names renames its columns to English
 in the last step before `to_csv`, so the table it deposits is English; the other
 producers build their frames in English throughout. `analysis/fig3_sourcedata_en.py`
 does the reverse, mapping the English columns of a deposited table back to the
@@ -386,7 +388,7 @@ row per figure panel and these produce no panel.
 
 | Script | What it is |
 |---|---|
-| `analysis/supp_tables_unit_vs_gene_beta_2026-11-01.py` | produces Supplementary Tables S3 and S4 |
+| `analysis/supp_tables_unit_vs_gene_beta_2026-11-01.py` | produces Supplementary Tables S2 and S3 |
 | `analysis/n_vs_chem_2026-10-25.py` | a check: whether the 1kGP curve wobbles because of mixed sequencing chemistry or because of the smaller number of units. It reports the answer and writes no table |
 | `analysis/profile_by_chem_2026-10-25.py` | a check: the positional methylation profile computed separately per sequencing chemistry |
 

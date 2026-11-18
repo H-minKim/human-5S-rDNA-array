@@ -11,7 +11,7 @@
 #
 #   Output: <out>/<species>__<sample>.read_unit_seq.tsv
 #   Arguments: species key, sample name, bam, map folder, reference unit folder, parameters .tsv, output folder, [PAD default 100].
-# MIT License · Copyright (c) 2026 Hungmin Kim
+# MIT License. Copyright (c) 2026 Hyungmin Kim
 import io
 import os
 import re
@@ -235,5 +235,5 @@ try:
     os.rmdir(TMP)
 except OSError:
     pass
-print("%s %s : array %d · read×유닛 %d (정렬 %d · NOALN %d)"
+print("%s %s : array %d, read×unit %d (aligned %d, NOALN %d)"
       % (SP, SAMPLE, tot["array"], tot["row"], tot["aln"], tot["noaln"]))

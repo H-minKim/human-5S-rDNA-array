@@ -91,7 +91,7 @@ with io.open(rfq, "w", newline=NL) as g, gzip.open(fq, "rt") as fh:
                 g.write(rec[0] + rec[1] + "+" + NL + rec[3])
                 n += 1
             rec = []
-print("배치 read %d (id %d)" % (n, len(want)))
+print("placed read %d (id %d)" % (n, len(want)))
 
 
 def polish(ref_arr, tag):
@@ -112,9 +112,9 @@ def polish(ref_arr, tag):
 FD = rd(os.path.join(R, "FLANK_distal_50000.fa"))[:FL]
 FP = rd(os.path.join(R, "FLANK_proximal_50000.fa"))[-FL:]
 s1, d1, z1, n1 = polish(a0, "it1")
-print("it1 : 길이 %d (원래 %d) · N %d · 평균깊이 %.1f · 깊이<3 %d/%d" % (len(s1), len(a0), s1.count("N"), d1, z1, n1))
+print("it1: length %d (input %d), N %d, mean depth %.1f, depth<3 %d/%d" % (len(s1), len(a0), s1.count("N"), d1, z1, n1))
 s2, d2, z2, n2 = polish(s1.replace("N", ""), "it2")
-print("it2 : 길이 %d · N %d · 평균깊이 %.1f · 깊이<3 %d/%d" % (len(s2), s2.count("N"), d2, z2, n2))
+print("it2: length %d, N %d, mean depth %.1f, depth<3 %d/%d" % (len(s2), s2.count("N"), d2, z2, n2))
 io.open(os.path.join(W, "cons2.fa"), "w", newline=NL).write(">%s_%s_cons2%s%s%s" % (SMP, SL, NL, s2, NL))
 
 
@@ -181,7 +181,7 @@ def loadmap(fn):
 
 C2 = loadmap("~/MAP_C2.tsv")
 G6 = loadmap("~/CONSENSUS_MAP_G6.tsv")
-print("유닛 수 : 서열합의2 %d · 합의2 지도 %d · 원래 지도 %d" % (len(V2), len(C2), len(G6)))
+print("unit counts: sequence consensus2 %d, consensus2 map %d, original map %d" % (len(V2), len(C2), len(G6)))
 
 
 def best_off(A, B):
@@ -200,4 +200,4 @@ def best_off(A, B):
 
 for nm, B in (("합의2 변이목록", C2), ("원래 관통read 지도", G6)):
     b = best_off(V2, B)
-    print("  서열합의2 vs %-16s : 일치 %.3f%% (오프셋 %+d · TP %d FN %d FP %d)" % (nm, 100 * b[0], b[1], b[2], b[3], b[4]))
+    print("  sequence consensus2 vs %-16s: agreement %.3f%% (offset %+d, TP %d FN %d FP %d)" % (nm, 100 * b[0], b[1], b[2], b[3], b[4]))

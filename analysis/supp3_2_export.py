@@ -34,7 +34,7 @@ _KO2EN_VAL = {
     "FIG3_A_UNITPROFILE_ZONE.tsv": ("구역", {"근위": "proximal", "내부": "interior",
                                             "원위": "distal", "전체": "all"}),
     "FIG3_B_POSBETA.tsv": ("층", {"전체": "all"}),
-    "FIG3_C_LOWCOUNT.tsv": ("컷", {"0.508(여기서 잴 골)": "0.508 (trough measured here)"}),
+    "FIG3_C_LOWCOUNT.tsv": ("컷", {"0.508(여기서 잴 골)": "0.508 (trough measured in this work)"}),
     "SUPP3_B_HAP3.tsv": ("길이층", {"짧은 array": "short array", "중간 길이": "medium",
                                    "긴 array": "long array"}),
 }
@@ -78,18 +78,18 @@ C = g[g.분자수 >= 5][["ap", "ad", "분자수", "평균_b_call", "분자사이
 for df, n in ((A, "SUPP3_2_MOLECULES.tsv"), (C, "SUPP3_2_POSSD.tsv")):
     p = os.path.join(HERE, n)
     _to_english(n, df).to_csv(p, sep="\t", index=False, float_format="%.5f", lineterminator="\n")
-    print("저장 %-28s 행 %6d · md5 %s"
+    print("saved %-28s rows %6d, md5 %s"
           % (n, len(df), hashlib.md5(io.open(p, "rb").read()).hexdigest()[:12]))
 
 print()
-print("검산 — 그림 출력과 맞나")
-print("   분자(read) %d        (그림 : 52)" % A.read_id.nunique())
-print("   덮인 칸 %d           (그림 : 1200)" % len(A))
-print("   array 유닛 %d        (그림 : 83)" % NN)
-print("   read>=5 인 자리 %d" % len(C))
+print("check: does it match the figure output")
+print("   molecules (read) %d        (figure: 52)" % A.read_id.nunique())
+print("   covered cells %d           (figure: 1200)" % len(A))
+print("   array units %d        (figure: 83)" % NN)
+print("   positions with read>=5 %d" % len(C))
 for nm, m in (("근위 1-10", C.ap <= 10), ("가운데 21-55", (C.ap > 20) & (C.ap <= 55)),
               ("끝 71-83", C.ap > 70)):
     s = C[m]
-    print("   %-12s 평균 β %.3f · 분자사이 sd 평균 %.3f (최대 %.3f)"
+    print("   %-12s mean β %.3f, mean between-molecule sd %.3f (max %.3f)"
           % (nm, s.평균_b_call.mean(), s.분자사이_sd.mean(), s.분자사이_sd.max()))
-print("   (그림 legend : 0.093 / 0.059 / 0.026)")
+print("   (figure legend: 0.093 / 0.059 / 0.026)")

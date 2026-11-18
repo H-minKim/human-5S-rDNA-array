@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Working name: fig6v3_step1_marker_values.py. Data and output roots come from environment variables with no default (the script stops if one is unset).
-# WARNING — this script WRITES tables, into P11_TABLE_OUT_DIR (no default). Pointing it at the folder that holds the published
+# WARNING: this script WRITES tables, into P11_TABLE_OUT_DIR (no default). Pointing it at the folder that holds the published
 #   input tables (P11_TABLE_DIR) OVERWRITES them. To verify, set P11_TABLE_OUT_DIR to an empty temporary folder.
 import os as _os_need, sys as _sys_need
 def _need(k):
@@ -80,8 +80,8 @@ for _, r in R_old.iterrows():
     if len(o) != 1: mm += 1; continue
     o = o.iloc[0]; nn += 1
     same = (abs(float(o.ratio) - float(r.ratio)) < 1e-9) and (str(o.boot_lo) == str(r.boot_lo) or abs(float(o.boot_lo) - float(r.boot_lo)) < 1e-9) and (abs(float(o.boot_hi) - float(r.boot_hi)) < 1e-9) and int(o.n_marker) == int(r.n_marker)
-    if not same: mm += 1; print("   불일치", r.cell, r.target, r.zone, o.ratio, r.ratio, o.boot_lo, r.boot_lo, o.boot_hi, r.boot_hi)
-print("① 구역 표 재현 검산 (옛 구역 · 기존 RT 의 K562·GM12878 행) : 비교 %d 행 · 어긋남 %d" % (nn, mm))
+    if not same: mm += 1; print("   mismatch", r.cell, r.target, r.zone, o.ratio, r.ratio, o.boot_lo, r.boot_lo, o.boot_hi, r.boot_hi)
+print("(1) zone table reproduction check (original zones, K562 and GM12878 rows of the existing RT): compared %d rows, mismatch %d" % (nn, mm))
 # ---------------- ① the new marker table and the new count table
 MKN = {c: L.build_markers(c, "new") for c in ("GM12878", "K562")}
 L.write_marker_table("GM12878", MKN["GM12878"], "P11_GM12878_MARKERS_NEWZONE_2026-10-13.tsv")
@@ -98,18 +98,18 @@ with io.open(os.path.join(TO, "K562_QUALGATE_NEWZONE_2026-10-13.tsv"), "w", enco
             m = MKN["K562"][v]
             f.write(TAB.join([lab, v, r["pos"], r["alt"], str(len(m["units"])), L.ZLAB[m["zone"]] + "|" + m["element"], r["alt_all"], r["dep_all"], r["alt_hq"], r["dep_hq"]]) + "\n")
 miss = [v for v in MKN["K562"] if v not in qd["WGSNAT"]] + [v for v in MKN["GM12878"] if v not in GMmix["HIFI"]]
-print("② 새 표지 중 계수가 없는 것 :", miss if miss else "없음 (GM12878 %d · K562 %d 모두 계수 있음)" % (len(MKN["GM12878"]), len(MKN["K562"])))
+print("(2) new markers without counts:", miss if miss else "none (GM12878 %d, K562 %d, all have counts)" % (len(MKN["GM12878"]), len(MKN["K562"])))
 Mnew = {c: {v: r["zone"] for v, r in MKN[c].items()} for c in MKN}
 spec_new = [("K562", read_k562_pre("K562_QUALGATE_MIX.tsv", "QUALGATE"), Mnew["K562"], "WGSNAT", ["TBP", "POLR3A", "GTF3C2", "ATAC", "SNAPC5"]),
             ("GM12878", GMmix, Mnew["GM12878"], "HIFI", ["TBP", "POLR3G", "ATAC", "DNase", "INPUT"])]
 R_new = rt_loop(spec_new)
 R_new.to_csv(os.path.join(TO, "P11_percellline_NEWZONE_bootstrap_2026-10-13.tsv"), sep=TAB, index=False, encoding="utf-8")
-print("   새 구역 표 %d 행 → P11_percellline_NEWZONE_bootstrap_2026-10-13.tsv" % len(R_new))
+print("   new zone table %d rows -> P11_percellline_NEWZONE_bootstrap_2026-10-13.tsv" % len(R_new))
 for cell in ("K562", "GM12878"):
     for t in ("ATAC", "TBP", "POLR3A", "SNAPC5"):
         a = R_new[(R_new.cell == cell) & (R_new.target == t)].set_index("zone"); b = OLDRT[(OLDRT.cell == cell) & (OLDRT.target == t)].set_index("zone")
         if "근위" in a.index and "가운데" in a.index and "근위" in b.index:
-            print("   %-8s %-7s 근위/가운데  옛 %6.2f → 새 %6.2f  (근위 표지 %d→%d · 가운데 %d→%d)" % (
+            print("   %-8s %-7s proximal/interior  original %6.2f -> new %6.2f  (proximal markers %d->%d, interior %d->%d)" % (
                 cell, t, float(b.loc["근위", "ratio"])/float(b.loc["가운데", "ratio"]), float(a.loc["근위", "ratio"])/float(a.loc["가운데", "ratio"]),
                 int(b.loc["근위", "n_marker"]), int(a.loc["근위", "n_marker"]), int(b.loc["가운데", "n_marker"]), int(a.loc["가운데", "n_marker"])))
 # ---------------- ③ the interaction against input, inter() unchanged
@@ -153,13 +153,13 @@ qold = L.rd("K562_QUALGATE.tsv"); zold = {r["variant"]: r["tag"].split("|")[0] f
 LABS_OLD = ("POLR3A", "TBP", "BDP1", "BRF1", "GTF3C2", "ATAC", "SNAPC5")
 I_old = inter_all(build_qdf(qold, zold), LABS_OLD)
 bad = 0
-print("③ 교호작용 재현 검산 (옛 구역 · 기존 본표 nc 열)")
+print("(3) interaction reproduction check (original zones, nc column of the existing main table)")
 for lab in LABS_OLD:
     pt, lo, hi, nz, nm_ = I_old[lab]; b = BT.loc[lab]
     same = abs(pt - float(b.nc_interaction_OR)) < 0.006 and abs(lo - float(b.nc_lo)) < 0.006 and abs(hi - float(b.nc_hi)) < 0.006
     bad += (not same)
-    print("   %-7s 재현 %.2f [%.2f-%.2f] ↔ 본표 %.2f [%.2f-%.2f]  %s" % (lab, pt, lo, hi, float(b.nc_interaction_OR), float(b.nc_lo), float(b.nc_hi), "✓" if same else "불일치"))
-print("   ⇒ 어긋남 %d" % bad)
+    print("   %-7s reproduced %.2f [%.2f-%.2f] vs main table %.2f [%.2f-%.2f]  %s" % (lab, pt, lo, hi, float(b.nc_interaction_OR), float(b.nc_lo), float(b.nc_hi), "✓" if same else "불일치"))
+print("   -> mismatch %d" % bad)
 # new: the new 70 markers on the new zones. BDP1 and BRF1 are absent because they were not counted, and the random number stream differs by that much.
 znew = {v: L.ZLAB[r["zone"]] for v, r in MKN["K562"].items()}
 LABS_NEW = ("POLR3A", "TBP", "GTF3C2", "ATAC", "SNAPC5")
@@ -167,11 +167,11 @@ I_new = inter_all(build_qdf(KQ, znew), LABS_NEW)
 rows = []
 for lab in LABS_NEW:
     pt, lo, hi, nz, nm_ = I_new[lab]; old = I_old[lab]
-    print("   %-7s 새 %.2f [%.2f-%.2f] (근위 %d·가운데 %d 표지)   ← 옛 %.2f [%.2f-%.2f]" % (lab, pt, lo, hi, nz, nm_, old[0], old[1], old[2]))
+    print("   %-7s new %.2f [%.2f-%.2f] (proximal %d, interior %d markers)   original %.2f [%.2f-%.2f]" % (lab, pt, lo, hi, nz, nm_, old[0], old[1], old[2]))
     rows.append(TAB.join([lab, "%.2f" % pt, "%.2f" % lo, "%.2f" % hi, str(nz), str(nm_), "표적특이" if lo > 1 else ("음성대조" if lab == "SNAPC5" else "구분 안 됨")]))
 io.open(os.path.join(TO, "K562_interaction_NEWZONE_2026-10-13.tsv"), "w", encoding="utf-8", newline="\n").write(
     TAB.join(["target", "nc_interaction_OR", "nc_lo", "nc_hi", "근위표지", "가운데표지", "판정"]) + "\n" + "\n".join(rows) + "\n")
 print("→ K562_interaction_NEWZONE_2026-10-13.tsv")
 # ---------------- a summary of the new marker table
 for c in ("GM12878", "K562"):
-    print("새 표지 %-8s %s" % (c, dict(collections.Counter(r["zone"] for r in MKN[c].values()))))
+    print("new marker %-8s %s" % (c, dict(collections.Counter(r["zone"] for r in MKN[c].values()))))

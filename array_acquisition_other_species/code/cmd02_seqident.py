@@ -4,12 +4,13 @@
 #   Identity is measured by global alignment (Biopython PairwiseAligner, match +1, mismatch -1, gap open -2, extend -0.5) as
 #            the number of matching columns over the number of aligned columns, gaps included.
 #   CpG count: the number of CG dinucleotides in each part, which indicates how many positions can carry a methylation measurement.
-# MIT License · Copyright (c) 2026 Hungmin Kim
+# MIT License. Copyright (c) 2026 Hyungmin Kim
+import os
 import io
 import itertools
 from Bio import Align
 
-R = "$RDNA_OTHERSP_DIR/data_v2/"
+R = os.environ["RDNA_OTHERSP_DIR"] + "/data_v2/"
 OUT = R + "13_array_level_diff/REFUNIT_IDENTITY.tsv"
 T = "\t"
 seqs = {}
@@ -75,4 +76,4 @@ for a in z18:
                         sid, "%.3f" % ident(ga, gb), str(len(sa)), str(len(sb)),
                         str(sa.count("CG")), str(sb.count("CG")), str(ga.count("CG")), str(gb.count("CG"))]) + "\n")
 o.close()
-print("완료", len(fk), len(z18), len(z4))
+print("done", len(fk), len(z18), len(z4))

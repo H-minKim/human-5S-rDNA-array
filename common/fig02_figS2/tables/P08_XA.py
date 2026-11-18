@@ -5,8 +5,7 @@ r"""P08 XA - how robust is the decay constant a
    (a) fit start distance: 1 / 2 / 3 / 4 / 5
    (b) target curve: semivariance (squared) vs mean difference (bp)
    (c) fit end distance: 10 / 12 / 15
-   (d) nugget fixed or not
-   Verdict: if a moves by orders of magnitude, a three-digit number such as '7.4' must not be written in the main text"""
+   (d) nugget fixed or not"""
 import os, sys, io, pickle
 import numpy as np
 sys.stdout.reconfigure(encoding="utf-8")
@@ -20,7 +19,7 @@ from scipy import optimize
 
 U, _, _ = G.load("h1")
 VPU = sum(len(t[4]) for v in U.values() for t in v) / sum(len(v) for v in U.values())
-print("§0 자 : var_per_unit = %.6f" % VPU)
+print("§0 ruler : var_per_unit = %.6f" % VPU)
 assert abs(VPU - 6.866) < 0.01
 NCOPY = {("%s" % k[0], "%s" % k[1]): len(v) for k, v in U.items()}
 with open(os.path.join(HERE, "OUT_P04", "S3_matrices.pkl"), "rb") as f:
@@ -51,7 +50,7 @@ for i, (M, n) in enumerate(SL):
 ON = PN.sum(0)
 GAM = 0.5 * PQ.sum(0) / ON
 MEA = PD.sum(0) / ON
-print("haplotype %d · semivariance %.2f → %.2f · 평균 차이 %.3f → %.3f"
+print("haplotype %d, semivariance %.2f to %.2f, mean difference %.3f to %.3f"
       % (len(SL), GAM[0], GAM[-1], MEA[0], MEA[-1]))
 
 
@@ -82,34 +81,34 @@ def boot_a(y_src, start, end, nrep=B):
 
 
 print("\n" + "=" * 78)
-print("[⒜⒞] 적합 창을 바꾸면 a 가 어떻게 되나 (대상 = semivariance · nugget 자유)")
-print("    %12s %10s %24s %10s" % ("적합 창", "a", "95%CI (블록 부트)", "상한붙음"))
+print("[a,c] how a changes with the fitting window (target = semivariance, nugget free)")
+print("    %12s %10s %24s %10s" % ("fit window", "a", "95%CI (블록 부트)", "상한붙음"))
 rows = []
 for st, en in ((1, 15), (2, 15), (3, 15), (4, 15), (5, 15), (3, 10), (3, 12)):
     a_ = fit(GAM, ON, st, en)
     ci, hit = boot_a("gamma", st, en)
-    print("    %12s %10.3f %24s %10.3f" % ("거리 %d-%d" % (st, en), a_, "[%.2f, %.2f]" % (ci[0], ci[1]), hit))
+    print("    %12s %10.3f %24s %10.3f" % ("distance %d-%d" % (st, en), a_, "[%.2f, %.2f]" % (ci[0], ci[1]), hit))
     rows.append(("gamma", st, en, True, float(a_), float(ci[0]), float(ci[1]), hit))
-print("\n[⒝] 대상 곡선을 평균 차이(bp)로 바꾸면 (같은 적합 창)")
-print("    %12s %10s %24s %10s" % ("적합 창", "a", "95%CI", "상한붙음"))
+print("\n[b] with the target curve changed to mean difference (bp) (same fitting window)")
+print("    %12s %10s %24s %10s" % ("fit window", "a", "95%CI", "상한붙음"))
 for st, en in ((1, 15), (3, 15), (5, 15)):
     a_ = fit(MEA, ON, st, en)
     ci, hit = boot_a("mean", st, en)
-    print("    %12s %10.3f %24s %10.3f" % ("거리 %d-%d" % (st, en), a_, "[%.2f, %.2f]" % (ci[0], ci[1]), hit))
+    print("    %12s %10.3f %24s %10.3f" % ("distance %d-%d" % (st, en), a_, "[%.2f, %.2f]" % (ci[0], ci[1]), hit))
     rows.append(("mean", st, en, True, float(a_), float(ci[0]), float(ci[1]), hit))
-print("\n[⒟] nugget 을 고정하면 (semivariance · 거리 3-15)")
+print("\n[d] with the nugget held constant (semivariance, distance 3-15)")
 a_ = fit(GAM, ON, 3, 15, free_nugget=False)
-print("    nugget 고정 : a = %.3f" % a_)
+print("    nugget held constant : a = %.3f" % a_)
 rows.append(("gamma", 3, 15, False, float(a_), np.nan, np.nan, np.nan))
 av = np.array([r[4] for r in rows if r[0] == "gamma" and r[3]])
 print("\n" + "=" * 78)
-print("semivariance 판 a 범위 : %.2f ~ %.2f (최대/최소 %.2f 배)" % (av.min(), av.max(), av.max() / av.min()))
-print("평균차이 판 a 범위     : %.2f ~ %.2f"
+print("semivariance version, range of a    : %.2f ~ %.2f (max/min %.2f-fold)" % (av.min(), av.max(), av.max() / av.min()))
+print("mean-difference version, range of a : %.2f ~ %.2f"
       % (min(r[4] for r in rows if r[0] == "mean"), max(r[4] for r in rows if r[0] == "mean")))
-print("부트스트랩 CI 는 거리 3-15 기준 [%.2f, %.2f] — 상한/하한 %.2f 배"
+print("bootstrap CI for distance 3-15 [%.2f, %.2f]: upper/lower %.2f-fold"
       % (rows[2][5], rows[2][6], rows[2][6] / rows[2][5]))
 g = io.open(os.path.join(OUT, "XA_decay_constant_robustness.tsv"), "w", encoding="utf8", newline="\n")
-g.write("# P08 XA · 감쇠 상수 a 의 민감도 · seed %d · B %d · 2026-10-10\n" % (SEED, B))
+g.write("# P08 XA · 감쇠 상수 a 의 민감도 · seed %d · B %d\n" % (SEED, B))
 g.write("curve\tstart\tend\tfree_nugget\ta\tlo\thi\tfrac_at_bound\n")
 for r in rows:
     g.write("%s\t%d\t%d\t%s\t%.4f\t%s\t%s\t%s\n"
@@ -117,7 +116,7 @@ for r in rows:
                "" if r[5] != r[5] else "%.4f" % r[5], "" if r[6] != r[6] else "%.4f" % r[6],
                "" if r[7] != r[7] else "%.4f" % r[7]))
 g.close()
-print("\n산출 :", os.path.join(OUT, "XA_decay_constant_robustness.tsv"))
+print("\noutputs :", os.path.join(OUT, "XA_decay_constant_robustness.tsv"))
 
 # the deposited table(s) carry English column names and values (common/fig02_figS2/taben.py)
 import sys as _s, os as _o

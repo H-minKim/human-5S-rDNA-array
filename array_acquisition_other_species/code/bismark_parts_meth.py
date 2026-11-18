@@ -9,7 +9,7 @@
 #     A coding block can hold only a handful of CpG sites, so a binomial interval would be far too narrow.
 #
 #   Arguments: bam, label, regions.tsv, out.tsv, [bootstrap replicates (default 2000)].
-# MIT License · Copyright (c) 2026 Hungmin Kim
+# MIT License. Copyright (c) 2026 Hyungmin Kim
 import io
 import os
 import random
@@ -109,4 +109,4 @@ for (base, kind) in sorted(parts):
                       fr, l, h, str(bp)]) + NL)
 o.close()
 b.close()
-print("%s 완료" % LAB)
+print("%s done" % LAB)

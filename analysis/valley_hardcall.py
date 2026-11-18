@@ -35,7 +35,7 @@ L1 = _need("RDNA_HUMAN_L1_PARQUET")
 
 h2 = pd.read_parquet(L1, columns=["sample", "slot", "gate"])
 H2 = set(map(tuple, h2.loc[h2.gate == 1, ["sample", "slot"]].drop_duplicates().astype(str).values))
-print("H2 하플로타입(슬롯) %d" % len(H2))
+print("H2 haplotypes (slots) %d" % len(H2))
 
 best = {}
 for i, L in enumerate(gzip.open(RU, "rt", encoding="utf8")):
@@ -71,7 +71,7 @@ def valley(bw, lo=0.20, hi=0.80, smooth=0):
     return v, dmin, (flat.min(), flat.max()), hist, mid, dens
 
 
-print("%-10s %-10s %-12s %-22s %s" % ("칸 폭", "골 위치", "그 칸 몫", "골 평평한 구간(+10%)", "0.508 과 차"))
+print("%-10s %-10s %-12s %-22s %s" % ("bin width", "골 위치", "share of that bin", "골 평평한 구간(+10%)", "diff from 0.508"))
 rows = []
 for bw, sm in ((0.02, 0), (0.005, 0), (0.005, 3), (0.002, 0), (0.002, 5), (0.001, 0), (0.001, 11)):
     v, dmin, fl, hist, mid, dens = valley(bw, smooth=sm)
@@ -86,12 +86,12 @@ v, dmin, fl, hist, mid, dens = valley(0.002, smooth=5)
 k = np.ones(5) / 5
 d = np.convolve(dens, k, mode="same")
 i508 = int(0.508 / 0.002)
-print("칸 0.002(평활 5) 기준 : 골 바닥 %.4f (몫 %.5f) · 0.508 자리의 몫 %.5f · 비 %.3f"
+print("with bin 0.002 (smoothing 5): trough bottom %.4f (share %.5f), share at 0.508 %.5f, ratio %.3f"
       % (v, dmin, d[i508], d[i508] / dmin if dmin else float("nan")))
 print()
 # how much the hypomethylated fraction differs between a cut at 0.508 and a cut at the measured trough
 for cut in (0.508, round(v, 4)):
-    print("   컷 %.4f → 꺼진 read-유닛 몫 %.4f%%" % (cut, 100.0 * (b <= cut).mean()))
+    print("   cut %.4f -> share of off read-units %.4f%%" % (cut, 100.0 * (b <= cut).mean()))
 print()
 # bootstrap: how much the position of the trough moves
 rng = np.random.default_rng(20261007)
@@ -105,7 +105,7 @@ for _ in range(200):
     m = (mid >= 0.20) & (mid <= 0.80)
     vs.append(mid[m][np.argmin(d[m])])
 vs = np.array(vs)
-print("부트스트랩 200 회 (칸 0.002 · 평활 5) : 골 중앙 %.4f · 2.5-97.5%% %.4f - %.4f"
+print("bootstrap 200 rounds (bin 0.002, smoothing 5): trough median %.4f, 2.5-97.5%% %.4f - %.4f"
       % (np.median(vs), np.percentile(vs, 2.5), np.percentile(vs, 97.5)))
 
 SP = os.path.dirname(os.path.abspath(__file__))
@@ -116,4 +116,4 @@ with io.open(P, "w", encoding="utf8", newline=chr(10)) as fh:
         fh.write(chr(9).join([tag, "%.4f" % v2, "%.6f" % dm, "%.3f" % fl2[0],
                               "%.3f" % fl2[1], "%+.4f" % (v2 - 0.508)]) + chr(10))
 print()
-print("적었다 :", P)
+print("written:", P)

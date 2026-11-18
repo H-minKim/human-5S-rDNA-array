@@ -4,7 +4,7 @@
 #   The actual gene hit sequence is used, not the last 119 bp of the array's representative unit, so no boundary is assumed.
 #   Identical sequences are grouped, and the number of positions each differs from the most common type, the candidate maternal type, is recorded.
 #   Arguments: cmsearch.tbl, assembly.fa, array catalogue.tsv, species key, output prefix.
-# MIT License · Copyright (c) 2026 Hungmin Kim
+# MIT License. Copyright (c) 2026 Hyungmin Kim
 import io
 import os
 import sys
@@ -81,7 +81,7 @@ for (h, seq) in G:
 o.close()
 w = io.open(OUT + ".gene_types.tsv", "w", encoding="utf8", newline=NL)
 w.write(TAB.join(["gene_type", "n_hits", "gene_len", "diff_vs_T01", "chroms", "arrays", "seq"]) + NL)
-print("%-6s %6s %6s %8s  %s" % ("형", "hit", "길이", "T01차이", "염색체(array 수)"))
+print("%-6s %6s %6s %8s  %s" % ("type", "hit", "길이", "T01차이", "염색체(array 수)"))
 for seq, c in cnt.most_common():
     t = grp[seq]
     hh = [(h, s) for h, s in G if s == seq]

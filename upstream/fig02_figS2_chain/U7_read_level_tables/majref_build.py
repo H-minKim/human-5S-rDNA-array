@@ -6,7 +6,7 @@
 #          and at such a position a unit carrying the majority allele has no variant, a unit carrying the CHM13 allele gets the inverse token
 #   Check : 11 positions are flipped, variants per unit 15.516→6.966
 #
-#   Output : the 2026-10-01 majority-reference folder under $RDNA_DATA_ROOT/v11_readvar, figure folder 03 (NEW below)
+#   Output : the majority-reference folder under $RDNA_DATA_ROOT/v11_readvar, figure folder 03 (NEW below)
 #   Nothing is written to the canonical table folder (T2 below)
 import io, os, re, sys, collections, datetime
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -47,7 +47,7 @@ def _inv(t):
     if m:
         rb = REFB.get(str(t), "")
         if not rb or rb == "nan":
-            raise ValueError("ref 염기 모름: %r" % t)
+            raise ValueError("unknown ref base: %r" % t)
         return "%s%s" % (m.group(1), rb)
     m = re.match(r"^(\d+)D(\d+)$", str(t))
     if m:
@@ -55,16 +55,16 @@ def _inv(t):
     m = re.match(r"^(\d+)I(\d+)$", str(t))
     if m:
         return "%sD%s" % (m.group(1), m.group(2))
-    raise ValueError("역토큰 못 만듦: %r" % t)
+    raise ValueError("cannot build reverse token: %r" % t)
 
 
-P("[다수형 기준 변이표] %s" % datetime.datetime.now().strftime("%Y-%m-%d %H:%M"))
+P("[majority-type-based variant table] %s" % datetime.datetime.now().strftime("%Y-%m-%d %H:%M"))
 KEEP = ["sample", "slot", "array_pos", "ap", "ad", "side", "varlist", "n_var", "n_var_gene",
         "n_var_common", "n_var_rare", "n_var_unmatched", "n_snv", "n_ins", "n_del",
         "n_var_cpg", "n_var_coding", "vsig", "vsig_n", "vsig_minfreq",
         "data_source", "pop", "super_pop", "N", "both_eligible"] + ["nv_" + e for e in ELEMS]
 L2 = pd.read_parquet(os.path.join(T2, "L2_HAP_UNIT.parquet"))
-P("   입력 L2_HAP_UNIT.parquet : 행 %s · 하플로 %d · 개체 %d"
+P("   input L2_HAP_UNIT.parquet: rows %s, haplotypes %d, individuals %d"
   % (format(len(L2), ","), L2.groupby(["sample", "slot"]).ngroups, L2["sample"].nunique()))
 
 # ---------- 1. majority allele per position ----------
@@ -89,7 +89,7 @@ for p in alle:
     t, c = alle[p].most_common(1)[0]
     if t != "REF" and c / nu > 0.5:
         FLIP[p] = t
-P("   변이 불린 자리 %d · 뒤집는 자리 %d : %s"
+P("   positions with variant calls %d, flipped positions %d: %s"
   % (len(alle), len(FLIP), " ".join("%d(%s→%s)" % (p, FLIP[p], _inv(FLIP[p]))
                                     for p in sorted(FLIP))))
 pd.DataFrame([dict(bp=p, 다수형토큰=FLIP[p], 역토큰=_inv(FLIP[p]),
@@ -110,7 +110,7 @@ for dd in per_unit:
             s2.add(_inv(m))
     newlist.append(",".join(sorted(s2)))
 L2["varlist_maj"] = newlist
-P("   유닛당 변이 수 : %.3f → %.3f (%.1f%%)"
+P("   variants per unit: %.3f -> %.3f (%.1f%%)"
   % (L2.n_var.mean(), np.mean([len(x.split(",")) if x else 0 for x in newlist]),
      100 * (np.mean([len(x.split(",")) if x else 0 for x in newlist]) / L2.n_var.mean() - 1)))
 
@@ -121,8 +121,8 @@ for x in newlist:
         for t in x.split(","):
             cnt[t] += 1
 UFQ = {t: c / nu for t, c in cnt.items()}
-P("   다수형 기준 토큰 종류 %d (전 기준 %d)" % (len(cnt), len(VG)))
-P("   역토큰은 그룹표에 없다 → class·element·CpG 는 짝 토큰(같은 자리 다수형)의 것을 물려준다")
+P("   token kinds on the majority-type basis %d (reference basis %d)" % (len(cnt), len(VG)))
+P("   reverse tokens are not in the group table -> class, element, CpG are inherited from the pair token (majority type at the same position)")
 INV2FWD = {_inv(m): m for m in FLIP.values()}
 rec = []
 for x in newlist:
@@ -189,7 +189,7 @@ for c in M.columns:
     FULL[c] = M[c].values
 FULL.to_parquet(os.path.join(NEW, "L2_HAP_UNIT_MAJREF.parquet"), index=False)
 M.to_parquet(os.path.join(NEW, "L2_MAJREF_variant_cols_only.parquet"), index=False)
-P("   갈아끼운 변이 열 %d 개 · 전체 열 %d 개 유지"
+P("   replaced variant columns %d, total columns %d kept"
   % (len([c for c in M.columns if c not in ("sample", "slot", "array_pos", "ap", "ad", "side",
                                             "N", "data_source", "pop", "super_pop", "both_eligible")]),
      FULL.shape[1]))
@@ -206,8 +206,8 @@ for col in ["n_var", "n_var_common", "n_var_rare", "n_var_unmatched",
 B = pd.DataFrame(BA)
 B.to_csv(os.path.join(NEW, "BEFORE_AFTER_unit_variant_cols.tsv"), sep="\t", index=False, float_format="%.4f")
 P()
-P("[전/후 — 유닛 변이 열]")
-P("   %-16s %10s %10s %10s" % ("열", "전 평균", "후 평균", "차"))
+P("[before/after: unit variant columns]")
+P("   %-16s %10s %10s %10s" % ("column", "전 평균", "mean after", "차"))
 for _, r in B.iterrows():
     P("   %-16s %10.3f %10.3f %+10.3f" % (r.열, r.전_평균, r.후_평균, r.차))
 # new token frequency table
@@ -217,10 +217,10 @@ TOKN["역토큰인가"] = TOKN.tok.isin(INV2FWD).map({True: "Y", False: ""})
 TOKN.sort_values("n_unit_seen", ascending=False).to_csv(
     os.path.join(NEW, "VAR_GROUP_MAP_MAJREF.tsv"), sep="\t", index=False, float_format="%.6f")
 P()
-P("   절반 넘는 토큰 : 전 %d 개 → 후 %d 개"
+P("   tokens above one half: before %d -> after %d"
   % (int((VG.unit_freq.fillna(0) > 0.5).sum()), int((TOKN.unit_freq > 0.5).sum())))
 P()
-P("[저장] %s" % NEW.replace("/", "\\"))
+P("[saved] %s" % NEW.replace("/", "\\"))
 for f in ("L2_HAP_UNIT_MAJREF.parquet", "MAJREF_FLIPS_this_run.tsv",
           "BEFORE_AFTER_unit_variant_cols.tsv", "VAR_GROUP_MAP_MAJREF.tsv", "MAJREF_BUILD.txt"):
     P("   %s" % f)

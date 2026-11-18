@@ -33,14 +33,14 @@ def build_var(D, label):
         g = sub.groupby(key); keep = g.size()[g.size()>=MINU].index
         mu = g.mean().reindex(slots); mu.loc[~mu.index.isin(keep), :] = np.nan
         for t in TOP: out["%s|VAR_%s" % (wn,t)] = mu[t].values
-    print("   [%s] 후보 토큰 %d → 쓰는 토큰 %d · 열 %d · 하플로 %d" % (label,len(cand),len(TOP),out.shape[1],out.shape[0]))
+    print("   [%s] candidate tokens %d -> tokens used %d, columns %d, haplotypes %d" % (label,len(cand),len(TOP),out.shape[1],out.shape[0]))
     return out, TOP
 
 L = pd.read_parquet(T+"L2_HAP_UNIT.parquet", columns=["sample","slot","array_pos","ap","ad","N","n_read","varlist"])
 L = L[L.n_read>=5].copy()
 M = pd.read_parquet(MAJ, columns=["sample","slot","array_pos","ap","ad","N","varlist"])
 M = M.merge(L[["sample","slot","array_pos","n_read"]], on=["sample","slot","array_pos"], how="inner")
-print("MAJREF 자리 %s · 하플로 %d" % (format(len(M),","), (M["sample"].astype(str)+"_"+M.slot.astype(str)).nunique()))
+print("MAJREF positions %s, haplotypes %d" % (format(len(M),","), (M["sample"].astype(str)+"_"+M.slot.astype(str)).nunique()))
 V, TOP = build_var(M, "다수형")
 
 haps = list(V.index)
@@ -61,14 +61,14 @@ lab = np.array([find(i) for i in range(len(haps))])
 sz = collections.Counter(lab)
 big = [k for k,v in sorted(sz.items(), key=lambda x:-x[1]) if v>=3]
 gid = {k:i+1 for i,k in enumerate(big)}
-print("\n관문 — 발행 표와 맞는가")
-print("   무리(>=3) %d · 무리 안 하플로 %d · 최대 무리 %d" % (len(big), sum(sz[k] for k in big), max(sz[k] for k in big)))
+print("\ngate: does it match the released table")
+print("   groups (>=3) %d, haplotypes in groups %d, largest group %d" % (len(big), sum(sz[k] for k in big), max(sz[k] for k in big)))
 G = pd.read_csv((__import__("os").environ["RDNA_DATA_ROOT"] + "/v11_readvar/03_figures/paper_Fig/FIGX9_12_GROUPS.tsv"), sep="\t")
 GM = G[G.기준=="다수형"]
-print("   발행 FIGX9_12_GROUPS 다수형 : 무리 %d · 하플로합 %d · 최대 %d" % (len(GM), GM.하플로.sum(), GM.하플로.max()))
+print("   released FIGX9_12_GROUPS majority type: groups %d, haplotype sum %d, largest %d" % (len(GM), GM.하플로.sum(), GM.하플로.max()))
 rep_sizes = sorted([sz[k] for k in big], reverse=True)
 pub_sizes = sorted(GM.하플로.tolist(), reverse=True)
-print("   무리 크기 수열 일치 : %s" % (rep_sizes==pub_sizes))
+print("   group size sequence matches: %s" % (rep_sizes==pub_sizes))
 
 # ---------------- Q9 : within-cluster pairwise Jaccard (chaining diagnostic)
 rows=[]
@@ -81,7 +81,7 @@ for k in big:
                      문턱이상_몫=round(float((pv>=CUT).mean()),4)))
 CH=pd.DataFrame(rows)
 CH.to_csv(os.path.join(OUTD,"ans9_within_cluster_pairwise_jaccard.tsv"), sep="\t", index=False)
-print("\n[9] 무리 안 쌍별 자카드 (단일연결 사슬 진단)")
+print("\n[9] pairwise Jaccard within groups (single-linkage chaining diagnostic)")
 print(CH.head(13).to_string(index=False))
 
 # ---------------- Q11 : member list
@@ -89,9 +89,9 @@ mem=[]
 for i,h in enumerate(haps):
     mem.append(dict(무리=gid.get(lab[i],0), hap=h, sample=h.rsplit("_",1)[0], slot=h.rsplit("_",1)[1],
                     무리크기=int(sz[lab[i]]), 보유토큰수=int(Xb[i].sum())))
-MEMD=pd.DataFrame(mem).sort_values(["group","hap"])
+MEMD=pd.DataFrame(mem).sort_values(["무리","hap"])
 MEMD.to_csv(os.path.join(OUTD,"ans11_cluster_haplotype_list.tsv"), sep="\t", index=False)
-print("\n[11] 명단 저장 — 무리에 든 하플로 %d · 무리 0(안 든 것) %d"
+print("\n[11] list saved: haplotypes in a group %d, group 0 (not in any) %d"
       % (int((MEMD.무리>0).sum()), int((MEMD.무리==0).sum())))
 
 # ---------------- Q12 : two slots of the same individual
@@ -104,8 +104,8 @@ for s in two:
     if all(lab[i] in big for i in ii):
         bothin+=1
         if lab[ii[0]]==lab[ii[1]]: same+=1
-print("\n[12] 개체 %d (두 슬롯 %d · 한 슬롯 %d)" % (cc.size,len(two),int((cc==1).sum())))
-print("   두 슬롯이 둘 다 무리에 든 개체 %d · 그 중 같은 무리 %d (%.0f%%)"
+print("\n[12] individuals %d (two slots %d, one slot %d)" % (cc.size,len(two),int((cc==1).sum())))
+print("   individuals with both slots in a group %d, of which same group %d (%.0f%%)"
       % (bothin, same, 100*same/max(bothin,1)))
 
 # ---------------- Q10 : distinguishing tokens
@@ -123,10 +123,10 @@ for k in big:
             drows.append(dict(무리=gid[k], 구역=z, 토큰=t,
                               무리안_보유율=round(float(pin),4), 무리밖_보유율=round(float(pout),4),
                               차=round(float(pin-pout),4)))
-DT=pd.DataFrame(drows).sort_values(["group","difference"],ascending=[True,False])
+DT=pd.DataFrame(drows).sort_values(["무리","차"],ascending=[True,False])
 DT.to_csv(os.path.join(OUTD,"ans10_cluster_distinguishing_tokens.tsv"), sep="\t", index=False)
-print("\n[10] 가르는 토큰 (무리안>=0.80 & 차>=0.30) %d 줄 · 무리 %d / %d"
+print("\n[10] discriminating tokens (within-group>=0.80 & diff>=0.30) %d rows, groups %d / %d"
       % (len(DT), DT.무리.nunique(), len(big)))
-print(DT.groupby("group").size().head(13).to_string())
+print(DT.groupby("무리").size().head(13).to_string())
 io.open(os.path.join(OUTD,"ans_tokens_used_40.txt"),"w",encoding="utf8").write("\n".join(TOP))
-print("\n[저장] %s" % OUTD)
+print("\n[saved] %s" % OUTD)

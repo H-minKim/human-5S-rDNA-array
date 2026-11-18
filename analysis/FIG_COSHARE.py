@@ -91,4 +91,4 @@ fig.suptitle(T_("희귀 변이를 함께 가진 두 유닛은 다른 변이도 �
 for ext in ("png", "svg"):
     fig.savefig(os.path.join(OUT, "fig_coshare." + ext), dpi=300, bbox_inches="tight")
 r0 = rates(np.arange(len(haps)), 0)
-print("하플로타입 %d · A(희귀 B) 배수 %s" % (len(haps), " ".join("%.1f" % (r0[i, 0] / r0[i, 1]) for i in range(len(BINS)))))
+print("haplotypes %d, A(rare B) fold %s" % (len(haps), " ".join("%.1f" % (r0[i, 0] / r0[i, 1]) for i in range(len(BINS)))))

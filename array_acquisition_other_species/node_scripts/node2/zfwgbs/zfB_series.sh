@@ -12,7 +12,7 @@ N=8000000
 
 guard () {
   F=$(df --output=avail -BG / | tail -1 | tr -dc '0-9')
-  if [ "$F" -lt 25 ]; then echo "STOP — 디스크 여유 ${F}G"; exit 1; fi
+  if [ "$F" -lt 25 ]; then echo "STOP: free disk ${F}G"; exit 1; fi
 }
 
 run_one () {
@@ -23,7 +23,7 @@ run_one () {
     fastq-dump -X $N --split-files --gzip -O sra "$R" > logs/${R}.dl.log 2>&1
   fi
   [ -f sra/${R}_1.fastq.gz ] || { echo "DL_FAIL $R"; return; }
-  echo "정렬 시작 $R ($D) $(date -u +%H:%M)"
+  echo "alignment start $R ($D) $(date -u +%H:%M)"
   bismark --genome ref --parallel 2 -p 3 --bam --temp_dir tmp \
     -o bam -1 sra/${R}_1.fastq.gz -2 sra/${R}_2.fastq.gz > logs/${R}.align.log 2>&1
   B=$(ls bam/${R}_1*bismark*pe.bam 2>/dev/null | head -1)

@@ -73,7 +73,7 @@ def build_var(D, label):
         mu.loc[~mu.index.isin(keep), :] = np.nan
         for t in TOP:
             out["%s|VAR_%s" % (wn, t)] = mu[t].values
-    P("   [%s] 후보 토큰 %d → 쓰는 토큰 %d · 열 %d · 하플로 %d"
+    P("   [%s] candidate tokens %d -> tokens used %d, columns %d, haplotypes %d"
       % (label, len(cand), len(TOP), out.shape[1], out.shape[0]))
     return out, TOP
 
@@ -119,12 +119,12 @@ def pcoa(J):
 
 # ================================================================= [1] reference basis
 P("=" * 78)
-P("[1] 참조(CHM13) 기준 — 지금 FigX9·X11·X12 가 쓰는 것")
+P("[1] reference (CHM13) basis: used by FigX9, X11, X12")
 L = pd.read_parquet(T + "L2_HAP_UNIT.parquet",
                     columns=["sample", "slot", "array_pos", "ap", "ad", "N", "n_read",
                              "f_hi", "varlist"])
 L = L[L.n_read >= 5].copy()
-P("   L2 자리 %s · 하플로 %d · 개체 %d"
+P("   L2 positions %s, haplotypes %d, individuals %d"
   % (format(len(L), ","), (L["sample"].astype(str) + "_" + L.slot.astype(str)).nunique(),
      L["sample"].nunique()))
 VREF, TOPREF = build_var(L, "참조")
@@ -134,35 +134,35 @@ HF = pd.read_parquet(T + "HAPFEAT.parquet")
 VC = [c for c in HF.columns if "|VAR_" in c]
 common = sorted(set(VC) & set(VREF.columns))
 P()
-P("관문 ① HAPFEAT 의 변이 열 재현")
-P("   HAPFEAT 변이 열 %d · 새로 만든 열 %d · 겹치는 열 %d" % (len(VC), VREF.shape[1], len(common)))
+P("gate (1): reproduce the variant columns of HAPFEAT")
+P("   HAPFEAT variant columns %d, rebuilt columns %d, shared columns %d" % (len(VC), VREF.shape[1], len(common)))
 a = HF.loc[VREF.index, common].values.astype(float)
 b = VREF[common].values.astype(float)
 both = ~(np.isnan(a) | np.isnan(b))
 dmax = np.abs(a[both] - b[both]).max() if both.any() else np.nan
 nanmis = int((np.isnan(a) ^ np.isnan(b)).sum())
-P("   값 최대 차이 %.8f · 결측 자리 어긋남 %d" % (dmax, nanmis))
+P("   max value difference %.8f, missing-position mismatches %d" % (dmax, nanmis))
 if len(common) < 0.9 * len(VC) or dmax > 1e-9 or nanmis > 0:
-    P("   재현 실패 — 멈춘다")
+    P("   reproduction failed: stopping")
     sys.exit(1)
-P("   ⇒ 그대로 재현된다")
+P("   -> reproduced exactly")
 
 # ================================================================= [2] majority-allele basis
 P()
 P("=" * 78)
-P("[2] 다수형 기준 — 2026-10-01 에 만들어 둔 판본")
+P("[2] majority-type basis")
 M = pd.read_parquet(MAJ, columns=["sample", "slot", "array_pos", "ap", "ad", "N", "varlist"])
 nr = L[["sample", "slot", "array_pos", "n_read"]].copy()
 M = M.merge(nr, on=["sample", "slot", "array_pos"], how="inner")
-P("   MAJREF 자리 %s (n_read>=5 로 맞춘 뒤) · 하플로 %d"
+P("   MAJREF positions %s (after matching to n_read>=5), haplotypes %d"
   % (format(len(M), ","), (M["sample"].astype(str) + "_" + M.slot.astype(str)).nunique()))
 VMAJ, TOPMAJ = build_var(M, "다수형")
-P("   두 판에서 쓰는 토큰이 겹치는 수 %d / %d" % (len(set(TOPREF) & set(TOPMAJ)), NTOP))
+P("   tokens used that are shared by the two bases %d / %d" % (len(set(TOPREF) & set(TOPMAJ)), NTOP))
 
 # ================================================================= [3] groups and layout
 P()
 P("=" * 78)
-P("[3] 자카드 %.2f 무리짓기 + 2 차원 배치 — 두 기준" % CUT)
+P("[3] Jaccard %.2f grouping + 2-dimensional layout: both bases" % CUT)
 OUT = {}
 for nm, V in (("참조", VREF), ("다수형", VMAJ)):
     haps = list(V.index)
@@ -175,10 +175,10 @@ for nm, V in (("참조", VREF), ("다수형", VMAJ)):
     gid = {k: i + 1 for i, k in enumerate(big)}
     co, var = pcoa(J)
     OUT[nm] = dict(haps=haps, J=J, lab=lab, big=big, gid=gid, co=co, var=var, sz=sz)
-    P("   [%s] 자카드 중앙 %.3f (10-90%% %.3f-%.3f) · 무리(>=3) %d · 무리 안 하플로 %d · 최대 무리 %d"
+    P("   [%s] Jaccard median %.3f (10-90%% %.3f-%.3f), groups (>=3) %d, haplotypes in groups %d, largest group %d"
       % (nm, np.nanmedian(J[iu]), np.nanpercentile(J[iu], 10), np.nanpercentile(J[iu], 90),
          len(big), sum(sz[k] for k in big), max(sz[k] for k in big)))
-    P("        PCoA 축 1 %.1f%% · 축 2 %.1f%%" % (100 * var[0], 100 * var[1]))
+    P("        PCoA axis 1 %.1f%%, axis 2 %.1f%%" % (100 * var[0], 100 * var[1]))
 
 try:
     from sklearn.metrics import adjusted_rand_score as ari
@@ -187,16 +187,16 @@ try:
     i2 = [OUT["다수형"]["haps"].index(h) for h in same]
     A = ari(OUT["참조"]["lab"][i1], OUT["다수형"]["lab"][i2])
     P()
-    P("   두 기준의 무리 나눔이 같은가 — 조정 랜드 지수 %.3f (하플로 %d)" % (A, len(same)))
-    P("   (1 이면 같은 나눔 · 0 이면 우연 수준)")
+    P("   do the two bases give the same grouping: adjusted Rand index %.3f (haplotypes %d)" % (A, len(same)))
+    P("   (1 = same partition, 0 = chance level)")
 except Exception as e:
     A = np.nan
-    P("   (sklearn 없음 : %s)" % e)
+    P("   (no sklearn: %s)" % e)
 
 # ================================================================= [4] associations (middle included)
 P()
 P("=" * 78)
-P("[4] 무리 ↔ 무엇 — 집단 · 근위/가운데/원위 메틸 · CN · 깊이")
+P("[4] group vs what: population, proximal/interior/distal methylation, CN, depth")
 LL = L.copy()
 LL["hap"] = LL["sample"].astype(str) + "_" + LL.slot.astype(str)
 prox = LL[(LL.ap <= LL.ad) & (LL.ap <= 10)].groupby("hap").f_hi.mean()
@@ -206,7 +206,7 @@ POP = pd.read_csv(T + "POP_COHORT.tsv", sep="\t")
 POP["hap"] = POP["sample"].astype(str) + "_" + POP.slot.astype(str)
 meta = POP.set_index("hap")[["sp", "pop", "N"]]
 dep = LL.groupby("hap").n_read.median()
-P("   근위1-10 %d · 가운데(양끝 25 밖) %d · 원위1-10 %d 하플로"
+P("   proximal1-10 %d, interior (outside 25 from both ends) %d, distal1-10 %d haplotypes"
   % (len(prox), len(midd), len(dist)))
 
 
@@ -250,14 +250,14 @@ for nm in ("참조", "다수형"):
                          관측=obs, 귀무중앙=float(np.nanmedian(nul)),
                          순=obs - float(np.nanmedian(nul)),
                          p=float((np.sum(np.array(nul) >= obs) + 1) / (len(nul) + 1))))
-        P("   [%s] %-14s 관측 %.3f · 귀무 %.3f · 순 %+.3f · p %.3f (하플로 %d)"
+        P("   [%s] %-14s observed %.3f, null %.3f, net %+.3f, p %.3f (haplotypes %d)"
           % (nm, key, obs, np.nanmedian(nul), obs - np.nanmedian(nul), rows[-1]["p"], rows[-1]["n"]))
 ASSOC = pd.DataFrame(rows)
 
 # ================================================================= [5] CN control of FigX12 C
 P()
 P("=" * 78)
-P("[5] FigX12 C — 무리마다 근위 메틸이 다른가, CN 을 통제하면")
+P("[5] FigX12 C: does proximal methylation differ by group, controlling for CN")
 crows = []
 for nm in ("참조", "다수형"):
     o = OUT[nm]
@@ -287,7 +287,7 @@ for nm in ("참조", "다수형"):
                           eta2_raw=raw, eta2_CN통제=adj,
                           KW_p_raw=float(kw.pvalue), KW_p_CN통제=float(kwa.pvalue),
                           rho_CN=float(stats.spearmanr(ok.CN, ok[col]).statistic)))
-        P("   [%s] %-4s 무리 %d · n %d · eta2 %.3f → CN 통제 %.3f · KW p %.4g → %.4g (CN↔메틸 rho %+.2f)"
+        P("   [%s] %-4s groups %d, n %d, eta2 %.3f -> CN-controlled %.3f, KW p %.4g -> %.4g (CN vs methylation rho %+.2f)"
           % (nm, col, v.무리.nunique(), len(v), raw, adj, kw.pvalue, kwa.pvalue,
              stats.spearmanr(ok.CN, ok[col]).statistic))
 CTRL = pd.DataFrame(crows)
@@ -323,14 +323,14 @@ for nm in ("참조", "다수형"):
                           pc1중앙=s.pc1.median(), pc2중앙=s.pc2.median()))
 GRP = pd.DataFrame(grows).sort_values(["기준", "하플로"], ascending=[True, False])
 P()
-P("[무리 요약] 참조 %d · 다수형 %d" % ((GRP.기준 == "참조").sum(), (GRP.기준 == "다수형").sum()))
+P("[group summary] reference %d, majority type %d" % ((GRP.기준 == "reference").sum(), (GRP.기준 == "다수형").sum()))
 P(GRP[GRP.기준 == "다수형"].head(8)[["무리", "하플로", "개체", "주집단", "주집단몫", "집단수",
                                    "CN중앙", "근위중앙", "가운데중앙", "원위중앙"]].round(3).to_string(index=False))
 
 # ---------------- depth control, since depth became significant on the majority-allele basis ----------------
 P()
 P("=" * 78)
-P("[6] 읽기 깊이 통제 — 다수형에서 깊이가 유의해졌다 (순 +0.092 · p 0.015)")
+P("[6] read depth control: depth is significant on the majority-type basis (net +0.092, p 0.015)")
 drows = []
 for nm in ("참조", "다수형"):
     d = EMB[(EMB.기준 == nm) & (EMB.무리 > 0)].dropna(subset=["깊이"]).copy()
@@ -352,7 +352,7 @@ for nm in ("참조", "다수형"):
         drows.append(dict(기준=nm, 지표=col, n=len(v), 무리수=int(v.무리.nunique()),
                           eta2_raw=raw, eta2_깊이통제=adj, eta2_깊이CN통제=adj2,
                           rho_깊이=float(stats.spearmanr(v.깊이, v[col]).statistic)))
-        P("   [%s] %-4s n %d · eta2 %.3f → 깊이 통제 %.3f → 깊이+CN 통제 %.3f (깊이↔메틸 rho %+.2f)"
+        P("   [%s] %-4s n %d, eta2 %.3f -> depth-controlled %.3f -> depth+CN-controlled %.3f (depth vs methylation rho %+.2f)"
           % (nm, col, len(v), raw, adj, adj2, drows[-1]["rho_깊이"]))
 DEPC = pd.DataFrame(drows)
 VAR = pd.DataFrame([dict(기준=nm, 축1=OUT[nm]["var"][0], 축2=OUT[nm]["var"][1],
@@ -366,7 +366,7 @@ for nm, d in (("FIGX9_12_EMBED.tsv", EMB), ("FIGX9_12_ASSOC.tsv", ASSOC),
               ("FIGX9_12_GROUPS.tsv", GRP), ("FIGX9_12_DEPTHCTRL.tsv", DEPC)):
     d.to_csv(os.path.join(HERE, nm), sep="\t", index=False, float_format="%.6g")
 P()
-P("[저장] " + " · ".join("%s (md5 %s)" % (n, md5(os.path.join(HERE, n))[:12])
+P("[saved] " + " · ".join("%s (md5 %s)" % (n, md5(os.path.join(HERE, n))[:12])
                         for n in ("FIGX9_12_EMBED.tsv", "FIGX9_12_ASSOC.tsv",
                                   "FIGX9_12_CNCTRL.tsv", "FIGX9_12_META.tsv",
                                   "FIGX9_12_GROUPS.tsv", "FIGX9_12_DEPTHCTRL.tsv")))

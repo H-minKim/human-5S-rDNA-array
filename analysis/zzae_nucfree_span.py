@@ -75,7 +75,7 @@ for p in sorted(glob.glob(os.path.join(FD, "FHMM_UNITS_*.tsv"))):
                 NUC[k].append((int(x[6]), int(x[7])))
             elif x[5] == "tf":
                 TFS[k].append((int(x[6]), int(x[7]), int(x[8])))
-print("뉴클 가진 분자 %s · TF 가진 분자 %s"
+print("molecules with nucleosome %s, molecules with TF %s"
       % (format(len(NUC), ","), format(len(TFS), ",")))
 
 UNIT, _ = L.load_units()
@@ -102,7 +102,7 @@ for node in ("w3", "iB", "iA"):
             if smp in L.PB_EXCL or (smp, slot) in SHIFT:
                 continue
             MOL[(smp, rid, slot, ap)].append(x[13])
-    print("  %s : 분자 %s" % (node, format(len(MOL), ",")))
+    print("  %s : molecules %s" % (node, format(len(MOL), ",")))
     for k, blocks in MOL.items():
         b = BETA.get(k)
         tu = TSSU.get((k[0], k[2], k[3]))
@@ -157,9 +157,9 @@ def ratio(j, si, fr):
 
 
 print()
-print("## flank/core — 뉴클레오솜 있는 분자 ↔ 없는 분자")
+print("## flank/core: molecules with nucleosome vs without")
 print("%-8s %-4s %-10s %9s %9s %9s %9s %9s"
-      % ("자리", "층", "무리", "분자", "점유", "천장", "관측 비", "관측÷천장"))
+      % ("자리", "층", "무리", "분자", "점유", "ceiling", "관측 비", "관측÷천장"))
 for j, (nm, c0, _, _) in enumerate(SITE):
     for si, sl in ((0, "저"), (1, "고")):
         for fr, fn in ((0, "구간에 뉴클"), (1, "구간 깨끗")):
@@ -170,4 +170,4 @@ for j, (nm, c0, _, _) in enumerate(SITE):
             print("%-8s %-4s %-10s %9s %8.4f %9.3f %9.3f %9.3f"
                   % (nm, sl, fn, format(int(n), ","), f, ceil, r, r / ceil))
 print()
-print("저장 -> nucfree_flankcore_span.npz")
+print("saved -> nucfree_flankcore_span.npz")

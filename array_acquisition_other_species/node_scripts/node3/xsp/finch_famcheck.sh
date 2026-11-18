@@ -11,8 +11,8 @@ awk -F'\t' 'FILENAME==ARGV[1]{n++; c[n]=$1; s[n]=$2; e[n]=$3; nm=$4; sub(/^(mat|
   {nf=""; for(i=1;i<=n;i++) if($2==c[i] && $3<e[i] && $4>s[i]) nf=f[i];
    if(nf=="") cls="새정렬_array밖"; else if(!($1 in o)) cls="원정렬_array밖"; else if(index(o[$1], "|" nf "|")>0) cls="같은_array"; else cls="다른_array";
    k[cls]++; kk[nf "\t" cls]++}
-  END{for(x in k) print k[x] "\t" x; print "--- 새 정렬 array 계열별"; for(x in kk) print kk[x] "\t" x}' \
+  END{for(x in k) print k[x] "\t" x; print "--- new alignment by array family"; for(x in kk) print kk[x] "\t" x}' \
   $Z/zfinch_v03_5S_arrays.bed $F/orig_aln.tsv $F/new_aln.tsv | sort -k2,2 -k1,1nr
 # The difference in start point within the same array, as a distribution over multiples of the 368 bp unit.
-echo "--- 같은 array 안 시작점 차이 (poscmp best, 유닛=368bp)"
-awk -F'\t' '$4>=0 {u=int($4/368); if(u>5)u=">5"; h[u]++} END{for(x in h) print h[x] "\t" x " 유닛"}' $F/poscmp.tsv | sort -k2,2n
+echo "--- start position difference within the same array (poscmp best, unit=368bp)"
+awk -F'\t' '$4>=0 {u=int($4/368); if(u>5)u=">5"; h[u]++} END{for(x in h) print h[x] "\t" x " units"}' $F/poscmp.tsv | sort -k2,2n

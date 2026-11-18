@@ -2,7 +2,7 @@
 # The other species: the structure and methylation of every single unit in one table.
 #
 #   Unit coordinates: 06_units_from_canonical/<array_id>.units.tsv
-#               (array_pos · chrom_start/end · unit_len · strand)
+#               (array_pos, chrom_start/end, unit_len, strand)
 #   Methylation: 05_bedmethyl/<species>/<sample>.5S.cpg.bed for the animals, CpG context,
 #               and for Arabidopsis the CG context only, from allC.bed.gz.
 #   Variants: 07_consensus_from_reads/*.unit_consensus.tsv
@@ -41,7 +41,7 @@ def P(s=""):
 
 
 P("=" * 104)
-P("유닛 구조 + 유닛별 메틸")
+P("unit structure + methylation per unit")
 P("=" * 104)
 P()
 
@@ -49,12 +49,12 @@ P()
 fs = sorted(glob.glob(R + "/06_units_from_canonical/*.units.tsv"))
 U = pd.concat([pd.read_csv(f, sep="\t") for f in fs], ignore_index=True)
 U = U[U.verify.astype(str) == "OK"] if "verify" in U.columns else U
-P("  유닛 좌표 %s 행 · array %d · 종 %d"
+P("  unit coordinates %s rows, arrays %d, species %d"
   % (format(len(U), ","), U.array_id.nunique(), U.species_key.nunique()))
 
 # the strand check
 P()
-P("  '-' 가닥 array 에서 array_pos 와 좌표 방향이 반대인가")
+P("  in '-' strand arrays, do array_pos and the coordinate run in opposite directions")
 chk = []
 for aid, g in U.groupby("array_id"):
     if len(g) < 3:
@@ -64,9 +64,9 @@ for aid, g in U.groupby("array_id"):
     chk.append((aid, g.strand.iloc[0], rho))
 C = pd.DataFrame(chk, columns=["array_id", "strand", "rho"])
 for s, g in C.groupby("strand"):
-    P("   가닥 %-3s : array %3d · rho(array_pos, chrom_start) 중앙 %+.3f"
+    P("   strand %-3s: arrays %3d, rho(array_pos, chrom_start) median %+.3f"
       % (s, len(g), g.rho.median()))
-P("   ⇒ 부호가 가닥과 맞으면 units.tsv 가 이미 array 순서를 맞춰 둔 것이다")
+P("   -> if the sign agrees with the strand, units.tsv is already in array order")
 P()
 
 # ---------------------------------------------------------------- methylation sites
@@ -98,14 +98,14 @@ for sp in sorted(os.listdir(R + "/05_bedmethyl")):
     for f in sorted(os.listdir(d)):
         if f.endswith(".bed") or f.endswith(".bed.gz"):
             SAMP.append((sp, f.split(".")[0], d + "/" + f))
-P("  bedmethyl %d 개" % len(SAMP))
+P("  bedmethyl %d files" % len(SAMP))
 
 rows = []
 for sp, sm, path in SAMP:
     B = load_cpg(path)
     Us = U[U.species_key == sp]
     if not len(Us) or not len(B):
-        P("   %-24s %-14s  (유닛 또는 site 없음)" % (sp, sm))
+        P("   %-24s %-14s  (no units or sites)" % (sp, sm))
         continue
     tot = 0
     for ch, gb in B.groupby("chrom"):
@@ -130,14 +130,14 @@ for sp, sm, path in SAMP:
             rows.append((sp, sm, r.array_id, r.array_pos, r.unit_len, r.strand,
                          int(cn[b] - cn[a]), int(M), int(M + Cn)))
             tot += 1
-    P("   %-24s %-14s  site %9s -> 유닛 %s"
+    P("   %-24s %-14s  site %9s -> units %s"
       % (sp, sm, format(len(B), ","), format(tot, ",")))
 
 M = pd.DataFrame(rows, columns=["species_key", "sample", "array_id", "array_pos",
                                 "unit_len", "strand", "n_site", "n_mod", "n_call"])
 M["meth"] = M.n_mod / M.n_call.replace(0, np.nan)
 P()
-P("  유닛-시료 %s 행 · array %d" % (format(len(M), ","), M.array_id.nunique()))
+P("  unit-sample %s rows, arrays %d" % (format(len(M), ","), M.array_id.nunique()))
 
 # ---------------------------------------------------------------- variants
 cs = sorted(glob.glob(R + "/07_consensus_from_reads/*.unit_consensus.tsv"))
@@ -150,7 +150,7 @@ V = V[keep]
 for c in ("depth_median", "n_var_cons", "n_sub", "n_ins", "n_del", "n_var_strict"):
     if c in V.columns:
         V[c] = pd.to_numeric(V[c], errors="coerce")
-P("  유닛 변이 %s 행 · array %d" % (format(len(V), ","), V.array_id.nunique()))
+P("  unit variants %s rows, arrays %d" % (format(len(V), ","), V.array_id.nunique()))
 
 #  The sample names differ between releases, for example "Control1" in the bedmethyl against "Control1.g12" in the merged table.
 V["sample_key"] = V["sample"].astype(str).str.split(".").str[0]
@@ -176,10 +176,10 @@ M.to_csv(OUT + "/tables/OTHERSP_UNIT_METH.tsv", sep="\t", index=False,
          float_format="%.5f")
 P()
 P("=" * 104)
-P("종별 유닛 구조")
+P("unit structure by species")
 P("=" * 104)
 P()
-P("   종            array  유닛수 범위   유닛길이 중앙(범위)        유닛당 변이 중앙   깊이 중앙")
+P("   species            array  unit count range   unit length median(range)        variants per unit median   depth median")
 for sp, g2 in M.groupby("종", sort=False):
     au = g2.groupby("array_id").array_pos.max()
     P("   %-12s %4d   %4d-%-5d   %6.0f (%.0f-%.0f)    %s    %s"
@@ -188,6 +188,6 @@ for sp, g2 in M.groupby("종", sort=False):
          ("%5.1f" % g2.n_var_cons.median()) if g2.n_var_cons.notna().any() else "  -  ",
          ("%5.0f" % g2.depth_median.median()) if g2.depth_median.notna().any() else "  -  "))
 P()
-P("  저장 : 10_other_species/tables/OTHERSP_UNIT_METH.tsv")
+P("  saved: 10_other_species/tables/OTHERSP_UNIT_METH.tsv")
 LOG.close()
 print("done")

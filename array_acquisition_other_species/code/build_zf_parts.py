@@ -4,13 +4,14 @@
 #   Spacer: what remains inside the array once the coding part is removed.
 #   Outside: the existing 100 kb flankL and flankR, held 5 kb clear of the boundary.
 # The output is in the four-column form bismark_region_meth.py accepts, so an interval made of several pieces is written as one row per piece.
+import os
 import io
 import sys
 import collections
 
 TAB = chr(9)
 NL = chr(10)
-BASE = "$RDNA_OTHERSP_DIR/data_v2/"
+BASE = os.environ["RDNA_OTHERSP_DIR"] + "/data_v2/"
 HITS = BASE + "00_catalog/zebrafish_gene_types/zfgt.gene_hits.tsv"
 REG = BASE + "00_catalog/zf_regions.tsv"
 OUT = sys.argv[1]
@@ -70,6 +71,6 @@ for base in sorted(arrays):
 for nm, ch, s, e in flanks:
     o.write(TAB.join([nm, ch, str(s), str(e)]) + NL)
 o.close()
-print("array %d · flank 조각 %d" % (len(rep), len(flanks)))
+print("array %d, flank pieces %d" % (len(rep), len(flanks)))
 for base, n, cod, sp in rep:
-    print("  %-34s 유전자 %3d 개 · 코딩 %6d bp · 스페이서 %7d bp" % (base, n, cod, sp))
+    print("  %-34s genes %3d, coding %6d bp, spacer %7d bp" % (base, n, cod, sp))

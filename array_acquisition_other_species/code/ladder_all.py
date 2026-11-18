@@ -5,7 +5,7 @@
 #    In rhesus the top offset carries only 7,714 bp over 2,898 HSPs, which is no ladder at all.)
 #   Neither the units, nor cmsearch, nor any published sequence is used: only the array sequence itself.
 #   Output: LADDER_ALL.tsv
-# MIT License · Copyright (c) 2026 Hungmin Kim
+# MIT License. Copyright (c) 2026 Hyungmin Kim
 import io
 import os
 import sys
@@ -22,7 +22,7 @@ MINP = 130
 w = io.open(os.path.join(H, "LADDER_ALL.tsv"), "w", encoding="utf8", newline=NL)
 w.write(TAB.join(["array_id", "slice_len", "n_hsp", "ladder_period", "aln_at_p", "aln_frac_of_slice",
                   "n_rungs", "rung_offsets", "verdict", "top_offsets"]) + NL)
-print("%-50s %7s %6s %7s %8s %5s %5s  %s" % ("array_id", "slice", "HSP", "주기p", "p정렬량", "비율", "단수", "판정"))
+print("%-50s %7s %6s %7s %8s %5s %5s  %s" % ("array_id", "slice", "HSP", "period p", "p정렬량", "비율", "단수", "판정"))
 
 
 def ladder(off, slen):
@@ -90,4 +90,4 @@ for sfa in sorted(glob.glob(os.path.join(H, "slices", "*.arr.fa"))):
                       ",".join("%d:%d" % (k, vv) for k, vv in off.most_common(6))]) + NL)
     sys.stdout.flush()
 w.close()
-print("표 : ~/lit5s/LADDER_ALL.tsv")
+print("table : ~/lit5s/LADDER_ALL.tsv")

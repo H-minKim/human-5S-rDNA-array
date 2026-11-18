@@ -114,7 +114,7 @@ ENR = OBSM / np.maximum(BASE, 1e-9)
 NR = PROF / np.maximum(BASE, 1e-9)
 FTHR_BIN = np.percentile(NR.max(2), 95, axis=0)          # the earlier method, per bin
 FTHRG = float(np.percentile(NR.reshape(NB, -1).max(1), 95))   # the whole grid
-print("FiberHMM 문턱 : 칸마다 %.2f~%.2f  ->  격자 전체 %.2f"
+print("FiberHMM threshold : per bin %.2f~%.2f  ->  grid-wide %.2f"
       % (FTHR_BIN.min(), FTHR_BIN.max(), FTHRG))
 FH, FH_OLD = [], []
 FMAP, FTHR, FSZ = [], [], []
@@ -131,9 +131,9 @@ for bi, b in enumerate(BOK):
             pk.append((rel[j], enr[j]))
         for q, e in pk:
             box.append((q, b, e))
-print("FiberHMM 봉우리 : 칸마다 문턱 %d 개  ->  격자 전체 문턱 %d 개"
+print("FiberHMM peaks : per-bin threshold %d  ->  grid-wide threshold %d"
       % (len(FH_OLD), len(FH)))
-print("FiberHMM 분자 %s · 통과 봉우리 %d" % (format(nmolF, ","), len(FH)))
+print("FiberHMM molecules %s, passing peaks %d" % (format(nmolF, ","), len(FH)))
 
 # ══ Dubocanin
 UNIT, _ = L.load_units()
@@ -211,13 +211,13 @@ DNULL = np.array([[np.nanmax(dprof(NULA[t], NULM[t], w)) for w in WIDTHS]
                   for t in range(NB)])
 DTHR_W = np.nanpercentile(DNULL, 95, axis=0)                 # the earlier method, per width
 DTHRG = float(np.nanpercentile(np.nanmax(DNULL, axis=1), 95))  # the whole grid
-print("Dubocanin 문턱 : 폭마다 %.3f~%.3f  ->  격자 전체 %.3f"
+print("Dubocanin threshold : per width %.3f~%.3f  ->  grid-wide %.3f"
       % (DTHR_W.min(), DTHR_W.max(), DTHRG))
 DU, DU_OLD = [], []
 DMAP, DTHR = [], []
 print()
 print("=" * 92)
-print("## Dubocanin — core 폭마다 귀무 통과 봉우리 전부")
+print("## Dubocanin: all peaks passing the null, per core width")
 for wi, w in enumerate(WIDTHS):
     obs = dprof(sA, sM, w)
     DMAP.append(np.nan_to_num(obs, nan=0.0)); DTHR.append(DTHRG)
@@ -233,7 +233,7 @@ for wi, w in enumerate(WIDTHS):
             box.append((q, w, v))
     pkg = [(q, v) for q, w2, v in DU if w2 == w]
     print("  core %-3d : %s" % (w, "  ".join("%+d:%.2f" % t for t in pkg) or "없음"))
-print("Dubocanin 봉우리 : 폭마다 문턱 %d 개  ->  격자 전체 문턱 %d 개"
+print("Dubocanin peaks : per-width threshold %d  ->  grid-wide threshold %d"
       % (len(DU_OLD), len(DU)))
 
 # -- the peak list is kept, so that it need not be recomputed
@@ -285,10 +285,10 @@ np.savez_compressed(os.path.join(DD, "scan_maps_v2.npz"),
                     fmap=np.array(FMAP), fthr=np.array(FTHR), fsz=np.array(FSZ),
                     dmap=np.array(DMAP), dthr=np.array(DTHR), dw=np.array(WIDTHS),
                     lo=LO, hi=HI)
-print("지도 저장 -> scan_maps_v2.npz")
+print("maps saved -> scan_maps_v2.npz")
 print()
 print("=" * 100)
-print("## 표3 — 자리별 두 방법 통과 (자리 뭉침 ±%d bp)" % MERGE)
+print("## Table 3: passing by the two methods per position (position merging ±%d bp)" % MERGE)
 print("  %-14s | %-34s | %-26s | %s" % ("자리", "FiberHMM (크기:배수)", "Dubocanin (폭:값)", "판정"))
 ROWS = []
 for g in cent:
@@ -307,11 +307,11 @@ for g in cent:
 
 out = os.path.join(OUTD, "TF_20261011_table3_two_methods_by_position.tsv")
 with io.open(out, "w", encoding="utf8", newline=NL) as g:
-    g.write("# 자리 뭉침 ±%d bp · FiberHMM 배수문턱 · Dubocanin 값문턱 · 둘 다 귀무 %d 회" % (MERGE, NB) + NL)
+    g.write("# position merging ±%d bp, FiberHMM fold threshold, Dubocanin value threshold, both with %d null rounds" % (MERGE, NB) + NL)
     g.write(TB.join(["자리lo", "자리hi", "FiberHMM_통과칸수", "Dubocanin_통과폭수",
                      "FiberHMM_최대배수", "Dubocanin_최대값", "판정"]) + NL)
     for r in ROWS:
         g.write(TB.join(["%d" % r[0], "%d" % r[1], "%d" % r[2], "%d" % r[3],
                          "%.3f" % r[4], "%.3f" % r[5], r[6]]) + NL)
 print()
-print("적었다 ->", out)
+print("written ->", out)

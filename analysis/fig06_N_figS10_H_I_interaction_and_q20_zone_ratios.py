@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Working name: s2_newzone_values.py. Data and output roots come from environment variables with no default (the script stops if one is unset).
-# WARNING — this script WRITES tables, into P11_TABLE_OUT_DIR (no default). Pointing it at the folder that holds the published
+# WARNING: this script WRITES tables, into P11_TABLE_OUT_DIR (no default). Pointing it at the folder that holds the published
 #   input tables (P11_TABLE_DIR) OVERWRITES them. To verify, set P11_TABLE_OUT_DIR to an empty temporary folder.
 import os as _os_need, sys as _sys_need
 def _need(k):
@@ -24,10 +24,10 @@ TO = _need("P11_TABLE_OUT_DIR"); os.makedirs(TO, exist_ok=True)   # writes go he
 def rd(fn): return pd.read_csv(os.path.join(T, fn), sep=TAB)
 def rdl(fn): return [dict(r) for _, r in rd(fn).astype(str).iterrows()]
 MK = rd("P11_K562_MARKERS_NEWZONE_2026-10-13.tsv"); ZOF = dict(zip(MK.variant, MK.zone))          # the pooled proximal, the interior and the pooled distal
-Z3L = ["근위(합)", "가운데", "원위(합)"]; ZS = {"근위(합)": "proximal", "가운데": "interior", "원위(합)": "distal"}
+Z3L = ["proximal", "interior", "distal"]; ZS = {"proximal": "proximal", "interior": "interior", "distal": "distal"}
 KQ = rdl("K562_QUALGATE_MIX.tsv"); KB = rdl("K562_QUALGATE_MIX_BDP1BRF1.tsv")
 assert set(r["label"] for r in KB) == {"BDP1", "BRF1"}
-assert sorted(r["variant"] for r in KB if r["label"] == "BDP1") == sorted(r["variant"] for r in KQ if r["label"] == "WGSNAT"), "자리표가 다르다"
+assert sorted(r["variant"] for r in KB if r["label"] == "BDP1") == sorted(r["variant"] for r in KQ if r["label"] == "WGSNAT"), "position tables differ"
 ALL = KQ + KB
 # ---------------- ① the Q >= 20 zone ratio, the same formula as fig6_main_v8.agg
 W = {r["variant"]: r for r in ALL if r["label"] == "WGSNAT"}
@@ -42,10 +42,10 @@ def agg(lab, z):
 H = {"POLR3A": (5.418, 0.113), "TBP": (5.911, 0.212), "GTF3C2": (5.976, 0.188), "SNAPC5": (0.899, 0.336)}   # the main figure h values, used for the reproduction check only and not drawn
 bad = 0
 for lab, (hn, hm) in H.items():
-    o1, e1, _ = agg(lab, "근위(합)"); o2, e2, _ = agg(lab, "가운데")
+    o1, e1, _ = agg(lab, "proximal"); o2, e2, _ = agg(lab, "interior")
     ok = abs(o1 / e1 - hn) < 0.0006 and abs(o2 / e2 - hm) < 0.0006; bad += not ok
-    print("  재현 %-7s 근위 %.4f 가운데 %.4f  ↔ 본그림 h %.3f %.3f  %s" % (lab, o1 / e1, o2 / e2, hn, hm, "✓" if ok else "불일치"))
-print("  ⇒ h 재현 어긋남 %d" % bad); assert bad == 0
+    print("  reproduced %-7s proximal %.4f interior %.4f  vs main figure h %.3f %.3f  %s" % (lab, o1 / e1, o2 / e2, hn, hm, "✓" if ok else "불일치"))
+print("  -> h reproduction mismatch %d" % bad); assert bad == 0
 zrows = []
 for lab in ("BDP1", "BRF1", "POLR3A", "TBP", "GTF3C2", "SNAPC5", "INPUT"):
     for z in Z3L:
@@ -71,8 +71,8 @@ def build_qdf(qrows_src, zone_of):
 def inter_all(qdf, labs, seed=20261008, n=2000):
     R2 = np.random.default_rng(seed); out = {}
     for lab in labs:
-        A = qdf[(qdf.track == lab) & (qdf.zone == "근위(합)")]; B = qdf[(qdf.track == lab) & (qdf.zone == "가운데")]
-        C = qdf[(qdf.track == "INPUT") & (qdf.zone == "근위(합)")]; Dd = qdf[(qdf.track == "INPUT") & (qdf.zone == "가운데")]
+        A = qdf[(qdf.track == lab) & (qdf.zone == "proximal")]; B = qdf[(qdf.track == lab) & (qdf.zone == "interior")]
+        C = qdf[(qdf.track == "INPUT") & (qdf.zone == "proximal")]; Dd = qdf[(qdf.track == "INPUT") & (qdf.zone == "interior")]
         vz = sorted(set(A.variant) & set(C.variant)); vm = sorted(set(B.variant) & set(Dd.variant))
         if len(vz) < 2 or len(vm) < 2: out[lab] = (np.nan, np.nan, np.nan, len(vz), len(vm)); continue
         Ai, Bi, Ci, Di = A.set_index("variant"), B.set_index("variant"), C.set_index("variant"), Dd.set_index("variant")
@@ -92,22 +92,22 @@ I = inter_all(build_qdf(ALL, ZOF), LABS)
 BT = rd("K562_interaction_NEWZONE_2026-10-13.tsv").set_index("target"); bad = 0
 for lab in LABS[:5]:
     pt, lo, hi, nz, nm = I[lab]; b = BT.loc[lab]
-    ok = ("%.2f %.2f %.2f %d %d" % (pt, lo, hi, nz, nm)) == ("%.2f %.2f %.2f %d %d" % (b.nc_interaction_OR, b.nc_lo, b.nc_hi, b["근위표지"], b["가운데표지"])); bad += not ok
-    print("  교호작용 재현 %-7s %.2f [%.2f-%.2f] (%d·%d) ↔ 본표 %.2f [%.2f-%.2f]  %s" % (lab, pt, lo, hi, nz, nm, b.nc_interaction_OR, b.nc_lo, b.nc_hi, "✓" if ok else "불일치"))
-print("  ⇒ 교호작용 재현 어긋남 %d" % bad); assert bad == 0
+    ok = ("%.2f %.2f %.2f %d %d" % (pt, lo, hi, nz, nm)) == ("%.2f %.2f %.2f %d %d" % (b.nc_interaction_OR, b.nc_lo, b.nc_hi, b["proximal_markers"], b["interior_markers"])); bad += not ok
+    print("  interaction reproduced %-7s %.2f [%.2f-%.2f] (%d, %d) vs main table %.2f [%.2f-%.2f]  %s" % (lab, pt, lo, hi, nz, nm, b.nc_interaction_OR, b.nc_lo, b.nc_hi, "✓" if ok else "불일치"))
+print("  -> interaction reproduction mismatch %d" % bad); assert bad == 0
 rows = []
 for lab in LABS:
     pt, lo, hi, nz, nm = I[lab]
-    rows.append(dict(target=lab, nc_interaction_OR=round(pt, 2), nc_lo=round(lo, 2), nc_hi=round(hi, 2), 근위표지=nz, 가운데표지=nm,
-                     판정=("표적특이" if lo > 1 else ("음성대조" if lab == "SNAPC5" else "판정 불가(CI 가 1 을 문다)"))))
+    rows.append(dict(target=lab, nc_interaction_OR=round(pt, 2), nc_lo=round(lo, 2), nc_hi=round(hi, 2), proximal_markers=nz, interior_markers=nm,
+                     call=("target-specific" if lo > 1 else ("negative control" if lab == "SNAPC5" else "inconclusive (CI includes 1)"))))
 IT = pd.DataFrame(rows)
 IT.to_csv(os.path.join(TO, "K562_interaction_NEWZONE_withBDP1BRF1_2026-10-14.tsv"), sep=TAB, index=False, encoding="utf-8")
 ZR.to_csv(os.path.join(TO, "K562_zoneratio_Q20_NEWZONE_withBDP1BRF1_2026-10-14.tsv"), sep=TAB, index=False, encoding="utf-8")
 for lab in ("BDP1", "BRF1"):
     s = ZR[ZR.target == lab].set_index("zone"); r = IT.set_index("target").loc[lab]
-    print("  %-5s 근위 %.3f (표지 %d) · 가운데 %.3f (표지 %d) · 원위 %s (표지 %d) · 근위/가운데 %.1f배 · 교호작용 %.2f [%.2f-%.2f] → %s" % (
-        lab, s.ratio["근위"], s.n_marker["근위"], s.ratio["가운데"], s.n_marker["가운데"], s.ratio["원위"], s.n_marker["원위"],
-        s.ratio["근위"] / s.ratio["가운데"], r.nc_interaction_OR, r.nc_lo, r.nc_hi, r.판정))
+    print("  %-5s proximal %.3f (markers %d), interior %.3f (markers %d), distal %s (markers %d), proximal/interior %.1f×, interaction %.2f [%.2f-%.2f] -> %s" % (
+        lab, s.ratio["proximal"], s.n_marker["proximal"], s.ratio["interior"], s.n_marker["interior"], s.ratio["distal"], s.n_marker["distal"],
+        s.ratio["proximal"] / s.ratio["interior"], r.nc_interaction_OR, r.nc_lo, r.nc_hi, r.call))
 # ---------------- ② GM12878 TBP leave-one-out on the new zones with the WGS denominator, using the same counts as the RT, that is, READLEVEL_GM_MIX filtered alt_n over depth
 # Markers that drop out of the WGS denominator, meaning that genome carries no alternate allele and q is 0, are recorded as well. 2079C is such a case.
 GM = rd("P11_GM12878_MARKERS_NEWZONE_2026-10-13.tsv"); GZ = dict(zip(GM.variant, GM.zone))
@@ -125,16 +125,16 @@ for z in Z3L:
         vs.append((r.variant, int(r.alt_n), int(r.depth) * wa / wn))
     O = sum(x[1] for x in vs); E = sum(x[2] for x in vs)
     rt = RT[(RT.cell == "GM12878") & (RT.target == "TBP") & (RT.zone == ZS[z])]
-    assert len(rt) == 1 and abs(float(rt.ratio.iloc[0]) - O / E) < 0.0006 and int(rt.n_marker.iloc[0]) == len(vs), ("RT 재현 실패", z)
+    assert len(rt) == 1 and abs(float(rt.ratio.iloc[0]) - O / E) < 0.0006 and int(rt.n_marker.iloc[0]) == len(vs), ("RT reproduction failed", z)
     pick = {x[0] for x in sorted(vs, key=lambda x: -x[1])[:3]} | {x[0] for x in sorted(vs, key=lambda x: -x[2])[:3]}   # the top 3 by observed count joined with the top 3 by expected count
     for v, o, e in sorted([x for x in vs if x[0] in pick], key=lambda x: -x[1]):
         loo.append(dict(zone=ZS[z], 전체비=round(O / E, 4), 표지수=len(vs), 뺀표지=v, 그표지_관측=o, 그표지_기대=round(e, 2), 기대중몫=round(e / E, 3),
                         그표지_비=round(o / e, 3) if e else "", 관측중몫=round(o / O, 3) if O else "", 빼면=round((O - o) / (E - e), 4) if E - e > 0 else ""))
 LO = pd.DataFrame(loo)
 for v in ("2056C", "2079C", "2061G"):
-    t_ = RL[(RL.label == "TBP") & (RL.variant == v)]; print("  %s : 구역 %s · TBP %s/%s · WGS 분모 %s/%s" % (v, GZ.get(v), t_.alt_n.iloc[0] if len(t_) else "-", t_.depth.iloc[0] if len(t_) else "-", *WD.get(v, ("-", "-"))))
+    t_ = RL[(RL.label == "TBP") & (RL.variant == v)]; print("  %s: zone %s, TBP %s/%s, WGS denominator %s/%s" % (v, GZ.get(v), t_.alt_n.iloc[0] if len(t_) else "-", t_.depth.iloc[0] if len(t_) else "-", *WD.get(v, ("-", "-"))))
 LO.to_csv(os.path.join(TO, "GM12878_TBP_LOO_NEWZONE_GMWGS_2026-10-14.tsv"), sep=TAB, index=False, encoding="utf-8")
-print("  GM12878 TBP LOO (RT 재현 ✓)"); print(LO.to_string(index=False))
+print("  GM12878 TBP LOO (RT reproduced ✓)"); print(LO.to_string(index=False))
 print("  → K562_interaction_NEWZONE_withBDP1BRF1_2026-10-14.tsv · K562_zoneratio_Q20_NEWZONE_withBDP1BRF1_2026-10-14.tsv · GM12878_TBP_LOO_NEWZONE_GMWGS_2026-10-14.tsv")
 # ---------------- ③ the GM12878 interaction against input, inter_all unchanged, counts = READLEVEL_GM_MIX filtered, q = NA12878 WGS (ERR3239334)
 #   GM12878 has no negative control ChIP of the SNAPC5 kind. The INPUT here is an untargeted control, and it is not put in the main figure.
@@ -150,9 +150,9 @@ IG = inter_all(pd.DataFrame(gq), ("TBP", "POLR3G", "ATAC"))
 grow = []
 for lab in ("TBP", "POLR3G", "ATAC"):
     pt, lo, hi, nz, nm = IG[lab]
-    grow.append(dict(target=lab, nc_interaction_OR=round(pt, 2), nc_lo=round(lo, 2), nc_hi=round(hi, 2), 근위표지=nz, 가운데표지=nm))
-    print("  GM12878 %-6s 교호작용(INPUT 기준) %.2f [%.2f-%.2f] (근위 %d · 가운데 %d 표지)" % (lab, pt, lo, hi, nz, nm))
+    grow.append(dict(target=lab, nc_interaction_OR=round(pt, 2), nc_lo=round(lo, 2), nc_hi=round(hi, 2), proximal_markers=nz, interior_markers=nm))
+    print("  GM12878 %-6s interaction (vs INPUT) %.2f [%.2f-%.2f] (proximal %d, interior %d markers)" % (lab, pt, lo, hi, nz, nm))
 pd.DataFrame(grow).to_csv(os.path.join(TO, "GM12878_interaction_NEWZONE_GMWGS_2026-10-14.tsv"), sep=TAB, index=False, encoding="utf-8")
 gi = RT[(RT.cell == "GM12878") & (RT.target == "INPUT")].set_index("zone")
-print("  GM12878 INPUT 근위 관측 %d · 기대 %.2f · 가운데 관측 %d · 기대 %.2f" % (gi.sum_alt["근위"], gi.sum_exp["근위"], gi.sum_alt["가운데"], gi.sum_exp["가운데"]))
+print("  GM12878 INPUT proximal observed %d, expected %.2f, interior observed %d, expected %.2f" % (gi.sum_alt["proximal"], gi.sum_exp["proximal"], gi.sum_alt["interior"], gi.sum_exp["interior"]))
 print("  → GM12878_interaction_NEWZONE_GMWGS_2026-10-14.tsv")

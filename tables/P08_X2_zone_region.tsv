@@ -1,4 +1,4 @@
-# P08 X2 · ruler majref 6.868174 · seed 20261010 · B 1000 · 2026-10-10
+# P08 X2 · ruler majref 6.868174 · seed 20261010 · B 1000
 # orientation: revcomp Y -> HIGH_IS_PROX, N -> HIGH_IS_PROX (measured with U84C)
 [B]	bin	zone	n_pair	maxrun_mean	lo	hi	maxrun_median
 	0.0-0.2	proximal end	9892	1032.0928	1008.6482	1055.6441	875.0

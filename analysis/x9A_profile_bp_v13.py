@@ -18,15 +18,15 @@
 #   and at a pass rate of 5% or more the group is not accepted as bimodal but treated as unimodal with the fraction split f. The pass rate is reported.
 #   (For the apes, zebra finch and Arabidopsis, which have many CpG sites, the pass rate is 0.0%.)
 #   1) Bimodality is decided per group (array): Ashman's D > 2 (two-component Gaussian EM), Sarle's bimodality coefficient > 0.555, minor component >= 5%.
-# Definition check: human 5S (P10) gives D 3.002, BC 0.8311, w_minor 0.306, matching the specification values 3.00 / 0.83 / 0.306
+# Definition check: human 5S (P10) gives D 3.002, BC 0.8311, w_minor 0.306
 #   2) If bimodal, units are split by the likelihood ratio of that group's own two binomial components (EM); p_low, p_high and the equivalent cut are reported.
 #   3) If unimodal, the human 5S LOW fraction f is applied to that group's ranking (a complementary split, with no gap left in the middle).
 #      f comes from the human pool itself (25,644 complete units in P10): p_low 0.1580, p_high 0.7867, cut 0.4610, f = 0.2191.
-# (matches the specification values to the decimal; table HUMAN_RATIO_F.tsv)
+# (table HUMAN_RATIO_F.tsv)
 #   4) In zebra finch and zebrafish the contrast between a highly and a weakly methylated array is a difference between arrays, not bimodality of a pooled distribution, so the call is made per group.
 #   A complete unit is defined once: a read-unit with n_cpg >= MINC that observes at least 90% of that unit's reference CpG sites.
-#   · For each group, x10's own density/call functions are run on that group's complete-unit beta values to obtain the uni/bimodal call and the two peaks.
-#   · If bimodal, the split is by likelihood ratio: d = n_meth*ln(a1/a0) + (n_cpg-n_meth)*ln((1-a1)/(1-a0)); d > 0 gives hi.
+#   - For each group, x10's own density/call functions are run on that group's complete-unit beta values to obtain the uni/bimodal call and the two peaks.
+#   - If bimodal, the split is by likelihood ratio: d = n_meth*ln(a1/a0) + (n_cpg-n_meth)*ln((1-a1)/(1-a0)); d > 0 gives hi.
 # - if unimodal, the top and bottom 25% by rank are used; the grouping column of the table records which was used
 #   - Hard call at ML >= 128, a complete unit observes 90% of the reference CpG sites, positions in bp, depth-weighted.
 #   A value threshold (q1c/q4c) fails in groups where more than 75% of units have beta = 1.00 (zebrafish 177 bp, zebra finch chr2/chr4):
@@ -80,7 +80,7 @@ try:
 except Exception:
     pass
 LOG = io.open(NEW + "/logs/X9A_PROFILE_V13.txt", "w", encoding="utf8", newline="\n")
-REASON = "유닛 안 프로파일 v13 — 판정을 우도비 검정으로(2026-10-04)"
+REASON = "유닛 안 프로파일 v13 — 판정을 우도비 검정으로"
 MLTHR, COVMIN = 128, 0.9
 FRATIO = 0.2191
 NSIM, NCAP = 100, 3000   # The null simulation of the threshold call: replicates per group and the cap on sampled units (seed 0).
@@ -378,7 +378,7 @@ for ko, sp in SPK:
             bits = np.unpackbits(bc)[:nbits].astype(bool)
             kept.append((nc, nm, bits, np.unpackbits(bmm)[:nbits].astype(bool)))
         if not kept:
-            P("  %s : 완전유닛 0 (버림 nc %d · cov %d) — 건너뜀" % (key, drop_nc, drop_cov))
+            P("  %s: complete units 0 (discarded nc %d, cov %d): skipped" % (key, drop_nc, drop_cov))
             continue
         bvals = np.array([nm / float(nc) for nc, nm, _b, _m in kept])
         bb = np.sort(bvals)
@@ -549,7 +549,7 @@ for ko, sp in SPK:
                          n_all=cnt["all"], n_q1=cnt["q1"], n_q4=cnt["q4"],
                          유전자시작=(float(np.median([a for a, _b in gw])) if gw else np.nan),
                          유전자끝=(float(np.median([b for _a, b in gw])) if gw else np.nan)))
-    P("%-10s 묶음 %2d · 완전유닛 %s (버림 %s)"
+    P("%-10s groups %2d, complete units %s (discarded %s)"
       % (ko, sum(1 for m in META if m["종"] == ko),
          format(sum(m["완전유닛"] for m in META if m["종"] == ko), ","),
          format(sum(m["버림_CpG적음"] + m["버림_덮임부족"] for m in META if m["종"] == ko), ",")))
@@ -566,11 +566,11 @@ arch.put(TMP + "/PROFILE_BP_v13.tsv.gz", "tables/PROFILE_BP_v13.tsv.gz", REASON)
 arch.put(TMP + "/PROFILE_META_v13.tsv", "tables/PROFILE_META_v13.tsv", REASON)
 arch.put(TMP + "/UNITBETA_v13.tsv.gz", "tables/UNITBETA_v13.tsv.gz", REASON)
 P("")
-P("묶음 %d · 자리 행 %s" % (len(M), format(len(R), ",")))
+P("groups %d, position rows %s" % (len(M), format(len(R), ",")))
 P("")
-P("유인원 — 유전자부 vs 스페이서 (완전유닛 · 깊이가중)")
+P("apes: gene region vs spacer (complete units, depth-weighted)")
 if not len(M):
-    P("  완전유닛이 하나도 없다 — 여과를 다시 볼 것"); LOG.close(); sys.exit(0)
+    P("  no complete unit at all: review the filter"); LOG.close(); sys.exit(0)
 for t in M[M.종.isin(["고릴라", "보노보", "침팬지", "보르네오오랑우탄", "수마트라오랑우탄", "시아망"])].itertuples(index=False):
     d = R[R.묶음 == t.묶음]
     for g in ("all", "q1", "q4"):
@@ -579,6 +579,6 @@ for t in M[M.종.isin(["고릴라", "보노보", "침팬지", "보르네오오�
         out = dd[dd.위치 < t.유전자시작]
         gb = ing.메틸수.sum() / max(ing.호출수.sum(), 1)
         sb = out.메틸수.sum() / max(out.호출수.sum(), 1)
-        P("  %-28s %-4s 유전자 %.3f · 스페이서 %.3f · 차 %+.3f  (자리 %d)"
+        P("  %-28s %-4s gene %.3f, spacer %.3f, difference %+.3f  (positions %d)"
           % (t.묶음, g, gb, sb, gb - sb, len(dd)))
 LOG.close()

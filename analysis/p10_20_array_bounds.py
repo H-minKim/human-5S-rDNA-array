@@ -13,6 +13,7 @@ import hashlib
 import io
 import os
 import statistics
+import sys
 
 def _need(_v):
     """The deposited copy has no default paths. Stop when a root variable is missing."""
@@ -169,4 +170,4 @@ with io.open(OUT, "w", encoding="utf8", newline="\n") as fo:
              "orientation\tpolarity_used_p10_08\tn_units_p10_08\n")
     for r in rows:
         fo.write("\t".join(str(x) for x in r) + "\n")
-print("조각 %d · 저장 %s" % (len(rows), OUT))
+print("pieces %d, saved %s" % (len(rows), OUT))

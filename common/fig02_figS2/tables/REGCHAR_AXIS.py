@@ -61,7 +61,7 @@ for nm, m in (("근위다움", AP <= 3), ("원위다움", AD <= 3)):
     w = Z[m].mean(0) - base
     CV[nm] = w / (np.linalg.norm(w) or 1.0)
 S = {nm: Z @ CV[nm] for nm in CV}
-print("유닛 %d · 하플로타입 %d · 유닛당 변이 %.3f"
+print("units %d, haplotypes %d, variants per unit %.3f"
       % (len(X), len(HK), float(np.mean([len(r[4]) for h in HK for r in U[h]]))))
 
 QS = np.percentile([N[h] for h in HK], [25, 50, 75])
@@ -108,7 +108,7 @@ g.close()
 FRAC, HOLD = 0.10, 3
 g = io.open(os.path.join(OUT, "REGCHAR_transition.tsv"), "w", encoding="utf8", newline="\n")
 g.write("특징\t길이층\t쪽\t깊이1값\t가운데값\t문턱(10%안)\t전환끝깊이\n")
-print("\n=== 가운데형 전환이 끝나는 깊이 (깊이1~가운데 거리의 10% 안 · 3 칸 유지) ===")
+print("\n=== depth where the transition to the interior type ends (within 10%, relative to the depth-1 to interior distance, held for 3 bins) ===")
 TRA = collections.defaultdict(dict)
 for nm in CV:
     for st in ORD:
@@ -139,7 +139,7 @@ for nm in CV:
 g.close()
 alld = [v for nm in CV for v in TRA[nm].values() if v]
 CUT = int(max(alld)) if alld else 30
-print("\n모든 길이 층·두 특징에서 전환이 끝나는 가장 깊은 자리 = %d" % CUT)
+print("\ndeepest position where the transition ends across all length strata and both features = %d" % CUT)
 io.open(os.path.join(OUT, "REGCHAR_cut.tsv"), "w", encoding="utf8", newline="\n").write(
     "stat\tvalue\n전환끝_최대깊이\t%d\n기준\t깊이1~가운데 거리의 10%% 안 · %d 칸 유지\n" % (CUT, HOLD))
 
@@ -161,7 +161,7 @@ x = np.array([N[h] for h in HK], float)
 EDG = np.percentile(x, [0, 20, 40, 60, 80, 100])
 g = io.open(os.path.join(OUT, "REGCHAR_relcount.tsv"), "w", encoding="utf8", newline="\n")
 g.write("항목\tN칸\tN평균\tN상대\t개수평균\t개수상대\t하플로수\n")
-print("\n=== 길이 칸별 상대 배수 (1 = 전체 평균) ===")
+print("\n=== relative fold by length bin (1 = overall mean) ===")
 for nm, y in ITEM.items():
     row = []
     for i in range(5):
@@ -174,7 +174,7 @@ for nm, y in ITEM.items():
         row.append("%.2f" % ((y[m].mean() / y.mean()) if y.mean() else np.nan))
     print("  %-34s %s" % (nm, " · ".join(row)))
 g.close()
-print("\n저장 REPRO/REGCHAR_axis.tsv · _transition.tsv · _cut.tsv · _relcount.tsv")
+print("\nsaved REPRO/REGCHAR_axis.tsv, _transition.tsv, _cut.tsv, _relcount.tsv")
 
 # the deposited table(s) carry English column names and values (common/fig02_figS2/taben.py)
 import sys as _s, os as _o

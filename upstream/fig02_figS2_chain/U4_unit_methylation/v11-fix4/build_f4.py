@@ -2,7 +2,7 @@
 # Build v11-fix4
 #   Only the HG008-T, GIAB_SOMATIC_ONT rows are switched to CpG-only (CPGONLY=1). No other row changes by a single character.
 #   1) raw : 12 files in the v11-fix2 methylation raw folder (R2 below) → in the 4 READUNIT and SITE files of 58-58 ao/jx only the HG008-T GIAB block is replaced, the other 8 files are copied unchanged
-#   2) merged table : run merge_meth.py(b1c07d14) on a folder holding only the HG008-T GIAB rows to get just that block, then splice it into the V11F2 merged table
+#   2) merged table : run merge_meth.py(36f5c6c4) on a folder holding only the HG008-T GIAB rows to get just that block, then splice it into the V11F2 merged table
 #      (the merge_meth key is (sample, source, slot, array_pos), so rows of other samples are unaffected. Pilot : the CPGONLY=0 version must equal the V11F2 block)
 #   3) combined tables : replace the dataset=v11 block of the extra1, extra2 and extra1+extra2 combined tables with V11F4
 import io, os, sys, gzip, shutil, hashlib, subprocess, collections
@@ -39,7 +39,7 @@ def lines(p):
 
 
 def must_new(p):
-    assert not os.path.exists(p), "이미 있음 " + p
+    assert not os.path.exists(p), "already exists " + p
     return p
 
 
@@ -63,7 +63,7 @@ for fn in sorted(os.listdir(R2)):
         newf = Q + "/CPGONLY1/out_%s/%s_REPRO_ip-172-31-58-58.tsv.gz" % (kind, typ)
         oldL = gzlines(src)
         nw = gzlines(newf)
-        assert nw[0] == oldL[0], "머리줄 다름 " + fn
+        assert nw[0] == oldL[0], "header differs " + fn
         nw = nw[1:]
         assert all(is_key(L) for L in nw)
         idx = [i for i, L in enumerate(oldL) if i > 0 and is_key(L)]
@@ -76,7 +76,7 @@ for fn in sorted(os.listdir(R2)):
         back = gzlines(dst)
         o_rest = [L for L in oldL if not is_key(L)]
         n_rest = [L for L in back if not is_key(L)]
-        log("[raw] %s : 교체 HG008-T GIAB %d → %d 행 · 전체 %d → %d · 다른 행 %d / %d md5 %s / %s 같음=%s"
+        log("[raw] %s: replaced HG008-T GIAB %d -> %d rows, total %d -> %d, other rows %d / %d md5 %s / %s same=%s"
             % (fn, len(idx), len(nw), len(oldL) - 1, len(back) - 1, len(o_rest), len(n_rest),
                md5L(o_rest), md5L(n_rest), o_rest == n_rest))
         assert o_rest == n_rest
@@ -90,7 +90,7 @@ for fn in sorted(os.listdir(R2)):
 
 # ---------------- 2. merged table ----------------
 MERGE = C + "/merge_meth.py"
-assert md5b(open(MERGE, "rb").read()) == "b1c07d144232966d3ab7155da15057ad"
+assert md5b(open(MERGE, "rb").read()) == "36f5c6c4ca03187efedad37a5001c438"
 
 
 def merge_key_only(tag, ao_ru, jx_ru):
@@ -124,12 +124,12 @@ s2blk = [L for L in S2[1:] if is_key(L)]
 
 # Pilot : merge the block from the old rows (same as CPGONLY=0) → must equal the V11F2 block
 pm, ps = merge_key_only("파일럿_옛행", old_ru["ao"], old_ru["jx"])
-log("[파일럿] 옛 HG008-T 행 덩어리 합본 : READMAP %d 행 vs V11F2 덩어리 %d 행 같음=%s · SITE %d vs %d 같음=%s"
+log("[pilot] existing HG008-T row block in the merged table: READMAP %d rows vs V11F2 block %d rows same=%s, SITE %d vs %d same=%s"
     % (len(pm) - 1, len(v2blk), pm[1:] == v2blk, len(ps) - 1, len(s2blk), ps[1:] == s2blk))
 assert pm[0] == V2[0] and pm[1:] == v2blk and ps[1:] == s2blk
 
 nm_, ns_ = merge_key_only("CPGONLY1", new_ru["ao"], new_ru["jx"])
-log("[합본] 새 HG008-T 덩어리 : READMAP %d 행 · SITE %d 행" % (len(nm_) - 1, len(ns_) - 1))
+log("[merged] new HG008-T block: READMAP %d rows, SITE %d rows" % (len(nm_) - 1, len(ns_) - 1))
 
 
 def splice(old, newblk, name):
@@ -138,7 +138,7 @@ def splice(old, newblk, name):
     out = old[:idx[0]] + newblk + old[idx[-1] + 1:]
     o_rest = [L for L in old[1:] if not is_key(L)]
     n_rest = [L for L in out[1:] if not is_key(L)]
-    log("[%s] 덩어리 %d → %d 행 · 전체 %d → %d · 다른 행 같음=%s (md5 %s)"
+    log("[%s] block %d -> %d rows, total %d -> %d, other rows same=%s (md5 %s)"
         % (name, len(idx), len(newblk), len(old) - 1, len(out) - 1, o_rest == n_rest, md5L(n_rest)))
     assert o_rest == n_rest
     # Check that sort order is kept (same as the sorted key of merge_meth)
@@ -146,7 +146,7 @@ def splice(old, newblk, name):
         r = L.split(TAB)
         return (r[0], r[1], r[2], int(r[3])) + ((int(r[4]),) if len(r) == 8 else ())
     ks = [k(L) for L in out[1:]]
-    assert ks == sorted(ks), name + " 정렬 어긋남"
+    assert ks == sorted(ks), name + " sort order mismatch"
     return out
 
 
@@ -167,15 +167,15 @@ for src, dstn in ((F + "/v11-add1_tissue_cancer/08_methylation/READMAP_METH_V11F
     A = lines(src)
     assert A[0] == V2[0] + TAB + "dataset"
     vpart = [L.rsplit(TAB, 1)[0] for L in A[1:] if L.rsplit(TAB, 1)[1] == "v11"]
-    assert vpart == V2[1:], "합본 속 v11 덩어리가 V11F2 와 다름 " + src
+    assert vpart == V2[1:], "v11 block in the merged table differs from V11F2 " + src
     vi = [i for i, L in enumerate(A) if i > 0 and L.rsplit(TAB, 1)[1] == "v11"]
     assert vi == list(range(1, len(V2)))
     out = [A[0]] + [L + TAB + "v11" for L in V4[1:]] + A[len(V2):]
     o_rest = A[len(V2):]
-    log("[합본표] %s : v11 덩어리 %d → %d 행 · 다른 dataset %d 행 그대로 · 전체 %d → %d"
+    log("[merged table] %s: v11 block %d -> %d rows, other dataset %d rows unchanged, total %d -> %d"
         % (dstn, len(V2) - 1, len(V4) - 1, len(o_rest), len(A) - 1, len(out) - 1))
     p = must_new(N + "/08_methylation/" + dstn)
     io.open(p, "w", encoding="utf8", newline=NL).write("".join(x + NL for x in out))
 
 io.open(must_new(Q + "/build_f4.log"), "w", encoding="utf8", newline=NL).write(NL.join(LOG) + NL)
-print("완료")
+print("done")

@@ -37,7 +37,7 @@ def die(m):
 
 
 for f in (a.hits, a.paf, a.fastq, a.nts):
-    if not os.path.exists(f): die("입력 없음 %s" % f)
+    if not os.path.exists(f): die("no input %s" % f)
 
 # ---- 5S hits ----
 per = {}
@@ -48,7 +48,7 @@ for L in open(a.hits):
     sp = [] if c[5] == "-" else [int(x) for x in c[5].split(",")]
     per[c[0]] = dict(L=int(c[1]), nhsp=int(c[2]), ngene=int(c[3]),
                      pid=float(c[4]), sp=sp, mm=(c[6] == "Y"))
-if not per: die("5S 히트 0")
+if not per: die("5S hits 0")
 
 trids = set()
 if a.trnaids and os.path.exists(a.trnaids):
@@ -71,7 +71,7 @@ for L in open(a.paf):
         n_bad += 1; continue
     if f_[0] not in span or s_ > span[f_[0]]: span[f_[0]] = s_
 if n_bad:
-    die("PAF 손상 (깨진 행 %d) — minimap2 미완주. 이 개체는 재처리해야 한다." % n_bad)
+    die("PAF corrupt (broken rows %d): minimap2 did not finish. This individual must be reprocessed." % n_bad)
 sys.stderr.write("[2] 탠덤 정렬 read %d%s" % (len(span), NL))
 
 # ---- fasta ----
@@ -92,7 +92,7 @@ r = subprocess.run(["blastn", "-task", "blastn", "-word_size", "11", "-dust", "n
                     "-evalue", "1e-10", "-db", db, "-query", fa, "-num_threads", str(a.threads),
                     "-max_target_seqs", "10000", "-outfmt", "6 qseqid sseqid pident length",
                     "-out", o])
-if r.returncode != 0: die("NTS blastn 실패")
+if r.returncode != 0: die("NTS blastn failed")
 nts = set()
 for L in open(o):
     f_ = L.rstrip(NL).split("\t")
@@ -143,5 +143,5 @@ for f_ in (fa, o):
 for e in (".ndb", ".nhr", ".nin", ".not", ".nsq", ".ntf", ".nto"):
     try: os.remove(db + e)
     except OSError: pass
-print("%s: 5S read=%d ARRAY=%d(보존 %d) DISPERSED=%d NTS=%d tRNA_id=%d"
+print("%s: 5S read=%d ARRAY=%d(kept %d) DISPERSED=%d NTS=%d tRNA_id=%d"
       % (a.sample, len(per), lab["ARRAY"], n_arr, lab["DISPERSED"], len(nts), len(trids)))

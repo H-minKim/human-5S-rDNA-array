@@ -37,8 +37,8 @@ for k in HK:
 # 0. marker curves
 g = io.open(os.path.join(OUT, "W2_marker_by_depth.tsv"), "w", encoding="utf8", newline="\n")
 g.write("depth\tn_units\tfrac_D1096_1\tfrac_635CT\tfrac_1096TG\tfrac_1164GA\tfrac_term\n")   # frac_term = share of terminal-type units (TD.is_term), frac_D1096_1 is the variant D1096:1 itself
-print("=== 0. 깊이별 표지 보유율 (전 하플로타입) ===")
-print("  깊이  유닛수  D1096:1  635CT  1096TG  1164GA")
+print("=== 0. marker carrier rate by depth (all haplotypes) ===")
+print("  depth n_units  D1096:1  635CT  1096TG  1164GA")
 prof = {}
 for depth in range(1, 16):
     vs = [DIST[k][depth] for k in HK if depth in DIST[k]]
@@ -51,7 +51,7 @@ for depth in range(1, 16):
 g.close()
 a = np.array([prof[d][0] for d in range(1, 16)]); b = np.array([prof[d][1] for d in range(1, 16)])
 c = np.array([prof[d][2] for d in range(1, 16)])
-print("  D1096:1 과 635CT 상관 %.4f · D1096:1 과 1096TG 상관 %.4f · (D1096:1 + 1096TG) 평균 %.3f (1 이면 완전 여집합)"
+print("  correlation of D1096:1 and 635CT %.4f, correlation of D1096:1 and 1096TG %.4f, mean of (D1096:1 + 1096TG) %.3f (1 means exact complement)"
       % (np.corrcoef(a, b)[0, 1], np.corrcoef(a, c)[0, 1], float(np.mean(a + c))))
 # 1. spacing distribution vs null
 obs = collections.Counter(); null = np.zeros((NPERM, 16))
@@ -70,8 +70,8 @@ for j in range(NPERM):
 tot_obs = sum(obs.values())
 g = io.open(os.path.join(OUT, "W2_gap_vs_null.tsv"), "w", encoding="utf8", newline="\n")
 g.write("gap\tn_obs\tfrac_obs\tfrac_null_mean\tnull_lo\tnull_hi\tenrichment\tp_two_sided\n")
-print("\n=== 1. 말단형 유닛 사이 간격 : 관측 대 무작위 배치 귀무 (짝 %d · 하플로타입 %d) ===" % (tot_obs, len(pos_by_hap)))
-print("  간격  관측   관측비   귀무비 [95%]           배수   p")
+print("\n=== 1. gaps between terminal-type units : observed vs random placement null (pairs %d, haplotypes %d) ===" % (tot_obs, len(pos_by_hap)))
+print("  gap   observed  observed_frac  null_frac [95%]           fold   p")
 for gap in range(1, 9):
     o = obs.get(gap, 0); fo = o / max(tot_obs, 1)
     nf = null[:, gap] / np.maximum(null.sum(1), 1)
@@ -100,8 +100,8 @@ for k in HK:
             if j < len(M) and M[j][0] - M[i][0] == lag: pairs[(lag, "가운데 대조")].append(jac(M[i][1], M[j][1]))
 g = io.open(os.path.join(OUT, "W2_similarity_by_lag.tsv"), "w", encoding="utf8", newline="\n")
 g.write("lag\tkind\tn_pairs\tmean_jaccard\tmedian\n")
-print("\n=== 2. 간격(lag)별 유닛 닮음 (자카드 · 원위 깊이 ≤15) ===")
-print("  간격  말단형–말단형        보통–보통          섞임              가운데 대조")
+print("\n=== 2. unit similarity by gap (lag) (Jaccard, distal depth ≤15) ===")
+print("  gap   terminal-terminal    ordinary-ordinary  mixed             interior control")
 for lag in range(1, 7):
     row = []
     for kind in ("말단형–말단형", "보통–보통", "섞임", "가운데 대조"):
@@ -126,9 +126,9 @@ for k in HK:
             cas[("무작위 보통 짝", gap)].append(jac(d[a1], d[a2]))
 g = io.open(os.path.join(OUT, "W2_cassette_test.tsv"), "w", encoding="utf8", newline="\n")
 g.write("kind\tgap\tn\tmean_jaccard\n")
-print("\n=== 3. 카세트 검정 : 말단형 사이 보통 유닛이 되풀이된 것인가 ===")
+print("\n=== 3. cassette test : are the ordinary units between terminal types repeats ===")
 for (kind, gap), v in sorted(cas.items()):
     g.write("%s\t%d\t%d\t%.4f\n" % (kind, gap, len(v), np.mean(v)))
-    print("  %-14s 간격 %d · 짝 %4d · 자카드 %.3f" % (kind, gap, len(v), np.mean(v)))
+    print("  %-14s gap %d, pairs %4d, Jaccard %.3f" % (kind, gap, len(v), np.mean(v)))
 g.close()
-print("\n저장 :", OUT)
+print("\nsaved :", OUT)

@@ -269,8 +269,7 @@ out_md5 = []
 for key, (title, pdf, panels) in FIGS.items():
     wb = openpyxl.Workbook()
     pdfp = os.path.join(D11, pdf)
-    sheet(wb, "README", ["Item", "Value"], [["Figure", title], ["Figure file", pdf], ["Figure md5", m12(pdfp)],
-                                           ["Built", "2026-11-06, renamed 2026-11-07"]] + RULES)
+    sheet(wb, "README", ["Item", "Value"], [["Figure", title], ["Figure file", pdf], ["Figure md5", m12(pdfp)]] + RULES)
     prow, done = [], {}
     for letter, ptitle, sheets, others in panels:
         for sname, fname, note in sheets:

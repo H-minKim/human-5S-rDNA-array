@@ -2,10 +2,6 @@
 """
 S14 - validate the segments from S13 and split them more finely.
 
-Why S13 needs validation
-  k=3 of basis A is skewed at 49,097 : 1,818 : 881, which is 'outlier picking', not segmentation.
-  The length contribution in that state (intermediate type 0.97) comes from the intermediate type being 95% of the units, which is close to a tautology.
-
 What is done here
   (1) Individual-specificity check: how many haplotypes each cluster comes from, and the largest % taken by one haplotype.
       A cluster made by a few individuals is a trait of those people, not a 'segment'.
@@ -27,9 +23,9 @@ rel=(ap-0.5)/Nn
 NU=len(ap); NH=int(hid.max())+1
 rng=np.random.default_rng(20260913)
 
-print("=== (1) 개체 특이성 검증 — S13 의 주구획 ===")
-print("  구획은 '여러 하플로타입에서 고루' 나와야 array 의 구획이다.")
-print("  기준 군집  n유닛   기여 하플로타입  최대 1개가 차지한 몫  상위3 몫")
+print("=== (1) individual-specificity test: main segments of S13 ===")
+print("  a segment must come 'evenly from many haplotypes' to be a segment of the array.")
+print("  criterion cluster  n_units   contributing haplotypes  share of the largest one  top-3 share")
 for tag,lab,names in (("A",LA,{0:"c0",1:"c1",2:"c2"}),("B",LB,{0:"c0",1:"c1",2:"c2"})):
     for c in sorted(set(lab.tolist())):
         m=lab==c
@@ -136,8 +132,8 @@ KEEP={}
 for tag,Z_,names in (("A",ZA,VA),("B",ZB,FB)):
     K=12
     lab=KMeans(n_clusters=K,n_init=20,random_state=0).fit(Z_).labels_
-    print("\n=== (2) 기준 %s · k=%d — 군집마다 따로 위치 검정 ==="%(tag,K))
-    print("  군집   n유닛  하플로  최대몫  상대위치  근위중앙 원위중앙   TVD   귀무97.5%  판정   특징")
+    print("\n=== (2) criterion %s, k=%d: position test per cluster ==="%(tag,K))
+    print("  cluster n_units haplotypes max_share relpos  prox_med dist_med   TVD   null97.5%  verdict  features")
     rows=[]
     for c in range(K):
         m=lab==c
@@ -169,7 +165,7 @@ g.close()
 
 # ---------- (3) length contribution ----------
 Nh=np.array([U[k][0][2] for k in HK],dtype=float)
-print("\n=== (3) 길이 기여 — 채택된 구획 기준 (기울기 합 = 1) ===")
+print("\n=== (3) length contribution: by the adopted segments (sum of slopes = 1) ===")
 g=io.open(os.path.join(OUT,"S14_length.tsv"),"w",encoding="utf8",newline="\n")
 g.write("basis\tgroup\tn_units\tmean_size\tslope\tslope_lo\tslope_hi\tintercept\tspearman\n")
 for tag in ("A","B"):
@@ -177,8 +173,8 @@ for tag in ("A","B"):
     groups=collections.defaultdict(list)
     for c,name in lbl.items(): groups[name].append(c)
     # clusters left out for having fewer than 30 units go to BULK
-    print("\n  [기준 %s]"%tag)
-    print("   구획          유닛수   평균크기   기울기 b [95%CI]        절편   rho")
+    print("\n  [criterion %s]"%tag)
+    print("   segment       n_units  mean_size  slope b [95%CI]         intercept   rho")
     A2=np.vstack([np.ones_like(Nh),Nh]).T
     res=[]
     assigned=np.zeros(NU,dtype=bool)
@@ -201,7 +197,7 @@ for tag in ("A","B"):
         print("   %-12s %7d  %7.1f   %+.3f [%+.3f,%+.3f]  %6.1f  %+.2f"%(name,nu_,mu,sl,lo,hi,ic,sp))
         g.write("%s\t%s\t%d\t%.2f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\n"%(tag,name,nu_,mu,sl,lo,hi,ic,sp))
 g.close()
-print("\n저장: %s"%OUT)
+print("\nsaved: %s"%OUT)
 
 # the deposited table(s) carry English column names and values (common/fig02_figS2/taben.py)
 import sys as _s, os as _o

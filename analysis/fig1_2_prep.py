@@ -25,7 +25,7 @@ D = pd.read_parquet(S + "02_tables/L1_READ_UNIT.parquet",
                     columns=["sample", "slot", "ap", "ad", "N", "b_call", "gate",
                              "data_source", "n_canon"])
 D = D[(D.gate == 1) & (D.data_source.astype(str) == "HPRC_ONT_submissions")].copy()
-print("read-유닛 %d · 하플로 %d" % (len(D), D.groupby(["sample", "slot"]).ngroups))
+print("read-units %d, haplotypes %d" % (len(D), D.groupby(["sample", "slot"]).ngroups))
 
 # ---------- the 12 interior bins ----------
 d = D[D.N >= 2 * NED + MIDB].copy()
@@ -42,10 +42,10 @@ m = OLDM.merge(gm[["k", "med", "mean_simple"]], on="k", suffixes=("_old", "_new"
 d1 = (m.med_old - m.med_new.round(4)).abs().max()
 d2 = (m["mean"] - m.mean_simple.round(4)).abs().max()
 print()
-print("관문 ① 가운데 12 칸 : 중앙값 최대차 %.6f · 단순평균 최대차 %.6f" % (d1, d2))
+print("gate (1) interior 12 bins: max median difference %.6f, max simple-mean difference %.6f" % (d1, d2))
 if max(d1, d2) > 1e-9:
-    sys.exit("재현 실패 — 멈춘다")
-print("   ⇒ 그대로 재현된다")
+    sys.exit("reproduction failed: stopping")
+print("   -> reproduced exactly")
 gm.to_csv(HERE + "/FIG1_2_MID.tsv", sep="\t", index=False, float_format="%.5f")
 
 # ---------- the 20 units at each end ----------
@@ -62,14 +62,14 @@ gu = pd.DataFrame(rows)
 OLDU = pd.read_csv(HERE + "/FIG1_V4_UNITS.tsv", sep="\t")
 mu = OLDU.merge(gu[["side", "idx", "med"]], on=["side", "idx"], suffixes=("_old", "_new"))
 d3 = (mu.med_old - mu.med_new.round(4)).abs().max()
-print("관문 ① 끝 20 유닛 : 중앙값 최대차 %.6f" % d3)
+print("gate (1) end 20 units: max median difference %.6f" % d3)
 if d3 > 1e-9:
-    sys.exit("재현 실패 — 멈춘다")
-print("   ⇒ 그대로 재현된다")
+    sys.exit("reproduction failed: stopping")
+print("   -> reproduced exactly")
 gu.to_csv(HERE + "/FIG1_2_UNITS.tsv", sep="\t", index=False, float_format="%.5f")
 print()
-print("저장 : FIG1_2_UNITS.tsv (md5 %s) · FIG1_2_MID.tsv (md5 %s)"
+print("saved: FIG1_2_UNITS.tsv (md5 %s), FIG1_2_MID.tsv (md5 %s)"
       % (md5(HERE + "/FIG1_2_UNITS.tsv")[:12], md5(HERE + "/FIG1_2_MID.tsv")[:12]))
 print()
-print("가운데 12 칸 : 중앙 %s" % " ".join("%.2f" % v for v in gm.med))
-print("             가중평균 %s" % " ".join("%.2f" % v for v in gm.mean_pooled))
+print("interior 12 bins: median %s" % " ".join("%.2f" % v for v in gm.med))
+print("             weighted mean %s" % " ".join("%.2f" % v for v in gm.mean_pooled))

@@ -16,7 +16,7 @@ diff "$G/hap_seq_node.tsv" "$G/hap_seq_node_v7.tsv" | grep '^>'
 mkdir -p ~/cmp4d_v8
 for f in ~/cmp4d_v7/*.fa; do ln -sf "$f" ~/cmp4d_v8/$(basename "$f"); done
 cp ~/hg002asm/pat_array.fa ~/cmp4d_v8/hg002asm__58__pat_array.fa
-echo "=== cmp4d_v8 파일수"; ls ~/cmp4d_v8 | wc -l
+echo "=== cmp4d_v8 file count"; ls ~/cmp4d_v8 | wc -l
 python3 - <<PY
 import io
 NL=chr(10); TAB=chr(9)
@@ -28,6 +28,6 @@ for L in io.open(src,encoding="utf8"):
         f[2]="hg002asm__58__pat_array.fa"; n+=1
     out.append(TAB.join(f))
 io.open(dst,"w",encoding="utf8",newline=NL).write(NL.join(out)+NL)
-print("hg002 슬롯2 교체", n, "줄 · 전체", len(out), "줄")
+print("hg002 slot2 replaced", n, "lines, total", len(out), "lines")
 PY
 grep -P "^hg002\t" ~/hap_seq_node_v8.tsv

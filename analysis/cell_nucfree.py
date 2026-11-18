@@ -111,7 +111,7 @@ def window_arrays(s_idx, W, site):
 
 ARR = {}
 R = {"name": NAME, "n_units": int(N), "n_reads": int(NR), "sets": {k: int(v.sum()) for k, v in SETS.items()}, "sites": {}}
-print("%s : 유닛 %d · read %d · 층 %s" % (NAME, N, NR, R["sets"]))
+print("%s: units %d, reads %d, stratum %s" % (NAME, N, NR, R["sets"]))
 for site, d in SITE.items():
     a, b = d["win"]
     W = b - a + 1
@@ -194,23 +194,23 @@ for site, d in SITE.items():
     ARR[site + "_nonuc"] = nonuc; ARR[site + "_hit"] = hit
     ARR["lab"] = labi; ARR["read"] = read_i
     R["sites"][site] = res
-    print("  [%s] 창 %d bp · 전체 유닛 중 뉴클 없는 비율 %.1f%%" % (site, W, 100 * res["sets"]["전체"]["nonuc_frac"]))
+    print("  [%s] window %d bp, fraction of all units without a nucleosome %.1f%%" % (site, W, 100 * res["sets"]["전체"]["nonuc_frac"]))
     for k in ("전체", "low", "high"):
         r = res["sets"][k]
-        print("    %-3s 유닛 %6d · 뉴클없음 %6d (%.0f%%) · 점유 생판 %.4f → 뉴클제거 %.4f (hit %d/%d) · 배경 중앙 %s · p_bg %s · 깨끗 %d f=%.3f 천장 %.3f flank/core %.3f(생판 %.3f)"
+        print("    %-3s units %6d, no nucleosome %6d (%.0f%%), occupancy raw %.4f -> nucleosomes excluded %.4f (hit %d/%d), background median %s, p_bg %s, clean %d f=%.3f ceiling %.3f flank/core %.3f(raw %.3f)"
               % (k, r["n_all"], r["n_nonuc"], 100 * r["nonuc_frac"], r["occ_raw"], r["occ_nn"], r["hit_nn"], r["n_nonuc"],
                  ("%.4f" % r["bg_median"]) if r["bg_median"] is not None else "-", ("%.4f" % r["p_bg"]) if r["p_bg"] is not None else "-",
                  r["n_clean"], r["f"], r["ceil"] or 0, r["dub_clean"], r["dub_raw"]))
     for tag in ("raw", "nn"):
         o = out[tag]
-        print("    저÷고 %-3s : 저 %d/%d · 고 %d/%d · 비 %s [군집부트 %s~%s · 비<=1 비율 %s] · 피셔 p %.1e" % (
-            tag, o["hit_low"], o["n_low"], o["hit_high"], o["n_high"], ("%.2f" % o["ratio"]) if o["ratio"] != float("inf") else "∞(고 hit 0)",
+        print("    low÷high %-3s: low %d/%d, high %d/%d, ratio %s [cluster bootstrap %s~%s, fraction with ratio<=1 %s], Fisher p %.1e" % (
+            tag, o["hit_low"], o["n_low"], o["hit_high"], o["n_high"], ("%.2f" % o["ratio"]) if o["ratio"] != float("inf") else "∞(high hit 0)",
             ("%.2f" % o["boot_lo"]) if o["boot_lo"] is not None else "-", ("%.2f" % o["boot_hi"]) if o["boot_hi"] is not None else "-",
             ("%.4f" % o["boot_p_le1"]) if o["boot_p_le1"] is not None else "-", o["fisher_p"]))
     if "confirm_clean" in res:
         c = res["confirm_clean"]
-        print("    깨끗한 유닛만 확인검정(호출기 없음) : n %d · 최대 %.3f (자리 %+d 폭 %d) · p %.4f" % (c["n"], c["obs"], c["pos"], c["width"], c["p"]))
+        print("    confirmation test on clean units only (no caller): n %d, max %.3f (position %+d width %d), p %.4f" % (c["n"], c["obs"], c["pos"], c["width"], c["p"]))
 np.savez_compressed(os.path.join(DIR, "nucfree_arrays_%s.npz" % NAME), **ARR)
 out = os.path.join(DIR, "nucfree_%s.json" % NAME)
 io.open(out, "w", encoding="utf8").write(json.dumps(R, ensure_ascii=False, indent=1, default=lambda o: float(o) if hasattr(o, "item") else str(o)))
-print("저장 ->", out)
+print("saved ->", out)

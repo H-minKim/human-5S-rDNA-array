@@ -54,7 +54,7 @@ for i, x in enumerate(io.open(SUMF, encoding="utf8")):
     fz = x.rstrip(NL).split("	")
     if i == 0:
         if "revcomp" not in fz:
-            raise SystemExit("SUMF 에 revcomp 열이 없다: %s" % SUMF)
+            raise SystemExit("SUMF has no revcomp column: %s" % SUMF)
         RCI = fz.index("revcomp")
         continue
     if len(fz) > RCI:

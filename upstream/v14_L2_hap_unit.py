@@ -29,14 +29,14 @@ def P(s=""):
 
 
 P("=" * 100)
-P("L2 = 하플로타입 x 자리 통합표 (이봉성 보존 요약)")
+P("L2 = haplotype x position integrated table (bimodality-preserving summary)")
 P("=" * 100)
 P()
 
 L1 = pd.read_parquet(os.path.join(T, "L1_READ_UNIT.parquet"))
-P("  L1 %s 행" % format(len(L1), ","))
+P("  L1 %s rows" % format(len(L1), ","))
 L1 = L1[L1.gate == 1].copy()
-P("  관문 통과한 read-유닛만 쓴다 : %s 행 (%.4f)"
+P("  only read-units passing the gate are used : %s rows (%.4f)"
   % (format(len(L1), ","), len(L1) / 787885))
 P()
 
@@ -53,7 +53,7 @@ L1["half"] = (pd.util.hash_pandas_object(L1.read_id, index=False) % 2).astype("i
 K = ["sample", "slot", "array_pos"]
 G = L1.groupby(K, observed=True, sort=False)
 
-P("  자리 수 %s" % format(G.ngroups, ","))
+P("  positions %s" % format(G.ngroups, ","))
 P()
 
 agg = G.agg(
@@ -121,7 +121,7 @@ HB2 = pd.read_csv(os.path.join(T, "HAP_LENGTH_BOUNDARY.tsv"), sep="\t",
                   dtype={"sample": str, "slot": str})
 HB2 = HB2.rename(columns={"f": "f_hap"})[["sample", "slot", "f_hap", "Bp", "Bd", "n_low"]]
 L2 = L2.merge(HB2, on=["sample", "slot"], how="left")
-P("  하플로타입 상수(f_hap·Bp·Bd·n_low) 붙은 비율 %.4f" % L2.f_hap.notna().mean())
+P("  fraction with haplotype constants (f_hap, Bp, Bd, n_low) attached %.4f" % L2.f_hap.notna().mean())
 P()
 
 # ---------------------------------------------------------------- (D) the other slot
@@ -149,14 +149,14 @@ L2 = L2.merge(NT, on=["sample", "slot"], how="left")
 L2["dN"] = (L2.N - L2.N_other).abs()
 L2["both_eligible"] = L2.N_other.notna().astype("int8")
 
-P("  반대쪽 슬롯이 있는 자리 %.4f (개체 %d)"
+P("  positions with the opposite slot present %.4f (individuals %d)"
   % (L2.N_other.notna().mean(),
      L2.loc[L2.N_other.notna(), "sample"].nunique()))
-P("  그중 같은 ap 에 상대 자리가 실제로 있는 것 %.4f" % L2.p_f_hi.notna().mean())
+P("  of these, the partner position exists at the same ap %.4f" % L2.p_f_hi.notna().mean())
 P()
 
 L2.to_parquet(os.path.join(T, "L2_HAP_UNIT.parquet"), index=False)
-P("  저장 : 02_tables/L2_HAP_UNIT.parquet  %s 행 x %d 열"
+P("  saved : 02_tables/L2_HAP_UNIT.parquet  %s rows x %d columns"
   % (format(len(L2), ","), L2.shape[1]))
 P()
 
@@ -182,52 +182,52 @@ for lab, m in (("prox8", L2.ap <= 8), ("prox9_14", (L2.ap >= 9) & (L2.ap <= 14))
     s = L2[m].groupby(["sample", "slot"], observed=True)["f_hi"].mean().rename("f_hi_" + lab)
     L3 = L3.merge(s.reset_index(), on=["sample", "slot"], how="left")
 L3.to_csv(os.path.join(T, "L3_HAP.tsv"), sep="\t", index=False, float_format="%.6g")
-P("  저장 : 02_tables/L3_HAP.tsv  %d 슬롯 x %d 열" % (len(L3), L3.shape[1]))
+P("  saved : 02_tables/L3_HAP.tsv  %d slots x %d columns" % (len(L3), L3.shape[1]))
 P()
 
 # ---------------------------------------------------------------- the checks
 P("=" * 100)
-P("검산 — 이 표가 옛 결론을 그대로 담고 있는가")
+P("check: does this table reproduce the conclusions")
 P("=" * 100)
 P()
-P("  [1] 이봉성이 살아 있는가 (L2 자리별)")
-P("      n_read>=10 자리에서 f_hi 의 분포")
+P("  [1] is bimodality preserved (per L2 position)")
+P("      distribution of f_hi at positions with n_read>=10")
 s = L2[L2.n_read >= 10]
 q = s.f_hi.quantile([0.05, 0.25, 0.5, 0.75, 0.95]).values
-P("      5%% %.3f · 25%% %.3f · 중앙 %.3f · 75%% %.3f · 95%% %.3f" % tuple(q))
-P("      f_hi 가 0.05 미만(거의 다 저메틸) %.3f · 0.95 초과(거의 다 고메틸) %.3f"
+P("      5%% %.3f, 25%% %.3f, median %.3f, 75%% %.3f, 95%% %.3f" % tuple(q))
+P("      f_hi below 0.05 (almost all low-methylation) %.3f, above 0.95 (almost all high-methylation) %.3f"
   % ((s.f_hi < 0.05).mean(), (s.f_hi > 0.95).mean()))
-P("      = 자리 수준에서도 양 끝에 몰린다 (중간이 아니다)")
+P("      = values pile up at both ends at the position level too (not in the middle)")
 P()
-P("  [2] 상태값은 자리와 무관한가 (두 상태 모델)")
+P("  [2] is the state value independent of position (two-state model)")
 for lab, m in (("근위 1-8", s.ap <= 8), ("가운데", (s.ap > 20) & (s.ad > 20)),
                ("원위 1-8", s.ad <= 8)):
     t = s[m]
-    P("      %-8s  f_hi %.3f | 저메틸 상태값 %.4f (n %s) | 고메틸 상태값 %.4f (n %s)"
+    P("      %-8s  f_hi %.3f | low-methylation state value %.4f (n %s) | high-methylation state value %.4f (n %s)"
       % (lab, t.f_hi.mean(), t.b_lo_mean.mean(), format(int(t.n_lo.sum()), ","),
          t.b_hi_mean.mean(), format(int(t.n_hi.sum()), ",")))
-P("      ⇒ 자리가 바뀌어도 상태값은 거의 그대로, f_hi 만 바뀐다")
+P("      -> state values stay nearly the same across positions, only f_hi changes")
 P()
-P("  [3] 참 분산 vs 잡음")
-P("      b_var 평균 %.5f · 분할잡음 %.5f · 이항잡음 %.5f · 참 분산 %.5f (%.1f%%)"
+P("  [3] true variance vs noise")
+P("      b_var mean %.5f, split noise %.5f, binomial noise %.5f, true variance %.5f (%.1f%%)"
   % (s.b_var.mean(), s.noise_split.mean(), s.noise_binom.mean(),
      s.b_var_true.mean(), 100 * s.b_var_true.mean() / s.b_var.mean()))
 P()
-P("  [4] 반분할 재현도 (f_A vs f_B)")
+P("  [4] split-half reproducibility (f_A vs f_B)")
 t = s[(s.n_A >= 5) & (s.n_B >= 5)]
 r = np.corrcoef(t.f_A, t.f_B)[0, 1]
-P("      r(f_A, f_B) = %.4f (n=%s) · Spearman-Brown 천장 %.4f"
+P("      r(f_A, f_B) = %.4f (n=%s), Spearman-Brown ceiling %.4f"
   % (r, format(len(t), ","), 2 * r / (1 + r)))
 P()
-P("  [5] 양쪽 슬롯 : 같은 자리에서 f_hi 가 닮았는가")
+P("  [5] both slots : is f_hi similar at the same position")
 t = L2[(L2.n_read >= 10) & L2.p_f_hi.notna() & (L2.p_n_read >= 10)]
-P("      r(f_hi, p_f_hi) = %.4f (자리 %s · 개체 %d)"
+P("      r(f_hi, p_f_hi) = %.4f (positions %s, individuals %d)"
   % (np.corrcoef(t.f_hi, t.p_f_hi)[0, 1], format(len(t), ","), t["sample"].nunique()))
-P("      ※ 자리 효과(둘 다 같은 ap) 가 공통이라 양수가 당연하다 — 자리별 평균을 뺀 뒤 봐야 한다")
+P("      note: the position effect (both at the same ap) is shared, so a positive value is expected; look at it after subtracting the per-position mean")
 tt = t.copy()
 mu = tt.groupby("ap")["f_hi"].transform("mean")
 mp = tt.groupby("ap")["p_f_hi"].transform("mean")
-P("      자리 평균 제거 후 r = %.4f"
+P("      r after subtracting the position mean = %.4f"
   % np.corrcoef(tt.f_hi - mu, tt.p_f_hi - mp)[0, 1])
 P()
 LOG.close()

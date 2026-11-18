@@ -33,13 +33,13 @@ D = D[(D.gate == 1) & (D.data_source.astype(str) == "HPRC_ONT_submissions")].cop
 HP = set(zip(D["sample"].astype(str), D.slot.astype(str)))
 u1_prox = D[D.ap == 1].b_call.median(); u1_dist = D[D.ad == 1].b_call.median()
 u2_prox = D[D.ap == 2].b_call.median(); u2_dist = D[D.ad == 2].b_call.median()
-P("[유닛 축 기준값(L1)] 근위 첫 온전 유닛 β %.3f (둘째 %.3f) · 원위 첫 온전 유닛 β %.3f (둘째 %.3f)"
+P("[unit-axis reference value (L1)] proximal first complete unit β %.3f (second %.3f), distal first complete unit β %.3f (second %.3f)"
   % (u1_prox, u2_prox, u1_dist, u2_dist))
 
 SUM = pd.read_csv(SUMF, sep="\t", dtype={"slot": str})
 SUM["off_원위"] = SUM.off_prox          # the partial unit at the start of the map is the distal one
 SUM["off_근위"] = SUM.off_dist
-P("[부분 유닛 길이] 원위 중앙 %d bp (10–90%% %d–%d) · 근위 중앙 %d bp (10–90%% %d–%d)"
+P("[partial unit length] distal median %d bp (10-90%% %d-%d), proximal median %d bp (10-90%% %d-%d)"
   % (SUM.off_원위.median(), SUM.off_원위.quantile(.1), SUM.off_원위.quantile(.9),
      SUM.off_근위.median(), SUM.off_근위.quantile(.1), SUM.off_근위.quantile(.9)))
 
@@ -62,7 +62,7 @@ def newu(df):
 for T in (J, A):
     T["u"] = newu(T)
 J = J.dropna(subset=["u"]); A = A.dropna(subset=["u"])
-P("[재좌표] 메틸 행 %d · 서열 행 %d · 하플로 %d" % (len(J), len(A), J.groupby(["sample", "slot"]).ngroups))
+P("[recoordinate] methylation rows %d, sequence rows %d, haplotypes %d" % (len(J), len(A), J.groupby(["sample", "slot"]).ngroups))
 
 def rb(u):
     a = abs(u)
@@ -86,19 +86,19 @@ s = A.groupby(["side", "u2"]).agg(bp=("bp", "sum"), cg=("n_cpg", "sum"), al=("n_
 s["cpg_per_kb"] = 1000 * s.cg / s.bp; s["alu_frac"] = s.al / s.bp
 g = g.merge(s[["side", "u2", "cpg_per_kb", "alu_frac"]], on=["side", "u2"], how="left").rename(columns={"u2": "u"})
 g.to_csv(os.path.join(HERE, "FIG1_V5_A_bp_HC.tsv"), sep="\t", index=False, float_format="%.5f")
-P("[저장] FIG1_V5_A_bp_HC.tsv · 창 %d" % len(g))
+P("[saved] FIG1_V5_A_bp_HC.tsv, windows %d" % len(g))
 
 # ---- check: in the new coordinate, does beta over the first complete unit match the unit-axis value? ----
 P()
-P("[검산] 새 좌표 u 로 잰 '첫 온전 유닛' 구간 β vs L1 유닛 축 값")
+P("[check] β of the 'first complete unit' interval measured in the new coordinate u vs L1 unit-axis value")
 def band(side, lo, hi):
     v = J[(J.side == side) & (-J.u2 >= lo) & (-J.u2 < hi)]      # u < 0 is inside the array
     return v.sum_p.sum() / v.n_call.sum(), v.n_call.sum()
 for side, ref1, ref2 in (("근위", u1_prox, u2_prox), ("원위", u1_dist, u2_dist)):
     b1, n1 = band(side, 0, UNIT); b2, n2 = band(side, UNIT, 2 * UNIT)
-    P("   %s : 첫 유닛 구간 β %.3f (L1 %.3f) · 둘째 유닛 구간 β %.3f (L1 %.3f)" % (side, b1, ref1, b2, ref2))
+    P("   %s: first unit interval β %.3f (L1 %.3f), second unit interval β %.3f (L1 %.3f)" % (side, b1, ref1, b2, ref2))
     # for reference, the same span in the junction coordinate b, which includes the partial unit
     v = J[(J.side == side) & (J.b <= 0) & (-J.b < UNIT)]
-    P("      (참고) 부분 유닛을 array 로 친 옛 좌표의 같은 구간 β %.3f ← 이래서 근위 첫 유닛이 고메틸로 보였다"
+    P("      (note) β of the same interval in coordinates that count the partial unit as array %.3f: there the proximal first unit looks high-methylation"
       % (v.sum_p.sum() / v.n_call.sum()))
 LOG.close()

@@ -7,8 +7,8 @@
 #      and are not re-rendered here.)
 #
 #   The settings were fixed by comparison against the published files, not by assumption:
-#     · svg: with text_as_path=False the output is byte-identical to the published file, confirmed for all three.
-#     · png: at 400 dpi the pixels match the published file.
+#     - svg: with text_as_path=False the output is byte-identical to the published file, confirmed for all three.
+#     - png: at 400 dpi the pixels match the published file.
 #       The bytes differ, because the published file was written by a different release of pymupdf
 #       (it carries no Software chunk and records pHYs as 96 dpi).
 #       So png files are compared by pixels; judging reproduction by a byte md5 would be wrong.
@@ -25,12 +25,12 @@ NAMES = ("Fig1_pipeline_EN", "SFig1_EN", "SFig1_KO")
 
 
 def main():
-    print("png·svg 내기 — %d dpi · %s" % (DPI, OUT_DIR))
+    print("exporting png and svg: %d dpi, %s" % (DPI, OUT_DIR))
     n_ok = 0
     for n in NAMES:
         src = os.path.join(OUT_DIR, n + ".pdf")
         if not os.path.exists(src):
-            print("   없음 : %s.pdf" % n)
+            print("   none: %s.pdf" % n)
             continue
         d = fitz.open(src)
         pg = d[0]
@@ -51,10 +51,10 @@ def main():
         d.close()
         now = ((pm.width, pm.height), hashlib.md5(pm.samples).hexdigest()[:12])
         tag = "처음" if before is None else ("화소 같음" if before == now else "화소 바뀜 %s -> %s" % (before[1], now[1]))
-        print("   %-18s %.1f x %.1f pt -> %dx%d px · svg %d 자   %s"
+        print("   %-18s %.1f x %.1f pt -> %dx%d px, svg %d chars   %s"
               % (n, _w, _h, pm.width, pm.height, len(svg), tag))
         n_ok += 1
-    print("낸 것 %d / %d" % (n_ok, len(NAMES)))
+    print("exported %d / %d" % (n_ok, len(NAMES)))
 
 
 if __name__ == "__main__":

@@ -68,7 +68,7 @@ for k in sorted(U):
             elif p not in seen2:
                 SNV[z][p] += 1; seen2.add(p)
 ALLP = sorted(set().union(*[set(SITE[z]) for z in Z5]))
-print("유닛 %d · 변이 출현 %d · 자리 %d · 종류 %d" % (sum(NZ.values()), occ, len(ALLP), sum(len(v) for v in TYPES.values())))
+print("units %d, variant occurrences %d, positions %d, kinds %d" % (sum(NZ.values()), occ, len(ALLP), sum(len(v) for v in TYPES.values())))
 
 NALL = sum(NZ[z] for z in Z5)
 _SNV = {}
@@ -113,7 +113,7 @@ _lg = ax.legend(loc="upper left", frameon=False)   # remove the legend frame
 # count whether blue line points or orange bars fall inside the legend box (must be 0)
 fig.canvas.draw(); _lb = _lg.get_window_extent(fig.canvas.get_renderer())
 _lxy = ax.transData.transform(np.column_stack([psS, vS]))
-print("범례 상자 겹침 : 선 점 %d · 막대 %d · 상자 오른끝 %.1f / 축 오른끝 %.1f px" % (
+print("legend box overlap: line points %d, bars %d, box right edge %.1f / axis right edge %.1f px" % (
       sum(1 for x_, y_ in _lxy if _lb.contains(x_, y_)),
       sum(1 for p_ in ax.patches if p_.get_window_extent().overlaps(_lb)), _lb.x1, ax.get_window_extent().x1))
 # position below the axes: measure the bottom of the x tick labels and place the strip below it
@@ -179,6 +179,6 @@ for k, o in enumerate(_ink):
 _tk = min(t.get_window_extent(_rd).y0 for t in ax.get_xticklabels() if t.get_text())
 if max(r.get_window_extent(_rd).y1 for r in _RECT.values()) > _tk + 0.01: _bad.append(("띠가 눈금 글자에 닿음",))
 _low_all = min([r.get_window_extent(_rd).y0 for r in _RECT.values()] + [b.y0 for b in _low.values()])
-print("띠 글자 검사 : 축 아래 · 눈금 글자 %.1f pt · 띠 %.1f pt · 이름 %d · 그림 아래 여유 %.1f pt · 문제 %d %s" % (TICK_PT, BAR_PT, len(_lab), _low_all / PXPT, len(_bad), _bad))
+print("strip text check: below axis, tick text %.1f pt, strip %.1f pt, names %d, margin below figure %.1f pt, problems %d %s" % (TICK_PT, BAR_PT, len(_lab), _low_all / PXPT, len(_bad), _bad))
 CS.save(fig, OUT, "cellF2_a_unitpos")
-print("저장", OUT)
+print("saved", OUT)

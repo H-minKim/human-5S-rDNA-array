@@ -29,7 +29,7 @@ def load_hap(p):
 
 
 J = load_hap(H + "HAP_READ_FINAL.pairingspace.tsv") | load_hap(H + "HAP_READ_FINAL.tsv")
-print("junction 배정표 read %d" % len(J))
+print("junction assignment table read %d" % len(J))
 for src, fn in (("DUAL20", "AOJV3.tsv"), ("DUAL5", "AOJV5.tsv"),
                 ("DUAL8", "AOJV8.tsv"), ("DUALG", "AOJV_GIAB.tsv")):
     AO = set()
@@ -45,4 +45,4 @@ for src, fn in (("DUAL20", "AOJV3.tsv"), ("DUAL5", "AOJV5.tsv"),
     o.close()
     old = H + "aog8/dual/" + src + ".tsv"
     no = sum(1 for _ in io.open(old, encoding="utf8")) if os.path.exists(old) else -1
-    print("%-7s : AO read %5d · DUAL %4d (옛 %4d · 차이 %+d)" % (src, len(AO), len(both), no, len(both) - no))
+    print("%-7s: AO read %5d, DUAL %4d (baseline %4d, diff %+d)" % (src, len(AO), len(both), no, len(both) - no))

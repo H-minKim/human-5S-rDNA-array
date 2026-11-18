@@ -1,0 +1,11 @@
+kind	platform	key	n	v_L	v_H	diff	p
+region	ONT	alu	52	0.04619	0.01706	0.02913	3.94e-10
+region	PacBio	alu	48	0.07134	0.03680	0.03454	2.88e-09
+region	ONT	far	52	0.06696	0.01543	0.05153	3.5e-10
+region	PacBio	far	48	0.06735	0.02766	0.03968	3.91e-13
+region	ONT	mid	52	0.08958	0.04564	0.04394	4.17e-10
+region	PacBio	mid	48	0.10774	0.02922	0.07852	2.13e-14
+region	ONT	up	52	0.17234	0.01995	0.15239	3.5e-10
+region	PacBio	up	48	0.18903	0.05982	0.12921	1.42e-14
+region	ONT	gene	52	0.15447	0.02159	0.13288	3.5e-10
+region	PacBio	gene	48	0.19359	0.04674	0.14685	7.11e-15

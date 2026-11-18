@@ -48,10 +48,10 @@ def zone(ap, ad):
 D["Z"] = [zone(a, d) for a, d in zip(D.apx.values, D.adx.values)]
 ZONES = ["Z1 근1-3", "Z2 근4-10", "Z3 근11-17", "ZI 내부", "Z4 원11-22", "Z5 원9-10", "Z6 원3-8", "Z7 원1-2"]
 ORD = ["정상 조직(환자)", "정상 1차세포(PBMC)", "비암 세포주(LCL)", "비암 세포주", "암 조직(환자)", "암 세포주"]
-P("read×유닛 %s · 시료 %d" % (format(len(D), ","), D["sample"].nunique()))
+P("read×unit %s, samples %d" % (format(len(D), ","), D["sample"].nunique()))
 for g in ORD:
     v = D[D.군 == g]
-    P("   %-18s 시료 %2d · 유닛 %s" % (g, v["sample"].nunique(), format(len(v), ",")))
+    P("   %-18s samples %2d, units %s" % (g, v["sample"].nunique(), format(len(v), ",")))
 
 def wb(x, k):
     n = x["n_" + k].sum()
@@ -69,10 +69,10 @@ S.to_csv(os.path.join(HERE, "ZSS_SAMPLE.tsv"), sep="\t", index=False, float_form
 
 # ---------------- the group summary, the median over samples ----------------
 P()
-P("[표] 군 × 구역 × 상태 — 값은 시료 중앙값 (n = 그 칸에 들어간 시료 수)")
+P("[table] group × zone × state: values are sample medians (n = number of samples in that cell)")
 for st in ("저메틸", "고메틸"):
     P()
-    P("=== %s 유닛 안 ===" % st)
+    P("=== within %s units ===" % st)
     P("%-10s %-18s %5s %8s %8s %9s" % ("구역", "군", "시료", "sp", "gene", "gene-sp"))
     for z in ZONES:
         for g in ORD:
@@ -84,8 +84,8 @@ for st in ("저메틸", "고메틸"):
 
 # ---------------- shared by the cancers: do the two cancer groups together differ from the normals? ----------------
 P()
-P("[검정] 암 조직(환자) 과 암 세포주 가 함께 정상 쪽과 다른 자리")
-P("   정상 쪽 = 정상 조직(환자) + 정상 1차세포(PBMC) + 비암 세포주(LCL) + 비암 세포주")
+P("[test] positions where cancer tissue (patient) and cancer cell lines both differ from the normal side")
+P("   normal side = normal tissue (patient) + normal primary cells (PBMC) + non-cancer cell line (LCL) + non-cancer cell lines")
 NORM = ["정상 조직(환자)", "정상 1차세포(PBMC)", "비암 세포주(LCL)", "비암 세포주"]
 res = []
 for st in ("저메틸", "고메틸"):
@@ -109,14 +109,14 @@ P()
 P(R.round(4).to_string(index=False))
 R.to_csv(os.path.join(HERE, "ZSS_TEST.tsv"), sep="\t", index=False, float_format="%.5f")
 P()
-P("암 조직과 암 세포주가 같은 방향으로 벗어난 칸 (세포주 p<0.05 · 조직 |z|>1 · 방향 일치)")
+P("cells where cancer tissue and cancer cell lines deviate in the same direction (cell line p<0.05, tissue |z|>1, same direction)")
 hit = R[R.암공통]
 if len(hit):
     P(hit[["구역", "상태", "지표", "정상중앙", "암세포주중앙", "암조직", "Δ암세포주", "암조직z", "p세포주", "q"]]
       .round(4).to_string(index=False))
 else:
-    P("   없음")
-P("   (검정 %d 칸 · Bonferroni q 열 참고 — q<0.05 인 칸 %d)" % (len(R), int((R.q < 0.05).sum())))
+    P("   none")
+P("   (%d cells tested, see the Bonferroni q column; cells with q<0.05 %d)" % (len(R), int((R.q < 0.05).sum())))
 
 # ---------------- the tissue comparison, LCL against PBMC in the same individual ----------------
 P()
@@ -136,11 +136,11 @@ for col, nm in (("b", "전체 β"), ("gene_sp", "gene−sp"), ("gene", "유전�
     a = PT[(col, "LCL")]; b = PT[(col, "PBMC")]
     d = a - b
     w = stats.wilcoxon(a, b)
-    P("   %-14s LCL %+.4f · PBMC %+.4f · Δ(LCL−PBMC) 중앙 %+.4f · LCL 더 낮음 %d/%d · 윌콕슨 p %.4f"
+    P("   %-14s LCL %+.4f, PBMC %+.4f, Δ(LCL−PBMC) median %+.4f, LCL lower %d/%d, Wilcoxon p %.4f"
       % (nm, a.median(), b.median(), d.median(), int((d < 0).sum()), len(d), w.pvalue))
 P()
-P("   ※ LCL 은 EBV 로 불멸화한 세포주 이고 PBMC 는 1 차세포다. 같은 사람에서 비교하므로")
-P("     개체 차이는 지워진다. 조직 차이인지 불멸화 효과 인지는 이 자료만으로 못 가른다.")
+P("   note: LCL is an EBV-immortalized cell line and PBMC is primary cells. The comparison is within the same person, so")
+P("     differences between individuals cancel out. These data alone cannot tell a tissue difference from an immortalization effect.")
 P()
-P("[저장] ZSS_SAMPLE.tsv · ZSS_TEST.tsv · ZSS_TISSUE_PERSON.tsv")
+P("[saved] ZSS_SAMPLE.tsv, ZSS_TEST.tsv, ZSS_TISSUE_PERSON.tsv")
 LOG.close()

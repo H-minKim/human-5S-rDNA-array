@@ -7,13 +7,13 @@
 #   3) COORDS: array_pos against chromosome coordinate and strand, which is the basis of the orientation convention.
 #   4) REFUNITS: the reference unit FASTA per species, plus human CHM13.
 #   Unit-count convention: complete units only, with array_pos 1 the first complete unit, as in v11. The partial units at either end are not counted.
-# MIT License · Copyright (c) 2026 Hungmin Kim
+# MIT License. Copyright (c) 2026 Hyungmin Kim
 import csv
 import glob
 import io
 import os
 
-R = "$RDNA_OTHERSP_DIR/data_v2/"
+R = os.environ["RDNA_OTHERSP_DIR"] + "/data_v2/"
 OUT = R + "14_ape_unit_variants/"
 os.makedirs(OUT, exist_ok=True)
 T = "\t"
@@ -72,4 +72,4 @@ for L in io.open(R + "02_reference_units/REFERENCE_UNITS_ALL.fa", encoding="utf8
     if name in APES or name == "human_CHM13v2":
         keep.append(L.rstrip("\n"))
 io.open(OUT + "APE_REFERENCE_UNITS.fa", "w", encoding="utf8", newline="\n").write("\n".join(keep) + "\n")
-print("READLEVEL %d · CONSENSUS %d · COORDS %d · FASTA %d 줄" % (n1, n2, n3, len(keep)))
+print("READLEVEL %d, CONSENSUS %d, COORDS %d, FASTA %d lines" % (n1, n2, n3, len(keep)))

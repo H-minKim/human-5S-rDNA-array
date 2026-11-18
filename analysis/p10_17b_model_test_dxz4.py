@@ -114,7 +114,7 @@ with io.open(os.path.join(SRC, "P10_FRAME_ALL.tsv"), encoding="utf8") as _f:
                 _TOTB[_g[_j['family']]][int(_t.split(':')[0])] += 1
 CPGB = {fam: {b for b, v in c.items() if v >= 0.10 * max(c.values())}
         for fam, c in _TOTB.items()}
-print('  흔한 칸 : %s' % ' '.join('%s %d' % (k, len(v)) for k, v in sorted(CPGB.items())))
+print('  common bins: %s' % ' '.join('%s %d' % (k, len(v)) for k, v in sorted(CPGB.items())))
 
 
 def _complete(g, ix):
@@ -151,7 +151,7 @@ with io.open(os.path.join(SRC, "P10_FRAME_ALL.tsv"), encoding="utf8") as f:
             continue
         U[fam].append((int(g[ix["n_meth"]]), n, N + 1 - d, d, g[ix["sample"]], g[ix["hap"]]))
 for fam in FAMS:
-    print("  %-9s 유닛 %s" % (fam, format(len(U[fam]), ",")))
+    print("  %-9s units %s" % (fam, format(len(U[fam]), ",")))
 
 # ---------------- the DXZ4 chromosome state, taken from the sex table and not from a threshold on the data
 mn = collections.defaultdict(lambda: [0, 0])
@@ -189,13 +189,13 @@ def run(test, fam, rows, bands, names, scope):
             K.append(r[0]); N.append(r[1]); BI.append(b)
     B = len(names)
     if len(K) < 200 or len(set(BI)) < 3:
-        print("    %-9s %-22s (표본 부족 : 유닛 %d · 구간 %d)" % (fam, scope, len(K), len(set(BI))))
+        print("    %-9s %-22s (sample too small: units %d, intervals %d)" % (fam, scope, len(K), len(set(BI))))
         return
     d, m0, m1, rhoM, rhoS, muS, wM, flip = fit(K, N, BI, B)
     w = [(1 - x) if flip else x for x in wM]
     win = "M (mixture ratio)" if d > 0 else "S (level shift)"
     det = ";".join("%s:w=%.3f:mu=%.3f" % (names[i], w[i], muS[i]) for i in range(B))
-    print("    %-9s %-22s 유닛 %6d  dBIC %+9.1f  -> %-18s  M %.3f/%.3f (gap %.3f)  S %.3f-%.3f"
+    print("    %-9s %-22s units %6d  dBIC %+9.1f  -> %-18s  M %.3f/%.3f (gap %.3f)  S %.3f-%.3f"
           % (fam, scope, len(K), d, win, m0, m1, m1 - m0, min(muS), max(muS)))
     LINES.append("%s\t%s\t%s\t%d\t%d\t%.1f\t%s\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%s"
                  % (test, fam, scope, len(K), B, d, win, m0, m1, m1 - m0, rhoM, rhoS,
@@ -204,7 +204,7 @@ def run(test, fam, rows, bands, names, scope):
 
 print()
 print("=" * 118)
-print("[A] array 안 — 위치 구간이 band   (ΔBIC > 0 = M 섞임비율 · < 0 = S 수준이동)")
+print("[A] within array: position interval is the band   (ΔBIC > 0 = M mixing ratio, < 0 = S level shift)")
 print("=" * 118)
 for fam in FAMS:
     bs = BANDS_POS[fam]
@@ -224,7 +224,7 @@ for fam in FAMS:
 
 print()
 print("=" * 118)
-print("[B] 염색체 사이 — 염색체가 band   (DXZ4 의 '전체 메틸이 계단처럼 오른다' 는 여기에 해당)")
+print("[B] between chromosomes: chromosome is the band   (the DXZ4 'overall methylation rises like a staircase' belongs here)")
 print("=" * 118)
 for fam in FAMS:
     chs = sorted({(r[4], r[5]) for r in U[fam]})
@@ -238,4 +238,4 @@ for fam in FAMS:
 io.open(os.path.join(OUT, "MODEL_TEST_ALL6.tsv"), "w", encoding="utf8",
         newline="\n").write("\n".join(LINES) + "\n")
 print()
-print("쓴 표 : %s" % os.path.join(OUT, "MODEL_TEST_ALL6.tsv"))
+print("table written: %s" % os.path.join(OUT, "MODEL_TEST_ALL6.tsv"))

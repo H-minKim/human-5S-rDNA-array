@@ -3,7 +3,7 @@
 #   The two types differ at 9 positions, 22 to 53. Only the k-mers unique to one type (k = 15) are kept and matched against the read on both strands.
 #   A read carrying unique k-mers of both types is counted separately as ambiguous.
 #   Arguments: the maximum number of reads, then run:label:url [run:label:url ...]
-# MIT License · Copyright (c) 2026 Hungmin Kim
+# MIT License. Copyright (c) 2026 Hyungmin Kim
 import gzip
 import io
 import sys
@@ -69,7 +69,7 @@ for arg in sys.argv[2:]:
                 break
         resp.close()
     except Exception as e:
-        print("%s\t오류 %s" % (lab, e))
+        print("%s\terror %s" % (lab, e))
         continue
     fr = "%.3f" % (m / float(m + s)) if (m + s) else "-"
     print("%s\t%d\t%d\t%d\t%d\t%d\t%s" % (lab, n, anyc, m, s, amb, fr))

@@ -19,8 +19,8 @@ scp $O "$P/ath_claim.sh" "$P/ath_finalize.sh" "$P/ath_dorado.sh" ubuntu@$A:~/xsp
 for n in W B; do scp $O "$P/ath_dorado.sh" ubuntu@${HOST[$n]}:~/xsp/ath/; done
 fdone() {
   case $1 in
-    W) ssh $S ubuntu@${HOST[W]} 'grep -c "재콜링 끝" ~/xsp/zfont/dorado_w3.log 2>/dev/null' ;;
-    B) ssh $S ubuntu@${HOST[B]} 'grep -c "재콜링 끝" ~/xsp/zfont/dorado_b.log 2>/dev/null' ;;
+    W) ssh $S ubuntu@${HOST[W]} 'grep -c "re-basecalling finished" ~/xsp/zfont/dorado_w3.log 2>/dev/null' ;;
+    B) ssh $S ubuntu@${HOST[B]} 'grep -c "re-basecalling finished" ~/xsp/zfont/dorado_b.log 2>/dev/null' ;;
   esac
 }
 cores() {
@@ -32,7 +32,7 @@ cores() {
   esac
 }
 while true; do
-  sd=$(ssh $S ubuntu@$A 'grep -c "전체 끝" ~/xsp/ath/stream_full.log 2>/dev/null')
+  sd=$(ssh $S ubuntu@$A 'grep -c "full run done" ~/xsp/ath/stream_full.log 2>/dev/null')
   sd=${sd:-0}
   none=0
   for n in A W B; do
@@ -43,7 +43,7 @@ while true; do
         if [ "$n" != A ]; then
           ssh $S ubuntu@$h "tar cf - -C ~/xsp/ath/bc $id.bam $id.bam.bai $id.done" | ssh $R ubuntu@$A 'tar xf - -C ~/xsp/ath/bc'
         fi
-        echo "$(date -u +%H:%M) $n $id 끝 : $(ssh $S ubuntu@$A "cat ~/xsp/ath/bc/$id.done")"
+        echo "$(date -u +%H:%M) $n $id done : $(ssh $S ubuntu@$A "cat ~/xsp/ath/bc/$id.done")"
         RUN[$n]=""
       else
         continue
@@ -60,7 +60,7 @@ while true; do
       ssh $S ubuntu@$A "tar cf - -T ~/xsp/ath/batch/$id.txt ~/xsp/ath/batch/$id.txt 2> /dev/null" | ssh $R ubuntu@$h 'mkdir -p ~/xsp/ath/sub ~/xsp/ath/batch ~/xsp/ath/bc && tar xf - -C /'
     fi
     ssh $S ubuntu@$h "setsid nohup bash ~/xsp/ath/ath_dorado.sh ~/xsp/ath/batch/$id.txt $c $id > ~/xsp/ath/dorado_$id.log 2>&1 < /dev/null &"
-    echo "$(date -u +%H:%M) $n $id 기동 · 코어 $c · 조각 $(ssh $S ubuntu@$A "wc -l < ~/xsp/ath/batch/$id.txt") · 흘려받기끝=$sd"
+    echo "$(date -u +%H:%M) $n $id launched, cores $c, chunks $(ssh $S ubuntu@$A "wc -l < ~/xsp/ath/batch/$id.txt"), streaming done=$sd"
     RUN[$n]=$id
   done
   if [ "$sd" -ge 1 ] && [ -z "${RUN[A]}${RUN[W]}${RUN[B]}" ]; then
@@ -70,9 +70,9 @@ while true; do
     fi
     ssh $S ubuntu@$A "setsid nohup bash ~/xsp/ath/ath_dorado.sh ~/xsp/ath/batch/$left.txt 2-15 $left > ~/xsp/ath/dorado_$left.log 2>&1 < /dev/null &"
     RUN[A]=$left
-    echo "$(date -u +%H:%M) A $left 기동 (나머지)"
+    echo "$(date -u +%H:%M) A $left launched (remainder)"
   fi
   sleep 60
 done
-echo "== 모든 묶음 끝 $(date -u +%H:%M) UTC"
-ssh $S ubuntu@$A 'echo "맡긴 조각 $(wc -l < ~/xsp/ath/batch/claimed.txt) · 남김 read 있는 멤버 $(awk -F"\t" "NF>=5 && \$5>0" ~/xsp/ath/members.tsv | wc -l)"; bash ~/xsp/ath/ath_finalize.sh > ~/xsp/ath/final.log 2>&1; cat ~/xsp/ath/final.log'
+echo "== all batches done $(date -u +%H:%M) UTC"
+ssh $S ubuntu@$A 'echo "claimed chunks $(wc -l < ~/xsp/ath/batch/claimed.txt), members with kept read $(awk -F"\t" "NF>=5 && \$5>0" ~/xsp/ath/members.tsv | wc -l)"; bash ~/xsp/ath/ath_finalize.sh > ~/xsp/ath/final.log 2>&1; cat ~/xsp/ath/final.log'

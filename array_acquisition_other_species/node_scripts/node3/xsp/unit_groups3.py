@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 # Are the units within an array of one type or several? Version 3.
 #   The criterion: do variant events that lie far apart travel together as a block?
-#     · One type: the variants are scattered independently across units, with no association.
-#     · Several types: distant events appear together in the same units, a strong association.
+#     - One type: the variants are scattered independently across units, with no association.
+#     - Several types: distant events appear together in the same units, a strong association.
 #   Adjacent positions are collapsed into one event, at a gap of at most EVGAP:
-#     · counting variants clustered in a narrow interval, such as 27 within 1397-1527, which is one diverged stretch, as 27 variants
+#     - counting variants clustered in a narrow interval, such as 27 within 1397-1527, which is one diverged stretch, as 27 variants
 #       promotes a single event to a block.
 #   method
 #     1) A polymorphic variant is one present in 10-90% of units.
@@ -14,7 +14,7 @@
 #     5) Positional clustering: are the groups contiguous along the array (zonation) or interleaved (unit types)?
 #   No call is made with fewer than 20 units.
 #   Arguments: species key, fasta, map folder, output folder, [shuffles = 50], [EVGAP = 20].
-# MIT License · Copyright (c) 2026 Hungmin Kim
+# MIT License. Copyright (c) 2026 Hyungmin Kim
 import io
 import os
 import re
@@ -125,7 +125,7 @@ for fn in sorted(os.listdir(MAPD)):
                      "largest_group_pct": "100.0",
                      "note": "다형성 사건 %d 개뿐(변이 %d)" % (n_events(poly), len(poly))})
         w(base)
-        print("%s : 유닛 %d · 다형성 변이 %d/사건 %d -> 한 종류" % (aid, n, len(poly), n_events(poly)))
+        print("%s : units %d, polymorphic variants %d/events %d -> one kind" % (aid, n, len(poly), n_events(poly)))
         continue
     cols = [set(i for i in range(n) if v in V[i]) for v in poly]
     bl = blocks(cols, poly, n)
@@ -142,7 +142,7 @@ for fn in sorted(os.listdir(MAPD)):
         base.update({"verdict": "한 종류(연관 블록 없음)", "n_groups": 1, "group_sizes": n,
                      "largest_group_pct": "100.0", "note": "변이는 있으나 떨어진 사건끼리 묶이지 않는다"})
         w(base)
-        print("%s : 유닛 %d · 다형성 변이 %d/사건 %d · 블록 0 (귀무 %.1f) -> 한 종류"
+        print("%s : units %d, polymorphic variants %d/events %d, blocks 0 (null %.1f) -> one kind"
               % (aid, n, len(poly), n_events(poly), nm))
         continue
     bl.sort(key=lambda b: -n_events([poly[k] for k in b]))
@@ -211,7 +211,7 @@ for fn in sorted(os.listdir(MAPD)):
                  "largest_group_pct": "%.1f" % (100.0 * sizes[0] / n),
                  "note": "유닛파일 " + ",".join(files)})
     w(base)
-    print("%s : 유닛 %d · 다형성 변이 %d/사건 %d · 블록 사건수 %s (귀무 %.1f) -> 그룹 %d %s · 위치응집 %.2f p=%.3f"
+    print("%s : units %d, polymorphic variants %d/events %d, block event counts %s (null %.1f) -> groups %d %s, positional clustering %.2f p=%.3f"
           % (aid, n, len(poly), n_events(poly), [n_events([poly[k] for k in b]) for b in bl], nm,
              len(grp), sizes, ratio, pv))
 SUM.close()

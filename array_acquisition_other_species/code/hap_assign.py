@@ -9,7 +9,7 @@
 #     group B: at least ANCHOR bp of flank on at least one side.
 #   It also counts whether the reads landing on the maternal and paternal copies split evenly, which would be the mark of the aligner dividing them arbitrarily.
 #   Arguments: bam, chrom, array start, array end, label, [ANCHOR = 1000].
-# MIT License · Copyright (c) 2026 Hungmin Kim
+# MIT License. Copyright (c) 2026 Hyungmin Kim
 import sys
 import collections
 import pysam

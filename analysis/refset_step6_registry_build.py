@@ -10,7 +10,7 @@
 #     the map 08_versions/v11/03_maps/g8canonv10/CONSENSUS_SUM_G8_full.tsv, for the unit count, bp, revcomp and n_break;
 #     08_versions/v11/12_flank/tests/FLANK_FINAL2.tsv, for the measured flanks on both sides;
 #     read   08_versions/v11/08_methylation/raw/METH_READUNIT_*_{ao,jx}.tsv.gz (placed reads, methylation, data source)
-#     QC     v11_readvar/02_tables/SLOT_QC.tsv                (gate·depth·eligible)
+#     QC     v11_readvar/02_tables/SLOT_QC.tsv                (gate, depth, eligible)
 #     03_result_tables/2026-09-07_map_test/JXHIFI_ALL.tsv.gz, for the HiFi consensus test;
 #     v11_readvar/09_inventory/hprc_r2_phasing_meta.csv, for the public release 2 assemblies.
 import io
@@ -80,7 +80,7 @@ for p in sorted(glob.glob(os.path.join(V, r"08_methylation\raw\METH_READUNIT_*.t
         reads[k][tag].add(r[kx["read_id"]])
         runits[k][tag] += 1
         dsrc[k][r[kx["data_source"]]] += 1
-    print("  읽음 %s" % os.path.basename(p), flush=True)
+    print("  read %s" % os.path.basename(p), flush=True)
 
 # ── SLOT_QC
 QC = {}
@@ -163,7 +163,7 @@ with io.open(p1, "w", encoding="utf8", newline=NL) as g:
     g.write(TAB.join(COLS) + NL)
     for r in rows:
         g.write(TAB.join(str(x) for x in r) + NL)
-print("하플로타입 표 %d 행 → %s" % (len(rows), os.path.basename(p1)))
+print("haplotype table %d rows -> %s" % (len(rows), os.path.basename(p1)))
 
 # -- per individual
 bysmp = collections.defaultdict(list)
@@ -196,4 +196,4 @@ with io.open(p2, "w", encoding="utf8", newline=NL) as g:
     g.write(TAB.join(C2) + NL)
     for r in srows:
         g.write(TAB.join(str(x) for x in r) + NL)
-print("개체 표 %d 행 → %s" % (len(srows), os.path.basename(p2)))
+print("individual table %d rows -> %s" % (len(srows), os.path.basename(p2)))

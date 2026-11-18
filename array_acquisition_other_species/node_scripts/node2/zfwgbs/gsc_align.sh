@@ -10,7 +10,7 @@ mkdir -p gsc/fq gsc/bam gsc/log tmp
 LIST=$1
 guard () {
   F=$(df --output=avail -BG / | tail -1 | tr -dc '0-9')
-  if [ "$F" -lt 25 ]; then echo "STOP — 디스크 여유 ${F}G"; exit 1; fi
+  if [ "$F" -lt 25 ]; then echo "STOP: free disk ${F}G"; exit 1; fi
 }
 while IFS=$'\t' read -r R NAME URL; do
   [ -z "$R" ] && continue

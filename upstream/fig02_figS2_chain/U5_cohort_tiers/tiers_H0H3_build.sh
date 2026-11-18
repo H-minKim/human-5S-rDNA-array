@@ -16,9 +16,9 @@ for s,p in F.items():
         g=g[g["slot"].isin(["1","2"])]
         if len(g)==0: continue
         C[(s,c)]=set(g["sample"]+"|"+g["slot"]); n+=1
-    print(f"{s:8s} 코호트 {n:2d} · 행 {len(t):5d} · 열 {list(t.columns)}")
+    print(f"{s:8s} cohorts {n:2d}, rows {len(t):5d}, columns {list(t.columns)}")
 pickle.dump(C,open("coh.pkl","wb"))
-print(f"\n적재 {len(C)} 코호트")
+print(f"\nloaded {len(C)} cohorts")
 for (s,c),v in sorted(C.items(), key=lambda x:(x[0][0],-len(x[1]))):
     ns=len({k.split('|')[0] for k in v})
     print(f"  {s:8s} {c:36s} {len(v):4d} / {ns:4d}")
@@ -38,9 +38,9 @@ rows=[{"tier":t,"sample":k.split("|")[0],"slot":k.split("|")[1],
        "canon_source":idx.at[k,"canon_source"],"qc_eligible":idx.at[k,"qc_eligible"]}
       for t in ["H0","H1","H2","H3"] for k in sorted(H[t])]
 d=pd.DataFrame(rows); d.to_csv("TIERS.tsv",sep="\t",index=False,encoding="utf-8",lineterminator="\n")
-print(f"행 {len(d)}")
+print(f"rows {len(d)}")
 for t in ["H0","H1","H2","H3"]:
     g=d[d["tier"].eq(t)]; p=g.groupby("sample")["slot"].nunique()
-    print(f"   {t} 슬롯 {len(g):4d} · 개체 {g['sample'].nunique():4d} · 짝 {int((p==2).sum()):4d}")
+    print(f"   {t} slots {len(g):4d}, individuals {g['sample'].nunique():4d}, pairs {int((p==2).sum()):4d}")
 PYEOF
 cp TIERS.tsv "$RDNA_DATA_ROOT/rDNA_registry/registry/TIERS_H0H3_SLOTS_2026-10-05.tsv" && md5sum TIERS.tsv && cd "$RDNA_DATA_ROOT/rDNA_registry/registry" && md5sum TIERS_H0H3_SLOTS_2026-10-05.tsv

@@ -4,7 +4,7 @@
 #   Methylation: the call count and fraction for CpG, or CG, CHG and CHH in the plant, from those same array summaries.
 #   Outputs: PLACEMENT_METH_REPORT.tsv, by species, sample and context, with a per-species summary printed to the terminal.
 #   Argument: the data_v2 folder.
-# MIT License · Copyright (c) 2026 Hungmin Kim
+# MIT License. Copyright (c) 2026 Hyungmin Kim
 import io
 import os
 import sys

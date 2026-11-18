@@ -171,7 +171,7 @@ for refs, r in G["bam_records"](bam):
 D = pd.DataFrame([(k[0], k[1], k[2], k[3], *v) for k, v in acc.items()],
                  columns=["read_id", "array_id", "array_pos", "context", "n_calls", "n_5mC", "n_calls_gene", "n_5mC_gene"])
 D.to_csv(OUT + "/tables/ATH_READUNIT_CONTEXT.tsv.gz", sep="\t", index=False, compression="gzip")
-P("애기장대 BAM 기록 %d · 통계 %s · 행 %d" % (STAT["rec"], dict(STAT), len(D)))
+P("Arabidopsis BAM records %d, stats %s, rows %d" % (STAT["rec"], dict(STAT), len(D)))
 
 # ---- check against the existing read_unit.tsv, per context
 old = pd.read_csv(glob.glob(B + "/03_reads/%s/*.read_unit.tsv*" % SP)[0], sep="\t")
@@ -181,7 +181,7 @@ for c in ["CG", "CHG", "CHH"]:
     M = o.merge(n, on=["read_id", "array_id", "array_pos"], how="inner", suffixes=("_old", ""))
     same = ((M.n_calls_old == M.n_calls) & (M.n_5mC_old == M.n_5mC)).mean()
     near = ((M.n_calls_old - M.n_calls).abs() <= 1).mean()
-    P("  검산 %-3s : 옛 %d · 새 %d · 공통 %d · 완전일치 %.4f · 호출수 차 <=1 %.4f · 옛 평균 β %.3f / 새 %.3f"
+    P("  check %-3s: reference %d, new %d, shared %d, exact match %.4f, call-count difference <=1 %.4f, reference mean β %.3f / new %.3f"
       % (c, len(o), len(n), len(M), same, near, (M.n_5mC_old / M.n_calls_old).mean(), (M.n_5mC / M.n_calls).mean()))
 P()
 
@@ -214,7 +214,7 @@ for (aid, c), g in D.groupby(["array_id", "context"]):
         PANEL[(aid, c, part)] = (x, r)
 T = pd.DataFrame(ROWS)
 T.to_csv(OUT + "/tables/ATH_CONTEXT_PERARRAY.tsv", sep="\t", index=False, float_format="%.5f")
-P("  array                          유닛x개수  문맥  구간     read-유닛  호출중앙  평균   sd    10%%-90%%     과분산  봉1  봉2  골비  소수쪽  판정")
+P("  array                          unit_x_n  context  interval     read-units  call_median  mean   sd    10%%-90%%     overdispersion  peak1  peak2  trough_ratio  minor_side  verdict")
 order = T.groupby("array_id").n.max().sort_values(ascending=False).index.tolist()
 for aid in order:
     for r in T[T.array_id == aid].sort_values(["context", "part"], ascending=[True, False]).itertuples(index=False):
@@ -223,7 +223,7 @@ for aid in order:
              r.sd, r.q10, r.q90, r.od, r.peak1, ("%.2f" % r.peak2) if r.peak2 == r.peak2 else "  - ",
              ("%.2f" % r.trough_ratio) if r.trough_ratio == r.trough_ratio else "  - ", r.minor_mass, r.call))
 P()
-P("  판정 집계")
+P("  verdict tally")
 for (c, part), gg in T.groupby(["context", "part"]):
     P("   %-4s %-7s : %s" % (c, part, " · ".join("%s %d" % (k, v) for k, v in gg.call.value_counts().items())))
 
@@ -255,5 +255,5 @@ for part in ["전체", "coding"]:
     fig.tight_layout(rect=[0, 0.01, 1, 0.975])
     fig.savefig(OUT + "/figures/Fig_ath_context_%s.png" % part)
     plt.close(fig)
-    P("  저장 : figures/Fig_ath_context_%s.png" % part)
+    P("  saved: figures/Fig_ath_context_%s.png" % part)
 LOG.close()

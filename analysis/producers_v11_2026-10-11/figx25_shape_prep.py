@@ -68,7 +68,7 @@ _TI = pd.read_csv(os.path.join(S, "02_tables", "TIERS_H0H3_SLOTS_2026-10-05.tsv"
 _H2 = set(_TI[_TI.tier == "H2"]["sample"] + "|" + _TI[_TI.tier == "H2"]["slot"])
 _before = R[R.fam == "HPRC"].hap.nunique()
 R = R[(R.fam != "HPRC") | (R.hap.isin(_H2))].copy()
-print("[H2 관문] HPRC 하플로 %d -> %d (대장 H2 %d) · 1kGP·GIAB 는 층 없어 그대로"
+print("[H2 gate] HPRC haplotypes %d -> %d (registry H2 %d); 1kGP and GIAB have no tier, kept as is"
       % (_before, R[R.fam == "HPRC"].hap.nunique(), len(_H2)))
 U = R.groupby(["fam", "sample", "hap", "ap", "N"], as_index=False).b.mean()
 U["ad"] = U.N - U.ap + 1
@@ -146,7 +146,7 @@ B.rename(columns={"자료원": "source", "하플로타입": "haplotypes", "개�
          ).to_csv(os.path.join(HERE, "FIGX25_BIMODAL.tsv"), sep="\t", index=False)
 pd.DataFrame(curves).to_csv(os.path.join(HERE, "FIGX25_DENSITY.tsv"), sep="\t", index=False)
 pd.set_option("display.width", 240)
-print("## ⑴ 유닛 β 가 이봉인가 (자료원마다)")
+print("## (1) Is unit β bimodal (per data source)")
 print(B.to_string(index=False))
 print()
 
@@ -161,7 +161,7 @@ obs = U.groupby(["fam", "hap"]).ap.max().rename("obs_max").reset_index()
 U2 = U.merge(obs, on=["fam", "hap"])
 U2["_ok"] = U2.obs_max == U2.N
 
-print("   근위 끝을 쓸 수 있는 하플로타입 : " +
+print("   haplotypes whose proximal end is usable: " +
       " · ".join("%s %d / %d" % (f, U2[(U2.fam == f) & U2._ok].hap.nunique(),
                                  U2[U2.fam == f].hap.nunique()) for f in FAMS))
 
@@ -186,20 +186,20 @@ for f in FAMS:
 PR = pd.DataFrame(prof)
 PR.to_csv(os.path.join(HERE, "FIGX25_PROFILE.tsv"), sep="\t", index=False, float_format="%.5f")
 print()
-print("## ⑵ 원위 끝에서 센 자리별 평균 β (끝 1-10)")
+print("## (2) Mean β by position counted from the distal end (end 1-10)")
 print(PR[(PR.쪽 == "원위") & (PR.거리 <= 10)]
       .pivot_table(index="거리", columns="fam", values="mean").round(3).to_string())
 print()
-print("## 근위 끝에서 센 자리별 평균 β (끝 1-10)")
+print("## Mean β by position counted from the proximal end (end 1-10)")
 print(PR[(PR.쪽 == "근위") & (PR.거리 <= 10)]
       .pivot_table(index="거리", columns="fam", values="mean").round(3).to_string())
 print()
-print("## 가운데")
+print("## Interior")
 print(PR[PR.쪽 == "가운데"][["fam", "n_unit", "n_hap", "mean"]].round(3).to_string(index=False))
 
 # Do the profiles resemble each other: a correlation per pair of data sources.
 print()
-print("## ⑶ 윤곽이 닮았나 (끝 1-20 의 평균 β 를 자료원끼리 상관)")
+print("## (3) Are the profiles similar (correlation between data sources of mean β at end 1-20)")
 for side in ("원위", "근위"):
     w = PR[(PR.쪽 == side) & (PR.거리 <= EDGE)].pivot_table(index="거리", columns="fam",
                                                           values="mean")
@@ -211,4 +211,4 @@ for side in ("원위", "근위"):
             out.append("%s-%s rho %+.3f (n %d)" % (x, y, m[x].corr(m[y], method="spearman"), len(m)))
     print("   %-4s : %s" % (side, " · ".join(out)))
 print()
-print("[끝] FIGX25_UNIT · FIGX25_BIMODAL · FIGX25_DENSITY · FIGX25_PROFILE")
+print("[done] FIGX25_UNIT, FIGX25_BIMODAL, FIGX25_DENSITY, FIGX25_PROFILE")

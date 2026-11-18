@@ -2,13 +2,13 @@
 # The summary of stage 07, with a diagnostic for systematic disagreement.
 #
 #   Where the read consensus differs from the assembly, two cases must be separated:
-#     · scattered disagreement is noise, called in only a few units at any one position;
-#     · systematic disagreement means the assembly, or the reference unit, is wrong at that position, or the reads are from a different lineage,
+#     - scattered disagreement is noise, called in only a few units at any one position;
+#     - systematic disagreement means the assembly, or the reference unit, is wrong at that position, or the reads are from a different lineage,
 #       and the same position is then called in almost every unit.
 #   The measure: per read-only variant position, the median of the number of units it was called in over the total number of units, as systematic_frac.
 #          At 0.5 or above it counts as systematic (measured: 0.9 for the siamang, 0.08 for the gorilla).
 #   Arguments: the stage 07 folder and the output file.
-# MIT License · Copyright (c) 2026 Hungmin Kim
+# MIT License. Copyright (c) 2026 Hyungmin Kim
 import io
 import os
 import sys
@@ -25,7 +25,7 @@ HDR = ["species_key", "sample", "n_units", "depth_median", "n_var_asm", "n_var_c
 o = io.open(OUTF, "w", encoding="utf8", newline=NL)
 o.write(TAB.join(HDR) + NL)
 print("%-22s %-14s %6s %6s %8s %8s %7s %7s %6s %s"
-      % ("종", "샘플", "유닛", "깊이", "조립본", "합의", "일치", "엄격", "체계", "판정"))
+      % ("종", "샘플", "유닛", "깊이", "조립본", "합의", "일치", "strict", "체계", "판정"))
 for f in sorted(glob.glob(os.path.join(D, "*.unit_consensus.tsv"))):
     b = os.path.basename(f)[:-len(".unit_consensus.tsv")]
     sp, sam = b.split("__", 1)

@@ -10,4 +10,4 @@ done
 mkdir -p $X/g8s/md_arabidopsis_ColCC $X/g8reads/arabidopsis_ColCC
 cp $X/g8s/g8map/arabidopsis_ColCC__*.g8map.tsv $X/g8s/md_arabidopsis_ColCC/ 2>/dev/null
 python3 $X/units_matrix_g8.py --fa $X/asm/arabidopsis_ColCC.fna --mapdir $X/g8s/md_arabidopsis_ColCC --samples ColCC_ATRun3 --bam "$X/ath/final/{s}.5S.bam" --meth "$X/ath/final/{s}.5S.reads.tsv" --out $X/g8reads/arabidopsis_ColCC
-echo "node1 끝 $(date -u +%H:%M) UTC"
+echo "node1 done $(date -u +%H:%M) UTC"

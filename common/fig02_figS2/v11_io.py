@@ -76,9 +76,9 @@ assert len(_ctx) == 2640, len(_ctx)
 CAN = _ctx[200:2440]
 assert len(CAN) == 2240
 # Sequence-level check (on the sequence itself, not the file md5)
-assert CAN[2121:2141] == "GTCTACGGCCATACCACCCT", "유전자부 시작이 다르다"
-assert CAN[:20] == "TTTTCTTTGGCTTTTTGCTG", "유닛 앞머리가 다르다"
-assert CAN[2204] == "T" and CAN[2234] == "T", "U84C/2235 자리 염기가 다르다"
+assert CAN[2121:2141] == "GTCTACGGCCATACCACCCT", "gene region start differs"
+assert CAN[:20] == "TTTTCTTTGGCTTTTTGCTG", "unit head differs"
+assert CAN[2204] == "T" and CAN[2234] == "T", "base at position U84C/2235 differs"
 
 # Repeat blocks - rule from poscat.py lines 17-29
 _runs = []
@@ -98,7 +98,7 @@ G8TOK = re.compile(r"^(\d+)(?:([ACGTN])|D(\d+)|I(\d+))$")
 def to_v4(t):
     """G8 token -> old v4 token (repeat-block indels are merged by block number). None if alt=N."""
     m = G8TOK.match(t)
-    if not m: raise ValueError("토큰 형식 아님: %r" % t)
+    if not m: raise ValueError("not a token format: %r" % t)
     p = int(m.group(1))
     if m.group(2):
         x = m.group(2)
@@ -149,13 +149,13 @@ def tier_slots(tier, check_md5=True):
     if tier in _TIER_CACHE: return _TIER_CACHE[tier]
     if check_md5:
         got = md5(TIERF)
-        if got != TIER_MD5: raise RuntimeError("층 명단 md5 불일치 %s (기대 %s)" % (got, TIER_MD5))
+        if got != TIER_MD5: raise RuntimeError("tier list md5 mismatch %s (expected %s)" % (got, TIER_MD5))
     hd = None; out = set()
     for L in io.open(TIERF, encoding="utf8"):
         f = L.rstrip("\n").split("\t")
         if hd is None: hd = {c: i for i, c in enumerate(f)}; continue
         if f[hd["tier"]] == tier: out.add((f[hd["sample"]], f[hd["slot"]]))
-    if not out: raise RuntimeError("층 %s 가 명단에 없다" % tier)
+    if not out: raise RuntimeError("tier %s is not in the list" % tier)
     _TIER_CACHE[tier] = out
     return out
 
@@ -165,7 +165,7 @@ def load(preset="primary", check_md5=True, verbose=True, **kw):
     if check_md5:
         for p, h in ((MAPF, MAP_MD5), (SUMF, SUM_MD5)):
             got = md5(p)
-            if got != h: raise RuntimeError("md5 불일치 %s : %s (기대 %s)" % (p, got, h))
+            if got != h: raise RuntimeError("md5 mismatch %s: %s (expected %s)" % (p, got, h))
     SUM, STAGE, COH, SH = slot_tables()
     sc = opt.get("stage_col", "stage")
     si = 0 if sc == "stage" else 1
@@ -198,7 +198,7 @@ def load(preset="primary", check_md5=True, verbose=True, **kw):
         pol = opt.get("polarity", "genomic")
         if pol == "genomic":  gp, gd = N - apos + 1, apos
         elif pol == "g8":     gp, gd = apos, N - apos + 1
-        else: raise ValueError("polarity 는 genomic 또는 g8")
+        else: raise ValueError("polarity is genomic or g8")
         stg = STAGE.get((s, sl), ("?", "?"))
         U[(s, sl)].append((gp, gd, N, np.nan, vs, -1,
                            dict(verify=v, raw=raw, stage=stg[0], stage_rep=stg[1],
@@ -215,13 +215,13 @@ def load(preset="primary", check_md5=True, verbose=True, **kw):
                 n_blocks=len(BLOCKS), block_bp=sum(b_ - a_ + 1 for a_, b_ in BLOCKS),
                 polarity_check=dict(u84c_r0_le3=fa, u84c_r1_le3=fb))
     if verbose:
-        print("[v11_io %s · 극성 %s · 단계열 %s] 개체 %d · 슬롯 %d · UNIT %d   (반복블록 %d 개 %d bp)" % (
+        print("[v11_io %s, polarity %s, stage column %s] individuals %d, slots %d, UNIT %d   (repeat blocks %d, %d bp)" % (
             preset, META["polarity"], sc, META["n_samples"], META["n_slots"], n,
             META["n_blocks"], META["block_bp"]))
-        print("   제외 슬롯:", dict(dslot), " · 제외 유닛:", dict(drop))
-        print("   극성 점검: U84C 보유율 r[0](근위)<=3 %.3f · r[1](원위)<=3 %.3f  %s" % (
-            fa, fb, ("OK — 게놈 극성과 일치" if (META["polarity"] == "genomic" and fa > fb)
-                     else ("G8 이름표 그대로" if META["polarity"] == "g8" else "경고: 게놈 극성과 반대"))))
+        print("   excluded slots:", dict(dslot), " , excluded units:", dict(drop))
+        print("   polarity check: U84C carrier rate r[0](proximal)<=3 %.3f, r[1](distal)<=3 %.3f  %s" % (
+            fa, fb, ("OK, matches genome polarity" if (META["polarity"] == "genomic" and fa > fb)
+                     else ("G8 labels as is" if META["polarity"] == "g8" else "경고: 게놈 극성과 반대"))))
     return dict(U), ASM, META
 
 # ---------- methylation ----------
@@ -251,10 +251,10 @@ def load_meth(check_md5=True, min_reads=1, verbose=True, dedup=None):
     """
     how = (dedup or DEDUP_DEFAULT).lower()
     if how not in ("pool", "deep", "last"):
-        raise ValueError("dedup 은 pool · deep · last 중 하나")
+        raise ValueError("dedup is one of pool, deep, last")
     if check_md5:
         got = md5(METHF)
-        if got != METH_MD5: raise RuntimeError("메틸 합본 md5 불일치 : %s" % got)
+        if got != METH_MD5: raise RuntimeError("merged methylation table md5 mismatch: %s" % got)
     G4 = collections.defaultdict(list)          # collect by the 4-column key first (measured to have 0 overlap)
     for f, H in _rows(METHF):
         n = int(f[H["n_reads"]])
@@ -285,10 +285,10 @@ def load_meth(check_md5=True, min_reads=1, verbose=True, dedup=None):
         M[k] = rec
         src[rec["data_source"]] += 1; nr += 1
     if verbose:
-        print("[v11_io 메틸] 합본 %s · 겹친 자리 %d → dedup=%s" % (os.path.basename(METHF), ndup, how))
+        print("[v11_io methylation] merged table %s, duplicated positions %d -> dedup=%s" % (os.path.basename(METHF), ndup, how))
         b = np.array([v["beta_call"] for v in M.values()])
-        print("[v11_io 메틸] 자리 %d · 개체 %d · 하플로타입 %d · read>=%d" % (
+        print("[v11_io methylation] positions %d, individuals %d, haplotypes %d, read>=%d" % (
             nr, len(set(k[0] for k in M)), len(set((k[0], k[1]) for k in M)), min_reads))
-        print("   beta_call 평균 %.4f · 중앙 %.4f · <0.3 %.1f%% · >0.7 %.1f%%" % (
+        print("   beta_call mean %.4f, median %.4f, <0.3 %.1f%%, >0.7 %.1f%%" % (
             b.mean(), np.median(b), 100 * (b < 0.3).mean(), 100 * (b > 0.7).mean()))
     return M

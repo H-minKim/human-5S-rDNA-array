@@ -150,7 +150,7 @@ for smp in sorted(OWN):
         lf = s[max(0, p5 - FL):p5]
         rf = s[p3:p3 + FL]
         new = lf + canon + rf
-        assert new[len(lf):len(lf) + len(canon)] == canon, "정본 손상"
+        assert new[len(lf):len(lf) + len(canon)] == canon, "canonical corrupted"
         io.open(outp, "w", newline=NL).write(
             ">%s|flank5=%d|flank3=%d|src=REASM:%s:%s|id5=%.2f|id3=%.2f%s%s%s"
             % (fn.replace(".fa", ""), len(lf), len(rf), ctg, strand, a5[4], a3[4], NL, new, NL))

@@ -4,7 +4,7 @@
 #   The name and the logic are the same; the only differences are the comments and how the paths are supplied
 #   (DATA_ROOT and TABLE_DIR against _need, string concatenation against os.path.join).
 #   The md5 of the output body, with the # header removed, is the same for both copies,
-#     `FIGX25_BIMODAL` `38ff2f78943a` · `FIGX25_DENSITY` `4012e473da5a` ·
+#     `FIGX25_BIMODAL` `38ff2f78943a`, `FIGX25_DENSITY` `4012e473da5a`
 #     FIGX25_PROFILE at 2151a2cc4d17.
 #   The md5 of the whole file always differs, because the .tsv header carries a date.
 #   Run with the same TABLE_DIR, each copy overwrites the other's table, the names being identical.
@@ -61,7 +61,7 @@ _TI = pd.read_csv(S + "02_tables/TIERS_H0H3_SLOTS_2026-10-05.tsv", sep="	", dtyp
 _H2 = set(_TI[_TI.tier == "H2"]["sample"] + "|" + _TI[_TI.tier == "H2"]["slot"])
 _before = R[R.fam == "HPRC"].hap.nunique()
 R = R[(R.fam != "HPRC") | (R.hap.isin(_H2))].copy()
-print("[H2 관문] HPRC 하플로 %d -> %d (대장 H2 %d) · 1kGP·GIAB 는 층 없어 그대로"
+print("[H2 gate] HPRC haplotypes %d -> %d (ledger H2 %d); 1kGP and GIAB have no tier and are kept as they are"
       % (_before, R[R.fam == "HPRC"].hap.nunique(), len(_H2)))
 U = R.groupby(["fam", "sample", "hap", "ap", "N"], as_index=False).b.mean()
 U["ad"] = U.N - U.ap + 1
@@ -132,7 +132,7 @@ B = pd.DataFrame(rows)
 B.to_csv(os.path.join(HERE, "FIGX25_BIMODAL.tsv"), sep="\t", index=False)
 pd.DataFrame(curves).to_csv(os.path.join(HERE, "FIGX25_DENSITY.tsv"), sep="\t", index=False)
 pd.set_option("display.width", 240)
-print("## ⑴ 유닛 β 가 이봉인가 (자료원마다)")
+print("## (1) is unit β bimodal (per data source)")
 print(B.to_string(index=False))
 print()
 
@@ -141,13 +141,12 @@ print()
 #   so only haplotypes whose largest observed position equals N are used; otherwise the end is unknown.
 # obs_max must be grouped by data source as well as hap (= sample|slot). Grouping by hap alone means that
 #   when the same individual is in both 1kGP and HPRC, rows from the other source supply that individual's array end.
-#   That inflates the 1kGP haplotypes usable at the proximal end to 17 of 18; the correct count is 6 of 18.
 #   A haplotype observed all the way to the end cannot grow in count with distance, so a count that rises is a sign of haplotypes missing their proximal terminal unit.
 obs = U.groupby(["fam", "hap"]).ap.max().rename("obs_max").reset_index()
 U2 = U.merge(obs, on=["fam", "hap"])
 U2["_ok"] = U2.obs_max == U2.N
 
-print("   근위 끝을 쓸 수 있는 하플로타입 : " +
+print("   haplotypes with a usable proximal end: " +
       " · ".join("%s %d / %d" % (f, U2[(U2.fam == f) & U2._ok].hap.nunique(),
                                  U2[U2.fam == f].hap.nunique()) for f in FAMS))
 
@@ -172,20 +171,20 @@ for f in FAMS:
 PR = pd.DataFrame(prof)
 PR.to_csv(os.path.join(HERE, "FIGX25_PROFILE.tsv"), sep="\t", index=False, float_format="%.5f")
 print()
-print("## ⑵ 원위 끝에서 센 자리별 평균 β (끝 1-10)")
+print("## (2) mean β by position counted from the distal end (end 1-10)")
 print(PR[(PR.쪽 == "원위") & (PR.거리 <= 10)]
       .pivot_table(index="거리", columns="fam", values="mean").round(3).to_string())
 print()
-print("## 근위 끝에서 센 자리별 평균 β (끝 1-10)")
+print("## mean β by position counted from the proximal end (end 1-10)")
 print(PR[(PR.쪽 == "근위") & (PR.거리 <= 10)]
       .pivot_table(index="거리", columns="fam", values="mean").round(3).to_string())
 print()
-print("## 가운데")
+print("## interior")
 print(PR[PR.쪽 == "가운데"][["fam", "n_unit", "n_hap", "mean"]].round(3).to_string(index=False))
 
 # Do the profiles resemble each other: a correlation per pair of data sources.
 print()
-print("## ⑶ 윤곽이 닮았나 (끝 1-20 의 평균 β 를 자료원끼리 상관)")
+print("## (3) do the profiles resemble each other (correlation of mean β at end 1-20 between data sources)")
 for side in ("원위", "근위"):
     w = PR[(PR.쪽 == side) & (PR.거리 <= EDGE)].pivot_table(index="거리", columns="fam",
                                                           values="mean")
@@ -197,4 +196,4 @@ for side in ("원위", "근위"):
             out.append("%s-%s rho %+.3f (n %d)" % (x, y, m[x].corr(m[y], method="spearman"), len(m)))
     print("   %-4s : %s" % (side, " · ".join(out)))
 print()
-print("[끝] FIGX25_UNIT · FIGX25_BIMODAL · FIGX25_DENSITY · FIGX25_PROFILE")
+print("[done] FIGX25_UNIT, FIGX25_BIMODAL, FIGX25_DENSITY, FIGX25_PROFILE")

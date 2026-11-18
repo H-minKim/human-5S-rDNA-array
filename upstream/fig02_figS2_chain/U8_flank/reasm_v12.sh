@@ -7,17 +7,17 @@
 #             kept = p_ctg-type gfa converted to fasta + log + lowQ.bed
 #   Arguments : list file (sample<TAB>read path), number of parallel jobs, threads
 set -u
-LIST=${1:?목록}
+LIST=${1:?list}
 NP=${2:-2}
 TH=${3:-12}
 W=~/reasm_v12
 mkdir -p "$W"/out "$W"/log "$W"/tmp
-[ -x ~/hifiasm ] || { echo "$(hostname) hifiasm 없음"; exit 1; }
+[ -x ~/hifiasm ] || { echo "$(hostname) hifiasm not found"; exit 1; }
 
 one() {
   S=$1; Q=$2
   T="$W/tmp/$S"
-  [ -s "$W/out/$S.p_ctg.fa" ] && { echo "  $S 이미 있음"; return; }
+  [ -s "$W/out/$S.p_ctg.fa" ] && { echo "  $S already exists"; return; }
   rm -rf "$T"; mkdir -p "$T"
   t0=$(date +%s)
   ( cd "$T" && timeout 21600 ~/hifiasm --ont -o "$S" -t "$TH" "$Q" ) > "$W/log/$S.log" 2>&1
@@ -35,13 +35,13 @@ one() {
   [ -s "$W/out/$S.bp.p_ctg.fa" ] && cp "$W/out/$S.bp.p_ctg.fa" "$W/out/$S.p_ctg.fa"
   cp "$T"/*.lowQ.bed "$W/out/" 2>/dev/null
   rm -rf "$T"                       # delete intermediate files immediately
-  echo "  $S rc=$rc · $((t1-t0))초 · fasta $n · $(df -h / | tail -1 | awk '{print $4}') 남음"
+  echo "  $S rc=$rc, $((t1-t0))s, fasta $n, $(df -h / | tail -1 | awk '{print $4}') free"
 }
 
 i=0
 while IFS=$'\t' read -r S Q; do
   [ -n "$S" ] || continue
-  [ -s "$Q" ] || { echo "  $S read 없음 $Q"; continue; }
+  [ -s "$Q" ] || { echo "  $S read not found $Q"; continue; }
   one "$S" "$Q" &
   i=$((i+1))
   if [ $((i % NP)) -eq 0 ]; then wait; fi

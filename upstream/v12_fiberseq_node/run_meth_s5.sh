@@ -1,7 +1,7 @@
 #!/bin/bash
-# Extract m6A and CpG at the 5-site threshold, with fsmeth_v12c.py (f1b83605).
+# Extract m6A and CpG at the 5-site threshold, with fsmeth_v12c.py.
 export PATH=$PATH:~/miniconda3/bin:~/bin; cd ~; H=$(hostname)
-for d in ~/fsmeth_v12c ~/pbmeth_v12d ~/pbft_v12b; do [ -e $d ] && { echo "이미 있음 $d"; exit 1; }; done
+for d in ~/fsmeth_v12c ~/pbmeth_v12d ~/pbft_v12b; do [ -e $d ] && { echo "already exists $d"; exit 1; }; done
 D=~/aog8v12fs3 CFG=AOJV_FS LABEL=UCSC_ONT_FIBERSEQ OUT=~/fsmeth_v12c FINAL="~/fsfinal_v12c/AO_G8_UNITS_$H.final.tsv" python3 ~/fsmeth_v12c.py > ~/fsmeth_v12c.run.log 2>&1
 D=~/aog8v12pb2 CFG=AOJV_PB LABEL=PACBIO_FIBERSEQ OUT=~/pbmeth_v12d FINAL="~/pbfinal_v12b/AO_G8_UNITS_$H.final.tsv" python3 ~/fsmeth_v12c.py > ~/pbmeth_v12d.run.log 2>&1
 # the fibertools recall version, only where the two individuals whose raw data has no m6A are on this node

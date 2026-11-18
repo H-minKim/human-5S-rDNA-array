@@ -51,7 +51,7 @@ BID = {}
 for i, (a, b) in enumerate(BLK, 1):
     for p in range(a, b + 1): BID[p] = i
 # Must equal the repeat blocks counted separately by the gate (same rule)
-assert BLK == _G.BLOCKS, "반복블록 정의가 관문과 다르다"
+assert BLK == _G.BLOCKS, "repeat block definition differs from the gate"
 
 def parse(x):
     """variant string ->(class, pos, ref, alt, len, block, in_repeat)"""

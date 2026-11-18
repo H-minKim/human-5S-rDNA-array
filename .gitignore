@@ -48,8 +48,5 @@ desktop.ini
 !tables/
 !tables/**
 
-# Previous versions kept on disk under their Korean names. The English
-# name is excluded above; these two cannot come through the Korean tree
-# because the name map rewrites them, so they are added here.
 _옛본/
 _옛판/

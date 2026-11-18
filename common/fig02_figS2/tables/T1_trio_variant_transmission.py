@@ -33,7 +33,7 @@ import unitdef_v11 as FC
 
 OUT = (__import__("os").environ["RDNA_DATA_ROOT"] + r"/5S_position_variant_work/2026-09-20_trio")
 MAPF = (__import__("os").environ["RDNA_DATA_ROOT"] + r"/for_paper/08_versions/v11-add2_trio/03_maps/G8MAP_trio.tsv")
-print("지도 :", MAPF, "md5", G.md5(MAPF))
+print("map :", MAPF, "md5", G.md5(MAPF))
 
 # ---------- read the map ----------
 SLOT = collections.defaultdict(list)     # (sample,slot) -> [(array_pos, N, set(tokens))]
@@ -44,7 +44,7 @@ for f, H in G._rows(MAPF):
     vs = set(x for x in (G.to_v4(t) for t in raw) if x is not None)
     SLOT[(f[0], f[H["slot"]])].append((int(f[H["array_pos"]]), int(f[H["N"]]), vs))
 for k in SLOT: SLOT[k].sort()
-print("슬롯 %d · 유닛 %d" % (len(SLOT), sum(len(v) for v in SLOT.values())))
+print("slots %d, units %d" % (len(SLOT), sum(len(v) for v in SLOT.values())))
 
 FAM = [("HG01252", "HG01250", "부모1"), ("HG01252", "HG01251", "부모2"),
        ("HG00558", "HG00556", "부모"), ("HG03816", "HG03815", "부모"),
@@ -77,8 +77,8 @@ g1 = io.open(os.path.join(OUT, "T1_pair_summary.tsv"), "w", encoding="utf8", new
 g1.write("child\tchild_slot\tchild_N\tparent\tparent_slot\tparent_N\trelation\tmode\tshift\tn_pairs\tmean_jaccard\tfrac_exact\t"
          "n_child_only\tn_parent_only\tper_unit_child_only\tper_unit_parent_only\n")
 BEST = {}
-print("\n=== (A) 자식 하플로타입 × 부모 하플로타입 — 유닛 변이로 맞추기 ===")
-print("  자식        부모        관계        맞춤  자카드 평균  완전일치 비율  자식만/부모만 변이")
+print("\n=== (A) child haplotype × parent haplotype: alignment by unit variants ===")
+print("  child       parent      relation    align  mean Jaccard  exact-match fraction  child-only/parent-only variants")
 for ch in CHILDREN:
     for cs_slot in ("1", "2"):
         cs = SLOT.get((ch, cs_slot))
@@ -106,7 +106,7 @@ g1.close()
 # related vs unrelated control
 rows = [l.rstrip("\n").split("\t") for l in io.open(os.path.join(OUT, "T1_pair_summary.tsv"), encoding="utf8")][1:]
 kin = [float(r[10]) for r in rows if r[6] != "무관"]; unk = [float(r[10]) for r in rows if r[6] == "무관"]
-print("\n  자카드 평균 : 친족 짝 중앙 %.4f (최소 %.4f) · 무관 짝 중앙 %.4f (최대 %.4f) · 짝 %d/%d" % (
+print("\n  mean Jaccard : related pairs median %.4f (min %.4f), unrelated pairs median %.4f (max %.4f), pairs %d/%d" % (
     np.median(kin), min(kin), np.median(unk), max(unk), len(kin), len(unk)))
 
 # ---------- (B)(C)(D) confirmed transmission pairs only ----------
@@ -115,8 +115,8 @@ CONF = []; CONF_EXTRA = []
 for (ch_, cs_), (m_, ex_, pa_, ps_, rel_, mode_, sh_, pairs_, cs__, ps__) in sorted(BEST.items()):
     if rel_ == "무관" or m_ < 0.95: continue
     (CONF_EXTRA if pa_ == "hg003" else CONF).append((ch_, cs_, pa_, ps_))   # hg003 (inferred canonical version) is to be excluded
-print("\n  확정 전달 짝 (친족 · 자카드>=0.95) : " + " · ".join("%s s%s<-%s s%s" % t for t in CONF) +
-      "   | 참고(제외) : " + " · ".join("%s s%s<-%s s%s" % t for t in CONF_EXTRA))
+print("\n  confirmed transmission pairs (related, Jaccard>=0.95) : " + " · ".join("%s s%s<-%s s%s" % t for t in CONF) +
+      "   | note (excluded) : " + " · ".join("%s s%s<-%s s%s" % t for t in CONF_EXTRA))
 g2 = io.open(os.path.join(OUT, "T1_unit_mismatch.tsv"), "w", encoding="utf8", newline="\n")
 g2.write("child\tchild_slot\tparent\tparent_slot\tarray_pos_child\tap_prox\tap_dist\tside_depth\tchild_only\tparent_only\n")
 g3 = io.open(os.path.join(OUT, "T1_R1_check.tsv"), "w", encoding="utf8", newline="\n")
@@ -136,7 +136,7 @@ for i, Ln in enumerate(io.open(os.path.join(G.OUT, "export", "V11_ORIGIN_CALL.ts
     ORIGIN[f[0]] = f[H["origin_call"]]
 INH = {"계승형", "조상형"}
 
-print("\n=== (B) 전달 짝에서 한 세대 뒤 유닛 변이 불일치 · (C) R1 대리지표 검증 ===")
+print("\n=== (B) unit variant mismatches after one generation in transmission pairs, (C) validation of the R1 proxy ===")
 tot_units = 0; tot_co = 0; tot_po = 0; depth_co = collections.Counter(); depth_n = collections.Counter()
 R1sum = collections.Counter()
 for ch, cs_slot, pa, ps_slot in CONF + CONF_EXTRA:
@@ -172,21 +172,21 @@ for ch, cs_slot, pa, ps_slot in CONF + CONF_EXTRA:
             in_same += s1; in_arr += s2
             g3.write("%s\t%s\t%s\t%s\t%d\t%d\t%d\t%d\t%d\t%s\n" % (ch, cs_slot, pa, t, hapcnt.get(t, 0), int(s1), int(s2), ap, ad, ORIGIN.get(t, "미검정")))
     tag = " (제외 대상)" if (ch, pa) == ("hg002", "hg003") else ""
-    print("  %-8s s%s ← %-8s s%s : 유닛 %3d (맞춤 %s%+d · 자카드 %.4f) · 자식만 %3d · 부모만 %3d · R1 %2d 중 같은 유닛에 %2d · 배열 어딘가 %2d%s" % (
+    print("  %-8s s%s <- %-8s s%s : units %3d (align %s%+d, Jaccard %.4f), child-only %3d, parent-only %3d, of R1 %2d in the same unit %2d, anywhere in the array %2d%s" % (
         ch, cs_slot, pa, ps_slot, len(pairs), mode, sh, m, co_n, po_n, n_r1, in_same, in_arr, tag))
     if not tag:
         tot_units += len(pairs); tot_co += co_n; tot_po += po_n
         R1sum["n"] += n_r1; R1sum["same"] += in_same; R1sum["arr"] += in_arr
 g2.close(); g3.close()
-print("\n  확정 전달 5 짝 합계 : 유닛 %d · 자식에만 있는 변이 %d (유닛당 %.4f) · 부모에만 %d (유닛당 %.4f)" % (
+print("\n  total over the 5 confirmed transmission pairs : units %d, child-only variants %d (per unit %.4f), parent-only %d (per unit %.4f)" % (
     tot_units, tot_co, tot_co / tot_units, tot_po, tot_po / tot_units))
-print("  R1(희귀 단일 사본) 합계 %d 개 중 전달 부모의 같은 유닛에 %d (%.0f%%) · 부모 배열 어딘가에 %d (%.0f%%)" % (
+print("  of %d R1 (rare single copy) in total, %d (%.0f%%) in the same unit of the transmitting parent, %d (%.0f%%) anywhere in the parent array" % (
     R1sum["n"], R1sum["same"], 100.0 * R1sum["same"] / max(R1sum["n"], 1), R1sum["arr"], 100.0 * R1sum["arr"] / max(R1sum["n"], 1)))
-print("\n  불일치의 위치 (가까운 끝에서의 깊이 · 유닛 1000 개당 자식-only 변이)")
+print("\n  location of mismatches (depth from the nearer end, child-only variants per 1000 units)")
 for d in list(range(1, 11)) + [99]:
     if depth_n[d] == 0: continue
-    print("    %-6s 유닛 %4d · 자식만 %3d · 1000 유닛당 %.1f" % ("깊이%d" % d if d != 99 else "깊이>30", depth_n[d], depth_co[d], 1000.0 * depth_co[d] / depth_n[d]))
-print("\n저장 : %s\\T1_*.tsv" % OUT)
+    print("    %-6s units %4d, child-only %3d, per 1000 units %.1f" % ("depth%d" % d if d != 99 else "깊이>30", depth_n[d], depth_co[d], 1000.0 * depth_co[d] / depth_n[d]))
+print("\nsaved : %s\\T1_*.tsv" % OUT)
 
 # the deposited table(s) carry English column names and values (common/fig02_figS2/taben.py)
 import sys as _s, os as _o

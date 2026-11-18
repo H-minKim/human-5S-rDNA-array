@@ -7,7 +7,7 @@
 #     proximal = ap <= ad and ap <= 17 (the common "proximal 1-3" plus "proximal 4-17")
 #     distal = ad < ap and ad <= 22 (the common "distal 11-22" plus "distal 1-10")
 #     interior = everything else (the common "interior"). The three partition the whole set.
-#     (ad = array_pos · ap = N - array_pos + 1)
+#     (ad = array_pos, ap = N - array_pos + 1)
 #
 #   Ruler and gates, the same as the other panels:
 #     hard call at ML >= 128; each read x unit needs at least 150 canonical CpG calls and coverage of at least 0.9.
@@ -96,12 +96,12 @@ with io.open(MAP, encoding="utf8") as h:
         UMAP[(smp, sl, ap)] = arr
 
 P("=" * 104)
-P("유닛 안 자리별 메틸 — 구역별 (Fig3 (A) 새 판)")
+P("Methylation by position within the unit, by zone (Fig3 (A))")
 P("=" * 104)
 P()
-P("  정본 CpG %d · MLCUT %d" % (len(CPG), MLCUT))
-P("  구역 : 근위(ap<=ad 이고 ap<=17) · 내부(나머지) · 원위(ad<ap 이고 ad<=22)")
-P("  코호트 : L2_HAP_UNIT 의 n_read>=5 유닛 %s 개 · 하플로타입 %d" % (format(len(KEEP), ","), NHAP))
+P("  canonical CpG %d, MLCUT %d" % (len(CPG), MLCUT))
+P("  zones: proximal (ap<=ad and ap<=17), interior (the rest), distal (ad<ap and ad<=22)")
+P("  cohort: units with n_read>=5 in L2_HAP_UNIT %s, haplotypes %d" % (format(len(KEEP), ","), NHAP))
 P()
 
 ACC = collections.defaultdict(lambda: [0, 0])       # (zone, cpg) -> [n, n_meth]
@@ -160,7 +160,7 @@ for f in files:
                 a2 = ACC[("전체", cp)]
                 a2[0] += 1; a2[1] += m
             nk += 1
-    P("  %-28s read×유닛 %9s · %.0f 초"
+    P("  %-28s read×unit %9s, %.0f s"
       % (os.path.basename(f)[14:-7], format(nk, ","), time.time() - t1))
 
 rows = [(z, cp, cp - 2121, n, m, m / n) for (z, cp), (n, m) in ACC.items()]
@@ -169,19 +169,19 @@ D = D.sort_values(["구역", "유닛안자리"])
 D.to_csv(DST, sep="\t", index=False, float_format="%.5f")
 
 P()
-P("  행 %d (구역 4 × 자리 %d) · 저장 %s" % (len(D), D.유닛안자리.nunique(), os.path.basename(DST)))
+P("  rows %d (zones 4 × positions %d), saved %s" % (len(D), D.유닛안자리.nunique(), os.path.basename(DST)))
 P("  md5 %s" % hashlib.md5(io.open(DST, "rb").read()).hexdigest()[:12])
 P()
-P("  구역별 read×유닛 수 · 유닛 수")
+P("  read×unit count and unit count by zone")
 tot_u = 0
 for z in ("근위", "내부", "원위"):
-    P("    %-4s read×유닛 %9s · 유닛 %7s" % (z, format(NU[z], ","), format(len(USEEN[z]), ",")))
+    P("    %-4s read×unit %9s, units %7s" % (z, format(NU[z], ","), format(len(USEEN[z]), ",")))
     tot_u += len(USEEN[z])
-P("    %-4s %s (= %s + %s + %s · 45,544 와 맞아야 한다)"
-  % ("합", format(tot_u, ","), *[format(len(USEEN[z]), ",") for z in ("근위", "내부", "원위")]))
-P("  관문에서 떨어진 read×유닛 %s" % format(n_gate_out, ","))
+P("    %-4s %s (= %s + %s + %s, must equal 45,544)"
+  % ("sum", format(tot_u, ","), *[format(len(USEEN[z]), ",") for z in ("근위", "내부", "원위")]))
+P("  read×unit dropped at the gate %s" % format(n_gate_out, ","))
 P()
-P("  구역별 유닛 전체 평균 β (자리를 모두 합친 것)")
+P("  whole-unit mean β by zone (all positions pooled)")
 for z in ("전체", "근위", "내부", "원위"):
     s = D[D.구역 == z]
-    P("    %-4s β %.4f (호출 %s)" % (z, s.메틸호출수.sum() / s.호출수.sum(), format(int(s.호출수.sum()), ",")))
+    P("    %-4s β %.4f (calls %s)" % (z, s.메틸호출수.sum() / s.호출수.sum(), format(int(s.호출수.sum()), ",")))

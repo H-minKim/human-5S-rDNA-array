@@ -106,15 +106,15 @@ for tag,X in (("B",XB),("A",XA)):
         if len(R)<50: continue
         Nv=R[:,0]
         print("\n"+"="*92)
-        print("=== 기준 %s · 벌점 PEN=%.1f · 하플로타입 %d ==="%(tag,PEN,len(R)))
-        print("  구간 수 : 실제 평균 %.2f (중앙 %.0f) · 순서 섞기 귀무 평균 %.2f"%(
+        print("=== criterion %s, penalty PEN=%.1f, haplotypes %d ==="%(tag,PEN,len(R)))
+        print("  number of segments : actual mean %.2f (median %.0f), order-shuffle null mean %.2f"%(
             R[:,1].mean(),np.median(R[:,1]),float(np.mean(nullrec))))
         if np.mean(nullrec)>=R[:,1].mean()*0.9:
-            print("  ⚠ 귀무와 비슷하다 = 순서 구조를 잡은 게 아니라 잡음을 자른 것. 이 벌점은 못 쓴다.")
+            print("  WARNING: similar to null = it cut noise, not order structure. This penalty is unusable.")
         A2=np.vstack([np.ones_like(Nv),Nv]).T
         print("")
-        print("  무엇이 N 과 함께 늘어나는가 (기울기 · 비례라면 그 구간의 몫과 같아야 한다)")
-        print("   항목              평균     기울기 b [95%CI]        절편    비례기대   판정")
+        print("  what grows with N (slope; if proportional, it should equal the share of that segment)")
+        print("   item              mean     slope b [95%CI]         intercept  proportional_expectation  verdict")
         for ci,nm in ((1,"구간 수"),(2,"근위 첫 구간 길이"),(3,"원위 마지막 구간 길이"),(4,"내부 구간 합")):
             y=R[:,ci]
             b=np.linalg.lstsq(A2,y,rcond=None)[0]
@@ -128,4 +128,4 @@ for tag,X in (("B",XB),("A",XA)):
             print("   %-16s %7.1f   %+.4f [%+.4f,%+.4f]  %6.1f   %s   %s"%(
                 nm,y.mean(),b[1],lo,hi,b[0],("%.4f"%exp) if exp==exp else "   -  ",jud))
 g.close()
-print("\n저장: %s"%os.path.join(OUT,"S18_changepoint.tsv"))
+print("\nsaved: %s"%os.path.join(OUT,"S18_changepoint.tsv"))

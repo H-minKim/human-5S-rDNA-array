@@ -3,7 +3,7 @@
 #   This is an internal control, comparing an array with the region beside it within the same BAM.
 #   The tissue, the basecaller and the pipeline being the same, the difference is the difference between the regions.
 #   Arguments: bam, chrom, start, end, [label].
-# MIT License · Copyright (c) 2026 Hungmin Kim
+# MIT License. Copyright (c) 2026 Hyungmin Kim
 import sys
 import pysam
 

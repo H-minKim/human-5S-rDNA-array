@@ -22,7 +22,7 @@ md5 = lambda q: hashlib.md5(open(q, "rb").read()).hexdigest()
 JOBS = [("Fig2", "fig2_main", "Fig 2 (본문)"),
         ("SFig2", "fig2_supp", "Supplementary Fig 2 (한 장)")]
 
-print("■ ⑴ 합본 SVG 를 다시 만들어 바로 폴더에 (정본 표·정본 그림에서 읽는다)")
+print("(1) rebuild the merged SVG directly into the folder (read from the canonical tables and canonical figures)")
 LEDGER = []
 for which, stem, title in JOBS:
     for lang, d in (("ko", "그림"), ("en", "그림_영어판")):
@@ -36,17 +36,17 @@ for which, stem, title in JOBS:
         assert not miss and bad == 0, (miss, bad)
         LEDGER.append((os.path.basename(o), which, lang, str(len(built)), "%.1f" % w, "%.1f" % h,
                        str(os.path.getsize(o)), m[:12]))
-        print("   %-20s 칸 %-3d 폭 %.1f 높이 %7.1f pt · 겹침 %d · 빠진 칸 %s · md5 %s"
+        print("   %-20s panels %-3d width %.1f height %7.1f pt, overlaps %d, missing panels %s, md5 %s"
               % (os.path.basename(o), len(built), w, h, bad, miss or "없음", m[:10]))
 
-print("\n■ ⑵ 미리보기 PNG (검증용 · 한글·영어)")
+print("\n(2) preview PNG (for verification; Korean and English)")
 for which, stem, title in JOBS:
     for lang, d in (("ko", "그림"), ("en", "그림_영어판")):
         o = os.path.join(PRE, "%s_%s_preview.png" % (stem, lang))
         p, size, miss, h = PV.preview(os.path.join(P, d), TAB, o, which=which)
-        print("   %-28s %dx%d px · 빠진 칸 %s" % (os.path.basename(o), size[0], size[1], miss or "없음"))
+        print("   %-28s %dx%d px, missing panels %s" % (os.path.basename(o), size[0], size[1], miss or "없음"))
 
-print("\n■ ⑶ 칸 구성표 (배치표에서 뽑은 사본)")
+print("\n(3) panel composition table (copy extracted from the layout table)")
 rows = []
 for l in io.open(TAB, encoding="utf8"):
     if l.startswith("#") or "\t" not in l: continue
@@ -54,7 +54,7 @@ for l in io.open(TAB, encoding="utf8"):
     if f[0] == "그림": hdr = f; continue
     rows.append(f)
 g = io.open(os.path.join(OUT, "00_panel_layout.tsv"), "w", encoding="utf8", newline="\n")
-g.write("# 합본 Fig 2 · Supplementary 칸 구성 — 정본 배치표 FIG2_layout_2026-10-09.tsv (md5 %s) 에서 뽑았다\n" % md5(TAB)[:12])
+g.write("# merged Fig 2 and Supplementary panel composition: extracted from the canonical layout table FIG2_layout_2026-10-09.tsv (md5 %s)\n" % md5(TAB)[:12])
 g.write("\t".join(hdr[:5]) + "\n")
 for r in rows: g.write("\t".join(r[:5]) + "\n")
 g.close()
@@ -62,15 +62,15 @@ cnt = {}
 for r in rows: cnt[r[0]] = cnt.get(r[0], 0) + 1
 print("   00_panel_layout.tsv · %s" % cnt)
 
-print("\n■ ⑷ 대장")
+print("\n(4) manifest")
 g = io.open(os.path.join(OUT, "00_merged_manifest.tsv"), "w", encoding="utf8", newline="\n")
-g.write("# 합본 Fig 2 대장 ·  · 2026-10-10 · 폭 414.4 pt 고정 · 높이 자유 · 겹침 0 · 빠진 칸 0\n")
+g.write("# merged Fig 2 manifest, width fixed at 414.4 pt, height free, overlaps 0, missing panels 0\n")
 g.write("파일\t그림\t판\t칸수\t폭pt\t높이pt\t바이트\tmd5_12\n")
 for r in LEDGER: g.write("\t".join(r) + "\n")
 g.close()
-print("   00_merged_manifest.tsv · %d 줄" % len(LEDGER))
+print("   00_merged_manifest.tsv, %d lines" % len(LEDGER))
 
-RM = """# 합본 Fig 2 · Supplementary Fig 2 (완성본) — 2026-10-10
+RM = """# 합본 Fig 2 · Supplementary Fig 2 (완성본)
 
 ## 무엇이 들어 있나
 | 파일 | 내용 | 칸 |
@@ -93,12 +93,11 @@ RM = """# 합본 Fig 2 · Supplementary Fig 2 (완성본) — 2026-10-10
 ## 알아 둘 것
 - 칸 글자(a, b, c1 …)는 **이 배치용으로 새로 매긴 것**이고 원본 그림의 패널 글자(A, B …)와 다릅니다. 둘 다 보입니다.
 - 칸 경계는 이웃 패널의 **가운데**에서 자릅니다. 그래서 옆 패널의 축 이름 끝이 조금 들어오는 칸이 있습니다(값은 가리지 않습니다).
-- 180 mm 로 줄이는 것은 **사용자가 직접** 합니다.
 - 본문 그림 번호는 붙이지 않았습니다.
 """
 io.open(os.path.join(OUT, "00_README.md"), "w", encoding="utf8", newline="\n").write(RM)
-print("\n■ 폴더 : %s" % OUT)
+print("\nfolder : %s" % OUT)
 for f in sorted(os.listdir(OUT)):
     p = os.path.join(OUT, f)
-    print("   %-26s %s" % (f, ("폴더 %d 개" % len(os.listdir(p))) if os.path.isdir(p)
+    print("   %-26s %s" % (f, ("folder, %d entries" % len(os.listdir(p))) if os.path.isdir(p)
                            else "%9d B · md5 %s" % (os.path.getsize(p), md5(p)[:10])))

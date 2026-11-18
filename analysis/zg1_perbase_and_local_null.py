@@ -60,7 +60,7 @@ CTLZ = [("유전자안", 0, 118), ("상류90", -90, -1), ("먼 NTS", -2000, -400
 if os.path.exists(NPZ) and os.environ.get("REBUILD", "") != "1":
     z = np.load(NPZ, allow_pickle=True)
     NAr, NMr, CUT, NU = z["nA"], z["nM"], z["cuts"], z["nunit"]
-    print("자리별 집계를 다시 쓴다 ->", NPZ)
+    print("rewriting the per-position summary ->", NPZ)
 else:
     UNIT, _ = L.load_units()
     TSSU = {k: (v[2] - v[0] + 1) for k, v in UNIT.items()}
@@ -93,7 +93,7 @@ else:
                         GB[(x[0], x[6], x[4], x[5])] = (v[m, 1] >= MLTHR).sum() / float(n)
         for ax, d in enumerate((UB, GB)):
             CUT[pi, ax] = np.percentile(np.array(list(d.values())), [33.333, 66.667])
-        print("%-7s 유닛β n %d 절단 %.4f/%.4f · 유전자부β n %d 절단 %.4f/%.4f"
+        print("%-7s unit β n %d cuts %.4f/%.4f, gene-region β n %d cuts %.4f/%.4f"
               % (nm_src, len(UB), CUT[pi, 0, 0], CUT[pi, 0, 1], len(GB), CUT[pi, 1, 0], CUT[pi, 1, 1]))
         used = 0
         for node in ("w3", "iB", "iA"):
@@ -133,9 +133,9 @@ else:
                             np.add.at(NMr[pi, ax, si], idx[hit], 1)
                         NU[pi, ax, si] += 1
                     used += 1
-            print("   읽음 %s · 누적 %d" % (node, used))
+            print("   read %s, cumulative %d" % (node, used))
     np.savez_compressed(NPZ, nA=NAr, nM=NMr, cuts=CUT, nunit=NU, lo=LO, hi=HI)
-    print("저장 ->", NPZ)
+    print("saved ->", NPZ)
 
 
 def inter(pi, ax, a, b):
@@ -168,11 +168,11 @@ def nulls(pi, ax, size, zname, z0, z1, excl):
 
 EXCL = [(-30, -10), (49, 96)]        # positions carrying an element are excluded from the control
 print()
-print("=== 요소 교호작용과 제자리 음성대조 (sliding · 두 플랫폼 · 층화축 2)")
+print("=== element interaction and in-place negative control (sliding, two platforms, stratification axes 2)")
 rows = []
 for ax in (0, 1):
     print()
-    print("---- 층화축 : %s" % AX[ax])
+    print("---- stratification axis: %s" % AX[ax])
     print("  %-8s %5s | %-26s | %-26s" % ("요소", "크기", "ONT  값 / 대조중앙 / 백분위", "PacBio  값 / 대조중앙 / 백분위"))
     for nm, a, b in ELEM:
         size = b - a + 1
@@ -190,11 +190,11 @@ for ax in (0, 1):
             rows.append((AX[ax], src, nm, size, zname, v, float(np.median(cn)),
                          float(np.percentile(cn, 5)), float(np.percentile(cn, 95)), pc, len(cn), int(n)))
         print("  %-8s %5d | %-26s | %-26s" % (nm, size, cells[0], cells[1]))
-        print("           %5s   대조 구역 = %s" % ("", zname))
+        print("           %5s   control zone = %s" % ("", zname))
 
 print()
-print("=== 두 플랫폼 합쳐 판정 (독립 반복은 ONT · PacBio 둘)")
-print("  %-8s %-10s %10s %10s %10s" % ("요소", "층화축", "ONT 백분위", "PB 백분위", "판정"))
+print("=== verdict with the two platforms combined (the independent replicates are the two, ONT and PacBio)")
+print("  %-8s %-10s %10s %10s %10s" % ("요소", "층화축", "ONT 백분위", "PB percentile", "판정"))
 for ax in (0, 1):
     for nm, a, b in ELEM:
         pcs = [r[9] for r in rows if r[0] == AX[ax] and r[2] == nm]
@@ -214,4 +214,4 @@ with io.open(out, "w", encoding="utf8", newline=NL) as g:
                             + ["%.4f" % r[i] for i in range(5, 10)]
                             + ["%d" % r[10], "%d" % r[11]]) + NL)
 print()
-print("적었다 ->", out)
+print("written ->", out)

@@ -64,7 +64,7 @@ ORD={h:np.where(hid==h)[0][np.argsort(ap[np.where(hid==h)[0]])] for h in range(N
 Nh=np.array([U[k][0][2] for k in HK],dtype=float)
 
 # ---------- (a) unbiased ----------
-print("=== (가) 비편향 변화점 (벌점 PEN*d*logN) ===")
+print("=== (a) unbiased changepoints (penalty PEN*d*logN) ===")
 UNB={}
 g=io.open(os.path.join(OUT,"S20_cp_unbiased.tsv"),"w",encoding="utf8",newline="\n")
 g.write("basis\tpen\thap\tN\tn_cp\tcps_from_prox\n")
@@ -84,22 +84,22 @@ for tag,Z in (("B",ZB),("A",ZA)):
         b=np.linalg.lstsq(A2,ncp,rcond=None)[0]
         bs=[np.linalg.lstsq(A2[ii],ncp[ii],rcond=None)[0][1] for ii in (rng.integers(0,len(Nv),len(Nv)) for _ in range(400))]
         lo,hi=np.percentile(bs,[2.5,97.5])
-        print("  [%s PEN=%.1f] 변화점 개수 평균 %.2f (중앙 %.0f · 최대 %d) · 귀무 %.2f"%(
+        print("  [%s PEN=%.1f] number of changepoints mean %.2f (median %.0f, max %d), null %.2f"%(
             tag,PEN,ncp.mean(),np.median(ncp),int(ncp.max()),float(np.mean(nullc))))
-        print("     개수 vs N : 기울기 %+.4f [%+.4f,%+.4f] · 절편 %.2f  (N 100 늘 때 %+.2f 개)"%(
+        print("     count vs N : slope %+.4f [%+.4f,%+.4f], intercept %.2f  (%+.2f per 100 increase in N)"%(
             b[1],lo,hi,b[0],b[1]*100))
         # mean count per length stratum
         s=[]
         for lo_,hi_,lab_ in ((40,80,"N40-80"),(81,110,"N81-110"),(111,140,"N111-140"),(141,10**9,"N141+")):
             m=(Nv>=lo_)&(Nv<=hi_)
             if m.sum()>=10: s.append("%s %.2f"%(lab_,ncp[m].mean()))
-        print("     길이층별 평균 : "+" · ".join(s))
+        print("     mean by length stratum : "+" · ".join(s))
         UNB[(tag,PEN)]=(ncp,Nv,pos)
 g.close()
 
 # ---------- (b) fixed K ----------
 print("")
-print("=== (나) 변화점 개수를 고정 (벌점 없이 K 번 분할) ===")
+print("=== (b) number of changepoints held constant (K splits without penalty) ===")
 FIX={}
 g=io.open(os.path.join(OUT,"S20_cp_fixedK.tsv"),"w",encoding="utf8",newline="\n")
 g.write("basis\tK\thap\tN\tcp_index\tfrom_prox\tfrom_dist\trel\n")
@@ -117,8 +117,8 @@ for tag,Z in (("B",ZB),("A",ZA)):
         R=np.array(rows,float)
         FIX[(tag,K)]=R
         print("")
-        print("  [%s · K=%d] 하플로타입 %d"%(tag,K,len(set(R[:,0].tolist())) if len(R) else 0))
-        print("   경계   근위에서(중앙)  원위에서(중앙)  상대(중앙)  |  근위거리~N 기울기   상대~N 기울기(x100)")
+        print("  [%s, K=%d] haplotypes %d"%(tag,K,len(set(R[:,0].tolist())) if len(R) else 0))
+        print("   boundary  from proximal (median)  from distal (median)  relative (median)  |  slope proximal distance~N   slope relative~N (x100)")
         for j in range(K):
             m=R[:,1]==j
             if m.sum()<30: continue
@@ -126,7 +126,7 @@ for tag,Z in (("B",ZB),("A",ZA)):
             A2=np.vstack([np.ones_like(Nv),Nv]).T
             b1=np.linalg.lstsq(A2,fp,rcond=None)[0][1]
             b2=np.linalg.lstsq(A2,rl,rcond=None)[0][1]*100
-            print("    %d 번   %8.0f       %8.0f       %.3f     |   %+.3f            %+.3f"%(
+            print("    no. %d   %8.0f       %8.0f       %.3f     |   %+.3f            %+.3f"%(
                 j+1,np.median(fp),np.median(R[m,3]),np.median(rl),b1,b2))
 g.close()
 

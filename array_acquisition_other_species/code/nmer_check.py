@@ -7,7 +7,7 @@
 #   Irregular means no k makes the sequence fit, and there is no unit boundary.
 #   The call is settled against the directly measured period from the offset ladder.
 #   Output: NMER.tsv
-# MIT License · Copyright (c) 2026 Hungmin Kim
+# MIT License. Copyright (c) 2026 Hyungmin Kim
 import io
 import os
 import glob
@@ -16,7 +16,7 @@ import collections
 
 NL = chr(10)
 TAB = chr(9)
-BASE = "$RDNA_OTHERSP_DIR/data_v2"
+BASE = os.environ["RDNA_OTHERSP_DIR"] + "/data_v2"
 LOC = os.path.join(os.path.dirname(os.path.abspath(__file__)), "lit")
 TOL = 0.08     # the relative difference within which two gaps count as the same kind
 MINFRAC = 0.80  # the fraction of the sequence that must fit
@@ -133,4 +133,4 @@ w.close()
 print()
 for k, v in cnt.most_common():
     print("   %-22s %d" % (k, v))
-print("표 : lit/NMER.tsv")
+print("table : lit/NMER.tsv")

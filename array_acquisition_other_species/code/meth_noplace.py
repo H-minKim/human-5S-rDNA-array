@@ -23,7 +23,7 @@
 #   Outputs: <out>/<species>__<sample>.noplace_window.tsv, one row per window,
 #          and <out>/<species>__<sample>.noplace_read.tsv, one row per read and type.
 #   Arguments: species key, sample, bam, reference unit types .fa, output folder, [WIN = 500], [MINID = 0.70], [CTX = 120].
-# MIT License · Copyright (c) 2026 Hungmin Kim
+# MIT License. Copyright (c) 2026 Hyungmin Kim
 import io
 import os
 import sys
@@ -214,8 +214,8 @@ orr.close()
 for f in os.listdir(TMP):
     os.remove(os.path.join(TMP, f))
 os.rmdir(TMP)
-print("%-22s %-14s 문턱 %.2f · 모델 %s(MM 자리 중 다음염기 G %.3f) · read %5d · 창 %7d · 미배정 %6d"
-      % (SP, SAMPLE, MODTHR, "CpG전용" if CPGONLY else "전문맥",
+print("%-22s %-14s threshold %.2f, model %s(next base G among MM positions %.3f), read %5d, windows %7d, unassigned %6d"
+      % (SP, SAMPLE, MODTHR, "CpG only" if CPGONLY else "전문맥",
          NG[1] / float(NG[0]) if NG[0] else 0, nread, len(META), tot["unassigned"]))
 for t in sorted(agg):
     a = agg[t]

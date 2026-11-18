@@ -21,7 +21,7 @@ CAN = G.CAN
 LU = len(CAN)
 U, _, _ = G.load("h1")
 VPU = sum(len(t[4]) for v in U.values() for t in v) / sum(len(v) for v in U.values())
-print("§0 자 : var_per_unit = %.6f" % VPU)
+print("§0 ruler : var_per_unit = %.6f" % VPU)
 assert abs(VPU - 6.866) < 0.01
 NCOPY = {("%s" % k[0], "%s" % k[1]): len(v) for k, v in U.items()}
 POP = {}
@@ -30,7 +30,7 @@ for Ln in io.open(PEDF, encoding="utf8"):
     f = Ln.split()
     if len(f) >= 7 and f[1] != "SampleID":
         POP[f[1]] = f[6]
-print("집단 라벨 적재 %d 개체 (super-pop %s)" % (len(POP), sorted(set(POP.values()))[:8]))
+print("population labels loaded, %d individuals (super-pop %s)" % (len(POP), sorted(set(POP.values()))[:8]))
 with open(os.path.join(HERE, "OUT_P04", "Q0_alignment.pkl"), "rb") as f:
     DIFF = pickle.load(f)["diff"]
 with open(os.path.join(HERE, "OUT_P04", "S3_matrices.pkl"), "rb") as f:
@@ -79,7 +79,7 @@ for s in itertools.islice(sorted(MATS), 5):
         for j in range(i + 1, min(len(aps), 12)):
             assert pd2((s[0], s[1], aps[i]), (s[0], s[1], aps[j])) == M[i, j], (s, i, j)
             chk += 1
-print("검산 pd2 == S3 행렬 : %d / %d 쌍 일치" % (chk, chk))
+print("check pd2 == S3 matrix : %d / %d pairs match" % (chk, chk))
 
 bySlot = collections.defaultdict(list)
 for k in keys:
@@ -98,7 +98,7 @@ bySamp = collections.defaultdict(list)
 for s in HSL:
     bySamp[s[0]].append(s)
 PAIRED = [tuple(v) for v in bySamp.values() if len(v) == 2]
-print("interior 슬롯 %d · 유닛 %d · 두 하플로 다 있는 개체 %d"
+print("interior slots %d, units %d, individuals with both haplotypes %d"
       % (len(HSL), sum(len(v) for v in INT.values()), len(PAIRED)))
 
 # ---------------- ④ f / φ : exhaustive, via signature inner products ----------------
@@ -110,7 +110,7 @@ for s in HSL:
     for g in c:
         sid.setdefault(g, len(sid))
 NS = len(sid)
-print("서로 다른 서명 %d (유닛 %d)" % (NS, sum(len(v) for v in INT.values())))
+print("distinct signatures %d (units %d)" % (NS, sum(len(v) for v in INT.values())))
 X = np.zeros((len(HSL), NS), np.int32)
 for i, c in enumerate(rowsig):
     for g, n in c.items():
@@ -163,9 +163,9 @@ for i in range(len(HSL)):
             nb += c
             db += d
 print("\n" + "=" * 78)
-print("[Q1 ④] 쌍 동일 확률 (전수 · 서명 내적)")
-print("  f (T1 array 내 interior)   = %.6f   (%d / %d)" % (f_, nf, df_))
-print("  φ_homolog (T2)             = %.6f   (%d / %d · 개체 %d)" % (phiH, nh, dh, len(PAIRED)))
+print("[Q1 (4)] pair identity probability (exhaustive, signature inner product)")
+print("  f (T1 interior in array)   = %.6f   (%d / %d)" % (f_, nf, df_))
+print("  φ_homolog (T2)             = %.6f   (%d / %d, individuals %d)" % (phiH, nh, dh, len(PAIRED)))
 print("  φ_unrelated (T3)           = %.6f   (%d / %d)" % (phiU, npU, dpU))
 print("    φ_within_pop             = %.6f   (%d / %d)" % (nw / dw, nw, dw))
 print("    φ_between_pop            = %.6f   (%d / %d)" % (nb / db, nb, db))
@@ -173,7 +173,7 @@ print("  f/φ : homolog %.4f · unrelated %.4f · within_pop %.4f · between_pop
       % (f_ / phiH, f_ / phiU, f_ / (nw / dw), f_ / (nb / db)))
 
 # ---------------- cluster bootstrap (haplotype / individual unit) ----------------
-print("\n[Q1 CI] cluster bootstrap — 재표본 단위 = haplotype(개체) · B = %d" % B_BOOT)
+print("\n[Q1 CI] cluster bootstrap: resampling unit = haplotype(individual), B = %d" % B_BOOT)
 pi_ = np.array([IDX[a] for a, b in PAIRED])
 pj_ = np.array([IDX[b] for a, b in PAIRED])
 sh_num = np.array([SAME[i, j] for i, j in zip(pi_, pj_)], np.int64)
@@ -199,23 +199,23 @@ ciU = np.percentile(bs_u, [2.5, 97.5])
 from statsmodels.stats.proportion import proportion_confint
 p04H = proportion_confint(nh, dh, 0.05, "wilson")
 p04U = proportion_confint(npU, dpU, 0.05, "wilson")
-print("  f           %.6f  cluster 95%%CI [%.6f, %.6f]  폭 %.2e" % (f_, ciF[0], ciF[1], ciF[1] - ciF[0]))
-print("  φ_homolog   %.6f  cluster 95%%CI [%.6f, %.6f]  폭 %.2e" % (phiH, ciH[0], ciH[1], ciH[1] - ciH[0]))
-print("              P04 의 쌍 단위 Wilson CI [%.6f, %.6f]  폭 %.2e  ⇒ 과소평가 %.2f 배"
+print("  f           %.6f  cluster 95%%CI [%.6f, %.6f]  width %.2e" % (f_, ciF[0], ciF[1], ciF[1] - ciF[0]))
+print("  φ_homolog   %.6f  cluster 95%%CI [%.6f, %.6f]  width %.2e" % (phiH, ciH[0], ciH[1], ciH[1] - ciH[0]))
+print("              P04 pair-level Wilson CI [%.6f, %.6f]  width %.2e  -> underestimated %.2f-fold"
       % (p04H[0], p04H[1], p04H[1] - p04H[0], (ciH[1] - ciH[0]) / (p04H[1] - p04H[0])))
-print("  φ_unrelated %.6f  cluster 95%%CI [%.6f, %.6f]  폭 %.2e" % (phiU, ciU[0], ciU[1], ciU[1] - ciU[0]))
-print("              P04 의 쌍 단위 Wilson CI [%.6f, %.6f]  폭 %.2e  ⇒ 과소평가 %.2f 배"
+print("  φ_unrelated %.6f  cluster 95%%CI [%.6f, %.6f]  width %.2e" % (phiU, ciU[0], ciU[1], ciU[1] - ciU[0]))
+print("              P04 pair-level Wilson CI [%.6f, %.6f]  width %.2e  -> underestimated %.2f-fold"
       % (p04U[0], p04U[1], p04U[1] - p04U[0], (ciU[1] - ciU[0]) / (p04U[1] - p04U[0])))
 # bootstrap of the difference (conservative, because resampling is independent rather than paired)
 d_bs = bs_h - bs_u
 ciD = np.percentile(d_bs, [2.5, 97.5])
-print("  φ_homolog − φ_unrelated = %+.6f  cluster 95%%CI [%+.6f, %+.6f]  (0 포함 %s)"
-      % (phiH - phiU, ciD[0], ciD[1], "YES ⇒ 검출 못 함" if ciD[0] <= 0 <= ciD[1] else "NO ⇒ 검출"))
-print("  비 φ_homolog/φ_unrelated = %.4f  95%%CI [%.4f, %.4f]"
+print("  φ_homolog − φ_unrelated = %+.6f  cluster 95%%CI [%+.6f, %+.6f]  (includes 0 %s)"
+      % (phiH - phiU, ciD[0], ciD[1], "YES -> not detected" if ciD[0] <= 0 <= ciD[1] else "NO ⇒ 검출"))
+print("  ratio φ_homolog/φ_unrelated = %.4f  95%%CI [%.4f, %.4f]"
       % (phiH / phiU, *np.percentile(bs_h / bs_u, [2.5, 97.5])))
 
 # ---------------- individual label permutation ----------------
-print("\n[Q1 PERM] 개인 라벨 순열 — '같은 개인의 두 하플로' 관계를 무작위화 (N = %d)" % N_PERM)
+print("\n[Q1 PERM] individual-label permutation: randomizes the 'two haplotypes of the same individual' relation (N = %d)" % N_PERM)
 flat = np.concatenate([pi_, pj_])
 null = []
 for b in range(N_PERM):
@@ -229,13 +229,13 @@ for b in range(N_PERM):
     null.append(num / den)
 null = np.array(null)
 pperm = (1 + int((null >= phiH).sum())) / (len(null) + 1)
-print("  관측 φ_homolog %.6f ↔ 귀무 mean %.6f  SD %.2e  p95 %.6f  p = %.5g"
+print("  observed φ_homolog %.6f vs null mean %.6f  SD %.2e  p95 %.6f  p = %.5g"
       % (phiH, null.mean(), null.std(ddof=1), np.percentile(null, 95), pperm))
 VERD_C2 = "검출 (생존)" if (pperm < 0.05 and ciD[0] > 0) else ("소멸" if pperm >= 0.05 else "부분")
 print("  VERDICT Ohta C2 : %s" % VERD_C2)
 
 # ---------------- ① median/IQR, ③ identical-partner carrier rate ----------------
-print("\n[Q1 ①③] 쌍별 거리 분포 · 동일짝 보유율 — 크기 맞춘 비교 집합 (하플로 하나)")
+print("\n[Q1 (1)(3)] pairwise distance distribution, identical-pair carrier rate: size-matched comparison set (one haplotype)")
 t0 = time.time()
 # T1 : exhaustive from the S3 matrix (interior)
 d_T1 = []
@@ -268,7 +268,7 @@ for a, b in PAIRED:
     tw5_T2 += int((M.min(1) <= 5).sum()) + int((M.min(0) <= 5).sum())
     n_T2 += len(ka) + len(kb)
 d_T2 = np.concatenate(d_T2)
-print("   T2 전수 %d 쌍 (%.0fs)" % (len(d_T2), time.time() - t0))
+print("   T2 exhaustive %d pairs (%.0fs)" % (len(d_T2), time.time() - t0))
 # T3 : unrelated, size matched (one haplotype), 5 repeats
 t0 = time.time()
 d_T3 = []
@@ -292,7 +292,7 @@ for rep in range(REPL):
         tw5_T3 += int((M.min(1) <= 5).sum())
         n_T3 += len(ka)
 d_T3 = np.concatenate(d_T3)
-print("   T3 크기맞춤 %d 반복 · 유닛 비교 %d (%.0fs)" % (REPL, n_T3, time.time() - t0))
+print("   T3 size-matched %d repeats, unit comparisons %d (%.0fs)" % (REPL, n_T3, time.time() - t0))
 
 
 def wils(k, n):
@@ -311,13 +311,13 @@ for nm, d, k0, k5, nU in (("T1 array내", d_T1, tw0_T1, tw5_T1, n_T1),
              100 * k0 / nU, 100 * c0[0], 100 * c0[1], 100 * k5 / nU, 100 * c5[0], 100 * c5[1]))
     rows13.append((nm, len(d), float(np.median(d)), float(q[0]), float(q[1]), nU,
                    k0, k0 / nU, k5, k5 / nU, float(d.mean())))
-print("  (T3 는 하플로 하나와만 비교 — T2 와 크기 맞춤 · %d 반복 평균)" % REPL)
-print("  Naish 2021 CEN180 기준 : 같은 염색체 중복 보유 57.1-69.0%% ↔ 다른 염색체 동일 copy 0.3%%")
-print("     (배수 비교 금지 — 종·단위길이 178 vs 2240 bp·copy 수가 전부 다르다)")
+print("  (T3 is compared with one haplotype only: size-matched to T2, mean of %d repeats)" % REPL)
+print("  Naish 2021 CEN180 reference : duplicates on the same chromosome 57.1-69.0%% vs identical copies on other chromosomes 0.3%%")
+print("     (no fold comparison: species, unit length 178 vs 2240 bp, and copy number all differ)")
 
 # ---------------- A9 : fully identical class ----------------
 print("\n" + "=" * 78)
-print("[Q1 A9] 완전동일 class 크기 분포 (= array 내 unit 하플로타입 빈도 스펙트럼)")
+print("[Q1 A9] size distribution of fully identical classes (= frequency spectrum of unit haplotypes within an array)")
 PK0, EK, VM, MX, NC, NU_, nuniq = [], [], [], [], [], [], []
 Kall = []
 runs_obs, runs_null = [], []
@@ -338,35 +338,35 @@ for s in HSL:
     nuniq.append(int((sizes == 1).sum()))
 Kall = np.concatenate(Kall)
 PK0, EK, VM, MX, NC, NU_ = map(np.array, (PK0, EK, VM, MX, NC, NU_))
-print("  haplotype %d · 평균 n_copies %.2f" % (len(HSL), NU_.mean()))
-print("  P(K=0)        mean %.4f ± %.4f   median %.4f   (전체 유닛 기준 %.4f)"
+print("  haplotype %d, mean n_copies %.2f" % (len(HSL), NU_.mean()))
+print("  P(K=0)        mean %.4f ± %.4f   median %.4f   (over all units %.4f)"
       % (PK0.mean(), PK0.std(ddof=1), np.median(PK0), (Kall == 0).mean()))
-print("  E[K]          mean %.4f ± %.4f   median %.4f   (전체 %.4f)"
+print("  E[K]          mean %.4f ± %.4f   median %.4f   (all %.4f)"
       % (EK.mean(), EK.std(ddof=1), np.median(EK), Kall.mean()))
-print("  분산/평균     mean %.4f   median %.4f   (전체 %.4f)"
+print("  var/mean      mean %.4f   median %.4f   (all %.4f)"
       % (np.nanmean(VM), np.nanmedian(VM), Kall.var() / Kall.mean()))
-print("  class 총수    mean %.2f ± %.2f   median %.0f   range %d-%d" % (NC.mean(), NC.std(ddof=1), np.median(NC), NC.min(), NC.max()))
-print("  최대 class    mean %.2f   median %.0f   max %d" % (MX.mean(), np.median(MX), MX.max()))
-print("  단일 class 몫 mean %.4f" % (np.array(nuniq) / NC).mean())
-print("  K 히스토그램 (전체 유닛 %d) : " % len(Kall)
+print("  class total   mean %.2f ± %.2f   median %.0f   range %d-%d" % (NC.mean(), NC.std(ddof=1), np.median(NC), NC.min(), NC.max()))
+print("  max class     mean %.2f   median %.0f   max %d" % (MX.mean(), np.median(MX), MX.max()))
+print("  single-class share mean %.4f" % (np.array(nuniq) / NC).mean())
+print("  K histogram (all units %d) : " % len(Kall)
       + " ".join("%d:%d" % (v, c) for v, c in sorted(collections.Counter(Kall.tolist()).items())[:14]))
-print("  역산 예측과 대조 : E[K] 2.30 ↔ 실측 %.4f · P(K=0) 0.4732 ↔ 실측 %.4f · class 53-63 종 ↔ 실측 %.1f"
+print("  against the back-calculated prediction : E[K] 2.30 vs measured %.4f, P(K=0) 0.4732 vs measured %.4f, classes 53-63 vs measured %.1f"
       % (Kall.mean(), (Kall == 0).mean(), NC.mean()))
 # independence consistency
 pred = 1 - (1 - f_) ** (NU_.mean() - 1)
 obs_ = (Kall > 0).mean()
-print("  독립성 정합 : 예측 P(K>=1) = 1-(1-f)^(N-1) = %.4f ↔ 관측 %.4f ⇒ 배수 %.4f"
+print("  independence consistency : predicted P(K>=1) = 1-(1-f)^(N-1) = %.4f vs observed %.4f -> fold %.4f"
       % (pred, obs_, obs_ / pred))
 # mean number of twins for units that carry a twin
 kk = Kall[Kall > 0]
-print("  쌍둥이 보유 unit 의 평균 쌍둥이 수 %.4f (역산 4.37)" % kk.mean())
+print("  mean number of twins for units with a twin %.4f (back-calculated 4.37)" % kk.mean())
 # Poisson comparison
-print("  Poisson 이면 P(K=0) = exp(-E[K]) = %.4f ↔ 관측 %.4f" % (np.exp(-Kall.mean()), (Kall == 0).mean()))
+print("  if Poisson, P(K=0) = exp(-E[K]) = %.4f vs observed %.4f" % (np.exp(-Kall.mean()), (Kall == 0).mean()))
 r_nb = Kall.mean() ** 2 / (Kall.var() - Kall.mean()) if Kall.var() > Kall.mean() else np.nan
-print("  음이항 적률 : r = %.4f (역산 0.385) · 분산/평균 %.4f (역산 ~7)" % (r_nb, Kall.var() / Kall.mean()))
+print("  negative binomial moments : r = %.4f (back-calculated 0.385), var/mean %.4f (back-calculated ~7)" % (r_nb, Kall.var() / Kall.mean()))
 
 # ---------------- A9-4 : is a class contiguous along the array ----------------
-print("\n  class 가 array 위에서 연속(run)인가 산발인가 — 귀무 = 같은 크기 분할을 무작위 배치 (N=%d)" % N_PERM)
+print("\n  are classes contiguous (runs) or scattered along the array: null = random placement of a partition of the same sizes (N=%d)" % N_PERM)
 
 
 def adjpairs(labels):
@@ -387,7 +387,7 @@ for b in range(N_PERM):
         t += adjpairs([gs[i] for i in p])
     nulls[b] = t
 p_adj = (1 + int((nulls >= obs_adj).sum())) / (N_PERM + 1)
-print("     인접 동일 쌍 관측 %d ↔ 귀무 %.1f ± %.1f  배율 %.4f  p = %.5g"
+print("     adjacent identical pairs observed %d vs null %.1f ± %.1f  ratio %.4f  p = %.5g"
       % (obs_adj, nulls.mean(), nulls.std(ddof=1), obs_adj / nulls.mean(), p_adj))
 # distribution of position gaps within a class
 gaps_o, gaps_n = [], []
@@ -409,12 +409,12 @@ for s in HSL:
             gaps_n.extend(np.diff(sorted(v)).tolist())
 gaps_o, gaps_n = np.array(gaps_o), np.array(gaps_n)
 mw = stats.mannwhitneyu(gaps_o, gaps_n, alternative="less")
-print("     class 내 자리 간격 : 관측 median %.1f (n %d) ↔ 무작위 배치 median %.1f (n %d) · MWU p = %.4g"
+print("     position gaps within class : observed median %.1f (n %d) vs random placement median %.1f (n %d), MWU p = %.4g"
       % (np.median(gaps_o), len(gaps_o), np.median(gaps_n), len(gaps_n), mw.pvalue))
-print("  AluY 가짜 class 배제 : 서명 = unit 전체(2,240 자리 + 삽입) 의 완전 일치이므로 구조적으로 불가")
+print("  AluY false classes excluded : signature = exact match over the whole unit (2,240 positions + insertions), so structurally impossible")
 
 g = io.open(os.path.join(OUT, "Q1_results.tsv"), "w", encoding="utf8", newline="\n")
-g.write("# P08 Q1 · ruler majref %.6f · seed %d · B_boot %d · N_perm %d · 2026-10-10\n" % (VPU, SEED, B_BOOT, N_PERM))
+g.write("# P08 Q1 · ruler majref %.6f · seed %d · B_boot %d · N_perm %d\n" % (VPU, SEED, B_BOOT, N_PERM))
 g.write("# interior 슬롯 %d · 유닛 %d · 상동 개체 %d · 서명 %d\n"
         % (len(HSL), sum(len(v) for v in INT.values()), len(PAIRED), NS))
 g.write("[Q1-4]\titem\tvalue\tnum\tden\n")
@@ -445,7 +445,7 @@ g.close()
 np.save(os.path.join(OUT, "Q1_K_hist.npy"), Kall)
 np.save(os.path.join(OUT, "Q1_boot.npy"), np.vstack([bs_f, bs_h, bs_u]))
 np.save(os.path.join(OUT, "Q1_perm_null.npy"), null)
-print("\n산출 :", os.path.join(OUT, "Q1_results.tsv"))
+print("\noutputs :", os.path.join(OUT, "Q1_results.tsv"))
 
 # the deposited table(s) carry English column names and values (common/fig02_figS2/taben.py)
 import sys as _s, os as _o

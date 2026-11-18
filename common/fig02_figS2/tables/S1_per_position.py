@@ -133,7 +133,7 @@ def shift_test(y):
 
 # ================== 1-1, 1-2 per-position profile ==================
 Ns=np.array([rs[0][2] for rs in ROWS.values()])
-print("\n배열 길이: 슬롯 %d · N<40 %d 슬롯은 고정 길이층에서 빠진다"%(len(Ns),int((Ns<40).sum())))
+print("\narray length: slots %d, %d slots with N<40 fall outside the preset length strata"%(len(Ns),int((Ns<40).sum())))
 g=io.open(os.path.join(OUT,"S1_per_position_profile.tsv"),"w",encoding="utf8",newline="\n")
 g.write("stratum\tmetric\tside\tunit_from_junction\tkb_from_junction\tn_haplotypes\tmean\tsd_across_haplotypes\tci_lo\tci_hi\n")
 SUM={}
@@ -149,17 +149,17 @@ for lo,hi,lab in [(0,10**9,"all")]+STR:
         g.write("%s\t%s\tMID\t-1\t-1\t%d\t%.5f\t\t%.5f\t%.5f\n"%(lab,col,mm[1],mm[0],mm[2],mm[3]))
 g.close()
 
-print("\n=== 1-1 · 1-2 말단 vs 가운데 (분모 = 그 자리의 유닛 1 개 · 2단계 집계) ===")
-print("  %d 개체 · %d 슬롯 · %d 유닛 (preset=%s)"%(M["n_samples"],M["n_slots"],M["n_units"],PRESET))
-print("  지표          근위1-8  가운데   원위1-8 | 근위/가운데 [95%CI]      원위/가운데 [95%CI]      | 순환이동 p 근위 원위")
+print("\n=== 1-1, 1-2 ends vs interior (denominator = 1 unit at that position, two-stage aggregation) ===")
+print("  %d individuals, %d slots, %d units (preset=%s)"%(M["n_samples"],M["n_slots"],M["n_units"],PRESET))
+print("  metric        prox1-8  interior dist1-8 | prox/interior [95%CI]    dist/interior [95%CI]    | circular-shift p prox dist")
 RT=io.open(os.path.join(OUT,"S1_end_vs_mid.tsv"),"w",encoding="utf8",newline="\n")
 RT.write("stratum\tmetric\tside\tend1_8_over_mid\tci_lo\tci_hi\tn_hap\tshift_T\tshift_p_exact\tp_floor\n")
 for lo,hi,lab in [(0,10**9,"all")]+STR:
-    if lab!="all": print("  --- 길이층 %s"%lab)
+    if lab!="all": print("  --- length stratum %s"%lab)
     for col in METRICS:
         pp=SUM[(lab,col,"prox")]; dd=SUM[(lab,col,"dist")]; mm=SUM[(lab,col,"MID")]
         if len(pp)<MAXD or len(dd)<MAXD:
-            if lab=="all": print("  %-12s 자리가 %d/%d 만 채워져 순환이동 생략"%(col,len(pp),len(dd)))
+            if lab=="all": print("  %-12s only %d/%d positions filled, circular shift skipped"%(col,len(pp),len(dd)))
             continue
         a=np.mean([x[2] for x in pp[:8]]); b=np.mean([x[2] for x in dd[:8]])
         rp=end_ratio(col,"prox",lo,hi); rd=end_ratio(col,"dist",lo,hi)
@@ -170,10 +170,10 @@ for lo,hi,lab in [(0,10**9,"all")]+STR:
             print("  %-12s %7.3f %7.3f %8.3f | %6.3f [%5.3f,%5.3f] %6.3f [%5.3f,%5.3f] | %.4f %.4f"%(
                 col,a,mm[0],b,rp[0],rp[1],rp[2],rd[0],rd[1],rd[2],pP,pD))
 RT.close()
-print("  정확 p 하한 = 1/%d = %.4f"%(MAXD,1.0/MAXD))
+print("  exact p lower bound = 1/%d = %.4f"%(MAXD,1.0/MAXD))
 
-print("\n=== 자리 하나하나 — 요청 구획 (전체) ===")
-print("  자리   n_var 근위 / 원위     n_snv 근위 / 원위    n_indel 근위 / 원위   coding(U84C제외) 근위 / 원위   U84C 보유비율 근위 / 원위")
+print("\n=== position by position: selected segment (all) ===")
+print("  position   n_var prox / dist     n_snv prox / dist    n_indel prox / dist   coding(excl. U84C) prox / dist   U84C carrier fraction prox / dist")
 P={c:{x[0]:x[2] for x in SUM[("all",c,"prox")]} for c in METRICS}
 D={c:{x[0]:x[2] for x in SUM[("all",c,"dist")]} for c in METRICS}
 for d in range(1,MAXD+1):
@@ -181,7 +181,7 @@ for d in range(1,MAXD+1):
     print("  %-4d %7.3f / %6.3f   %6.3f / %6.3f   %6.3f / %6.3f     %6.4f / %6.4f           %6.4f / %6.4f"%(
         d,P["n_var"][d],D["n_var"][d],P["n_snv"][d],D["n_snv"][d],P["n_indel"][d],D["n_indel"][d],
         P["n_cod_x"][d],D["n_cod_x"][d],P["u84c"][d],D["u84c"][d]))
-print("  가운데 %6.3f          %6.3f           %6.3f            %6.4f                  %6.4f"%(
+print("  interior %6.3f          %6.3f           %6.3f            %6.4f                  %6.4f"%(
     SUM[("all","n_var","MID")][0],SUM[("all","n_snv","MID")][0],SUM[("all","n_indel","MID")][0],
     SUM[("all","n_cod_x","MID")][0],SUM[("all","u84c","MID")][0]))
 
@@ -191,7 +191,7 @@ for rs in U.values():
     for r in rs: NU.update(r[4])
 VX=sorted([x for x,c in NU.items() if c>=MIN_ZS],key=lambda x:-NU[x])
 XI={x:i for i,x in enumerate(VX)}
-print("\n=== 자리 하나 단위 특이 변이 — 대상 변이 %d 종 (보유 유닛 >= %d, P2 기준) ==="%(len(VX),MIN_ZS))
+print("\n=== position-specific variants at single-position resolution: %d target variants (carrier units >= %d, by P2) ==="%(len(VX),MIN_ZS))
 # per-haplotype carrier fraction in the middle
 HK=[k for k,rs in U.items() if sum(1 for r in rs if r[0]>MID_GATE and r[1]>MID_GATE)>=2]   # P2: MID >= 2 units
 FM={}
@@ -254,17 +254,17 @@ for side,d,x,n,fz,fm,dl,lo,hi,pb,qq in out:
     if qq<0.05:
         CNT[(side,d,dr,"q")]+=1; TOP[(side,d)].append((dl,x,c,fz,fm,qq))
 g.close()
-print("  검정 %d 건 (자리 x 변이) · CI 가 0 을 벗어난 것 %d · q<0.05 %d"%(
+print("  tests %d (position x variant), CI excluding 0 %d, q<0.05 %d"%(
     len(out),sum(1 for o in out if o[7]>0 or o[8]<0),int((q<0.05).sum())))
-print("  옛 기준(CI 만)으로 기대되는 우연 양성 ≈ 5%% x %d = %d"%(len(out),int(0.05*len(out))))
-print("\n  자리    근위 농축/결핍 (q<0.05)   원위 농축/결핍 (q<0.05)")
+print("  chance positives expected under the CI-only criterion ≈ 5%% x %d = %d"%(len(out),int(0.05*len(out))))
+print("\n  position  proximal enriched/depleted (q<0.05)   distal enriched/depleted (q<0.05)")
 for d in range(1,MAXD+1):
     print("  %-4d        %4d / %-4d               %4d / %-4d"%(d,CNT[("prox",d,"up","q")],CNT[("prox",d,"down","q")],
           CNT[("dist",d,"up","q")],CNT[("dist",d,"down","q")]))
-print("\n  자리별 q<0.05 농축 상위 (근위1-3 · 원위1-3)")
+print("\n  top q<0.05 enrichments by position (proximal 1-3, distal 1-3)")
 for side in ("prox","dist"):
     for d in (1,2,3):
         t=sorted([z for z in TOP[(side,d)] if z[0]>0],key=lambda z:-z[0])[:8]
         print("   %s%d : %s"%("근위" if side=="prox" else "원위",d,
               ", ".join("%s(%s %.3f vs %.3f)"%(x,c,fz,fm) for dl,x,c,fz,fm,qq in t) or "-"))
-print("\n저장: %s"%OUT)
+print("\nsaved: %s"%OUT)

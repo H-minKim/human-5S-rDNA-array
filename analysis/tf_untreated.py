@@ -182,9 +182,9 @@ def pair_ratio(rows, a, b, minA=MINA):
 
 print("THR=%d · MINA=%d" % (THR, MINA))
 print("\n" + "=" * 100)
-print("① 시료별 기본값")
+print("(1) basic values per sample")
 print("=" * 100)
-print("  시료          유닛     A당 표지율 q    창별 평균 심문 A 수")
+print("  sample          units     labeling rate per A q    mean interrogated A count per window")
 for smp in OUT:
     rows, q = OUT[smp]
     if not rows:
@@ -194,7 +194,7 @@ for smp in OUT:
     print("  %-12s %5d    %.4f      %s" % (smp, len(rows), q, s))
 
 print("\n" + "=" * 100)
-print("② 창별 보호율 (창 안 m6A 0 개인 비율)")
+print("(2) protection rate per window (fraction with 0 m6A in the window)")
 print("=" * 100)
 hdr = "  시료         " + "".join("%-11s" % nm for nm, _, _ in WIN)
 print(hdr)
@@ -209,9 +209,9 @@ for smp in OUT:
     print(line)
 
 print("\n" + "=" * 100)
-print("③ 같은 유닛 짝비교 — 각 창 / W_flank")
+print("(3) paired comparison within the same unit: each window / W_flank")
 print("=" * 100)
-print("  시료         " + "".join("%-20s" % nm for nm, _, _ in WIN[:3]))
+print("  sample         " + "".join("%-20s" % nm for nm, _, _ in WIN[:3]))
 for smp in OUT:
     rows, q = OUT[smp]
     if not rows:
@@ -221,7 +221,7 @@ for smp in OUT:
         r, n, p = pair_ratio(rows, nm, "W_flank")
         line += "%-20s" % ("%.3f (n=%d,p=%.2g)" % (r, n, p) if n else "-")
     print(line)
-print("  (구형 53bp) ICR53/FLK53:")
+print("  (53bp version) ICR53/FLK53:")
 for smp in OUT:
     rows, q = OUT[smp]
     if not rows:
@@ -230,7 +230,7 @@ for smp in OUT:
     print("     %-12s %.3f (n=%d, p=%.3g)" % (smp, r, n, p))
 
 print("\n" + "=" * 100)
-print("④ 유전자 안끼리 — W_ICR / W_gene5 (구역 교락 없음)")
+print("(4) within the gene: W_ICR / W_gene5 (no zone confounding)")
 print("=" * 100)
 for smp in OUT:
     rows, q = OUT[smp]
@@ -248,4 +248,4 @@ for smp in OUT:
     for r in OUT[smp][0]:
         o.write(smp + "\t" + "\t".join("%d\t%d" % r[nm] for nm, _, _ in WIN) + "\n")
 o.close()
-print("\n기록: %s" % _TFOUT)
+print("\nwritten: %s" % _TFOUT)

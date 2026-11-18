@@ -14,9 +14,9 @@ C478=pd.read_csv(FIG+'COHORT_FIGX5_COMMON478.tsv',sep='\t',dtype=str)
 miss=sorted(set(zip(C504['sample'],C504.slot))-set(zip(C478['sample'],C478.slot)))
 nn=M[M.ref_name.notna()&(M.ref_name!='')]; taken=set(nn.ref_name)
 E=M[M.ref_name.isna()|(M.ref_name=='')].copy()
-print('빠진 슬롯 %d · 대응표 빈 행 %d'%(len(miss),len(E)))
+print('missing slots %d, empty rows in the mapping table %d'%(len(miss),len(E)))
 print()
-print('%-13s %9s  %-34s %9s %-7s %s'%('슬롯','목표len','길이일치 후보(빈행)','len','이름?','판정'))
+print('%-13s %9s  %-34s %9s %-7s %s'%('slot','목표len','길이일치 후보(빈행)','len','name?','판정'))
 ok=[];amb=[];none=[];skip=[]
 for sm,sl in miss:
     r=OFF[OFF.key==(sm,sl)]
@@ -27,18 +27,18 @@ for sm,sl in miss:
     nm=hit[hit.fasta.str.contains(sm,regex=False)]
     if len(nm)==1:
         ok.append((sm,sl,rn,nm.iloc[0].fasta,int(tgt)))
-        print('%-13s %9.0f  %-34s %9.0f %-7s 일치'%(sm+'|'+sl,tgt,nm.iloc[0].fasta[:34],tgt,'예'))
+        print('%-13s %9.0f  %-34s %9.0f %-7s match'%(sm+'|'+sl,tgt,nm.iloc[0].fasta[:34],tgt,'예'))
     elif len(nm)>1:
         amb.append((sm,sl,list(nm.fasta)))
-        print('%-13s %9.0f  %-34s %9.0f %-7s 후보 %d'%(sm+'|'+sl,tgt,'여러 개',tgt,'예',len(nm)))
+        print('%-13s %9.0f  %-34s %9.0f %-7s candidates %d'%(sm+'|'+sl,tgt,'multiple',tgt,'예',len(nm)))
     else:
         none.append((sm,sl,int(tgt),len(hit)))
-        print('%-13s %9.0f  %-34s %9s %-7s 없음(길이만 맞는 것 %d)'%(sm+'|'+sl,tgt,'—','—','—',len(hit)))
+        print('%-13s %9.0f  %-34s %9s %-7s none (length-only matches %d)'%(sm+'|'+sl,tgt,'—','—','—',len(hit)))
 print()
-print('이름+길이 모두 맞는 유일 후보 : %d / 모호 %d / 없음 %d / 건너뜀 %d'%(len(ok),len(amb),len(none),len(skip)))
-for a in skip: print('   건너뜀',a)
+print('unique candidate matching both name and length : %d / ambiguous %d / none %d / skipped %d'%(len(ok),len(amb),len(none),len(skip)))
+for a in skip: print('   skipped',a)
 import collections
 print()
-print('길이 중복 검사 : 빈 행 40 중 같은 길이가 둘 이상인 길이 =',[k for k,v in collections.Counter(E.fasta_len.dropna()).items() if v>1])
+print('duplicate length check : among the 40 empty rows, lengths that occur twice or more =',[k for k,v in collections.Counter(E.fasta_len.dropna()).items() if v>1])
 pd.DataFrame(ok,columns=['sample','slot','ref_name','fasta','fasta_len']).to_csv('repro_all/REFMAP_FILL_PLAN_V2.tsv',sep='\t',index=False)
-print('[저장] repro_all/REFMAP_FILL_PLAN_V2.tsv')
+print('[saved] repro_all/REFMAP_FILL_PLAN_V2.tsv')

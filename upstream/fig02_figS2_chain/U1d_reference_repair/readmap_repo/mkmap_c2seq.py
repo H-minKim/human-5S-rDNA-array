@@ -110,13 +110,13 @@ for L in io.open(sys.argv[1], encoding="utf8"):
     W = os.path.expanduser("~/c2seq/%s_%s" % (smp, sl))
     fa = os.path.join(W, "cons2.fa")
     if not os.path.exists(fa):
-        say("  %s_%s cons2.fa 없음 - 건너뜀" % (smp, sl))
+        say("  %s_%s no cons2.fa - skipped" % (smp, sl))
         continue
     raw = rd(fa)
     seq = raw.replace("N", "")
     st = starts(seq, W)
     if len(st) < 2:
-        say("  %s_%s 유전자 HSP %d - 건너뜀" % (smp, sl, len(st)))
+        say("  %s_%s gene HSP %d - skipped" % (smp, sl, len(st)))
         continue
     segs = [("PARTIAL_PROX", 0, st[0])]
     for i in range(len(st) - 1):
@@ -146,7 +146,7 @@ for L in io.open(sys.argv[1], encoding="utf8"):
     arr = os.path.join(W, "cons2_arr.fa")
     io.open(arr, "w", newline=NL).write(">%s_%s_cons2%s%s%s" % (smp, sl, NL, seq, NL))
     SO.write(TAB.join([smp, sl, arr]) + NL)
-    say("  %s_%s : 길이 %d (N %d 제거) · UNIT %d · UNIT_LAST 1 · N=%d · 간격밖 %d · 변이 %d"
+    say("  %s_%s: length %d (N %d stripped), UNIT %d, UNIT_LAST 1, N=%d, out-of-range spacing %d, variants %d"
         % (smp, sl, len(seq), raw.count("N"), len(st) - 1, N, nbad, nv))
 MR.close()
 SO.close()

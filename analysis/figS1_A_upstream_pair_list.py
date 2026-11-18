@@ -67,7 +67,7 @@ for (smp, slot), fn in src.items():
     a = cnt.get((smp, slot), 0); b = measured.get(fn, (0, 0))[0]
     if a and b:
         dif[b - a] += 1
-print("지도 UNIT 수 vs 조립본 실측(units_of) 차이 : " +
+print("difference, map UNIT count vs measured in the assembly (units_of): " +
       " · ".join("%+d : %d 슬롯" % (k, v) for k, v in sorted(dif.items())))
 print()
 
@@ -130,15 +130,15 @@ with io.open(os.path.join(S, "pubspan2_drop.tsv"), "w", encoding="utf8", newline
     for r in sorted(drop):
         g.write("\t".join(map(str, r)) + "\n")
 
-print("정본 슬롯 출처 : " + " · ".join("%s %d" % (k, v) for k, v in sorted(K.items())))
-print("관통 후보 %d 개 · 개체 %d" % (sum(len(v) for v in span.values()), len(span)))
+print("canonical slot source: " + " · ".join("%s %d" % (k, v) for k, v in sorted(K.items())))
+print("spanning candidates %d, individuals %d" % (sum(len(v) for v in span.values()), len(span)))
 print()
-print("짝 %d 슬롯 · 개체 %d   (출처별 : %s)"
+print("pairs %d slots, individuals %d   (by source: %s)"
       % (len(out), len(set(x[0] for x in out)),
          " · ".join("%s %d" % (k, v) for k, v in sorted(collections.Counter(x[2] for x in out).items()))))
 print()
-print("## 검정 ① 관통 read 와 array 유닛 수가 맞는가")
-print("| 지표 | 정확 0 | ±1 | ±2~3 | 4 이상 |")
+print("## test (1) does the spanning read match the array unit count")
+print("| metric | exact 0 | ±1 | ±2~3 | 4 or more |")
 print("|---|---:|---:|---:|---:|")
 for nm, gi in (("유닛 수 차이", 9), ("길이 차이(유닛 환산)", 10)):
     b = collections.Counter()
@@ -150,6 +150,6 @@ for nm, gi in (("유닛 수 차이", 9), ("길이 차이(유닛 환산)", 10)):
           % (nm, b["0"], 100 * b["0"] / t, b["1"], 100 * b["1"] / t,
              b["3"], 100 * b["3"] / t, b["4"], 100 * b["4"] / t))
 print()
-print("탈락 사유")
+print("reason for exclusion")
 for k, v in collections.Counter(x[3] for x in drop).most_common():
     print("   %-24s %d" % (k, v))

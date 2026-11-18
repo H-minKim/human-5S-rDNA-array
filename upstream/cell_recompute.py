@@ -28,7 +28,7 @@ UPS = (2032, 2121)
 SEGOF = {p: nm for nm, a, b in SEG for p in CPG if a <= p <= b}
 UPSET = set(p for p in CPG if UPS[0] <= p <= UPS[1])
 SEGK = ["alu", "nts1", "ga", "nts2", "gene", "ups", "sp"]
-P("정본 %d bp · CpG %d · 구획 %s · 프로모터 CpG %d"
+P("canonical %d bp, CpG %d, segments %s, promoter CpG %d"
   % (len(canon), len(CPG), " ".join("%s %d" % (n, sum(1 for p in CPG if a <= p <= b)) for n, a, b in SEG), len(UPSET)))
 
 RUS = {"GM12878FS": P11 + "RU_GM12878FS.tsv.gz",
@@ -36,7 +36,7 @@ RUS = {"GM12878FS": P11 + "RU_GM12878FS.tsv.gz",
        "K562r": P11 + "RU_K562r.tsv.gz"}
 MAPF = os.path.join(HERE, "MAP_G8_CELLLINES.tsv")
 P()
-P("[입력 md5]")
+P("[input md5]")
 for k, v in list(RUS.items()) + [("MAP_G8_CELLLINES", MAPF)]:
     P("   %-18s %s  %s" % (k, md5(v), os.path.basename(v)))
 
@@ -68,8 +68,8 @@ for _, p in mp[mp.seg_type == "UNIT"].iterrows():
     if sp - 1 != ul: nbad += 1
     UMAP[(smp, sl, ap)] = arr
 P()
-P("[지도] UNIT %s · 길이 불일치 %d · 슬롯 %d" % (format(len(UMAP), ","), nbad, len(UNITN)))
-P("   슬롯별 N : %s" % ", ".join("%s|%s=%d" % (k[0], k[1], v) for k, v in sorted(UNITN.items())))
+P("[map] UNIT %s, length mismatches %d, slots %d" % (format(len(UMAP), ","), nbad, len(UNITN)))
+P("   N by slot: %s" % ", ".join("%s|%s=%d" % (k[0], k[1], v) for k, v in sorted(UNITN.items())))
 
 # ---------- read x unit ----------
 rows = []; chk = []
@@ -108,25 +108,25 @@ for smp_file, f in RUS.items():
                 r["b_" + k] = (segm[k] / segn[k]) if segn[k] else np.nan
             rows.append(r)
             chk.append((smp, tot, int(p[ix["n_cpg"]]), met, int(p[ix["n_meth"]])))
-    P("   %-22s 행 %s · 지도에 없어 버림 %d" % (os.path.basename(f), format(nrow, ","), nmap0))
+    P("   %-22s rows %s, discarded as not in the map %d" % (os.path.basename(f), format(nrow, ","), nmap0))
 D = pd.DataFrame(rows)
 
 # ---------- the self-check ----------
 P()
-P("[자체검정] 내가 센 CpG·메틸 수 ↔ RU 파일이 적어 둔 값")
+P("[self-check] CpG and methylated counts counted here vs values recorded in the RU file")
 C = pd.DataFrame(chk, columns=["sample", "n_mine", "n_file", "m_mine", "m_file"])
 for s, g in C.groupby("sample"):
-    P("   %-12s 유닛 %5d · CpG 수 완전일치 %.2f%% · 메틸 수 완전일치 %.2f%% · |ΔCpG| 평균 %.3f"
+    P("   %-12s units %5d, CpG count exact match %.2f%%, methylated count exact match %.2f%%, mean |ΔCpG| %.3f"
       % (s, len(g), 100 * (g.n_mine == g.n_file).mean(), 100 * (g.m_mine == g.m_file).mean(),
          (g.n_mine - g.n_file).abs().mean()))
-P("   이 값이 100%% 에 가까우면 RU 와 지도가 같은 틀 이라는 뜻이다.")
+P("   A value close to 100%% means RU and the map share the same frame.")
 
 D.to_parquet(os.path.join(HERE, "CELL_READUNIT.parquet"), index=False)
 P()
-P("[요약] 세포주 read×유닛 %s · 시료 %s" % (format(len(D), ","), sorted(D["sample"].unique())))
+P("[summary] cell-line read×unit %s, samples %s" % (format(len(D), ","), sorted(D["sample"].unique())))
 D["state"] = np.where(D.b_call >= THR, "고메틸 유닛", "저메틸 유닛")
 for s, g in D.groupby("sample"):
-    P("   %-12s 유닛 %5d · read %4d · 전체 β %.4f · 저메틸유닛몫 %.3f · gene β %.4f · sp β %.4f · gene−sp %+.4f"
+    P("   %-12s units %5d, read %4d, overall β %.4f, low-methylation unit fraction %.3f, gene β %.4f, sp β %.4f, gene−sp %+.4f"
       % (s, len(g), g.read_id.nunique(), g.n_meth.sum() / g.n_cpg.sum(),
          (g.state == "저메틸 유닛").mean(),
          (g.b_gene * g.n_gene).sum() / g.n_gene.sum(),
@@ -135,7 +135,7 @@ for s, g in D.groupby("sample"):
 
 # ---------- the ML scale ----------
 P()
-P("[ML 척도] 호출 확률 분포 (0–255) — 판본·플랫폼이 다르면 β 가 생물학 없이 밀린다")
+P("[ML scale] call probability distribution (0-255): β shifts without biology when version or platform differs")
 ML = {}
 for f in RUS.values():
     with gzip.open(f, "rt", encoding="utf8") as h:
@@ -152,5 +152,5 @@ M = pd.DataFrame([dict(sample=k, 호출=v[0], ML평균=v[1] / v[0], 확신고=v[
 P(M.round(4).sort_values("sample").to_string(index=False))
 M.to_csv(os.path.join(HERE, "CELL_ML.tsv"), sep="\t", index=False, float_format="%.5f")
 P()
-P("[저장] CELL_READUNIT.parquet · CELL_ML.tsv")
+P("[saved] CELL_READUNIT.parquet, CELL_ML.tsv")
 LOG.close()

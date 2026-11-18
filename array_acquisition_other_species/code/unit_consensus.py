@@ -21,7 +21,7 @@
 #   Outputs: <out>/<species>__<sample>.unit_consensus.tsv, one row per unit,
 #          and <out>/<species>__<sample>.site_support.tsv, one row per variant with a support fraction of at least REPORT.
 #   Arguments: the read-unit table, the reference unit folder, the map folder, the output folder, [THR = 0.35], [MINDEP = 3], [REPORT = 0.10].
-# MIT License · Copyright (c) 2026 Hungmin Kim
+# MIT License. Copyright (c) 2026 Hyungmin Kim
 import io
 import os
 import re
@@ -191,7 +191,7 @@ ou.close()
 os_.close()
 d = tot["shared"] + tot["ronly"] + tot["aonly"]
 ds = 2.0 * tot["sshared"] + tot["sronly"] + tot["saonly"]
-print("%-22s %-14s 유닛 %6d · 합의 %7d (일치 %.3f) · 엄격 %7d (일치 %.3f)"
+print("%-22s %-14s units %6d, consensus %7d (agreement %.3f), strict %7d (agreement %.3f)"
       % (SP, SAMPLE, tot["unit"], tot["var"],
          (2.0 * tot["shared"] / (2.0 * tot["shared"] + tot["ronly"] + tot["aonly"])) if d else 0,
          tot["svar"], (2.0 * tot["sshared"] / ds) if ds else 0))

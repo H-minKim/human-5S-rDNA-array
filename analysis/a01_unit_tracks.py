@@ -12,7 +12,7 @@ Output  a01_tracks\\<sample>.<src>.tsv.gz
 usage: python a01_unit_tracks.py <path to nuc.bam> ...
 """
 import io, os, sys, gzip, bisect, collections
-# The data and output roots are environment variables with no default (CONVENTIONS, "the deposited copy wins").
+# The data and output roots are environment variables with no default.
 #  Paths to files inside this repository are resolved relative to `__file__` - `a_lib`, `bamlite` and `p02_lib` are deposited in this same folder.
 #  The table of variables is in `README.md`, section 'Environment variables'.
 _HERE = os.path.dirname(os.path.abspath(__file__))
@@ -121,7 +121,7 @@ def run(bam):
             c["unit_written"] += 1
             c["bp"] += len(t); c["N"] += t.count(b"N"); c["M"] += t.count(b"M")
     out.close()
-    print("%s %s  final유닛 %d · 트랙 %d · 빠짐 %d · 호출없는 read %d · 중복 %d · N %.3f M %.3f 없음 %.3f"
+    print("%s %s  final units %d, tracks %d, missing %d, reads without calls %d, duplicates %d, N %.3f M %.3f none %.3f"
           % (sample, src, len(want), c["unit_written"], len(want - done), c["read_no_calls"],
              c["dup_unit"], c["N"] / max(1., c["bp"]), c["M"] / max(1., c["bp"]),
              1 - (c["N"] + c["M"]) / max(1., c["bp"])))

@@ -1,15 +1,10 @@
 # -*- coding: utf-8 -*-
 # Builds FIG2_data_unitcmp.tsv, the input table for Supplementary Figure 1A.
 #
-#@DROP
-#@DROP
-#@DROP
 #   The input and output locations come from environment variables.
-#@DROP
-#@DROP
 #
 #   The two inputs are kept under FIG6_canonical_test_table/rawdata/ :
-#     `genepos.tsv` · `pubspan2_pairs.tsv`
+#     `genepos.tsv`, `pubspan2_pairs.tsv`
 import io, os, sys, collections, statistics
 sys.stdout.reconfigure(encoding="utf-8")
 
@@ -41,11 +36,11 @@ with io.open(OUT, "w", encoding="utf8", newline="\n") as g:
     g.write("sample\tslot\tsrc\tasm_units_geneN\tasm_units_len\tspan_units_len\td_unit\td_len_unit\n")
     for x in out: g.write("\t".join(map(str, x)) + "\n")
 c = collections.Counter((x[2], x[6]) for x in out)
-print("검정① 짝 %d (HPRC %d · hifiasm %d)" % (len(out), sum(1 for x in out if x[2] == "arr"), sum(1 for x in out if x[2] == "hiarr")))
+print("test (1) pairs %d (HPRC %d, hifiasm %d)" % (len(out), sum(1 for x in out if x[2] == "arr"), sum(1 for x in out if x[2] == "hiarr")))
 for s in ("arr", "hiarr"):
     n = sum(v for k, v in c.items() if k[0] == s)
-    print("   %s : 일치 %d/%d (%.1f%%)" % (s, c[(s, 0)], n, 100.0 * c[(s, 0)] / n))
+    print("   %s: match %d/%d (%.1f%%)" % (s, c[(s, 0)], n, 100.0 * c[(s, 0)] / n))
 d = [x[7] for x in out]
-print("   길이차 중앙 %+.4f 유닛 (%+.0f bp) · |차|<0.5 %d/%d (%.1f%%)"
+print("   median length difference %+.4f units (%+.0f bp), |difference|<0.5 %d/%d (%.1f%%)"
       % (statistics.median(d), statistics.median(d) * U, sum(1 for x in d if abs(x) < 0.5), len(d),
          100.0 * sum(1 for x in d if abs(x) < 0.5) / len(d)))

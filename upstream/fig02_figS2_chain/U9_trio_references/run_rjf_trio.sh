@@ -14,7 +14,7 @@ if [ ! -e $H ]; then
     awk -F'\t' "NR>1 && !($DROP)" ~/g8canonv11f1/CONSENSUS_MAP_G8_full.tsv
     tail -n +2 $T/g8trio/CONSENSUS_MAP_G8_trio.tsv
     tail -n +2 $T/g8trio2/CONSENSUS_MAP_G8_trio2.tsv; } > $H/G8MAP_trio.tsv
-  echo "G8 합본 $(wc -l < $H/G8MAP_trio.tsv) 행"
+  echo "G8 merged $(wc -l < $H/G8MAP_trio.tsv) rows"
 fi
 cd $H
 HOME=$H HSN=$T/hap_seq_node_trio2.tsv RCFF=$T/fghome/CONSENSUS_SUM_G6.tsv RCFCOL=5 MAPF=$T/fghome/CONSENSUS_MAP_G6.tsv \

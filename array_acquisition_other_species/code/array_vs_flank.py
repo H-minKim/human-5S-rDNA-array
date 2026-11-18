@@ -2,14 +2,14 @@
 # Measure the methylation of an array and of the 100 kb of flank on each side, from the same BAM.
 #
 #   The question: is the difference in methylation between arrays due to the surrounding local chromatin, or is it a property of the array itself?
-#     · If it is the surroundings, the array and its flank move together, and a hypomethylated array has a hypomethylated flank.
-#     · If it is the array, the flanks are similar and only the array falls away.
+#     - If it is the surroundings, the array and its flank move together, and a hypomethylated array has a hypomethylated flank.
+#     - If it is the array, the flanks are similar and only the array falls away.
 #   Measuring from the same BAM, the same tissue and the same basecaller removes those effects.
 #   The flank is taken at GAP bp clear of the array boundary and spans WIN bp, which avoids the boundary effect.
 #   No mapq filter; only supplementary and secondary alignments are removed.
 #
 #   Arguments: species key, sample, bam, array coordinates .tsv, out.tsv, [WIN = 100000], [GAP = 5000].
-# MIT License · Copyright (c) 2026 Hungmin Kim
+# MIT License. Copyright (c) 2026 Hyungmin Kim
 import io
 import os
 import sys
@@ -83,4 +83,4 @@ for L in io.open(COORD, encoding="utf8"):
                           "%.4f" % (h / float(n)) if n else "-"]) + NL)
 o.close()
 b.close()
-print("%s %s 완료" % (SP, SAMPLE))
+print("%s %s done" % (SP, SAMPLE))

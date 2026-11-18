@@ -30,7 +30,7 @@ t = t.replace(a2, '''NOBETA = os.environ.get("S24_NOBETA", "") == "1"   # β 를
 NF = len(FB) + (0 if NOBETA else 1)   # + beta''')
 t = t.replace('names = FB + ["beta_meth"]', 'names = FB + ([] if NOBETA else ["beta_meth"])')
 io.open(p, "w", encoding="utf8", newline="\n").write(t)
-print("사본 고침 :", p)
+print("copy edited :", p)
 
 for tag, nb in (("withbeta", "0"), ("nobeta", "1")):
     out = os.path.join(HERE, "_s24_" + tag)
@@ -55,5 +55,5 @@ for tag, nb in (("withbeta", "0"), ("nobeta", "1")):
         for side in ("prox", "dist"):
             z = sorted([x for x in L[1:] if x[H["side"]] == side and x[H["pen"]] == "1.0"],
                        key=lambda x: int(x[H["zone"]]))
-            print("   %-5s 벌점 1.0 : %s" % (side, " | ".join("%s-%s" % (x[H["depth_from"]], x[H["depth_to"]]) for x in z)))
+            print("   %-5s penalty 1.0 : %s" % (side, " | ".join("%s-%s" % (x[H["depth_from"]], x[H["depth_to"]]) for x in z)))
             for x in z: print("        %s" % x[H["top_features"]][:80])

@@ -144,7 +144,7 @@ def main():
     for smp, hia5 in ((LABEL, HIA),):
         bp = BAMP
         if not os.path.exists(bp):
-            print("없음", bp)
+            print("none", bp)
             continue
         bam = pysam.AlignmentFile(bp, "rb", check_sq=False)
         for r in bam.fetch(until_eof=True):
@@ -266,11 +266,11 @@ def main():
         bam.close()
     for f in (fu, fc, fb, fs):
         f.close()
-    print("방향 :", dict(ORI))
+    print("direction:", dict(ORI))
     for k in sorted(STAT):
         print("  %-18s %d" % (k, STAT[k]))
     print()
-    print("검산 — m6A/(A+T)  MSP 안 %.4f (%d/%d) · 뉴클 안 %.4f (%d/%d) · 배수 %.1f"
+    print("check: m6A/(A+T)  inside MSP %.4f (%d/%d), inside nucleosome %.4f (%d/%d), fold %.1f"
           % (MSPM[0] / max(MSPM[1], 1), MSPM[0], MSPM[1],
              NUCM[0] / max(NUCM[1], 1), NUCM[0], NUCM[1],
              (MSPM[0] / max(MSPM[1], 1)) / max(NUCM[0] / max(NUCM[1], 1), 1e-9)))

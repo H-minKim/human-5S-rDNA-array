@@ -92,11 +92,11 @@ OUT.close()
 
 smps = set(k[0] for k in PREV)
 print("=" * 80)
-print("  flank read 하플로타입 전역 배정 최종 — 개체 %d · 행 %d" %
+print("  final global haplotype assignment of flank reads: individuals %d, rows %d" %
       (len(smps), sum(n.values())))
 print("=" * 80)
 print()
-print("  근거별 행 수")
+print("  rows by evidence")
 for k, v in n.most_common():
     print("     %-20s %6d (%5.1f%%)" % (k, v, 100.0 * v / sum(n.values())))
 print()
@@ -105,10 +105,10 @@ for s in smps:
     c = per[s]
     st["전부 확정" if c["none"] == 0 else
        ("전부 미확정" if c["none"] == sum(c.values()) else "일부만")] += 1
-print("  개체 단위 :", dict(st))
+print("  individual level:", dict(st))
 print()
-print("  변이 지문 사슬(③) 판정")
-print("     시도한 개체 : %d · 모순 없이 채택 : %d · 배제 : %d" %
+print("  variant fingerprint chain (3) verdict")
+print("     individuals tried: %d, adopted without contradiction: %d, excluded: %d" %
       (len(LK), len(CHAIN), len(BAD)))
 for s, why in BAD:
     print("       %-11s %s" % (s, why))
@@ -126,11 +126,11 @@ for s in CHAIN:
             break
         else:
             continue
-print("  교차검증은 별도 스크립트에서 (겹치는 개체가 있을 때만)")
+print("  cross-validation is done in a separate script (only when individuals overlap)")
 print()
-print("  저장 : HAP_READ_FINAL.tsv")
+print("  saved: HAP_READ_FINAL.tsv")
 un = sorted(s for s in smps if per[s]["none"] == sum(per[s].values()))
 if un:
     io.open(os.path.join(S, "hap_still_unlinked.txt"), "w",
             newline=NL).write(NL.join(un) + NL)
-    print("  여전히 미확정 %d 개체 : %s" % (len(un), " ".join(un[:20])))
+    print("  still undetermined %d individuals: %s" % (len(un), " ".join(un[:20])))

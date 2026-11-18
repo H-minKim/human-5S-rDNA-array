@@ -20,7 +20,7 @@ REG = [("AluY", 1, 318), ("NTS1", 319, 1178), ("GA-rich", 1179, 1551),
        ("NTS2", 1552, 2031), ("promoter", 2032, 2121), ("gene", 2122, 2240)]
 U, _, _ = G.load("h1")
 VPU = sum(len(t[4]) for v in U.values() for t in v) / sum(len(v) for v in U.values())
-print("§0 자 : var_per_unit = %.6f" % VPU)
+print("§0 ruler : var_per_unit = %.6f" % VPU)
 assert abs(VPU - 6.866) < 0.01
 NCOPY = {("%s" % k[0], "%s" % k[1]): len(v) for k, v in U.items()}
 with open(os.path.join(HERE, "OUT_P04", "Q0_alignment.pkl"), "rb") as f:
@@ -136,7 +136,7 @@ def null_from(Ms, PK, K, nsim):
 
 # ---------------- ⒜ all units, middle window ----------------
 print("\n" + "=" * 78)
-print("[⒜] 가운데 창 (0.2-0.8) 의 practical range + block bootstrap CI (블록 = haplotype)")
+print("[a] practical range of the interior window (0.2-0.8) + block bootstrap CI (block = haplotype)")
 K = 15
 PK = pack((0.2, 0.8), None, K)
 PD, PQ, P0, PN, Ms = curves_from(PK, lambda s, sel: MATS[s][np.ix_(sel, sel)].astype(np.int64), K)
@@ -161,20 +161,20 @@ for b in range(B_BLK):
         pass
 prs = np.array(prs)
 ci = np.percentile(prs, [2.5, 97.5])
-print("    block bootstrap B %d (%.0fs) : 3a 95%%CI [%.3f, %.3f] · median %.3f · 상한에 붙은 몫 %.4f"
+print("    block bootstrap B %d (%.0fs) : 3a 95%%CI [%.3f, %.3f], median %.3f, share at the upper bound %.4f"
       % (len(prs), time.time() - t0, ci[0], ci[1], np.median(prs), float((np.array(aas) > 499).mean())))
 SD = null_from(Ms, PK, K, NSIM)
 p1, lo, hi = erl_test(TM, SD / ON)
 out = np.where((TM < lo) | (TM > hi))[0] + 1
-print("    GET global p(erl) = %.5g · 띠 밖 lag %s · lambda_envelope = %d"
+print("    GET global p(erl) = %.5g, lags outside the band %s, lambda_envelope = %d"
       % (p1, out.tolist(), out.max() if len(out) else 0))
-print("    세 추정량 : practical range %.2f [%.2f, %.2f] · lambda_envelope %d · EHH<=0.05 lag 2"
+print("    three estimators : practical range %.2f [%.2f, %.2f], lambda_envelope %d, EHH<=0.05 lag 2"
       % (3 * a, ci[0], ci[1], out.max() if len(out) else 0))
-print("       ⇒ 한 자릿수 차이로 불일치. §3.4(A) 가 practical range 를 주 추정량으로 사전 등록했다.")
+print("       -> they disagree by an order of magnitude. §3.4(A) pre-registers practical range as the primary estimator.")
 
 # ---------------- ⒝ by segment, middle window ----------------
 print("\n" + "=" * 78)
-print("[⒝] 구간별 — 가운데 창 (0.2-0.8) 에서 다시 (앞 판 interior(+-5) 는 양끝 효과로 부풀었다)")
+print("[b] by region: interior window (0.2-0.8)")
 rows = []
 for nm, a_, b_ in REG:
     t0 = time.time()
@@ -214,18 +214,18 @@ for nm, a_, b_ in REG:
     pb = np.array(pb)
     cib = np.percentile(pb, [2.5, 97.5]) if len(pb) > 50 else (np.nan, np.nan)
     ident = (mp >= 0.5) and (aa < 400)
-    print("    %-10s bp %4d · 쌍당 불일치 %7.4f (%7.3f /kb) · global p %.4g · lambda_env %2d · 3a = %8.3f [%.2f, %.2f] %s  (%.0fs)"
+    print("    %-10s bp %4d, mismatches per pair %7.4f (%7.3f /kb), global p %.4g, lambda_env %2d, 3a = %8.3f [%.2f, %.2f] %s  (%.0fs)"
           % (nm, b_ - a_ + 1, mp, 1000 * mp / (b_ - a_ + 1), pr, outr.max() if len(outr) else 0,
-             3 * aa, cib[0], cib[1], "" if ident else "추정불가", time.time() - t0))
+             3 * aa, cib[0], cib[1], "" if ident else "not estimable", time.time() - t0))
     rows.append((nm, b_ - a_ + 1, float(mp), float(1000 * mp / (b_ - a_ + 1)), pr,
                  int(outr.max()) if len(outr) else 0, float(3 * aa), float(cib[0]), float(cib[1]), ident,
                  float(TMr[0]), float(TMr[1]), float(TMr[-1])))
-print("    gene / promoter / AluY / NTS2 는 쌍당 불일치가 1 미만 ⇒ range 추정 불가 (Q0-3 해상도 한계)")
-print("    쓸 수 있는 문장 : 'lambda 는 GA-rich 가 지배한다. 유전자 구간에서는 추정 자체가 불가능하다.'")
+print("    gene / promoter / AluY / NTS2 have fewer than 1 mismatch per pair -> range cannot be estimated (Q0-3 resolution limit)")
+print("    usable statement : 'lambda is dominated by GA-rich. In the gene region it cannot be estimated at all.'")
 
 # ---------------- ⒞ λ vs n_copies ----------------
 print("\n" + "=" * 78)
-print("[⒞] λ vs n_copies — '93 copy 이므로 구역 7 개' 같은 계산은 쓰지 않는다 (n 이 14-239 로 17 배 다르다)")
+print("[c] λ vs n_copies: a calculation such as '93 copies, hence 7 zones' is not used (n ranges 14-239, a 17-fold spread)")
 lam_h, n_h = [], []
 for (s, sel, n), M in zip(PK, Ms):
     nn = NCOPY.get(s, 0)
@@ -252,17 +252,17 @@ for (s, sel, n), M in zip(PK, Ms):
     n_h.append(nn)
 lam_h, n_h = np.array(lam_h), np.array(n_h)
 r = stats.spearmanr(n_h, lam_h)
-print("    per-haplotype lambda_env : median %.1f · IQR %.1f-%.1f · 0 인 몫 %.4f"
+print("    per-haplotype lambda_env : median %.1f, IQR %.1f-%.1f, share equal to 0 %.4f"
       % (np.median(lam_h), *np.percentile(lam_h, [25, 75]), (lam_h == 0).mean()))
 print("    lambda vs n_copies : Spearman rho = %+.4f  p = %.4g" % (r.statistic, r.pvalue))
 nz = lam_h > 0
-print("    n/lambda (lambda>0 인 %d 개) : median %.2f · IQR %.2f-%.2f"
+print("    n/lambda (%d with lambda>0) : median %.2f, IQR %.2f-%.2f"
       % (int(nz.sum()), np.median(n_h[nz] / lam_h[nz]), *np.percentile(n_h[nz] / lam_h[nz], [25, 75])))
-print("    ⇒ 판정 : %s" % ("FRACTION_SCALE 경향 (유의)" if r.pvalue < 0.05 else "ABSOLUTE_SCALE (n 과 무관)"))
-print("    개체별 순열 99 벌이라 검정력 낮음 — 경향으로만")
+print("    -> verdict : %s" % ("FRACTION_SCALE trend (significant)" if r.pvalue < 0.05 else "ABSOLUTE_SCALE (n 과 무관)"))
+print("    99 permutations per individual, so low power: trend only")
 
 g = io.open(os.path.join(OUT, "Q2c_results.tsv"), "w", encoding="utf8", newline="\n")
-g.write("# P08 Q2c · ruler majref %.6f · seed %d · 가운데 창 0.2-0.8 · nsim %d · B %d · 2026-10-10\n"
+g.write("# P08 Q2c, ruler majref %.6f, seed %d, interior window 0.2-0.8, nsim %d, B %d\n"
         % (VPU, SEED, NSIM, B_BLK))
 g.write("[A]\tn_hap\t%d\tK\t%d\tnugget\t%.6f\tsill\t%.6f\ta\t%.6f\tpractical_range\t%.6f\tlo\t%.6f\thi\t%.6f\tp_erl\t%.6g\tlambda_env\t%d\n"
         % (len(PK), K, cn, cn + cp, a, 3 * a, ci[0], ci[1], p1, out.max() if len(out) else 0))
@@ -277,4 +277,4 @@ g.write("[C]\tlam_median\t%.2f\tfrac_zero\t%.4f\trho_n\t%.6f\tp\t%.6g\tn_over_la
            np.median(n_h[nz] / lam_h[nz])))
 g.close()
 np.save(os.path.join(OUT, "Q2c_boot_pr.npy"), prs)
-print("\n산출 :", os.path.join(OUT, "Q2c_results.tsv"))
+print("\noutputs :", os.path.join(OUT, "Q2c_results.tsv"))

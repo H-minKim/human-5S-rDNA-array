@@ -86,7 +86,7 @@ for node in ("w3", "iB", "iA"):
                     raw[k][1] += (int(m) >= MLTHR)
 GC = collections.Counter(v[0] for v in raw.values())
 GB = {k: v[1] / float(v[0]) for k, v in raw.items() if v[0] >= MIN_GENE_CPG}
-print("유닛 전체 β %s · 유전자부 β %s (CpG>=%d 관문에서 %s 개 탈락)"
+print("whole-unit β %s, gene-region β %s (CpG>=%d gate dropped %s)"
       % (format(len(UB), ","), format(len(GB), ","), MIN_GENE_CPG,
          format(len(raw) - len(GB), ",")))
 
@@ -170,8 +170,8 @@ np.savez_compressed(os.path.join(DD, "hprc_genebeta.npz"),
 
 LN = ["유닛 전체 β 0.508 (본표)", "유전자부 β 0.5 (세포주 방식)"]
 print()
-print("## 그 자리 귀무 대비 배수 — 자리 고정 (TFIIIB -16 · ICR +63 · 10 bp 칸)")
-print("%-26s %-8s %9s %9s %9s %14s" % ("층 라벨", "자리", "저", "고", "저÷고", "분자 저/고"))
+print("## fold over the null at that position, positions fixed (TFIIIB -16, ICR +63, 10 bp bins)")
+print("%-26s %-8s %9s %9s %9s %14s" % ("stratum label", "자리", "저", "고", "low÷high", "분자 저/고"))
 for li in (0, 1):
     for bi in range(NC):
         v = R[li, bi]
@@ -180,16 +180,16 @@ for li in (0, 1):
                  v[0] / v[1] if v[1] > 0 else float("nan"),
                  "%s / %s" % (format(int(NMO[li, 0]), ","), format(int(NMO[li, 1]), ","))))
 print()
-print("## 두 라벨 혼동표 (둘 다 있는 유닛)")
-print("                      유전자부 저    유전자부 고")
+print("## confusion table of the two labels (units with both)")
+print("                      gene-region low    gene-region high")
 for i, nm in enumerate(("유닛 저", "유닛 고")):
     print("   %-16s %11s %13s" % (nm, format(int(CF[i, 0]), ","), format(int(CF[i, 1]), ",")))
 tot = CF.sum()
-print("   일치 %.1f%% (n %s)" % (100 * (CF[0, 0] + CF[1, 1]) / tot, format(int(tot), ",")))
+print("   agreement %.1f%% (n %s)" % (100 * (CF[0, 0] + CF[1, 1]) / tot, format(int(tot), ",")))
 print()
-print("## 유전자부 CpG 수 분포")
+print("## distribution of gene-region CpG count")
 for k in sorted(GC):
     if GC[k] > 50:
-        print("   CpG %2d 개 : 유닛 %s" % (k, format(GC[k], ",")))
+        print("   CpG %2d : units %s" % (k, format(GC[k], ",")))
 print()
-print("저장 -> hprc_genebeta.npz")
+print("saved -> hprc_genebeta.npz")

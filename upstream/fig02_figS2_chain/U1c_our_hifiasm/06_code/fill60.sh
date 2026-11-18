@@ -17,7 +17,7 @@
 #  1kGP (kgp_ont/out) is not used, those data are 27 times too small to assemble.
 #  Outputs are kept separately in ~/fill60.
 set -u
-MODE=${1:?A 또는 B}
+MODE=${1:?A or B}
 D=~/fill60
 mkdir -p "$D"
 SUM=$D/fill60_summary.tsv
@@ -26,19 +26,19 @@ for c in ~/miniconda3/bin/python python3; do
   p=$(command -v "$c" 2>/dev/null) || continue
   "$p" -c "import sys" 2>/dev/null && { PY="$p"; break; }
 done
-[ -n "$PY" ] || { echo "FATAL python 없음"; exit 9; }
+[ -n "$PY" ] || { echo "FATAL python not found"; exit 9; }
 LIST=~/fill60_$MODE.txt
-[ -s "$LIST" ] || { echo "  목록 없음 $LIST"; exit 0; }
+[ -s "$LIST" ] || { echo "  no list $LIST"; exit 0; }
 
 for S in $(tr -d '\r' < "$LIST"); do
-  grep -q "^$S	" "$SUM" 2>/dev/null && { echo "  $S 이미 함"; continue; }
+  grep -q "^$S	" "$SUM" 2>/dev/null && { echo "  $S already done"; continue; }
   Q=""
   for p in ~/s5s_ont/hits/$S.hits.fastq.gz ~/giab_hits/$S.hits.fastq.gz ~/cancer5s/hits/$S.hits.fastq.gz; do
     [ -f "$p" ] && { Q=$p; break; }
   done
-  [ -n "$Q" ] || { echo "  $S read 없음"; continue; }
+  [ -n "$Q" ] || { echo "  $S no read"; continue; }
   FREE=$(df --output=avail -BG / | tail -1 | tr -dc '0-9')
-  [ "${FREE:-0}" -lt 30 ] && { echo "  디스크 ${FREE}G — 중단"; break; }
+  [ "${FREE:-0}" -lt 30 ] && { echo "  disk ${FREE}G: aborting"; break; }
   MB=$(( $(stat -c %s "$Q") / 1048576 ))
   echo "[$(date +%T)] $S ($MB MB) mode=$MODE"
 
@@ -52,7 +52,7 @@ for S in $(tr -d '\r' < "$LIST"); do
     rm -rf "$W"
   else
     TOT=$(zcat "$Q" | awk 'NR%4==2{t+=length($0)} END{printf "%d", t/1000000}')
-    echo "    원본 ${TOT} Mb — 비율 sweep"
+    echo "    input ${TOT} Mb: ratio sweep"
     for F in 2 3 4 5 6; do
       M=$(( TOT / F ))
       [ "$M" -lt 60 ] && continue

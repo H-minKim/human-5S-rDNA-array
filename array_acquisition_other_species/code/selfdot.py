@@ -4,7 +4,7 @@
 #   A genuine tandem array gives an offset histogram standing as a ladder at every multiple of the period.
 #   Human and zebra finch are run alongside as controls, to calibrate the scale.
 #   Output: SELFDOT.tsv, holding the top 8 offsets per array with their total aligned length.
-# MIT License · Copyright (c) 2026 Hungmin Kim
+# MIT License. Copyright (c) 2026 Hyungmin Kim
 import io
 import os
 import sys
@@ -45,10 +45,10 @@ for sfa in sorted(glob.glob(os.path.join(H, "slices", "*.arr.fa"))):
         tot += aln
         off[int(round(d / float(BIN))) * BIN] += aln
     top = off.most_common(8)
-    print("%-50s 조각 %6d · HSP %6d · 정렬 %9d" % (aid, slen, n, tot))
+    print("%-50s pieces %6d, HSP %6d, aligned %9d" % (aid, slen, n, tot))
     print("      " + " | ".join("%d:%d" % (k, v) for k, v in top))
     w.write(TAB.join([aid, str(slen), str(n), str(tot),
                       ",".join("%d:%d" % (k, v) for k, v in top)]) + NL)
     sys.stdout.flush()
 w.close()
-print("표 : ~/lit5s/SELFDOT.tsv")
+print("table : ~/lit5s/SELFDOT.tsv")

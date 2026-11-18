@@ -1,18 +1,12 @@
 # The G8 consensus map, and how to rebuild it from an updated assembly (5S rDNA)
 
 
-> **What this document is for.** The G8 in hand (`CONSENSUS_MAP_G8_full.tsv`, md5 `f1d6103c…`) was
-> cut from an **older assembly**. The assembly has since been updated, so **do not use the G8 table
-> as it stands**. Build it again **from the new assembly, from the beginning**, by the method below.
-> The **method** of G8 (cut at the gene end, then check against the sequence) is kept as it is. Only
-> the **input** is made anew.
-
 ---
 
 ## §0 The whole chain, five steps from assembly to map
 
 ```
-[assembly]  public (HPRC) · the hifiasm assemblies of this work · spanning reads
+[assembly]  public (HPRC), the hifiasm assemblies of this work, spanning reads
    │
    ① cut out the array (flank to flank)      asm_units3.py / asm_arr_all.py / hiarr.py
    │   → ~/cmp4d/<source>__<node>__<name>.fa   (old set: 1,516 files)
@@ -366,9 +360,3 @@ from `CONSENSUS_MAP_G6.tsv`. Point them at the new G8, and filter on
 - Never convert with `bp/2240`. The boundaries come from the gene HSPs.
 - When building a map, **always check against the sequence**.
 - Report both denominators: per variant base and per base of the whole 2,240 bp.
-- Node addresses come from `$ANALYSIS_ROOT_INDEX\NODES.md` and nowhere else.
-- Anything holding a backslash goes through a file writing tool, not a heredoc, because the path
-  breaks in silence.
-- Results are recorded in `LATEST_FILES.md` and synchronised with `$WORK_ROOT`. **An existing
-  backup is never deleted.**
-- The public code is MIT, copyright Hungmin Kim.

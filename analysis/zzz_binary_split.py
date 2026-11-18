@@ -58,7 +58,7 @@ NR = HI - LO + 1
 BETA = {(s, r, sl, a): v for (s, sr, r, sl, a), v in
         L.load_beta(min_cpg=10).items() if sr == SRC}
 bb = np.array(list(BETA.values()))
-print("β n=%s · 컷 %.3f -> 저 %d (%.1f%%) · 고 %d (%.1f%%)"
+print("β n=%s, cut %.3f -> low %d (%.1f%%), high %d (%.1f%%)"
       % (format(len(bb), ","), CUT, (bb < CUT).sum(), 100 * (bb < CUT).mean(),
          (bb >= CUT).sum(), 100 * (bb >= CUT).mean()))
 
@@ -112,7 +112,7 @@ NUL /= float(NB)
 np.savez_compressed(os.path.join(DD, "fhmm_peaks_5bp_bin.npz"),
                     obs=OBS, nul=NUL, nmol=NMOL, per=PER, half=HALF, cut=CUT,
                     cls=np.array([c[2] for c in CLS]))
-print("FiberHMM 분자 : 저 %s · 고 %s" % (format(int(NMOL[0]), ","),
+print("FiberHMM molecules : low %s, high %s" % (format(int(NMOL[0]), ","),
                                         format(int(NMOL[1]), ",")))
 
 K = np.ones(SM) / SM
@@ -123,8 +123,8 @@ def sm_(v):
 
 
 print()
-print("## FiberHMM 봉우리 (양분) — 저 자리 기준")
-print("  %-8s %8s %10s %10s %9s" % ("크기", "자리", "저 배수", "고 배수", "저/고"))
+print("## FiberHMM peaks (binary split), based on low positions")
+print("  %-8s %8s %10s %10s %9s" % ("크기", "자리", "low fold", "high fold", "저/고"))
 for j, (a0, a1, lab) in enumerate(CLS):
     o0, e0_ = sm_(OBS[0, j]), sm_(NUL[0, j])
     r0 = np.where(e0_ > 0, o0 / np.maximum(e0_, 1e-9), np.nan)
@@ -175,7 +175,7 @@ for node in ("w3", "iB", "iA"):
 np.savez_compressed(os.path.join(DD, "occlusion_bin.npz"),
                     nA=nA, nM=nM, nmol=nmolD, lo=LO, hi=HI, cut=CUT)
 print()
-print("occlusion 분자 : 저 %s · 고 %s" % (format(int(nmolD[0]), ","),
+print("occlusion molecules : low %s, high %s" % (format(int(nmolD[0]), ","),
                                          format(int(nmolD[1]), ",")))
 
 rel = np.arange(LO, HI + 1)
@@ -187,7 +187,7 @@ def seg(a, c0, c1):
 
 
 print()
-print("## flank-core m6A 빈도비 (원문 창 배치) — 양분")
+print("## flank-core m6A frequency ratio (window layout of the original paper), binary split")
 print("  %-8s %6s %10s %10s %9s" % ("자리", "pos", "저", "고", "저/고"))
 for nm2, pos in (("TFIIIB", -11), ("ICR", 58)):
     v = []
@@ -199,4 +199,4 @@ for nm2, pos in (("TFIIIB", -11), ("ICR", 58)):
         v.append((fM / fA) / ((cM + 0.5) / (cA + 1.0)))
     print("  %-8s %+6d %10.3f %10.3f %9.2f" % (nm2, pos, v[0], v[1], v[0] / v[1]))
 print()
-print("저장 -> fhmm_peaks_5bp_bin.npz · occlusion_bin.npz")
+print("saved -> fhmm_peaks_5bp_bin.npz, occlusion_bin.npz")

@@ -2,7 +2,7 @@
 # The Source Data workbook for submission.
 #   The values are taken from the very table the figure reads; copying them from elsewhere would let them drift from the figure.
 #   In English. The README sheet records the source file and its md5.
-import io, os, sys, hashlib, collections, statistics, datetime
+import io, os, sys, hashlib, collections, statistics
 import openpyxl
 from openpyxl.styles import Font, Alignment
 from openpyxl.utils import get_column_letter
@@ -10,16 +10,12 @@ sys.stdout.reconfigure(encoding="utf-8")
 
 # -- (repo) paths come from the environment --------------------------------
 #   The roots are required; the output and table directories fall back to this file's folder.
-#@DROP
 WORK_ROOT = os.environ["WORK_ROOT"]
 DATA_ROOT = os.environ["DATA_ROOT"]
 REGISTRY_DIR = os.environ["REGISTRY_DIR"]
 TABLE_DIR = os.environ.get(
     "TABLE_DIR",
     os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "tables"))
-# P10_DIR is no longer used: the 1kGP (P10) row is dropped below.
-#   The table in panel B holds only the two blocks "From HPRC samples" and "From GIAB samples";
-#   P10, 1kGP and 18 are never drawn (measured).
 V11 = os.path.join(TABLE_DIR, "V11F4_DATASET_hap_flags_v2.tsv")
 REG = os.path.join(REGISTRY_DIR, "cohort_tiers_Fig1_2026-10-08.tsv")
 POPC = os.path.join(DATA_ROOT, "02_tables", "POP_COHORT.tsv")
@@ -72,7 +68,7 @@ hp = [r for r in R if r[H["cohort"]] == "HPRC" and r[H["N_units"]].isdigit()]
 # Read from the registry, do not hard-code: 4 haplotypes / 3 samples / 2 people.
 CANCER = set(r[H["sample"]].strip().lower() for r in R if r[H["cohort"]] == "cancer")
 
-# Fig 1C — cohort table
+# Fig 1B: cohort table
 Hr, Rr = tsv(REG)
 T = dict((r[Hr["name"]], r) for r in Rr)
 coh = {}
@@ -91,33 +87,33 @@ rows = [
     ("Both blocks", "Subtotal", "",
      coh["HPRC"][0] + coh["GIAB"][0], coh["HPRC"][1] + coh["GIAB"][1]),
 ]
-sheet("Fig1C_cohort_table", ["Block", "Row", "Tier", "Individuals", "Haplotypes"], rows, V11,
+sheet("Fig1B_cohort_table", ["Block", "Row", "Tier", "Individuals", "Haplotypes"], rows, V11,
       "H1-H3 are nested subsets of HPRC and are not added to the subtotal. "
       "Cancer references (%d haplotypes / %d samples) exist in the registry but are not shown "
       "in the figure; the cohort table holds two blocks only. The 1kGP (P10) row is not in "
       "this sheet either, for the same reason, that the panel does not draw it."
       % (coh["Cancer"][1], coh["Cancer"][0]))
 
-# Fig 1D — complete units per haplotype (HPRC)
+# Fig 1C: complete units per haplotype (HPRC)
 rows = [(r[H["sample"]], r[H["slot"]], int(r[H["N_units"]])) for r in hp]
 rows.sort(key=lambda x: (x[0], x[1]))
-sheet("Fig1D_units_per_haplotype", ["Sample", "Slot", "Complete_units"], rows, V11,
+sheet("Fig1C_units_per_haplotype", ["Sample", "Slot", "Complete_units"], rows, V11,
       "Slot 1 = haplotype A, slot 2 = haplotype B.")
 HAP = [x[2] for x in rows]
 
-# Fig 1E — per individual (both haplotypes assembled)
+# Fig 1D: per individual (both haplotypes assembled)
 ind = collections.defaultdict(list)
 for r in hp:
     ind[r[H["sample"]]].append(int(r[H["N_units"]]))
 pair = sorted((s, v) for s, v in ind.items() if len(v) == 2)
 rows = [(s, min(v), max(v), sum(v), abs(v[0] - v[1])) for s, v in pair]
-sheet("Fig1E_units_per_individual",
+sheet("Fig1D_units_per_individual",
       ["Sample", "Units_haplotype_lower", "Units_haplotype_higher",
        "Units_total", "Absolute_difference"], rows, V11,
       "Only individuals with both haplotypes assembled.")
 TOT = [x[3] for x in rows]
 
-# Fig 1F — by superpopulation
+# Fig 1E: by superpopulation
 Hc, Rc = tsv(POPC)
 CANON = dict((r[Hc["sample"]], r[Hc["sp"]].strip()) for r in Rc
              if r[Hc["sp"]].strip() not in ("", "NA"))
@@ -135,7 +131,7 @@ for r in hp:
         lab[s] = PED_SP[s]
 rows = sorted((lab[r[H["sample"]]], r[H["sample"]], r[H["slot"]], int(r[H["N_units"]]))
               for r in hp if r[H["sample"]] in lab)
-sheet("Fig1F_by_superpopulation",
+sheet("Fig1E_by_superpopulation",
       ["Superpopulation", "Sample", "Slot", "Complete_units"], rows, POPC,
       "Labels from the 1000 Genomes pedigree; 4 individuals have no label and are excluded.")
 
@@ -151,7 +147,7 @@ sheet("FigS1A_length_difference",
 Hh, Rh = tsv(os.path.join(S6, "FIG2_data_hifi.tsv"))
 rows = [(r[Hh["source"]], r[Hh["ref"]], int(r[Hh["slots"]]), float(r[Hh["recall"]]),
          float(r[Hh["precision"]]), int(r[Hh["n_map_var"]])) for r in Rh]
-sheet("FigS1B_variant_recall",
+sheet("FigS1E_variant_recall",
       ["Source", "Reference_allele", "Haplotypes", "Recall_percent",
        "Precision_percent", "Mapped_variants"], rows,
       os.path.join(S6, "FIG2_data_hifi.tsv"),
@@ -162,7 +158,7 @@ Rd = [r for r in Rd if r[Hd["sample"]].strip().lower() not in CANCER]   # cancer
 rows = [(r[Hd["sample"]], r[Hd["slot"]], r[Hd["source"]], int(r[Hd["c_units"]]),
          int(r[Hd["d_longest_read_units"]]), float(r[Hd["d_over_c"]]),
          int(r[Hd["n_reads"]])) for r in Rd]
-sheet("FigS1D_longest_read_span",
+sheet("FigS1B_longest_read_span",
       ["Sample", "Slot", "Source", "Complete_units", "Units_in_longest_read",
        "Span_ratio", "Reads"], sorted(rows),
       os.path.join(S5, "DC_TABLE.tsv"),
@@ -171,7 +167,7 @@ sheet("FigS1D_longest_read_span",
 Ht, Rt = tsv(os.path.join(S5, "FIG_data_table.tsv"))
 rows = [(r[Ht["sample"]], int(r[Ht["n_hap"]]), int(r[Ht["n_avail"]]), int(r[Ht["n_ok"]]))
         for r in Rt]
-sheet("FigS1E_trimming_result",
+sheet("FigS1D_trimming_result",
       ["Sample", "Haplotypes", "Contig_of_correct_length", "Contig_selected"],
       sorted(rows), os.path.join(S5, "FIG_data_table.tsv"),
       "Assembled = sum(Contig_of_correct_length)/sum(Haplotypes); "
@@ -179,21 +175,19 @@ sheet("FigS1E_trimming_result",
 
 Hp2, Rp2 = tsv(os.path.join(S7, "EXAMPLE_PROFILE.tsv"))
 rows = [tuple(r) for r in Rp2]
-sheet("FigS1H_worked_examples", list(Hp2), rows,
+sheet("FigS1I_worked_examples", list(Hp2), rows,
       os.path.join(S7, "EXAMPLE_PROFILE.tsv"),
-      "The three panels of (H): positive control, HG00133 haplotype B, HG03270 haplotype A.")
+      "The three panels of (I): positive control, HG00133 haplotype B, HG03270 haplotype A.")
 
 # `NA21133` slot 2 is excluded.
 #   At that site the independent read recount returned no reads at all, so it could be neither confirmed nor refuted,
 #   and that haplotype attracts reads least well of the fourteen (median local-best 0.571).
 #   It is therefore dropped from both numerator and denominator: sites 14 -> 13, haplotypes 13 -> 12.
-#   The input table was reduced to 13 rows on 14 Nov 2026, so this filter now removes
-#   nothing. It is kept so the sheet stays at 13 rows if a 14-row table is ever restored.
 DROPPED = ("na21133", "2")       # (sample, slot), lower-cased sample
 Hs, Rs = tsv(os.path.join(S7, "INTEGRATED_13SITES.tsv"))
 Rs = [r for r in Rs
       if (r[Hs["sample"]].strip().lower(), r[Hs["slot"]].strip()) != DROPPED]
-# -- This sheet carried the source rows verbatim, which put 38 Korean cells into the submitted workbook.
+# -- Korean cells.
 #   They are translated at the point of writing; the input table is left untouched.
 #   The class wording follows the summary below, except that the three the summary merges into Mosaic
 #     are kept distinct on this sheet; merging them would destroy its purpose.
@@ -211,7 +205,7 @@ S1I_EN = {
 _S1I_IX = dict((Hs[c], S1I_EN[c]) for c in S1I_EN if c in Hs)
 rows = [tuple(_S1I_IX[j][v] if (j in _S1I_IX and v in _S1I_IX[j]) else v
               for j, v in enumerate(r)) for r in Rs]
-sheet("FigS1I_known_sites", list(Hs), rows,
+sheet("FigS1H_known_sites", list(Hs), rows,
       os.path.join(S7, "INTEGRATED_13SITES.tsv"),
       "%d candidate structural sites in %d haplotypes, flagged by the two tests of this work. "
       "The NA21133 slot 2 site is excluded, from the numerator and the "
@@ -221,7 +215,7 @@ sheet("FigS1I_known_sites", list(Hs), rows,
 POS_ALL = 56846   # The total number of reference-unit sites; the denominator is written in one place only.
 Ha, Ra = tsv(os.path.join(S7, "ALIGNED_POS_RATE.tsv"))
 Ra = [r for r in Ra if r[Ha["sample"]].strip().lower() not in CANCER]   # cancer excluded
-Ra = [r for r in Ra                                                    # NA21133 slot 2, v142
+Ra = [r for r in Ra                                                    # NA21133 slot 2
       if (r[Ha["sample"]].strip().lower(), r[Ha["slot"]].strip()) != DROPPED]
 hapset = set((r[Ha["sample"]], r[Ha["slot"]]) for r in Ra)
 rows = [("Haplotypes examined", len(hapset)),
@@ -254,12 +248,12 @@ for k, v in hapcls.items():
 for k, v in sorted(cls.items()):
     rows.append((k, v))
 rows.append(("Inversion, block move, duplication", 0))   # matching the wording the figure prints
-sheet("FigS1I_classification_summary", ["Category", "Haplotypes"], rows,
+sheet("FigS1H_classification_summary", ["Category", "Haplotypes"], rows,
       os.path.join(S7, "ALIGNED_POS_RATE.tsv"),
-      "Counts behind panel (I). The reference set is 612 (HPRC 604 + GIAB 8) out of the "
+      "Counts behind panel (H). The reference set is 612 (HPRC 604 + GIAB 8) out of the "
       "616 rows of the registry, the other 4 being the cancer block. The test reached "
       "%d of 612 haplotypes, and %s of %s reference unit positions were tested = %.1f%%. "
-      "Mosaic and refuted are one class since 1 November 2026, so %d + %d + %d = %d closes."
+      "Mosaic and refuted are one class, so %d + %d + %d = %d closes."
       % (len(hapset), format(len(Ra), ","), format(POS_ALL, ","),
          len(Ra) / POS_ALL * 100,
          len(hapset) - sum(cls.values()), cls["True deletion / insertion"],
@@ -268,17 +262,17 @@ sheet("FigS1I_classification_summary", ["Category", "Haplotypes"], rows,
 # ── summary statistics sheet ──────────────────────────────────────────
 dc = sorted(float(r[Hd["d_over_c"]]) for r in Rd)
 rows = [
-    ("Fig 1D", "Complete units per haplotype", "median", round(statistics.median(HAP), 1)),
-    ("Fig 1D", "Complete units per haplotype", "minimum", min(HAP)),
-    ("Fig 1D", "Complete units per haplotype", "maximum", max(HAP)),
-    ("Fig 1D", "Complete units per haplotype", "n (haplotypes)", len(HAP)),
-    ("Fig 1E", "Complete units per individual", "median", round(statistics.median(TOT), 1)),
-    ("Fig 1E", "Complete units per individual", "minimum", min(TOT)),
-    ("Fig 1E", "Complete units per individual", "maximum", max(TOT)),
-    ("Fig 1E", "Complete units per individual", "n (individuals)", len(TOT)),
-    ("Fig S1D", "Longest-read span ratio", "5th percentile", round(dc[int(len(dc) * 0.05)], 4)),
-    ("Fig S1D", "Longest-read span ratio", "n (haplotypes)", len(dc)),
-    ("Fig S1D", "Longest-read span ratio", "at or below 0.45",
+    ("Fig 1C", "Complete units per haplotype", "median", round(statistics.median(HAP), 1)),
+    ("Fig 1C", "Complete units per haplotype", "minimum", min(HAP)),
+    ("Fig 1C", "Complete units per haplotype", "maximum", max(HAP)),
+    ("Fig 1C", "Complete units per haplotype", "n (haplotypes)", len(HAP)),
+    ("Fig 1D", "Complete units per individual", "median", round(statistics.median(TOT), 1)),
+    ("Fig 1D", "Complete units per individual", "minimum", min(TOT)),
+    ("Fig 1D", "Complete units per individual", "maximum", max(TOT)),
+    ("Fig 1D", "Complete units per individual", "n (individuals)", len(TOT)),
+    ("Fig S1B", "Longest-read span ratio", "5th percentile", round(dc[int(len(dc) * 0.05)], 4)),
+    ("Fig S1B", "Longest-read span ratio", "n (haplotypes)", len(dc)),
+    ("Fig S1B", "Longest-read span ratio", "at or below 0.45",
      sum(1 for x in dc if x <= 0.45)),
 ]
 sheet("Summary_statistics", ["Figure", "Quantity", "Statistic", "Value"], rows, None,
@@ -289,9 +283,6 @@ ws = wb.create_sheet("README", 0)
 ws.append(["Source data for Figure 1 and Supplementary Figure 1"])
 ws["A1"].font = Font(bold=True, size=13)
 ws.append([])
-# No date is written into the file; the run date would be recorded by itself.
-#   The output bytes would then shift with the clock, so the version is recorded in the registry instead, outside the file.
-ws.append(["Generated", datetime.date.today().isoformat()])
 ws.append(["Figures", "Fig1_pipeline_EN.pdf / .svg / .png, SFig1_EN and SFig1_KO"])
 ws.append([])
 ws.append(["Sheet", "Source file", "Source md5 (first 12)", "Rows", "Note"])

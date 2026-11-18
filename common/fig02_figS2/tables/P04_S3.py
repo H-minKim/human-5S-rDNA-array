@@ -21,7 +21,7 @@ LU = len(CAN)
 with open(os.path.join(OUT, "Q0_alignment.pkl"), "rb") as f:
     Q0 = pickle.load(f)
 DIFF = Q0["diff"]
-print("정렬 적재 유닛 %d" % len(DIFF))
+print("alignment loaded, units %d" % len(DIFF))
 # ---------- filter out QC-failed units ----------
 SNV4 = re.compile(r"^R?(\d+)([ACGT])([ACGT])$")
 BAD = set()
@@ -61,7 +61,7 @@ for f, Hx in G._rows(G.MAPF):
     gi = sum(len(s) for _, s in ins)
     if gsub != wsub or len(dele) != wd or gi != wi:
         BAD.add(k)
-print("QC 실패 유닛 %d (%.5f) · 슬롯 분포 상위 %s"
+print("QC-failed units %d (%.5f), top of slot distribution %s"
       % (len(BAD), len(BAD) / len(DIFF),
          collections.Counter(("%s|%s" % (k[0], k[1])) for k in BAD).most_common(4)))
 
@@ -73,7 +73,7 @@ for k in DIFF:
     bySlot[(k[0], k[1])].append(k[2])
 for s in bySlot:
     bySlot[s].sort()
-print("슬롯 %d · 쓸 유닛 %d" % (len(bySlot), sum(len(v) for v in bySlot.values())))
+print("slots %d, usable units %d" % (len(bySlot), sum(len(v) for v in bySlot.values())))
 
 
 def unit_rep(k):
@@ -122,10 +122,10 @@ for si, s in enumerate(sorted(bySlot)):
             M[i, j] = M[j, i] = pair_d(reps[i], reps[j])
     MATS[s] = M
     if si % 100 == 99:
-        print("   ... 슬롯 %d/%d · %.0fs" % (si + 1, len(bySlot), time.time() - t0), flush=True)
-print("■ S3 행렬 완료 %.0fs · 슬롯 %d" % (time.time() - t0, len(MATS)))
+        print("   ... slot %d/%d, %.0fs" % (si + 1, len(bySlot), time.time() - t0), flush=True)
+print("S3 matrix done %.0fs, slots %d" % (time.time() - t0, len(MATS)))
 allv = np.concatenate([MATS[s][np.triu_indices(len(MATS[s]), 1)] for s in MATS])
-print("   같은 array 쌍 %d · 편집거리 median %d · 평균 %.3f · 0 인 몫 %.6f · max %d"
+print("   same-array pairs %d, edit distance median %d, mean %.3f, share equal to 0 %.6f, max %d"
       % (len(allv), int(np.median(allv)), allv.mean(), (allv == 0).mean(), allv.max()))
 ulen = np.array([DIFF[k][3] for k in DIFF if k not in BAD])
 np.savez_compressed(os.path.join(OUT, "S3_matrices.npz"),
@@ -136,8 +136,8 @@ with open(os.path.join(OUT, "S3_matrices.pkl"), "wb") as f:
     pickle.dump({"mats": MATS, "aps": {s: bySlot[s] for s in bySlot},
                  "bad": BAD, "ulen": {k: DIFF[k][3] for k in DIFF if k not in BAD}}, f, protocol=4)
 g = io.open(os.path.join(OUT, "S3_summary.tsv"), "w", encoding="utf8", newline="\n")
-g.write("# S3 정렬 기반 쌍별 거리 (CAN 투영) · parasail 정렬 · 2026-10-10\n")
-g.write("# QC 실패 유닛 %d 제외 · 쓸 유닛 %d · 슬롯 %d\n"
+g.write("# S3 alignment-based pairwise distance (CAN projection), parasail alignment\n")
+g.write("# QC-failed units %d excluded, usable units %d, slots %d\n"
         % (len(BAD), sum(len(v) for v in bySlot.values()), len(bySlot)))
 g.write("item\tvalue\n")
 for k_, v_ in (("n_unit_used", sum(len(v) for v in bySlot.values())), ("n_unit_bad", len(BAD)),
@@ -148,4 +148,4 @@ for k_, v_ in (("n_unit_used", sum(len(v) for v in bySlot.values())), ("n_unit_b
                ("unit_len_max", int(ulen.max()))):
     g.write("%s\t%s\n" % (k_, v_))
 g.close()
-print("\n산출 :", os.path.join(OUT, "S3_matrices.pkl"), "·", os.path.join(OUT, "S3_summary.tsv"))
+print("\noutput :", os.path.join(OUT, "S3_matrices.pkl"), "·", os.path.join(OUT, "S3_summary.tsv"))

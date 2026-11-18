@@ -82,7 +82,7 @@ for k, rs in U.items():
         if r[1] <= DMAX: acc[("dist", r[1])].append(v); accb[("dist", r[1])].append(b)
         if r[0] > 30 and r[1] > 30: mid.append(v); midb.append(b)
 MIDV = np.vstack(mid).mean(0); MIDB = np.nanmean(midb)
-print("가운데 기준 : 유닛 %d · beta %.3f" % (len(mid), MIDB))
+print("interior reference : units %d, beta %.3f" % (len(mid), MIDB))
 
 def profile(side):
     ds = []; X = []
@@ -137,14 +137,14 @@ for side, nm in (("prox", "근위"), ("dist", "원위")):
     Z = zscore(X)
     print("")
     print("=" * 84)
-    print("=== %s 쪽 : 깊이 %d-%d (하플로타입 %d 개 이상 기여) · 특징 %d 개 ===" % (nm, ds.min(), ds.max(), MINHAP, NF))
+    print("=== %s side : depth %d-%d (at least %d haplotypes contributing), features %d ===" % (nm, ds.min(), ds.max(), MINHAP, NF))
     for PEN in (0.5, 1.0, 2.0):
         pen = PEN * NF * np.log(len(ds))
         cps = binseg(Z, pen=pen)
         nul = [len(binseg(Z[rng.permutation(len(ds))], pen=pen)) for _ in range(200)]
         bounds = [0] + cps + [len(ds)]
         zones = [(int(ds[bounds[i]]), int(ds[bounds[i + 1] - 1])) for i in range(len(bounds) - 1)]
-        print("  [PEN=%.1f] 경계 %d 개 · 귀무 평균 %.2f  ->  구역 %s" % (
+        print("  [PEN=%.1f] boundaries %d, null mean %.2f  ->  zones %s" % (
             PEN, len(cps), float(np.mean(nul)), " | ".join("%d-%d" % z for z in zones)))
         for i, (a, b) in enumerate(zones):
             m = (ds >= a) & (ds <= b)
@@ -153,7 +153,7 @@ for side, nm in (("prox", "근위"), ("dist", "원위")):
             names = FB + ["beta_meth"]
             ft = ", ".join("%s%+.1f" % (names[j], mu[j]) for j in o)
             g.write("%s\t%.1f\t%d\t%d\t%d\t%d\t%s\n" % (side, PEN, len(zones), i + 1, a, b, ft))
-            if PEN == 1.0: print("      구역%d  깊이 %2d-%2d : %s" % (i + 1, a, b, ft))
+            if PEN == 1.0: print("      zone%d  depth %2d-%2d : %s" % (i + 1, a, b, ft))
         if PEN == 1.0: RES[side] = (ds, X, Z, cps, zones)
 g.close()
 

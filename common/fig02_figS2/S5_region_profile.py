@@ -83,18 +83,18 @@ for r in REG:
             ("%.4f"%ratio[i,j]) if np.isfinite(ratio[i,j]) else "",("%.4f"%rlo[i,j]) if np.isfinite(rlo[i,j]) else "",
             ("%.4f"%rhi[i,j]) if np.isfinite(rhi[i,j]) else ""))
 g.close()
-print("저장: S5_region_profile.tsv  (영역 %d x 지표 %d)"%(len(REG),len(MET)))
+print("saved: S5_region_profile.tsv  (regions %d x metrics %d)"%(len(REG),len(MET)))
 def line(m,regs):
     j=MI[m]; return "  ".join("%5.2f"%mean[RI[r],j] for r in regs)
 sel=["P1","P2","P3","P5","P10","P20","P30","MID","D30","D20","D10","D5","D3","D2","D1"]
 print("")
-print("=== 유닛당 개수 (영역 %s) ==="%" ".join(sel))
-print("  지표          "+"  ".join("%5s"%s for s in sel))
+print("=== count per unit (region %s) ==="%" ".join(sel))
+print("  metric          "+"  ".join("%5s"%s for s in sel))
 for m in ["n_var","snv","snv_rep","del","del_rep","ins","ins_rep","del_ge10"]:
     print("  %-12s "%m+line(m,sel))
 print("")
-print("=== 가운데 대비 비 (CI 가 1 을 벗어나면 ) ===")
-print("  지표          "+"  ".join("%5s"%s for s in sel))
+print("=== ratio to interior (if the CI excludes 1 ) ===")
+print("  metric          "+"  ".join("%5s"%s for s in sel))
 for m in ["snv","snv_rep","del","del_rep","ins","ins_rep","del_ge10"]+["sub:"+s for s in SUBS]+["C>T|CpG","C>T|non"]+["elem:coding","elem:GArich","elem:AluY","elem:NTS1","elem:NTS2"]:
     j=MI[m]
     cells=[]

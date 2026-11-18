@@ -4,7 +4,7 @@
 #   Route: pod5 (0.3.47) --to_fast5--> fast5 --convert with 0.3.44--> pod5 (0.3.44). In testing dorado read these and the MM tags were intact.
 #   Argument: the number of concurrent jobs.
 #   Outputs: sub44/<same_name>.pod5 and sub44/converted.tsv (name, read count).
-# MIT License · Copyright (c) 2026 Hungmin Kim
+# MIT License. Copyright (c) 2026 Hyungmin Kim
 set -u
 H=~/xsp/ath
 J="${1:-6}"
@@ -34,6 +34,6 @@ one() {
 }
 export -f one
 ls $H/sub/*.pod5 | xargs -P "$J" -I{} bash -c 'one "$1"' _ {}
-echo "변환 끝 $(date -u +%H:%M) UTC · 파일 $(wc -l < $H/sub44/converted.tsv)"
-awk -F'\t' '$2 ~ /^[0-9]+$/ {n++; s+=$2} $2 !~ /^[0-9]+$/ {f++} END{printf "성공 %d 파일 · read %d · 실패 %d\n", n, s, f+0}' $H/sub44/converted.tsv
-echo "원본(0.3.47) read 합 $(awk -F'\t' 'NF>=5 && $5>0{s+=$5} END{print s}' $H/members.tsv)"
+echo "conversion done $(date -u +%H:%M) UTC, files $(wc -l < $H/sub44/converted.tsv)"
+awk -F'\t' '$2 ~ /^[0-9]+$/ {n++; s+=$2} $2 !~ /^[0-9]+$/ {f++} END{printf "succeeded %d files, read %d, failed %d\n", n, s, f+0}' $H/sub44/converted.tsv
+echo "source(0.3.47) read sum $(awk -F'\t' 'NF>=5 && $5>0{s+=$5} END{print s}' $H/members.tsv)"

@@ -81,14 +81,14 @@ for L in io.open(SRC, encoding="utf8"):
 ub = os.path.join(W, "ft", "%s.unaligned.bam" % S)
 sp = subprocess.run(["samtools", "view", "-b", "-o", ub, "-"], input=NL.join(hdr + recs) + NL, text=True, capture_output=True)
 if sp.returncode:
-    sys.exit("samtools 실패 " + sp.stderr)
+    sys.exit("samtools failed " + sp.stderr)
 
 # ── 2. ft predict-m6a
 ob = os.path.join(W, "ft", "%s.ft.bam" % S)
 p = subprocess.run([FT, "predict-m6a", "-t", "8", ub, ob], capture_output=True, text=True)
 io.open(os.path.join(W, "ft", "%s.ft.log" % S), "w", encoding="utf8").write(p.stdout + p.stderr)
 if p.returncode:
-    sys.exit("ft 실패 " + p.stderr[-500:])
+    sys.exit("ft failed " + p.stderr[-500:])
 
 # -- 3. the new MM/ML, and the test
 T = collections.Counter()
@@ -130,4 +130,4 @@ for L in io.open(SRC, encoding="utf8"):
 out.close()
 for k, v in sorted(T.items()):
     print("  %s %-20s %d" % (S, k, v))
-print("  %s MM 블록머리 %s" % (S, dict(heads)))
+print("  %s MM block headers %s" % (S, dict(heads)))

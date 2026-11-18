@@ -2,14 +2,13 @@
 # The script that ran the trimming test for Fig. S1 E on the compute node
 #
 #   This script ran on the compute node; the read data is there.
-#@DROP
 #
 #   It produces ctrl.log, t45.log, goctrl_*.log and go45_*.log,
 #     which analysis/figS1_E_trim_gate_table.py reads to build FIG_data_table.tsv.
 #
 #   Tools used; blastn is not one of them:
-#     · minimap2 -x map-ont -t <n> --secondary=no, for the flank call (2.26-r1175 on the node)
-#     · hifiasm --ont -o <smp> -t <n>, for the reassembly (0.25.0-r726)
+#     - minimap2 -x map-ont -t <n> --secondary=no, for the flank call (2.26-r1175 on the node)
+#     - hifiasm --ont -o <smp> -t <n>, for the reassembly (0.25.0-r726)
 #
 #   Random numbers: the seed is fixed, random.Random(20260928) at line 135.
 #     An array-only read has one of its two ends chosen at random, so without the seed the result would not reproduce.
@@ -19,10 +18,10 @@
 # -*- coding: utf-8 -*-
 # The trimming pilot: reads are shortened rather than removed, which preserves depth and takes away only the long-range links.
 #   The rules:
-#     · the limit is L = THR * 2240 * c_max, with THR defaulting to 0.45
-#     · only reads longer than L are trimmed
-#     · a read carrying flank is trimmed at the non-flank end, keeping L bp from the flank side
-#     · an array-only read is trimmed at one end chosen at random, with the seed fixed
+#     - the limit is L = THR * 2240 * c_max, with THR defaulting to 0.45
+#     - only reads longer than L are trimmed
+#     - a read carrying flank is trimmed at the non-flank end, keeping L bp from the flank side
+#     - an array-only read is trimmed at one end chosen at random, with the seed fixed
 #   The flank call: minimap2 alignment against 50 kb proximal and distal CHM13 flank probes, and which end of the read they attach to.
 #   Usage: python3 trimpilot.py <list of individual and c_max> <THR>
 import io, os, sys, gzip, random, subprocess, shutil, tempfile, collections

@@ -246,7 +246,7 @@ for L in gzip.open(CA, "rt", encoding="utf8"):
         sys.stderr.flush()
 if cur is not None and not skip:
     process(buf, cur)
-print("창 수 : %s" % dict(N))
+print("number of windows: %s" % dict(N))
 
 
 def dump(name, win, ctrl):
@@ -271,7 +271,7 @@ def dump(name, win, ctrl):
                        ("%.4f" % s) if s != "" else "", NL))
             k += 1
     o.close()
-    print("  %-34s %s 줄" % (name, format(k, ",")))
+    print("  %-34s %s lines" % (name, format(k, ",")))
 
 
 for nm, _, _ in RULERS:
@@ -284,7 +284,7 @@ with io.open(os.path.join(OUT, "CLEAN_WINDOWS_%s.tsv" % NEW), "w", encoding="utf
             "\tbeta_per_unit\tgap\tcontrast_ok" + NL)
     for r in ROWS:
         o.write("\t".join(str(x) for x in r) + NL)
-print("  깨끗한 창 %s" % format(len(ROWS), ","))
+print("  clean windows %s" % format(len(ROWS), ","))
 
 with io.open(os.path.join(OUT, "STEP_POS_%s.tsv" % NEW), "w", encoding="utf8",
              newline=NL) as o:
@@ -292,5 +292,5 @@ with io.open(os.path.join(OUT, "STEP_POS_%s.tsv" % NEW), "w", encoding="utf8",
             "\tunit_off_after\tunit_pos_after\telem_after\tcpg_between\tcontrast_ok" + NL)
     for r in STEPS:
         o.write("\t".join(str(x) for x in r) + NL)
-print("  전환 자리 %s" % format(len(STEPS), ","))
-print("산출 : %s" % OUT)
+print("  transition positions %s" % format(len(STEPS), ","))
+print("output: %s" % OUT)

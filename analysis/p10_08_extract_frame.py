@@ -75,7 +75,7 @@ for fam, un in FAM_UNIT.items():
         d[k] = ("+", i)
         d[r] = ("-", i)
     KM[fam] = d
-    print("앵커 %-9s 유닛 %d bp · 유일 31-mer %d" % (fam, L, len(d) // 2), flush=True)
+    print("anchor %-9s unit %d bp, unique 31-mers %d" % (fam, L, len(d) // 2), flush=True)
 
 REG = {}
 for i, L in enumerate(io.open(P + "/out/P10_SEGMENT_REGISTRY.tsv", encoding="utf8")):
@@ -274,7 +274,7 @@ for fd in folders:
             FO.write("%s\t%s\t%s\t%s\t%s\t%s\t%s\t%d\t%s\t%d\t%s\t%d\t%d\t%s\n"
                      % (smp, hap, lab, md, units[u][2], pol, pol_used, nun, a.query_name[:16],
                         u, ufd, n, k, bins))
-    print("%s 끝" % fd.split("/")[-1], flush=True)
+    print("%s done" % fd.split("/")[-1], flush=True)
 FO.close()
 FS.close()
 print("saved P10_FRAME_%s.tsv" % tag)

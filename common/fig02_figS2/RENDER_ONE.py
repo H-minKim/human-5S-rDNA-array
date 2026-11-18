@@ -80,13 +80,13 @@ for lang, hook, budget in (("ko", _HK[0], False), ("en", _HK[1], True)):
     if not ok:
         print("      %s" % (r.stderr or "").strip().split("\n")[-1][:220])
         sys.exit(1)
-    print("      산출 : %s" % ", ".join(sorted(os.listdir(out))[:6]))
+    print("      output : %s" % ", ".join(sorted(os.listdir(out))[:6]))
 HAN = re.compile("[가-힣]")
 for f in sorted(os.listdir(os.path.join(REPRO, "_r%sen" % TAG))):
     if f.endswith(".svg"):
         s = io.open(os.path.join(REPRO, "_r%sen" % TAG, f), encoding="utf8").read()
         han = {x.strip() for x in re.findall(r">([^<]*)<", s, re.S) if HAN.search(x)}
-        print("   영어판 %-34s 한글 %d %s" % (f, len(han), sorted(han)[:4]))
+        print("   English version %-34s Korean %d %s" % (f, len(han), sorted(han)[:4]))
 if os.path.exists(MISS):
     uniq = {l.rstrip("\n").split("\t")[-1] for l in io.open(MISS, encoding="utf8")}
-    print("   번역 안 된 한글 %d : %s" % (len(uniq), sorted(uniq)[:8]))
+    print("   untranslated Korean %d : %s" % (len(uniq), sorted(uniq)[:8]))

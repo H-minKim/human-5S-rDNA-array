@@ -34,7 +34,7 @@ def grab(fn, letter):
             start = i
             break
     if start is None:
-        raise KeyError("%s : 패널 %s 의 시작(%s)을 못 찾았다" % (fn, letter, pat_s))
+        raise KeyError("%s: panel %s start (%s) not found" % (fn, letter, pat_s))
     end = None
     for j in range(start, len(L)):
         if L[j].lstrip().startswith(pat_t):
@@ -47,7 +47,7 @@ def grab(fn, letter):
                     break
             break
     if end is None:
-        raise KeyError("%s : 패널 %s 의 끝(%s)을 못 찾았다" % (fn, letter, pat_t))
+        raise KeyError("%s: panel %s end (%s) not found" % (fn, letter, pat_t))
     import textwrap
     # in the original it may sit inside an if block (e3 of F1), so the indentation is removed
     return textwrap.dedent(chr(10).join(L[start:end + 1]))
@@ -64,7 +64,7 @@ def borrow(fn, letter, ax, ns, subst=None):
                   "ax = _BORROW_AX", code, count=1, flags=re.M)
     for a, b in (subst or []):
         if a not in code:
-            raise KeyError("%s(%s) : 바꿀 글자가 없다 — %r" % (fn, letter, a))
+            raise KeyError("%s(%s): no text to replace: %r" % (fn, letter, a))
         code = code.replace(a, b)
     g = dict(ns)
     g["_BORROW_AX"] = ax

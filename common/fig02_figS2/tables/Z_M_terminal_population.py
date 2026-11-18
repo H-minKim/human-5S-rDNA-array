@@ -35,7 +35,7 @@ for k in HK:
         if not (r[1] <= 15 and r[1] <= r[0]):
             continue
         (term if TD.is_term(r[4]) else ordi).append((k[0], k[1], r[1], set(r[4])))
-print("말단형 유닛 %d 개 · 같은 깊이대 보통 유닛 %d 개" % (len(term), len(ordi)))
+print("terminal-type units %d, ordinary units in the same depth range %d" % (len(term), len(ordi)))
 
 
 def pairstats(pool, drop, same_person):
@@ -59,8 +59,8 @@ def pairstats(pool, drop, same_person):
 
 g = io.open(os.path.join(OUT, "ZM_terminal_similarity.tsv"), "w", encoding="utf8", newline="\n")
 g.write("unit_class\tdiagnostic\tpair\tn_pairs\tmean_jaccard\tp2.5\tp97.5\n")
-print("\n=== M1. 유닛 닮음 (원위 깊이 1-15) ===")
-print("  유닛종류  진단변이   쌍         n      자카드 [2.5-97.5%]")
+print("\n=== M1. unit similarity (distal depth 1-15) ===")
+print("  unit type  diagnostic variants   pairs      n      Jaccard [2.5-97.5%]")
 for cls, pool in (("말단형", term), ("보통", ordi)):
     for dname, drop in (("포함", set()), ("제외", DIAG)):
         for pname, sp in (("같은 사람", True), ("다른 사람", False)):
@@ -78,11 +78,11 @@ for i, Ln in enumerate(io.open(POPF, encoding="utf8")):
     POP[f[1]] = (f[5], f[6])
 samples = sorted(set(k[0] for k in HK))
 hit = [s for s in samples if s in POP]
-print("\n=== M2. 집단 결합 ===")
-print("  개체 %d 명 중 집단표에 있는 사람 %d 명 (%.1f%%)" % (len(samples), len(hit), 100.0 * len(hit) / len(samples)))
+print("\n=== M2. population join ===")
+print("  of %d individuals, %d are in the population table (%.1f%%)" % (len(samples), len(hit), 100.0 * len(hit) / len(samples)))
 miss = [s for s in samples if s not in POP][:10]
 if miss:
-    print("  표에 없는 예 :", ", ".join(miss))
+    print("  examples not in the table :", ", ".join(miss))
 
 carrier_hap = collections.defaultdict(set)
 for k in HK:
@@ -96,7 +96,7 @@ for s in hit:
 
 g = io.open(os.path.join(OUT, "ZM_population_carrier.tsv"), "w", encoding="utf8", newline="\n")
 g.write("level\tgroup\tn_individuals\tn_haplotypes\tn_carrier_hap\tfrac_hap\tn_indiv_with_any\tfrac_indiv\n")
-print("\n  [상위집단] 개체수  하플로타입  말단형 하플로  비율   보유 개체  개체비율")
+print("\n  [super-population] individuals  haplotypes  terminal-type haplotypes  fraction   carrier individuals  individual fraction")
 sup = collections.defaultdict(lambda: [0, 0, 0, 0])
 for s, sp, p, nh, nc in rows:
     a = sup[sp]; a[0] += 1; a[1] += nh; a[2] += nc; a[3] += (1 if nc else 0)
@@ -109,7 +109,7 @@ for spn in sorted(sup):
 tab = np.array([[sup[s][2], sup[s][1] - sup[s][2]] for s in sorted(sup)], float)
 tab = tab[tab.sum(1) > 0]
 chi2, pchi, dof, _ = chi2_contingency(tab)
-print("\n  하플로타입 단위 카이제곱 : chi2 %.2f · dof %d · p = %.4g" % (chi2, dof, pchi))
+print("\n  haplotype-level chi-square : chi2 %.2f, dof %d, p = %.4g" % (chi2, dof, pchi))
 labs = [sp for s, sp, p, nh, nc in rows]
 frac = np.array([nc / max(nh, 1) for s, sp, p, nh, nc in rows])
 uniq = sorted(set(labs))
@@ -122,13 +122,13 @@ for _ in range(NPERM):
     null.append(v.max() - v.min())
 null = np.array(null)
 pperm = (np.sum(null >= stat) + 1) / (NPERM + 1.0)
-print("  개체 단위 순열(집단 딱지 섞기 %d 벌) : 관측 최대-최소 %.3f · 귀무 중앙 %.3f · p = %.4f" % (
+print("  individual-level permutation (%d population-label shuffles) : observed max-min %.3f, null median %.3f, p = %.4f" % (
     NPERM, stat, np.median(null), pperm))
 g.write("#chi2_hap\t%.4f\tp\t%.6g\tdof\t%d\n" % (chi2, pchi, dof))
 g.write("#perm_indiv\trange_obs\t%.4f\tp\t%.6g\tnperm\t%d\n" % (stat, pperm, NPERM))
 
 # Subpopulations
-print("\n  [하위집단 상위 12개] 개체  하플로  말단형  비율")
+print("\n  [top 12 subpopulations] individuals  haplotypes  terminal type  fraction")
 subp = collections.defaultdict(lambda: [0, 0, 0])
 for s, sp, p, nh, nc in rows:
     a = subp[p]; a[0] += 1; a[1] += nh; a[2] += nc
@@ -139,7 +139,7 @@ for p in sorted(subp, key=lambda x: -subp[x][1])[:12]:
 g.close()
 
 # Pattern x population
-print("\n=== M3. 깊이 집합 패턴 × 상위집단 (보유 하플로타입만) ===")
+print("\n=== M3. depth-set pattern × super-population (carrier haplotypes only) ===")
 pat = collections.defaultdict(collections.Counter)
 for k in HK:
     ds = tuple(sorted(r[1] for r in U[k] if r[1] <= 15 and r[1] <= r[0] and TD.is_term(r[4])))
@@ -150,14 +150,14 @@ allp = collections.Counter()
 for spn in pat:
     allp.update(pat[spn])
 top = [p for p, _ in allp.most_common(6)]
-print("  패턴        " + "".join("%8s" % s for s in sorted(pat)))
+print("  pattern        " + "".join("%8s" % s for s in sorted(pat)))
 g = io.open(os.path.join(OUT, "ZM_pattern_by_population.tsv"), "w", encoding="utf8", newline="\n")
 g.write("pattern\t" + "\t".join(sorted(pat)) + "\n")
 for p in top:
     print("  %-11s" % p + "".join("%8d" % pat[s][p] for s in sorted(pat)))
     g.write("%s\t%s\n" % (p, "\t".join(str(pat[s][p]) for s in sorted(pat))))
 g.close()
-print("\n저장 :", OUT)
+print("\nsaved :", OUT)
 
 # the deposited table(s) carry English column names and values (common/fig02_figS2/taben.py)
 import sys as _s, os as _o

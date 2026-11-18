@@ -137,4 +137,4 @@ def plan(rows, panels_dir, name):
 
 
 if __name__ == "__main__":
-    print("이 파일은 조립기가 불러 쓴다 (plan).")
+    print("This file is imported by the assembler (plan).")

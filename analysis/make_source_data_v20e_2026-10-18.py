@@ -1,15 +1,6 @@
 # -*- coding: utf-8 -*-
-# The Source Data workbooks written by this script are not the
-# workbooks submitted with the paper.
-# The submitted Source Data workbooks for Figure 6 and its
-# supplementary figures are those recorded in the
-# panel source data ledger
-# (59_panel_source_data_ledger_2026-11-07).
-# . Source Data xlsx version 20e: main version 20 with the n sheet of main version 21 (the real counts of the four real markers), supplementary figure 1 (v6) and supplementary figure 2 (v6).
-#   Supplementary figure 2 has the panel letters a and b, c to e, f for marker unit methylation, g, h and i, and an f sheet.
 #   Output = 03_figures/00_Fig6_2026-10-09/rawdata_xlsx_edition21_2026-10-18/ ; the source-data bundle from version 14 is read and not written to.
 #   ① Sheets that did not change are carried over value for value from the version 14 bundle source_data, with only the GM12878 hap1 and hap2 letters renamed to hapA and hapB, which is the standard used in this manuscript.
-#   ② Newly built sheets: BDP1 added to main p_ChIP_zone, the end 20 unit values of supplementary 1a, the anchored reads of GM12878 hapB in 1a, BDP1 in supplementary 2d, the interaction table including BDP1, and criteria 1 and 2 of 2h.
 #   ③ Check: the numbers printed in the figures (14.7, 47.8, 8.1, the criterion 1 and 2 values and so on) are recomputed from the sheet values and asserted.
 import io, os, sys, csv, collections
 import openpyxl, pandas as pd
@@ -32,11 +23,11 @@ def old_sheet(fn, sh):
 def df_rows(df): return [list(df.columns)] + df.values.tolist()
 def write(fn, title, sheets, notes):
     wb = openpyxl.Workbook(); ws = wb.active; ws.title = "README"
-    for r in [("item", "description"), ("figure", title), ("made", "2026-10-17, make_source_data_v20_2026-10-17.py")] + notes: ws.append(list(r))
+    for r in [("item", "description"), ("figure", title)] + notes: ws.append(list(r))
     for nm, rows in sheets:
         w = wb.create_sheet(nm[:31])
         for r in rows: w.append(r)
-    p = os.path.join(OUT, fn); wb.save(p); print("  %s : 시트 %s" % (fn, ", ".join(n for n, _ in sheets)))
+    p = os.path.join(OUT, fn); wb.save(p); print("  %s: sheet %s" % (fn, ", ".join(n for n, _ in sheets)))
 # ---- shared tables
 QG = pd.read_csv(os.path.join(T, "K562_QUALGATE_NEWZONE_2026-10-13.tsv"), sep="\t")
 ZRB = pd.read_csv(os.path.join(T, "K562_zoneratio_Q20_NEWZONE_withBDP1BRF1_2026-10-14.tsv"), sep="\t")
@@ -58,7 +49,7 @@ def interaction_rows():
     for t in ("POLR3A", "TBP", "BDP1", "SNAPC5", "ATAC"):
         r = BTX[BTX.target == t].iloc[0]; rows.append([t, float(r.nc_interaction_OR), float(r.nc_lo), float(r.nc_hi), int(r["근위표지"]), int(r["가운데표지"]), CALL[r["판정"]]])
     return rows
-# ---- main
+# ---- Figure 6, panels I to L
 QG = pd.read_csv(os.path.join(T, "K562_QUALGATE_NEWZONE_2026-10-13.tsv"), sep="\t")
 _nr = [["marker", "zone", "element", "WGS_alt", "WGS_depth", "WGS_q", "POLR3A_alt", "POLR3A_depth", "POLR3A_fraction", "POLR3A_fraction_over_q", "ticks_WGS_of_26", "ticks_ChIP_of_26"]]
 for v_, z_, el_ in (("2091C", "proximal", "5'-flank"), ("2081A", "proximal", "5'-flank"), ("2128A", "interior", "gene"), ("2226T", "interior", "gene")):
@@ -67,16 +58,16 @@ for v_, z_, el_ in (("2091C", "proximal", "5'-flank"), ("2081A", "proximal", "5'
     _nr.append([v_, z_, el_, int(w_.alt_hq), int(w_.dep_hq), round(q_, 5), int(c_.alt_hq), int(c_.dep_hq), round(f_, 5), round(f_ / q_, 2), max(1, int(round(q_ * 26 * 20))), max(1, int(round(f_ * 26 * 20)))])
 assert [r[10] for r in _nr[1:]] == [1, 1, 3, 11] and [r[11] for r in _nr[1:]] == [7, 7, 1, 1], _nr
 m_k = old_sheet("SourceData_Fig6-3_main.xlsx", "m_zone_k")
-write("SourceData_Fig6-3_main.xlsx", "Fig 6 panels m–p (main 6-3, version 21; English SVG md5 6115955dd483): m haplotypes and markers · n estimator schematic · o ATAC zone composition · p ChIP zone composition (K562)",
-      [("m_markers", old_sheet("SourceData_Fig6-3_main.xlsx", "m_markers")), ("m_zone_k", m_k),
-       ("n_example_markers", _nr),
-       ("o_ATAC_zone", old_sheet("SourceData_Fig6-3_main.xlsx", "o_ATAC_zone")), ("p_ChIP_zone", chip_zone_rows())],
-      [("m", "markers per zone and unit (units = slot:unit, slot 1 = haplotype A, 2 = haplotype B); zone change points k (GM12878 haplotypes relabelled A/B from 1/2)"),
-       ("n", "version 21: four real K562 markers in the 5'-flank/gene region where ChIP/ATAC reads are dense (proximal 2091C, 2081A; interior 2128A, 2226T); real marker-allele/total counts in WGS and POLR3A ChIP (Q>=20, K562_QUALGATE_NEWZONE_2026-10-13.tsv); ticks = real fraction x 20 of 26 fragments (same factor for WGS and ChIP); fragment lengths not to scale"),
-       ("o", "pre-gate counts (one ruler for both cell lines); proximal/interior = 14.7 (K562), 10.0 (GM12878); shares = sum_alt and sum_exp of proximal vs interior"),
-       ("p", "base quality Q>=20; BDP1 rows from K562_zoneratio_Q20_NEWZONE_withBDP1BRF1_2026-10-14.tsv (same ruler; POLR3A identical in both tables); proximal/interior POLR3A 47.8, TBP 27.9, BDP1 8.1, SNAPC5 2.7"),
+write("SourceData_Fig6_I-L.xlsx", "Figure 6 panels I-L (English SVG md5 2ed5c1dd9afe), I haplotypes and markers, J estimator schematic, K ATAC zone composition, L ChIP zone composition (K562)",
+      [("I_markers", old_sheet("SourceData_Fig6-3_main.xlsx", "m_markers")), ("I_zone_k", m_k),
+       ("J_example_markers", _nr),
+       ("K_ATAC_zone", old_sheet("SourceData_Fig6-3_main.xlsx", "o_ATAC_zone")), ("L_ChIP_zone", chip_zone_rows())],
+      [("I", "markers per zone and unit (units = slot:unit, slot 1 = haplotype A, 2 = haplotype B); zone change points k (GM12878 haplotypes relabelled A/B from 1/2)"),
+       ("J", "version 21: four real K562 markers in the 5'-flank/gene region where ChIP/ATAC reads are dense (proximal 2091C, 2081A; interior 2128A, 2226T); real marker-allele/total counts in WGS and POLR3A ChIP (Q>=20, K562_QUALGATE_NEWZONE_2026-10-13.tsv); ticks = real fraction x 20 of 26 fragments (same factor for WGS and ChIP); fragment lengths not to scale"),
+       ("K", "pre-gate counts (one ruler for both cell lines); proximal/interior = 14.7 (K562), 10.0 (GM12878); shares = sum_alt and sum_exp of proximal vs interior"),
+       ("L", "base quality Q>=20; BDP1 rows from K562_zoneratio_Q20_NEWZONE_withBDP1BRF1_2026-10-14.tsv (same ruler; POLR3A identical in both tables); proximal/interior POLR3A 47.8, TBP 27.9, BDP1 8.1, SNAPC5 2.7"),
        ("denominators", "K562 = ENCODE K562 WGS; GM12878 = NA12878 WGS (1000 Genomes ERR3239334), both through the ChIP alignment gate")])
-# ---- supplementary figure 1
+# ---- Supplementary Figure S9, panels A and B
 src = io.open(os.path.join(C, "lowmeth_changepoint.py"), encoding="utf-8").read().split("SETS = []")[0]
 src = src.replace('sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")', ""); G = {}; exec(src, G)
 UK = G["pooled"]("RU_K562r.tsv.gz"); UG = G["pooled"]("RU_GM12878FS.tsv.gz")
@@ -100,13 +91,13 @@ for kind, fn, keep in (("unique units >= 23 (circle)", "hor_anchor_per_read_unit
     for k in range(1, 21):
         if U2[k][1] and not UG.get(("2", k)): FB.append([kind, k, U2[k][0], U2[k][1], round(U2[k][0] / U2[k][1], 4), U2[k][2]])
 ac = old_sheet("SourceData_SuppFig_S09.xlsx", "a_c_m6A_largeMSP"); h = ac[0]; mi = h.index("metric")
-write("SourceData_SuppFig1.xlsx", "Supplementary Fig. 1 (version 12 = version 7; English SVG md5 59be44c4b0a4): a gene-region methylation near the array ends and zone boundaries · b methylation · c m6A · d large MSP (cell-line Fiber-seq)",
-      [("a_units_1-20", A), ("a_zone_k", m_k), ("a_GM12878_hapB_anchored", FB), ("b_methylation", old_sheet("SourceData_SuppFig_S09.xlsx", "b_methylation")),
-       ("c_m6A", [h] + [r for r in ac[1:] if r[mi] == "m6a_gene"]), ("d_largeMSP", [h] + [r for r in ac[1:] if r[mi] == "patch_gene"])],
-      [("a", "pooled gene-region (2122–2240) CpG calls (ML>=128 = methylated) from placed reads (n_cpg>=10, >=3 window calls); change point k = two-level binomial MLE, 95% interval by profile likelihood widened by φ (a_zone_k)"),
-       ("a GM12878 hapB distal", "open symbols = reads placed by alignment anchored on unique units (unit 23 onward) or by private variants in the 8-unit repeat (units 5–22); shown only where placed reads are absent; the boundary k = 10 is unchanged (not re-estimated)"),
-       ("b–d", "values from the cell-line Fiber-seq figure (former Supplementary S09), copied value-for-value; GM12878 hap1/hap2 relabelled hapA/hapB; K562 hapB on the earlier 98-unit frame")])
-# ---- supplementary figure 2
+write("SourceData_FigS9_A-B.xlsx", "Supplementary Figure S9 panels A and B (English SVG md5 71b3848293c0), A gene-region methylation near the array ends and zone boundaries, B methylation, m6A and large MSP over the gene body by zone (cell-line Fiber-seq)",
+      [("A_units_1-20", A), ("A_zone_k", m_k), ("A_GM12878_hapB_anchored", FB), ("B_methylation", old_sheet("SourceData_SuppFig_S09.xlsx", "b_methylation")),
+       ("B_m6A", [h] + [r for r in ac[1:] if r[mi] == "m6a_gene"]), ("B_largeMSP", [h] + [r for r in ac[1:] if r[mi] == "patch_gene"])],
+      [("A", "pooled gene-region (2122-2240) CpG calls (ML>=128 = methylated) from placed reads (n_cpg>=10, >=3 window calls); change point k = two-level binomial MLE, 95% interval by profile likelihood widened by φ (A_zone_k)"),
+       ("A GM12878 hapB distal", "open symbols = reads placed by alignment anchored on unique units (unit 23 onward) or by private variants in the 8-unit repeat (units 5-22); shown only where placed reads are absent; the boundary k = 10 is unchanged (not re-estimated)"),
+       ("B", "values from the cell-line Fiber-seq figure, copied value-for-value; GM12878 hap1/hap2 relabelled hapA/hapB; K562 hapB on the earlier 98-unit frame")])
+# ---- Supplementary Figure S10
 gmint = old_sheet("SourceData_SuppFig_S06.xlsx", "c_interaction_GM12878"); gmint[0] = ["target", "nc_interaction_OR", "nc_lo", "nc_hi", "proximal_markers", "interior_markers"]
 cr = io.open(os.path.join(C, "supple_fig2_criteria.py"), encoding="utf-8").read().split("fig = plt.figure")[0]; g2 = {}; exec(cr, g2)
 H2 = [["target", "criterion_1_expected_proximal_ChIP_reads", "criterion_1_pass(>=3)", "criterion_2_expected_proximal_input_reads", "criterion_2_pass(>=1)", "in_main"]]
@@ -116,7 +107,7 @@ want = {"POLR3A": 16.43, "TBP": 219.94, "BDP1": 3.47, "SNAPC5": 6.67, "BRF1": 1.
 for r in H2[1:]: assert round(r[1], 2) == want[r[0]], r
 assert round(g2["EIN"], 2) == 1.09
 
-# ---- supplementary 2 panel f, the methylation of units that carry a marker, from K562 reads with no assembly
+# ---- Supplementary Figure S10 panel D, the methylation of units that carry a marker, from K562 reads with no assembly
 _MK = {r["variant"]: r for r in csv.DictReader(io.open(os.path.join(T, "P11_K562_MARKERS_NEWZONE_2026-10-13.tsv"), encoding="utf-8"), delimiter="\t")}
 _ZN = {"근위(합)": "proximal", "가운데": "interior", "원위(합)": "distal"}
 FU = [["read", "q_start", "q_end", "strand", "n_call", "n_meth", "beta", "markers", "marker_zones"]]
@@ -132,12 +123,12 @@ FS = [["units", "n", "low_beta_lt_0.3", "intermediate", "high_beta_ge_0.5", "low
 for key, exp in (("all units", "-"), ("proximal markers", "low"), ("distal markers", "low"), ("interior markers", "high")):
     a_ = _cnt[key]; FS.append([key, a_[3], a_[0], a_[1], a_[2], round(100 * a_[0] / a_[3], 1), round(100 * a_[2] / a_[3], 1), exp])
 assert [r[1] for r in FS[1:]] == [2595, 64, 149, 887], [r[1] for r in FS[1:]]
-write("SourceData_SuppFig2.xlsx", "Supplementary Fig. 2 (version 12; English SVG md5 229f6c408f36): a, b coverage · c–e marker zone exclusivity · f methylation of units carrying markers (K562 reads, no assembly) · g inclusion criteria · h ATAC zone ratios · i ChIP zone ratios (K562)",
-      [("a_b_coverage", old_sheet("SourceData_SuppFig_S06.xlsx", "a_b_coverage")), ("c_e_contigs_K562", old_sheet("SourceData_SuppFig_S01.xlsx", "K562")), ("c_e_contigs_GM12878", old_sheet("SourceData_SuppFig_S01.xlsx", "GM12878")), ("f_marker_unit_meth_summary", FS), ("f_marker_unit_meth_units", FU), ("g_criteria", H2),
-       ("h_ATAC_zone", old_sheet("SourceData_SuppFig_S06.xlsx", "c_ATAC_zone")), ("h_interaction_GM12878", gmint), ("i_ChIP_zone", chip_zone_rows()), ("h_i_interaction_K562", interaction_rows())],
-      [("f", "K562 Fiber-seq reads (K562r, 874 reads) cut into units by alignment to the canonical unit only (no assembly, no placement); unit beta = gene-region (2122–2240) CpG calls with ML>=128 / calls (>=3 calls); low beta<0.3, high beta>=0.5; marker alleles read at the 70 K562 marker positions"),
-       ("h", "pre-gate counts; interaction = proximal/interior ratio divided by that of input (paired marker bootstrap, seed 20261008)"),
-       ("i", "base quality Q>=20; BDP1 rows from K562_zoneratio_Q20_NEWZONE_withBDP1BRF1_2026-10-14.tsv; interactions from K562_interaction_NEWZONE_withBDP1BRF1_2026-10-14.tsv"),
-       ("c–e", "marker-allele read contigs (former Supplementary S01) copied value-for-value"),
-       ("g", "expected reads = sum over proximal markers of depth x WGS marker-allele fraction (Q>=20); all six K562 targets share the same pooled K562 input (ENCFF000YRC, ENCFF000YRN, ENCFF000YQC), so criterion 2 has one value (1.09)")])
+write("SourceData_FigS10.xlsx", "Supplementary Figure S10 (English SVG md5 b2862802b15d), A to C marker zone exclusivity, D methylation of units carrying markers (K562 reads, no assembly), E and F coverage, G inclusion criteria, H ATAC zone ratios, I ChIP zone ratios (K562)",
+      [("E_F_coverage", old_sheet("SourceData_SuppFig_S06.xlsx", "a_b_coverage")), ("A_C_contigs_K562", old_sheet("SourceData_SuppFig_S01.xlsx", "K562")), ("A_C_contigs_GM12878", old_sheet("SourceData_SuppFig_S01.xlsx", "GM12878")), ("D_marker_unit_meth_summary", FS), ("D_marker_unit_meth_units", FU), ("G_criteria", H2),
+       ("H_ATAC_zone", old_sheet("SourceData_SuppFig_S06.xlsx", "c_ATAC_zone")), ("H_interaction_GM12878", gmint), ("I_ChIP_zone", chip_zone_rows()), ("H_I_interaction_K562", interaction_rows())],
+      [("D", "K562 Fiber-seq reads (K562r, 874 reads) cut into units by alignment to the canonical unit only (no assembly, no placement); unit beta = gene-region (2122-2240) CpG calls with ML>=128 / calls (>=3 calls); low beta<0.3, high beta>=0.5; marker alleles read at the 70 K562 marker positions"),
+       ("H", "pre-gate counts; interaction = proximal/interior ratio divided by that of input (paired marker bootstrap, seed 20261008)"),
+       ("I", "base quality Q>=20; BDP1 rows from K562_zoneratio_Q20_NEWZONE_withBDP1BRF1_2026-10-14.tsv; interactions from K562_interaction_NEWZONE_withBDP1BRF1_2026-10-14.tsv"),
+       ("A to C", "marker-allele read contigs copied value-for-value"),
+       ("G", "expected reads = sum over proximal markers of depth x WGS marker-allele fraction (Q>=20); all six K562 targets share the same pooled K562 input (ENCFF000YRC, ENCFF000YRN, ENCFF000YQC), so criterion 2 has one value (1.09)")])
 print("-> %s" % OUT)

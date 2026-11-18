@@ -1,14 +1,14 @@
 folder	file	md5	role	what	produces	read_by
 figS7	figS7/fig5_supp_v3.py	26e0f3e43b9d	draw	Fig S7 A-C
-common/fig05_figS7	common/fig05_figS7/panelborrow.py	8c9ce8a928a4	draw	panel borrowing
+common/fig05_figS7	common/fig05_figS7/panelborrow.py	4984e256830c	draw	panel borrowing
 common/fig05_figS7	common/fig05_figS7/f2_theme2_actuation.py	cbf92b23e130	draw	source that Fig S7 C borrows a panel from (read as text by panelborrow)
-analysis	analysis/a13_beta_mixture.py	30d8ea3a06d8	compute	two-component beta-binomial fit; source of the per-unit beta	a13_unit_state_gmm.tsv.gz;a13_mixture_params.tsv	(upstream of zg1, zk1b, zt2, zy7, r20)
-analysis	analysis/r20_actuation_perunit.py	47b29508f338	compute	percent actuation per zone, unit-anchored	r20_actuation_unified.tsv;r20_actuation_profile.tsv	figS7/fig5_supp_v3.py
-analysis	analysis/zg1_pooled_profile.py	c32f3202dfb1	compute	pooled di-nucleosome and large-MSP density per position	REF2_20261010c_pooled_profile.tsv	figS7/fig5_supp_v3.py
-analysis	analysis/zn1_r20_ref.py	b8c6d830179e	compute	r20 recomputed at the published large-MSP threshold (>150 bp)	r20_actuation_unified_REF.tsv;r20_actuation_profile_REF.tsv	figS7/fig5_supp_v3.py
-analysis	analysis/zt2_cell_positions.py	6f18152abbf6	compute	unit positions and depth per bin	REF2_20261012_positions_and_depth_by_bin.tsv	figS7/fig5_supp_v3.py
-analysis	analysis/zy7_make_hmm_tables.py	ae74208e8c35	compute	FiberHMM occupancy and large-MSP tables, paired within read	HMM_20261014_pooled_profile.tsv;HMM_20261014_largeMSP_paired_comparison.tsv;HMM_20261014_occupancy_paired_points.tsv;HMM_20261014_unpaired_vs_paired.tsv;HMM_20261014_by_region.tsv	fig05/fig5_main_v2.py;figS7/fig5_supp_v3.py
-analysis	analysis/zq2_make_tables_2026-10-29.py	16621715b00f	compute	the AluY window added to the element table, and the two legend values taken from tables instead of being written into the figure	HMM_20261029_alu_by_region.tsv;HMM_20261029_paired_molecule_fraction.tsv;HMM_20261029_labelling_rate_ratio.tsv	figS7/fig5_supp_v3.py
+analysis	analysis/a13_beta_mixture.py	a310b74fbd60	compute	two-component beta-binomial fit; source of the per-unit beta	a13_unit_state_gmm.tsv.gz;a13_mixture_params.tsv	(upstream of zg1, zk1b, zt2, zy7, r20)
+analysis	analysis/r20_actuation_perunit.py	46f43129ba9b	compute	percent actuation per zone, unit-anchored	r20_actuation_unified.tsv;r20_actuation_profile.tsv	figS7/fig5_supp_v3.py
+analysis	analysis/zg1_pooled_profile.py	f01c9c21eb96	compute	pooled di-nucleosome and large-MSP density per position	REF2_20261010c_merged_profile.tsv	figS7/fig5_supp_v3.py
+analysis	analysis/zn1_r20_ref.py	01fd427b59a3	compute	r20 recomputed at the published large-MSP threshold (>150 bp)	r20_actuation_unified_REF.tsv;r20_actuation_profile_REF.tsv	figS7/fig5_supp_v3.py
+analysis	analysis/zt2_cell_positions.py	15a7c69432c8	compute	unit positions and depth per bin	REF2_20261012_by_cell_positions_and_depth.tsv	figS7/fig5_supp_v3.py
+analysis	analysis/zy7_make_hmm_tables.py	64616288ea71	compute	FiberHMM occupancy and large-MSP tables, paired within read	HMM_20261014_merged_profile.tsv;HMM_20261014_largeMSP_pair_comparison.tsv;HMM_20261014_occupancy_pair_points.tsv;HMM_20261014_raw_vs_paired.tsv;HMM_20261014_by_zone.tsv	fig05/fig5_main_v2.py;figS7/fig5_supp_v3.py
+analysis	analysis/zq2_make_tables_2026-10-29.py	0b34029ad35b	compute	the AluY window added to the element table, and the two legend values taken from tables instead of being written into the figure	HMM_20261029_alu_by_zone.tsv;HMM_20261029_paired_molecule_fraction.tsv;HMM_20261029_label_rate_ratio.tsv	figS7/fig5_supp_v3.py
 analysis	analysis/a_lib.py	0556a639ea89	lib	unit table and sequence loader shared by the producers		(imported by the compute scripts)
 analysis	analysis/bamlite.py	257b5fb624b3	lib	minimal BAM reader (this is why no pysam is used)		(imported by the compute scripts)
 analysis	analysis/p02_lib.py	3b9dd5afb44d	lib	SEQ -> reference coordinate transfer via CIGAR		(imported by the compute scripts)

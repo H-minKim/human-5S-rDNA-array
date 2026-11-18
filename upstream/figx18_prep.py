@@ -30,7 +30,7 @@ for k in ("암", "정상"):
 A["짝가능"] = np.where((A.암 > 0) & (A.정상 > 0), "짝 가능", np.where(A.암 > 0, "암만", "정상만"))
 A["정상_gene_sp"] = A.src.map(R[R.덩어리 == "정상"].groupby("src").고_gene_sp.median())
 A = A.sort_values(["짝가능", "src"])
-P("[A] 자료원 %d 개" % len(A))
+P("[A] data sources %d" % len(A))
 P(A.to_string(index=False))
 
 # ---------- B and C: the pairs ----------
@@ -52,7 +52,7 @@ for t, n, sr, mode in PAIRS:
     rows.append(r)
 B = pd.DataFrame(rows)
 P()
-P("[B·C] 짝 %d (HCC1395 는 종양 read 가 1 개뿐이라 짝이 안 된다)" % len(B))
+P("[B, C] pairs %d (HCC1395 has only 1 tumor read, so it forms no pair)" % len(B))
 P(B[["짝", "자료원", "호출방식", "정상_gene_sp", "종양_gene_sp", "Δgene_sp", "Δgene", "Δsp"]].to_string(index=False))
 
 # ---------- D: pooled against paired ----------
@@ -75,21 +75,21 @@ D.append(dict(판="짝 6 (호출방식까지 같은 것)", 자료원="통제", n
 D = pd.DataFrame(D)
 D["부호검정p"] = [np.nan, np.nan, sgn(B.Δgene_sp), sgn(b6.Δgene_sp)]
 P()
-P("[D] 같은 지표(고메틸 유닛 안 gene-sp)를 판만 바꿔 센 것")
+P("[D] the same metric (gene-sp within high-methylation units) counted with only the version changed")
 P(D.to_string(index=False))
 
 # ---------- E: the cancer pairs against the immortalisation pairs ----------
 IM = pd.read_csv(os.path.join(HERE, "FIGX17_IMM.tsv"), sep="\t")
 IM["Δ"] = IM.LCL - IM.PBMC
 P()
-P("[E] 암 짝 7 (자료원 통제) vs 불멸화 짝 10 (같은 사람·같은 자료원)")
-P("   암     중앙 Δ %+.4f · 내려간 %d/%d · 윌콕슨 p %.4f · 부호검정 p %.4f"
+P("[E] cancer pairs 7 (data source controlled) vs immortalization pairs 10 (same person, same data source)")
+P("   cancer           median Δ %+.4f, decreased %d/%d, Wilcoxon p %.4f, sign test p %.4f"
   % (B.Δgene_sp.median(), int((B.Δgene_sp < 0).sum()), len(B),
      stats.wilcoxon(B.Δgene_sp).pvalue, sgn(B.Δgene_sp)))
-P("   불멸화 중앙 Δ %+.4f · 내려간 %d/%d · 윌콕슨 p %.4f · 부호검정 p %.4f"
+P("   immortalization median Δ %+.4f, decreased %d/%d, Wilcoxon p %.4f, sign test p %.4f"
   % (IM.Δ.median(), int((IM.Δ < 0).sum()), len(IM),
      stats.wilcoxon(IM.Δ).pvalue, sgn(IM.Δ)))
-P("   제약(불멸화)이 근거(암)보다 p 가 작다 = 더 단단하다")
+P("   the constraint (immortalization) has a smaller p than the evidence (cancer) = it is firmer")
 IM.to_csv(os.path.join(HERE, "FIGX18_IMM.tsv"), sep="\t", index=False, float_format="%.5f")
 
 # ---------- F: the ceiling set by the number of pairs ----------
@@ -99,13 +99,13 @@ for n in range(3, 21):
                      윌콕슨_최소p=stats.wilcoxon(-np.arange(1., n + 1)).pvalue))
 F = pd.DataFrame(rows)
 P()
-P("[F] 짝이 n 개일 때 나올 수 있는 가장 작은 p (전부 같은 방향이라고 가정)")
+P("[F] smallest attainable p with n pairs (assuming all in the same direction)")
 P(F.to_string(index=False))
-P("   ⇒ 짝 7 이면 부호검정 최소 %.4f · 윌콕슨 최소 %.4f — 39 칸 보정선 0.0013 은 애초에 불가능"
+P("   -> with 7 pairs the sign test minimum is %.4f, Wilcoxon minimum %.4f; the 39-cell correction threshold 0.0013 is unattainable"
   % (F[F.n == 7].부호검정_최소p.iloc[0], F[F.n == 7].윌콕슨_최소p.iloc[0]))
 
 for nm, df in (("SOURCE", A), ("PAIRS", B), ("COMPARE", D), ("MINP", F)):
     df.to_csv(os.path.join(HERE, "FIGX18_%s.tsv" % nm), sep="\t", index=False, float_format="%.6g")
 P()
-P("[저장] FIGX18_SOURCE/PAIRS/COMPARE/MINP/IMM.tsv · FIGX18_PREP.txt")
+P("[saved] FIGX18_SOURCE/PAIRS/COMPARE/MINP/IMM.tsv, FIGX18_PREP.txt")
 LOG.close()

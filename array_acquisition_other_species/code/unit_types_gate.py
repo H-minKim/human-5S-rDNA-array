@@ -10,7 +10,7 @@
 #     G6 each remaining representative represents its members, with a median member identity of at least 98%
 #   The reference unit files of dropped groups are moved to dropped/ rather than deleted.
 #   Argument: the 00_catalog folder.
-# MIT License · Copyright (c) 2026 Hungmin Kim
+# MIT License. Copyright (c) 2026 Hyungmin Kim
 import io
 import os
 import sys
@@ -69,7 +69,7 @@ for r in sorted(rows, key=lambda x: (x["species_key"], x["array_id"])):
     d = dict(r)
     d.update({"gate_result": "-", "gate_fail": "-", "final_n_groups": "1",
               "final_group_sizes": r.get("n_units_OK", "-"), "final_group_files": "-", "dropped_groups": "-"})
-    if not r["unit_type_verdict"].startswith(chr(9733)):
+    if not r["unit_type_verdict"].startswith("여러 종류"):
         d["gate_result"] = "해당없음(여러 종류 아님)"
         out.write(TAB.join(str(d.get(k, "-")) for k in HDR) + NL)
         continue
@@ -121,10 +121,10 @@ for r in sorted(rows, key=lambda x: (x["species_key"], x["array_id"])):
                   "dropped_groups": ",".join(os.path.basename(f) for _i, _s, f in drop) or "-"})
     out.write(TAB.join(str(d.get(k, "-")) for k in HDR) + NL)
 out.close()
-print("gate 통과 array %d" % npass)
+print("arrays passing the gate %d" % npass)
 for r in csv.DictReader(io.open(os.path.join(BASE, "UNIT_TYPE_FINAL.tsv"), encoding="utf8"), delimiter=TAB):
     if r["gate_result"].startswith("해당없음"):
         continue
     print("  %-46s %-28s %s" % (r["array_id"][:46], r["gate_result"],
                                 r["gate_fail"] if r["gate_fail"] != "-" else
-                                "그룹 %s (%s)" % (r["final_n_groups"], r["final_group_sizes"])))
+                                "group %s (%s)" % (r["final_n_groups"], r["final_group_sizes"])))

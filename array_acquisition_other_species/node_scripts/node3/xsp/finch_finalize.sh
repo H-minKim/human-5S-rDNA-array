@@ -5,7 +5,7 @@
 #   modkit with the same options as zebrafish and the pilot (--cpg --combine-strands, 5mC and 5hmC); include-bed is BED3.
 #   Position check: how far the start of the re-basecalled primary alignment is from whichever of that read's original fastq alignments (PAF, primary and supplementary) overlaps it.
 #     The maternal and paternal chr2 arrays are identical in sequence, so paternal CM109751.1 coordinates are shifted into maternal ones for the comparison (-61,764).
-# MIT License · Copyright (c) 2026 Hungmin Kim
+# MIT License. Copyright (c) 2026 Hyungmin Kim
 set -u
 Z=~/xsp/zfont
 A=~/xsp/asm
@@ -20,7 +20,7 @@ for g in LIG UL; do
   samtools view -b -L $F/arrays3.bed -o $F/bTaeGut7_$g.5S.bam $F/bTaeGut7_$g.all.bam && samtools index $F/bTaeGut7_$g.5S.bam
   $MK pileup $F/bTaeGut7_$g.5S.bam $F/bTaeGut7_$g.5S.cpg.bed --ref $A/zfinch_v03_dip.fna --cpg --include-bed $F/arrays3.bed --combine-strands --modified-bases 5mC 5hmC -t 8 --log-filepath $F/$g.pileup.log > /dev/null 2>&1
   $MK extract full $F/bTaeGut7_$g.5S.bam $F/bTaeGut7_$g.5S.reads.tsv --ref $A/zfinch_v03_dip.fna --cpg --include-bed $F/arrays3.bed -t 8 --log-filepath $F/$g.extract.log > /dev/null 2>&1
-  echo "$g : BAM read $(samtools view -c $F/bTaeGut7_$g.5S.bam) · MM $(samtools view $F/bTaeGut7_$g.5S.bam | grep -c MM:Z) · pileup 행 $(wc -l < $F/bTaeGut7_$g.5S.cpg.bed) · extract 행 $(wc -l < $F/bTaeGut7_$g.5S.reads.tsv)"
+  echo "$g : BAM read $(samtools view -c $F/bTaeGut7_$g.5S.bam), MM $(samtools view $F/bTaeGut7_$g.5S.bam | grep -c MM:Z), pileup rows $(wc -l < $F/bTaeGut7_$g.5S.cpg.bed), extract rows $(wc -l < $F/bTaeGut7_$g.5S.reads.tsv)"
   # units_matrix.py streams its input, so it must be sorted by read_id then ref_position; the column indices are located from the header.
   x=$F/bTaeGut7_$g.5S.reads.tsv
   c=$(head -1 $x | tr '\t' '\n' | grep -n -x ref_position | cut -d: -f1)
@@ -36,7 +36,7 @@ awk -F'\t' 'NR==FNR{k=$1; o[k]=o[k] $2 "," $3 "," $4 ";"; next}
   {best=-1; if($1 in o){n=split(o[$1],L,";"); for(i=1;i<n;i++){split(L[i],q,","); if(q[1]==$2 && q[2]<$4 && q[3]>$3){d=q[2]-$3; if(d<0)d=-d; if(best<0||d<best)best=d}}}
    if(!($1 in o)) cls="원정렬없음"; else if(best<0) cls="겹침없음"; else if(best<=50) cls="0-50bp"; else if(best<=368) cls="51-368bp(1유닛안)"; else cls=">368bp";
    print $1"\t"$2"\t"$3"\t"best"\t"cls}' $F/orig_aln.tsv $F/new_aln.tsv > $F/poscmp.tsv
-echo "== 위치 대조 (재콜링 primary vs 원 정렬 중 겹치는 것)"; cut -f5 $F/poscmp.tsv | sort | uniq -c
-echo "== flowcell (fc · rc · read · MM · 초)"; cat $Z/bc/*.done
-echo "== array 요약"; column -t $F/units/5S_array_summary.tsv
-echo "마무리 끝 $(date -u +%H:%M) UTC"
+echo "== position comparison (rebasecalled primary vs original alignment, overlapping ones)"; cut -f5 $F/poscmp.tsv | sort | uniq -c
+echo "== flowcell (fc, rc, read, MM, seconds)"; cat $Z/bc/*.done
+echo "== array summary"; column -t $F/units/5S_array_summary.tsv
+echo "finalize finished $(date -u +%H:%M) UTC"

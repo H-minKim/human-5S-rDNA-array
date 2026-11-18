@@ -156,7 +156,7 @@ for (smp, slot), fn in sorted(SEQF.items()):
     s5 = f5[2] if f5 else ""
     s3 = f3[2] if f3 else ""
     new = s5 + canon + s3
-    assert new[len(s5):len(s5) + len(canon)] == canon, "정본 손상"
+    assert new[len(s5):len(s5) + len(canon)] == canon, "canonical corrupted"
     if not s5 and not s3:
         st["없음"] += 1
         continue
@@ -175,7 +175,7 @@ for (smp, slot), fn in sorted(SEQF.items()):
                         str(len(canon)), "Y"]) + NL)
     LOG.flush()
 LOG.close()
-print("슬롯 %d · 채움 %d · 없음 %d" % (len(SEQF), st["채움"], st["없음"]))
+print("slots %d, filled %d, none %d" % (len(SEQF), st["채움"], st["없음"]))
 for k in sorted(st):
     if k.startswith(("5:", "3:", "관문", "참조무관")) or "불일치" in k:
         print("  %-24s %d" % (k, st[k]))

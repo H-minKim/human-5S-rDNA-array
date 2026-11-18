@@ -7,7 +7,7 @@
 # A measured example for panel C: the local-best rate by position for one haplotype, untouched against with the middle 6 units inverted.
 # Output : EXAMPLE_PROFILE.tsv (the figure reads this table only)
 import io, os, glob, collections
-K = os.environ["RDNA_HANDOFF_AD6468DD"]
+K = os.environ["RDNA_HANDOFF_DIR"]
 OUT = os.path.join(K, "result_inversion_positive_control_20260930")
 S = os.path.dirname(os.path.abspath(__file__))
 MAPF = os.path.join(S, "pos_in", "CONSENSUS_MAP_G8_full.tsv")
@@ -72,7 +72,7 @@ for ap in sorted(set(list(p0.keys()) + list(p1.keys()))):
                       "Y" if lo <= ap <= hi else "N"]) + NL)
 g.close()
 inb0 = [p0[ap][0] for ap in range(lo, hi + 1) if ap in p0]; inb1 = [p1[ap][0] for ap in range(lo, hi + 1) if ap in p1]
-print("%s h%s N=%d · 심은 구간 %d-%d" % (SMP, SLOT, N, lo, hi))
-print("  구간 안 국소최고율 : 진짜 %.2f → 역위 %.2f" % (sum(inb0) / len(inb0), sum(inb1) / len(inb1)))
+print("%s h%s N=%d, planted interval %d-%d" % (SMP, SLOT, N, lo, hi))
+print("  local-maximum rate inside the interval: true %.2f -> inverted %.2f" % (sum(inb0) / len(inb0), sum(inb1) / len(inb1)))
 out0 = [p0[ap][0] for ap in p0 if not (lo <= ap <= hi)]; out1 = [p1[ap][0] for ap in p1 if not (lo <= ap <= hi)]
-print("  구간 밖              : 진짜 %.2f → 역위 %.2f" % (sum(out0) / len(out0), sum(out1) / len(out1)))
+print("  outside the interval                  : true %.2f -> inverted %.2f" % (sum(out0) / len(out0), sum(out1) / len(out1)))

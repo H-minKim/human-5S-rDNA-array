@@ -17,7 +17,7 @@ CAN = G.CAN
 LU = len(CAN)
 U, _, _ = G.load("h1")
 VPU = sum(len(t[4]) for v in U.values() for t in v) / sum(len(v) for v in U.values())
-print("§0 자 : var_per_unit = %.6f" % VPU)
+print("§0 ruler : var_per_unit = %.6f" % VPU)
 assert abs(VPU - 6.866) < 0.01
 NCOPY = {("%s" % k[0], "%s" % k[1]): len(v) for k, v in U.items()}
 FINE = {}
@@ -53,7 +53,7 @@ bySamp = collections.defaultdict(list)
 for s in HSL:
     bySamp[s[0]].append(s)
 PAIRED = [tuple(v) for v in bySamp.values() if len(v) == 2]
-print("interior haplotype %d · 개체 %d · 상동 개체 %d" % (len(HSL), len(bySamp), len(PAIRED)))
+print("interior haplotype %d, individuals %d, homolog individuals %d" % (len(HSL), len(bySamp), len(PAIRED)))
 
 
 def events(k1, k2):
@@ -128,7 +128,7 @@ def sample(kind):
     return pl
 
 
-print("\n%-24s %9s %9s %12s %22s %12s" % ("갈래", "쌍", "사건", "T (지수)", "95%CI", "T (gamma2)"))
+print("\n%-24s %9s %9s %12s %22s %12s" % ("branch", "쌍", "사건", "T (지수)", "95%CI", "T (gamma2)"))
 rows = []
 for kind, nm in (("homolog", "상동 (같은 개인)"), ("unrelated_same_pop", "무관 · 같은 세부집단"),
                  ("unrelated_diff_pop", "무관 · 다른 세부집단"), ("unrelated_all", "무관 · 전체")):
@@ -142,9 +142,9 @@ for kind, nm in (("homolog", "상동 (같은 개인)"), ("unrelated_same_pop", "
     print("%-24s %9d %9d %12.2f %22s %12.2f" % (nm, len(pl), len(ev), T3, "[%.1f, %.1f]" % (l3, h3), T2))
     rows.append((kind, nm, len(pl), len(ev), float(T3), float(l3), float(h3), float(T2), float(cen.mean())))
 a1 = 519.14
-print("\narray 내 거리 1 = %.2f bp ↔ 교환 없는 바닥(무관 전체) = %.2f bp ⇒ 비 %.4f"
+print("\nwithin-array distance 1 = %.2f bp vs no-exchange floor (all unrelated) = %.2f bp -> ratio %.4f"
       % (a1, rows[-1][4], a1 / rows[-1][4]))
-print("참고 : 최장 공유동일 구간은 1130.4 ↔ 664.7 bp ⇒ 비 1.70 — 패치 추정량이 바닥 대비 신호가 더 크다")
+print("note : the longest shared identical stretch is 1130.4 vs 664.7 bp -> ratio 1.70: the patch estimator has a larger signal relative to the floor")
 g = io.open(os.path.join(OUT, "X9_patch_floor.tsv"), "w", encoding="utf8", newline="\n")
 g.write("# P08 X9 · 패치 길이의 '교환 없는 바닥' · X4 와 같은 설정 (interior · 쌍 %d) · seed %d\n" % (NP_, SEED))
 g.write("kind\tlabel\tn_pair\tn_event\tT_exp\tlo\thi\tT_gamma2\tcensored\n")
@@ -152,7 +152,7 @@ for r in rows:
     g.write("%s\t%s\t%d\t%d\t%.4f\t%.4f\t%.4f\t%.4f\t%.6f\n" % r)
 g.write("#\narray_lag1_T\t%.4f\tfloor_T\t%.4f\tratio\t%.4f\n" % (a1, rows[-1][4], a1 / rows[-1][4]))
 g.close()
-print("\n산출 :", os.path.join(OUT, "X9_patch_floor.tsv"))
+print("\noutputs :", os.path.join(OUT, "X9_patch_floor.tsv"))
 
 # the deposited table(s) carry English column names and values (common/fig02_figS2/taben.py)
 import sys as _s, os as _o

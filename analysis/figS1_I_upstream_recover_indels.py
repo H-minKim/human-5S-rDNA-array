@@ -17,7 +17,7 @@ S = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(S, "inv_out")
 A = os.path.join(os.environ["RDNA_V11"], "09_tests", "unit_indel_all_v2_20260916", "anchor_check_20260918")
 B = os.path.join(os.environ["RDNA_V11"], "09_tests", "unit_indel_all_v2_20260916")
-KRES = os.path.join(os.environ["RDNA_HANDOFF_AD6468DD"], "result_")
+KRES = os.path.join(os.environ["RDNA_HANDOFF_DIR"], "result_")
 TAB = chr(9); NL = chr(10)
 def rows(p):
     f = io.open(p, encoding="utf8"); h = f.readline().rstrip(NL).split(TAB)
@@ -58,7 +58,7 @@ S1 = [(r["sample"], r["slot"], int(r["ap_lo"]), int(r["ap_hi"])) for r in rows(o
 S2 = [(r["sample"], r["slot"], int(r["ap_lo_union"]), int(r["ap_hi_union"])) for r in rows(os.path.join(KRES, "SITES_ONT.tsv"))]
 S3 = [(r["sample"], r["slot"], int(r["canon_ap"]), int(r["canon_ap"])) for r in rows(os.path.join(B, "UINDEL_SITES.tsv"))
       if r["class"] == "정본의심"]
-L = ["# 새 방법으로 기존 삽입/결실을 다시 찾나 (2026-09-30)", "",
+L = ["# 새 방법으로 기존 삽입/결실을 다시 찾나", "",
      "- 새 방법 지표 = **배치된 자리의 국소 최고율**(±5 이웃 중 최고인 read 유닛 비율). 구간(±2) 안 최소값을 본다.",
      "- 대조 = 같은 하플로에서 같은 폭의 무작위 구간", ""]
 L.append("| 묶음 | 자리 | 볼 수 있음 | 깊이없음 | **<=0.5** | <=0.3 | 최소값 중앙 | 대조 n | 대조 <=0.5 | 대조 <=0.3 | 대조 중앙 |")

@@ -15,10 +15,10 @@ def P(s=""): print(s, flush=True); LOG.write(str(s) + "\n"); LOG.flush()
 rng = np.random.default_rng(20260923)
 SP5 = ["AFR", "AMR", "EAS", "EUR", "SAS"]
 
-P("[0] 자료·라벨")
+P("[0] data, labels")
 L = pd.read_parquet(T + "/L2_HAP_UNIT.parquet")
 L["slot"] = L.slot.astype(str)
-P("   L2 행 %d · 하플로타입 %d · 개체 %d · 자료원 %s"
+P("   L2 rows %d, haplotypes %d, individuals %d, data sources %s"
   % (len(L), L.groupby(["sample", "slot"]).ngroups, L["sample"].nunique(), sorted(L.data_source.astype(str).unique())))
 PED = pd.read_csv(OUT + "/05_reference/1kGP_3202_ped_population_2026-09-23.txt", sep=r"\s+")
 m_sp = dict(zip(PED.SampleID, PED.Superpopulation)); m_pop = dict(zip(PED.SampleID, PED.Population))
@@ -28,13 +28,13 @@ par = {s: (str(f), str(mo)) for s, f, mo in zip(PED.SampleID, PED.FatherID, PED.
 S = L.groupby("sample").agg(pop_old=("pop", "first"), sp_old=("super_pop", "first")).reset_index()
 chk = S[S.sp_old.notna()]
 agree = int(sum(m_sp.get(s) == v for s, v in zip(chk["sample"], chk.sp_old)))
-P("   기존 라벨 %d 명 ↔ 3202 명부 일치 %d (불일치 %d) — 불일치면 멈춤" % (len(chk), agree, len(chk) - agree))
+P("   existing labels %d vs the 3202 roster: match %d (mismatch %d); stop on mismatch" % (len(chk), agree, len(chk) - agree))
 assert agree == len(chk)
 S["sp"] = [v if pd.notna(v) else m_sp.get(s) for s, v in zip(S["sample"], S.sp_old)]
 S["pop"] = [v if pd.notna(v) else m_pop.get(s) for s, v in zip(S["sample"], S.pop_old)]
 S["label_src"] = np.where(S.sp_old.notna(), "panel2504", np.where(S.sp.notna(), "ped3202", "없음"))
-P("   라벨 원천 : %s" % S.label_src.value_counts().to_dict())
-P("   라벨 못 붙인 개체 : %s" % sorted(S[S.sp.isna()]["sample"]))
+P("   label source : %s" % S.label_src.value_counts().to_dict())
+P("   individuals without a label : %s" % sorted(S[S.sp.isna()]["sample"]))
 
 # per-haplotype table
 H = L.groupby(["sample", "slot"]).agg(
@@ -45,12 +45,12 @@ H = H.merge(S[["sample", "pop", "sp", "label_src"]], on="sample", how="left")
 inco = set(H["sample"])
 H["kid_in_cohort"] = [s in kid and any(p in inco for p in par.get(s, ())) for s in H["sample"]]
 H.to_csv(T + "/POP_COHORT.tsv", sep="\t", index=False, float_format="%.4f")
-P("   코호트 : 하플로 %d · 개체 %d · 라벨 있는 하플로 %d" % (len(H), H["sample"].nunique(), H.sp.notna().sum()))
-P("   친족(부모가 코호트 안에 있는 자식) 개체 %d · 하플로 %d" % (H[H.kid_in_cohort]["sample"].nunique(), H.kid_in_cohort.sum()))
+P("   cohort : haplotypes %d, individuals %d, labelled haplotypes %d" % (len(H), H["sample"].nunique(), H.sp.notna().sum()))
+P("   relatives (children whose parent is in the cohort) individuals %d, haplotypes %d" % (H[H.kid_in_cohort]["sample"].nunique(), H.kid_in_cohort.sum()))
 G = H[H.sp.isin(SP5)].copy()
-P("   집단별 하플로/개체 :")
+P("   haplotypes/individuals per population :")
 for sp, g in G.groupby("sp"):
-    P("     %-4s 하플로 %3d · 개체 %3d · 깊이 중앙 %5.1f · 친족 하플로 %d" % (sp, len(g), g["sample"].nunique(), g.depth.median(), g.kid_in_cohort.sum()))
+    P("     %-4s haplotypes %3d, individuals %3d, median depth %5.1f, relative haplotypes %d" % (sp, len(g), g["sample"].nunique(), g.depth.median(), g.kid_in_cohort.sum()))
 
 def kw(d, col, by="sp"):
     gs = [g[col].dropna().values for _, g in d.groupby(by)]
@@ -71,14 +71,14 @@ def perm_p(d, col, by="sp", n=2000):
     return (c + 1) / (n + 1)
 
 P()
-P("[1] CN (array 유닛 수 N) — 하플로타입 단위")
+P("[1] CN (array unit count N), per haplotype")
 rows = []
 for sp, g in G.groupby("sp"):
     rows.append(dict(집단=sp, 하플로=len(g), 중앙=g.N.median(), 평균=g.N.mean(), sd=g.N.std(), q10=g.N.quantile(.1), q90=g.N.quantile(.9), 최소=g.N.min(), 최대=g.N.max()))
 CN = pd.DataFrame(rows)
 P(CN.round(2).to_string(index=False))
 h, p = kw(G, "N"); pp = perm_p(G, "N")
-P("   집단 간 차 (Kruskal-Wallis) H %.2f · p %.4f · 라벨 뒤섞기 p %.4f" % (h, p, pp))
+P("   between-population difference (Kruskal-Wallis) H %.2f, p %.4f, label-shuffle p %.4f" % (h, p, pp))
 pr = []
 for i, a in enumerate(SP5):
     for b in SP5[i + 1:]:
@@ -89,20 +89,20 @@ for i, a in enumerate(SP5):
 PR = pd.DataFrame(pr)
 if len(PR):
     PR["q"] = np.minimum(1, PR.p * len(PR))
-    P("   쌍별 (Mann-Whitney · Bonferroni q):")
+    P("   pairwise (Mann-Whitney, Bonferroni q):")
     P(PR.round(4).to_string(index=False))
-P("   깊이와 N 의 관계 (스피어만) rho %+.3f p %.3g — 깊이가 N 을 만들지 않는지 확인"
+P("   depth vs N (Spearman) rho %+.3f p %.3g: check that depth does not drive N"
   % stats.spearmanr(G.depth, G.N)[:2])
-P("   깊이 자체가 집단 간 다른가 : KW p %.4f" % kw(G, "depth")[1])
+P("   does depth itself differ between populations : KW p %.4f" % kw(G, "depth")[1])
 G1 = G[~G.kid_in_cohort]
-P("   친족 제외(자식 뺌 · 하플로 %d) : KW p %.4f · 중앙 %s" % (len(G1), kw(G1, "N")[1], G1.groupby("sp").N.median().round(1).to_dict()))
+P("   relatives excluded (children dropped, haplotypes %d) : KW p %.4f, median %s" % (len(G1), kw(G1, "N")[1], G1.groupby("sp").N.median().round(1).to_dict()))
 I = G.groupby(["sample", "sp"]).N.mean().reset_index()
-P("   개체 단위(두 하플로 평균 · 개체 %d) : KW p %.4f · 중앙 %s" % (len(I), kw(I, "N")[1], I.groupby("sp").N.median().round(1).to_dict()))
+P("   per individual (mean of two haplotypes, individuals %d) : KW p %.4f, median %s" % (len(I), kw(I, "N")[1], I.groupby("sp").N.median().round(1).to_dict()))
 CN.to_csv(T + "/POP_CN.tsv", sep="\t", index=False, float_format="%.3f")
 if len(PR): PR.to_csv(T + "/POP_CN_PAIRS.tsv", sep="\t", index=False, float_format="%.5f")
 
 P()
-P("[2] 메틸 — 구역별 (6 구역 · 하플로타입 단위)")
+P("[2] methylation by zone (6 zones, per haplotype)")
 ZON = [("M1 근1-3", "ap", 1, 3), ("M2 근4-10", "ap", 4, 10), ("M3 근11-25", "ap", 11, 25),
        ("D2 원11-22", "ad", 11, 22), ("D1 원1-10", "ad", 1, 10)]
 L2 = L.merge(S[["sample", "sp"]], on="sample", how="left")
@@ -128,26 +128,26 @@ for (nm, met) in [(z[0], m) for z in ZON for m in ("f_hi", "b_mean", "b_lo", "b_
 ZR = pd.DataFrame(out)
 ZR["q"] = ZR.p * len(ZR)
 ZR["q"] = ZR["q"].clip(upper=1)
-P("   (지표 : f_hi = 고메틸 유닛 비율 · b_mean 유닛 β · b_lo/b_hi = 저/고 상태 안의 β)")
+P("   (metrics : f_hi = fraction of high-methylation units, b_mean unit β, b_lo/b_hi = β within the low/high state)")
 P(ZR.sort_values("p").to_string(index=False))
 sig = ZR[ZR.q < 0.05]
-P("   q<0.05 인 칸 %d / %d" % (len(sig), len(ZR)))
+P("   cells with q<0.05 %d / %d" % (len(sig), len(ZR)))
 # haplotype-level metrics (boundary, number of switched-off units)
 for met, lab in (("Bp", "근위 경계 위치"), ("Bd", "원위 경계 위치"), ("n_low", "저메틸 유닛 수"), ("f_hap", "하플로 고메틸 비율")):
     d = G[[met, "sp"]].dropna()
     if len(d) < 30: continue
     h, p = kw(d, met)
-    P("   %-12s(%s) : 중앙 %s · KW p %.4f" % (met, lab, d.groupby("sp")[met].median().round(2).to_dict(), p))
+    P("   %-12s(%s) : median %s, KW p %.4f" % (met, lab, d.groupby("sp")[met].median().round(2).to_dict(), p))
 # depth control: repeated within depth quintiles
-P("   깊이 5 분위 안에서 다시 (f_hi · 각 구역) :")
+P("   repeated within 5 depth quantiles (f_hi, each zone) :")
 Z["dq"] = pd.qcut(Z.depth, 5, labels=False, duplicates="drop")
 for nm, _, _, _ in ZON:
     ps = []
     for q, g in Z[Z["구역"] == nm].groupby("dq"):
         if g.sp.nunique() >= 3: ps.append(kw(g, "f_hi")[1])
-    if ps: P("     %-10s 분위별 p %s" % (nm, " ".join("%.3f" % x for x in ps)))
+    if ps: P("     %-10s p per quantile %s" % (nm, " ".join("%.3f" % x for x in ps)))
 Z.to_csv(T + "/POP_METH_ZONE.tsv", sep="\t", index=False, float_format="%.4f")
 ZR.to_csv(T + "/POP_METH_ZONE_TEST.tsv", sep="\t", index=False, float_format="%.5g")
 P()
-P("저장 : 02_tables/POP_COHORT.tsv · POP_CN.tsv · POP_CN_PAIRS.tsv · POP_METH_ZONE.tsv · POP_METH_ZONE_TEST.tsv")
+P("saved : 02_tables/POP_COHORT.tsv, POP_CN.tsv, POP_CN_PAIRS.tsv, POP_METH_ZONE.tsv, POP_METH_ZONE_TEST.tsv")
 LOG.close()

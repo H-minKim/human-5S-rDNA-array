@@ -93,7 +93,7 @@ if MAPF:
     for s, v in tmp.items():
         v.sort()
         UMAP[s] = ([a for a, _, _ in v], v)
-    print("지도 슬롯 :", dict((s, (len(v[1]), NSLOT[s])) for s, v in UMAP.items()))
+    print("map slots:", dict((s, (len(v[1]), NSLOT[s])) for s, v in UMAP.items()))
 
 
 def q2r(r, qpos):

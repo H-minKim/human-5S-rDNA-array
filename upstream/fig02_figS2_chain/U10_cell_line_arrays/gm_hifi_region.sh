@@ -15,28 +15,28 @@ log(){ echo "[$(date +%H:%M)] $*" >> $W/RUN.log; }
 # region reference = the same coordinates as K562 (CHM13 chr1:227,626,780-228,142,150, array +-115 kb)
 if [ ! -s $W/region_ref.fa ]; then
   cp ~/p11_encode/ref/array_pm50k.fa $W/region_ref.fa 2>/dev/null
-  log "구간 참조 = array_pm50k.fa ($(grep -v '>' $W/region_ref.fa | tr -d '\n' | wc -c) bp)"
+  log "region reference = array_pm50k.fa ($(grep -v '>' $W/region_ref.fa | tr -d '\n' | wc -c) bp)"
 fi
-log "HG001 HiFi 전량 → 구간 서열 관문(k=31 mkf=0.2) 시작"
+log "HG001 HiFi full set -> region sequence gate(k=31 mkf=0.2) start"
 s=$(date +%s)
 samtools fastq -T '*' -F 0x900 "$U" 2> $W/samtools.err \
   | $BB -Xmx10g in=stdin.fq interleaved=f outm=$W/gm_region_full.fastq.gz \
       ref=$W/region_ref.fa k=31 mkf=0.2 threads=12 overwrite=t > $W/bbduk.log 2>&1
 rc=$?; e=$(date +%s)
-log "관문 종료 rc=$rc · $(( (e-s)/60 )) 분"
+log "gate finished rc=$rc, $(( (e-s)/60 )) min"
 grep -E "^Input:|^Contaminants:" $W/bbduk.log >> $W/RUN.log
 if [ -s $W/gm_region_full.fastq.gz ]; then
   N=$(( $(zcat $W/gm_region_full.fastq.gz | wc -l) / 4 ))
-  log "구간관문 전량 read $N (좌표 구간뽑기 1차는 715) · $(zcat $W/gm_region_full.fastq.gz | awk 'NR%4==2{s+=length($0); if(length($0)>m)m=length($0)}END{printf "%.1f Mb · 최장 %d", s/1e6, m}')"
+  log "region gate full set read $N (coordinate region extraction pass 1 gave 715), $(zcat $W/gm_region_full.fastq.gz | awk 'NR%4==2{s+=length($0); if(length($0)>m)m=length($0)}END{printf "%.1f Mb, longest %d", s/1e6, m}')"
   zcat $W/gm_region_full.fastq.gz | awk 'NR%4==1{print substr($1,2)}' | sort -u > $W/regionfull.ids
-  log "  고유 read $(wc -l < $W/regionfull.ids)"
-else log "산출 없음"; exit 9; fi
+  log "  unique read $(wc -l < $W/regionfull.ids)"
+else log "no output"; exit 9; fi
 # HiFi-only assembly
 A=$W/asm; mkdir -p $A; cd $A; rm -f *.bin *.gfa *.fa
 ~/hifiasm -o HG001full -t 14 $W/gm_region_full.fastq.gz > hifiasm.log 2>&1
 rc=$?
 for g in *p_ctg.gfa; do [ -e "$g" ] && awk '/^S/{print ">"$2"\n"$3}' "$g" > "${g%.gfa}.fa"; done
-log "HiFi 전용 재조립 rc=$rc"
+log "HiFi only reassembly rc=$rc"
 for fa in $A/HG001full.bp.hap1.p_ctg.fa $A/HG001full.bp.hap2.p_ctg.fa; do
   [ -e "$fa" ] && log "  $(basename $fa) : $(awk '/^>/{n++;next}{L[n]+=length($0)}END{for(i=1;i<=n;i++) if(L[i]>100000) printf "%d bp ", L[i]}' $fa)"
 done

@@ -57,4 +57,4 @@ for k2 in sorted(R):
         OUT.write(TAB.join([k2[0], k2[1], str(len(rows)), str(bk),
                             "%.3f" % sc[bk], "%.3f" % sc[0], "%.3f" % (sc[bk] - sc[0])]) + NL)
 OUT.close()
-print("%s  검사 슬롯 %d · 번호 어긋난 슬롯 %d  -> %s" % (socket.gethostname(), tot, bad, OUTF))
+print("%s  slots checked %d, slots with numbering mismatch %d  -> %s" % (socket.gethostname(), tot, bad, OUTF))

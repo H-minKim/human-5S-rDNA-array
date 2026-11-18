@@ -87,8 +87,8 @@ def locate(q, unit):
     return t0 % L + 1, t1 % L + 1, strand, score / (2.0 * len(q)), len(ks) / float(len(q))
 
 
-print("1) 합의 서열 ↔ 우리 유닛 : 위상 오프셋")
-print("%-34s %-9s %6s %6s %8s %8s %7s" % ("consensus", "우리 유닛", "cons", "ours", "cons1 위치", "가닥", "score"))
+print("1) consensus sequence vs our unit: phase offset")
+print("%-34s %-9s %6s %6s %8s %8s %7s" % ("consensus", "our unit", "cons", "ours", "cons1 위치", "strand", "score"))
 for c, (ok, fam) in CONS2OUR.items():
     r = locate(CONS[c][:300], OURS[ok])
     if r:
@@ -98,7 +98,7 @@ for c, (ok, fam) in CONS2OUR.items():
         print("%-34s %-9s not found" % (c, ok))
 
 print()
-print("2) 전사부를 우리 canonical 좌표로")
+print("2) transcribed region to our canonical coordinates")
 rows = [("array_our", "feature", "grade", "cons_start", "cons_end", "cons_strand",
          "our_win_start", "our_win_end", "our_strand", "score", "coverage",
          "canon_start", "canon_end", "wraps", "note")]
@@ -135,4 +135,4 @@ with io.open(os.path.join(REP, "transcribed_parts_for_drawing.tsv"), encoding="u
 io.open(os.path.join(OUT, "TRANSCRIBED_FOR_PANEL_A.tsv"), "w", encoding="utf8",
         newline="\n").write("\n".join("\t".join(r) for r in rows) + "\n")
 print()
-print("쓴 표 :", os.path.join(OUT, "TRANSCRIBED_FOR_PANEL_A.tsv"))
+print("tables written:", os.path.join(OUT, "TRANSCRIBED_FOR_PANEL_A.tsv"))

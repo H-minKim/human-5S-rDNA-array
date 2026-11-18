@@ -6,8 +6,8 @@
 #   otherwise this is reported and the units are divided into groups, each with its own reference unit.
 #
 # The axis of the decision: do variant events that lie far apart travel together as a block?
-#   · One type: the variants are scattered independently across units, with no association.
-#   · Several types: distant events appear together in the same units, a strong association, that is a haplotype.
+#   - One type: the variants are scattered independently across units, with no association.
+#   - Several types: distant events appear together in the same units, a strong association, that is a haplotype.
 #
 # Three rules, and what each avoids:
 #   The criterion is association (phi): splitting whenever the variant patterns merely differ cuts a human array into 6 groups.
@@ -28,7 +28,7 @@
 #   No call is made with fewer than 20 OK units.
 #
 # Arguments: species key, fasta, map folder, output folder, status table, [NPERM = 50], [EVGAP = 20].
-# MIT License · Copyright (c) 2026 Hungmin Kim
+# MIT License. Copyright (c) 2026 Hyungmin Kim
 import io
 import os
 import re
@@ -341,7 +341,7 @@ for fn in sorted(os.listdir(MAPD)):
                  "group_ref_quality": " · ".join(qual),
                  "note": "그룹 밖 유닛 %d 개(어느 패턴도 5 개 미만)" % sum(1 for x in lab if x is None)})
     w(base)
-    print("%s : 유닛 %d · 사건 %d · 블록 %s · ARI %s -> 그룹 %d %s · 위치응집 %.2f p=%.3f"
+    print("%s : units %d, events %d, blocks %s, ARI %s -> groups %d %s, positional clustering %.2f p=%.3f"
           % (aid, n, len(events(poly)), base["block_event_sizes"], base["holdout_ARI"],
              len(sizes), sizes, ratio, pv))
 SUM.close()

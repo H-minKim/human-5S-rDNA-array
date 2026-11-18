@@ -42,7 +42,7 @@ cols = ["sample", "slot", "gate", "ap", "ad", "N", "b_call"]
 D = pd.read_parquet(os.path.join(V11, "02_tables", "L1_READ_UNIT.parquet"), columns=cols)
 D = D[D.gate == 1].copy()
 D["층"] = D["sample"].map(lambda s: CH.get(str(s), "모름(색인밖)"))
-print("H2 read-유닛 %s · 개체 %d" % (format(len(D), ","), D["sample"].nunique()))
+print("H2 read-units %s, individuals %d" % (format(len(D), ","), D["sample"].nunique()))
 
 
 def band(ap, ad):
@@ -60,7 +60,7 @@ def band(ap, ad):
 D["띠"] = [band(a, d) for a, d in zip(D.ap.values, D.ad.values)]
 ORD = ["근위 1-3", "근위 4-10", "내부", "원위 4-10", "원위 1-3"]
 print()
-print("## `Fig 4 a` 의 위치별 프로파일 — 화학 층별 (하드콜 β 평균 · 저메틸 몫 β<0.508)")
+print("## Profile by position of `Fig 4 a`: by chemistry stratum (hard-call mean β, low-methylation share β<0.508)")
 print()
 hdr = "| 띠 |" + "".join(" %s 평균 | %s 저메틸몫 |" % (k, k)
                        for k in ["전체", "R941", "R1041", "모름"])
@@ -80,9 +80,9 @@ for b in ORD:
     rows.append([b] + cells)
 
 print()
-print("## 층별 근위-원위 차 (프로파일의 기울기 — 이것이 패널 a 의 주장이다)")
+print("## Proximal-distal difference by stratum (the slope of the profile: this is the claim of panel a)")
 print()
-print("| 층 | 개체 | read-유닛 | 근위 1-3 평균 | 원위 1-3 평균 | 차 | 근위 저메틸몫 | 원위 저메틸몫 |")
+print("| stratum | individuals | read-units | proximal 1-3 mean | distal 1-3 mean | difference | proximal low-methylation share | distal low-methylation share |")
 print("|---|--:|--:|--:|--:|--:|--:|--:|")
 for k in ["전체", "R941", "R1041", "모름(색인밖)"]:
     s = D if k == "전체" else D[D["층"] == k]
@@ -101,4 +101,4 @@ for r in rows:
     out.append(TAB.join(str(x) for x in r))
 io.open(P, "w", encoding="utf8", newline=NL).write(NL.join(out) + NL)
 print()
-print("기록 : %s" % P)
+print("written: %s" % P)

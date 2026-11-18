@@ -22,7 +22,7 @@ ME = ME.sort_values("pri").drop_duplicates(["sample", "slot", "array_pos"], keep
 ME = ME[ME.n_reads >= 2]
 M = pd.read_csv(TR + "/03_maps/G8MAP_trio.tsv", sep="\t", dtype={"slot": str}, usecols=["sample", "slot", "N"])
 NN = M.drop_duplicates(["sample", "slot"]).set_index(["sample", "slot"]).N.astype(int).to_dict()
-P("자리 단위 메틸(read>=2) %s 행 · 유닛 수 지도 %d 슬롯" % (format(len(ME), ","), len(NN)))
+P("position-level methylation (read>=2) %s rows, unit count map %d slots" % (format(len(ME), ","), len(NN)))
 ZONES = [("원위1-10", "d", 1, 10), ("원위11-20", "d", 11, 20), ("근위11-20", "p", 11, 20), ("근위1-10", "p", 1, 10)]
 def prof(s, sl):
     g = ME[(ME["sample"] == s) & (ME.slot == sl)]
@@ -60,7 +60,7 @@ Z = pd.DataFrame(rows)
 Z.to_csv(T + "/TRIO_SRCDEF_PAIRZONE.tsv", sep="\t", index=False, float_format="%.4f")
 
 P()
-P("[0] 원천 08 표 재현 (같은 짝 · 같은 정의)")
+P("[0] reproduce source table 08 (same pairs, same definition)")
 SRC = {("HG01250", "원위1-10"): (0.025, 0.041), ("HG01250", "원위11-20"): (0.112, 0.335), ("HG01250", "근위11-20"): (0.036, 0.190), ("HG01250", "근위1-10"): (0.075, 0.489),
        ("HG01251", "원위1-10"): (0.015, 0.010), ("HG01251", "원위11-20"): (0.139, 0.070), ("HG01251", "근위11-20"): (0.035, 0.026), ("HG01251", "근위1-10"): (0.099, 0.106),
        ("HG03815", "원위1-10"): (0.051, 0.010), ("HG03815", "원위11-20"): (0.096, 0.291), ("HG03815", "근위11-20"): (0.135, 0.494), ("HG03815", "근위1-10"): (0.034, 0.041),
@@ -70,24 +70,24 @@ ok = 0; tot = 0
 for (par, zn), (st, sn) in SRC.items():
     x = Z[(Z.parent.str.lower() == par.lower()) & (Z.zone == zn)]
     x = x[x.call == "전달(확정)"] if (x.call == "전달(확정)").any() else x
-    if x.empty: P("   %-8s %-9s 원천 %.3f/%.3f · 재현 자료 없음" % (par, zn, st, sn)); continue
+    if x.empty: P("   %-8s %-9s source %.3f/%.3f, no data to reproduce" % (par, zn, st, sn)); continue
     r = x.iloc[0]; tot += 1
     m = abs(r.d_trans - st) < 0.0015 and abs(r.d_non - sn) < 0.0015
     ok += int(m)
-    P("   %-8s %-9s 원천 전달 %.3f · 비전달 %.3f | 재현 %.3f · %.3f (유닛 %d/%d) %s" % (par, zn, st, sn, r.d_trans, r.d_non, r.n_trans, r.n_non, "일치" if m else "다름"))
-P("   → %d / %d 칸 일치 (소수 셋째 자리)" % (ok, tot))
+    P("   %-8s %-9s source transmitted %.3f, untransmitted %.3f | reproduced %.3f, %.3f (units %d/%d) %s" % (par, zn, st, sn, r.d_trans, r.d_non, r.n_trans, r.n_non, "일치" if m else "다름"))
+P("   -> %d / %d cells match (to the third decimal place)" % (ok, tot))
 
 P()
-P("[1] 원천 정의 · 모든 확정 짝 (HG003→HG002 제외)")
+P("[1] source definition, all confirmed pairs (excluding HG003->HG002)")
 for (ch, cs, par), g in Z.groupby(["child", "child_slot", "parent"], sort=False):
-    P("   %s h%s ← %s h%s (%s · 비전달 h%s)" % (ch, cs, par, g.trans_slot.iloc[0], g.role.iloc[0], g.nontrans_slot.iloc[0]))
+    P("   %s h%s from %s h%s (%s, untransmitted h%s)" % (ch, cs, par, g.trans_slot.iloc[0], g.role.iloc[0], g.nontrans_slot.iloc[0]))
     for r in g.itertuples(index=False):
-        P("      %-9s 전달 %s · 비전달 %s → %s   (자식/전달/비전달 β %s / %s / %s)"
+        P("      %-9s transmitted %s, untransmitted %s -> %s   (child/transmitted/untransmitted β %s / %s / %s)"
           % (r.zone, "%.3f (%d)" % (r.d_trans, r.n_trans) if r.d_trans == r.d_trans else "-", "%.3f (%d)" % (r.d_non, r.n_non) if r.d_non == r.d_non else "-",
-             ("예 (%.1f배)" % (r.d_non / r.d_trans) if r.d_trans > 0 else "예") if r.closer is True else ("아니오" if r.closer is False else "대조 없음"),
+             ("yes (%.1f-fold)" % (r.d_non / r.d_trans) if r.d_trans > 0 else "예") if r.closer is True else ("아니오" if r.closer is False else "대조 없음"),
              *["%.2f" % v if v == v else "-" for v in (r.b_child, r.b_trans, r.b_non)]))
 P()
-P("   구역별 요약 (비전달 대조가 있는 짝만)")
+P("   summary by zone (pairs with an untransmitted control only)")
 S = []
 for zn, g in Z.groupby("zone", sort=False):
     g = g.dropna(subset=["d_trans", "d_non"])
@@ -95,14 +95,14 @@ for zn, g in Z.groupby("zone", sort=False):
     p = stats.wilcoxon(g.d_trans, g.d_non)[1] if len(g) >= 5 else np.nan
     S.append(dict(zone=zn, n_pair=len(g), med_trans=g.d_trans.median(), med_non=g.d_non.median(),
                   frac_closer=float((g.d_trans < g.d_non).mean()), wilcoxon_p=p))
-    P("   %-9s 짝 %d · 전달 중앙 %.3f · 비전달 중앙 %.3f · 전달이 더 가까운 짝 %.2f · 윌콕슨 p %s"
-      % (zn, len(g), g.d_trans.median(), g.d_non.median(), (g.d_trans < g.d_non).mean(), "%.3f" % p if p == p else "(짝<5)"))
+    P("   %-9s pairs %d, transmitted median %.3f, untransmitted median %.3f, pairs where transmitted is closer %.2f, Wilcoxon p %s"
+      % (zn, len(g), g.d_trans.median(), g.d_non.median(), (g.d_trans < g.d_non).mean(), "%.3f" % p if p == p else "(pairs<5)"))
 S = pd.DataFrame(S)
 P()
 P("[2] the earlier definition (v79b, alongside) : beta_read_mean · read>=3 · consensus zone · unrelated control")
 O = pd.read_csv(T + "/TRIO_TRANSMIT_ZONE2.tsv", sep="\t")
 po = O.pivot_table(index="zone", columns="kind", values="d", aggfunc="median")
 for z in po.index:
-    P("   %-10s 전달 %.3f · 무관 %.3f" % (z, po.loc[z].get("전달", np.nan), po.loc[z].get("무관 대조", np.nan)))
+    P("   %-10s transmitted %.3f, unrelated %.3f" % (z, po.loc[z].get("전달", np.nan), po.loc[z].get("무관 대조", np.nan)))
 S.to_csv(T + "/TRIO_SRCDEF_SUMMARY.tsv", sep="\t", index=False, float_format="%.4f")
 LOG.close()

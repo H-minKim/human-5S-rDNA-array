@@ -48,7 +48,7 @@ for k in sorted(U):
         b = m["beta_call"] if m and m["n_reads"] >= 3 else None
         rec = (r[4], r[1], b)
         (term if TD.is_term(r[4]) else ordu).append(rec)
-print("말단형 유닛 %d · 보통 유닛 %d (원위 깊이 ≤%d)" % (len(term), len(ordu), DMAX))
+print("terminal-type units %d, ordinary units %d (distal depth ≤%d)" % (len(term), len(ordu), DMAX))
 ct = collections.Counter(); co = collections.Counter()
 for v, d, b in term: ct.update(v)
 for v, d, b in ordu: co.update(v)
@@ -63,13 +63,13 @@ for t, n in ct.items():
 rows.sort(key=lambda r: -r[5])
 for r in rows[:200]: g.write("%s\t%s\t%s\t%.4f\t%.4f\t%.4f\n" % r)
 g.close()
-print("\n=== 1·2. 말단형을 정의하는 변이 (보유율 차 상위 20) ===")
-print("  변이          자리   구획        말단형   보통    차이")
+print("\n=== 1, 2. variants defining the terminal type (top 20 by carrier rate difference) ===")
+print("  variant       position  segment     terminal  ordinary  difference")
 for r in rows[:20]:
     print("  %-12s %5s %-10s %6.3f %6.3f %+6.3f" % (r[0], r[1], r[2], r[3], r[4], r[5]))
 core = [r for r in rows if r[3] >= 0.8]
-print("\n  말단형의 ≥80%% 가 가진 변이 %d 개 : %s" % (len(core), ", ".join(r[0] for r in core[:25])))
-print("  그중 보통 유닛에서도 흔한 것(≥0.5) : %s" % (", ".join(r[0] for r in core if r[4] >= 0.5) or "없음"))
+print("\n  variants at ≥80%% within the terminal type, %d : %s" % (len(core), ", ".join(r[0] for r in core[:25])))
+print("  of these, also common in ordinary units (≥0.5) : %s" % (", ".join(r[0] for r in core if r[4] >= 0.5) or "없음"))
 # 3. per element
 def elem_count(recs):
     c = collections.Counter(); n = len(recs)
@@ -81,8 +81,8 @@ def elem_count(recs):
 et, eo = elem_count(term), elem_count(ordu)
 g = io.open(os.path.join(OUT, "Y5_terminal_by_element.tsv"), "w", encoding="utf8", newline="\n")
 g.write("element\tbp\tterminal_per_unit\tordinary_per_unit\tratio\tterminal_per_kb\tordinary_per_kb\n")
-print("\n=== 3. 구획별 유닛당 변이 수 ===")
-print("  구획        bp     말단형   보통    비(말단/보통)   말단형 /kb   보통 /kb")
+print("\n=== 3. variants per unit by segment ===")
+print("  segment     bp     terminal  ordinary  ratio(terminal/ordinary)   terminal /kb   ordinary /kb")
 for nm, a, b in ELEM:
     bp = b - a + 1
     g.write("%s\t%d\t%.4f\t%.4f\t%.3f\t%.3f\t%.3f\n" % (nm, bp, et[nm], eo[nm], et[nm] / max(eo[nm], 1e-9), 1000 * et[nm] / bp, 1000 * eo[nm] / bp))
@@ -90,13 +90,13 @@ for nm, a, b in ELEM:
 # 4. length and methylation
 lt = [2240 + sum(indel_bp(t) for t in v) for v, d, b in term]
 lo = [2240 + sum(indel_bp(t) for t in v) for v, d, b in ordu]
-print("\n=== 4. 유닛 길이 · 메틸 ===")
-print("  길이 중앙 : 말단형 %.0f bp · 보통 %.0f bp" % (np.median(lt), np.median(lo)))
+print("\n=== 4. unit length, methylation ===")
+print("  median length : terminal type %.0f bp, ordinary %.0f bp" % (np.median(lt), np.median(lo)))
 bt = [b for v, d, b in term if b is not None]; bo = [b for v, d, b in ordu if b is not None]
-print("  β 평균(깊이 보정 전) : 말단형 %.3f (n %d) · 보통 %.3f (n %d)" % (np.mean(bt), len(bt), np.mean(bo), len(bo)))
+print("  mean β (before depth adjustment) : terminal type %.3f (n %d), ordinary %.3f (n %d)" % (np.mean(bt), len(bt), np.mean(bo), len(bo)))
 for dep in (2, 5, 7, 9, 12):
     a = [b for v, d, b in term if d == dep and b is not None]
     c = [b for v, d, b in ordu if d == dep and b is not None]
     if len(a) >= 5 and len(c) >= 5:
-        print("   깊이 %2d : 말단형 %.3f (n %3d) · 보통 %.3f (n %3d)" % (dep, np.mean(a), len(a), np.mean(c), len(c)))
-print("\n저장 :", OUT)
+        print("   depth %2d : terminal type %.3f (n %3d), ordinary %.3f (n %3d)" % (dep, np.mean(a), len(a), np.mean(c), len(c)))
+print("\nsaved :", OUT)

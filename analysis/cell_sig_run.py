@@ -66,7 +66,7 @@ with io.open(os.path.join(DIR, "SITE_M6A_%s.tsv" % LAB), encoding="utf8") as f:
             r = int(v)
             if S.LO <= r <= S.HI:
                 M[i, r - S.LO] += 1
-print("%s : 유닛 %d · tf 사건 %d · β 있는 유닛 %d" % (NAME, N, len(ce), int(np.isfinite(beta).sum())))
+print("%s: units %d, tf events %d, units with β %d" % (NAME, N, len(ce), int(np.isfinite(beta).sum())))
 
 R = {"name": NAME, "n_units": int(N), "n_tf": int(len(ce)), "n_beta": int(np.isfinite(beta).sum())}
 
@@ -80,7 +80,7 @@ R["beta"] = dict(median=float(np.median(b)), trough_bin=[float(ed[j]), float(ed[
                  low_frac_at_cut=float((b < CUT).mean()), hist=hs.tolist())
 bimodal = R["beta"]["frac_045_055"] < 0.05
 R["beta"]["bimodal"] = bool(bimodal)
-print("  β 중앙 %.3f · 골 %.3f~%.3f (n=%d) · 0.45~0.55 %.2f%% · 컷 0.508 -> 저 %.1f%% · 양분 %s"
+print("  β median %.3f, trough %.3f~%.3f (n=%d), 0.45~0.55 %.2f%%, cut 0.508 -> low %.1f%%, two-way split %s"
       % (R["beta"]["median"], ed[j], ed[j + 1], hs[j], 100 * R["beta"]["frac_045_055"],
          100 * R["beta"]["low_frac_at_cut"], "가능" if bimodal else "불가(단봉)"))
 
@@ -93,15 +93,15 @@ R["blind5"] = (None if bl5 is None else dict(
 R["blind"] = dict(thr=bl["thr"], nk=bl["nk"], NB=bl["NB"],
                   bins=[list(x) for x in bl["bins"]],
                   sites=bl["sites"], peaks=[list(p[:2]) + list(p[2]) for p in bl["peaks"][:12]])
-print("  [블라인드 10bp] 쓴 칸 %d/15 · 격자 문턱(95%%) %.2f" % (bl["nk"], bl["thr"]))
+print("  [blind 10bp] bins used %d/15, grid threshold (95%%) %.2f" % (bl["nk"], bl["thr"]))
 if bl5 is not None:
-    print("  [블라인드 5bp ] 쓴 칸 %d/29 · 격자 문턱 %.2f · " % (bl5["nk"], bl5["thr"]) + " · ".join(
-        "%s p_창 %.4f p_격자 %.4f" % (n_, r_["p_win"], r_["p_grid"]) for n_, r_ in bl5["sites"].items()))
+    print("  [blind 5bp ] bins used %d/29, grid threshold %.2f, " % (bl5["nk"], bl5["thr"]) + " · ".join(
+        "%s p_window %.4f p_grid %.4f" % (n_, r_["p_win"], r_["p_grid"]) for n_, r_ in bl5["sites"].items()))
 for nm, r in bl["sites"].items():
-    print("    %-7s 관측 %.1f× (칸 %s · 자리 %+d) · p_창 %.4f · p_격자 %.4f · 사전칸 p %s"
+    print("    %-7s observed %.1f× (bin %s, position %+d), p_window %.4f, p_grid %.4f, prespecified bin p %s"
           % (nm, r["obs"], "%d~%d" % r["bin"], r["pos"], r["p_win"], r["p_grid"],
              ("%.4f" % r["p_win_bin"]) if "p_win_bin" in r else "-"))
-print("    상위 봉우리 : " + " · ".join("%+d(%d~%d, %.0f×)" % (p[1], p[2][0], p[2][1], p[0])
+print("    top peaks: " + " · ".join("%+d(%d~%d, %.0f×)" % (p[1], p[2][0], p[2][1], p[0])
                                       for p in bl["peaks"][:8]))
 
 # -- (2) caller-free confirmation (all molecules)
@@ -109,9 +109,9 @@ okm = A.sum(1) >= 20
 cf = S.confirm(A[okm], M[okm], NB_CONF, rng)
 R["confirm"] = cf
 R["confirm_n"] = int(okm.sum())
-print("  [확인·호출기 없음] 분자 %d · 치환 %d" % (okm.sum(), NB_CONF))
+print("  [confirmation, no caller] molecules %d, permutations %d" % (okm.sum(), NB_CONF))
 for nm, r in cf.items():
-    print("    %-7s 관측 %.3f (자리 %+d · 폭 %d) · 귀무 중앙 %.3f · 95%% %.3f · p %.4f"
+    print("    %-7s observed %.3f (position %+d, width %d), null median %.3f, 95%% %.3f, p %.4f"
           % (nm, r["obs"], r["pos"], r["width"], r["null_med"], r["null95"], r["p"]))
 
 # -- curves for the figure
@@ -155,7 +155,7 @@ for nmL, li in LAYERS:
     R["layers"][nmL]["dub_m11"] = S.dub_paper(sA, sM, -11)
     R["layers"][nmL]["dub_p58"] = S.dub_paper(sA, sM, 58)
     R["layers"][nmL]["dub_p62"] = S.dub_paper(sA, sM, 62)
-    print("  [층 %s n=%d] TFIIIB 35~39 @-11 %.1f× (사건 %d) · ICR 40~44 @+62 %.1f× (사건 %d) · "
+    print("  [stratum %s n=%d] TFIIIB 35~39 @-11 %.1f× (events %d), ICR 40~44 @+62 %.1f× (events %d), "
           "flank/core TFIIIB-11 %.3f · ICR+58 %.3f"
           % (nmL, n_l, R["layers"][nmL]["b35"]["fold"], R["layers"][nmL]["b35"]["n_events"],
              R["layers"][nmL]["b40"]["fold"], R["layers"][nmL]["b40"]["n_events"],
@@ -165,4 +165,4 @@ out_npz = os.path.join(DIR, "sig_%s.npz" % NAME)
 np.savez_compressed(out_npz, **arr)
 io.open(os.path.join(DIR, "sig_%s.json" % NAME), "w", encoding="utf8").write(
     json.dumps(R, ensure_ascii=False, indent=1, default=lambda o: float(o) if hasattr(o, "item") else str(o)))
-print("저장 ->", out_npz)
+print("saved ->", out_npz)

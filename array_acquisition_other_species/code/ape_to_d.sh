@@ -1,7 +1,7 @@
 #!/bin/bash
-# Bring the ape outputs into the common layout on the D drive (03_reads, 04_bam, 05_bedmethyl, 06_aux).
+# Bring the ape outputs into the common layout (03_reads, 04_bam, 05_bedmethyl, 06_aux).
 #   The tables gain species_key and sample as their leading columns; the sample equals the species key, there being one individual per species.
-# MIT License · Copyright (c) 2026 Hungmin Kim
+# MIT License. Copyright (c) 2026 Hyungmin Kim
 set -u
 K=$NODE_KEY
 O="-q -i $K -o StrictHostKeyChecking=no"
@@ -25,17 +25,17 @@ get() {
       *) out="$V/03_reads/$sp/$b" ;;
     esac
     awk -F'\t' -v OFS='\t' -v sp="$sp" 'NR==1{print "species_key", "sample", $0; next} {print sp, sp, $0}' "$f" > "$out"
-    echo "  $(basename "$out")  $(( $(wc -l < "$out") - 1 )) 행"
+    echo "  $(basename "$out")  $(( $(wc -l < "$out") - 1 )) rows"
   done
   [ -s "$d/$sp.5S.bam" ] && cp "$d/$sp.5S.bam" "$d/$sp.5S.bam.bai" "$V/04_bam/$sp/" && echo "  BAM $(du -h "$d/$sp.5S.bam" | cut -f1)"
   if [ -s "$d/$sp.5S.cpg.bed" ]; then gzip -f -1 -k "$d/$sp.5S.cpg.bed"; cp "$d/$sp.5S.cpg.bed.gz" "$V/05_bedmethyl/$sp/"; fi
   [ -s "$d/flowcells_used.txt" ] && cp "$d/flowcells_used.txt" "$V/06_aux/$sp/"
 }
-echo "== 유인원 가져오기 $(date -u +%H:%M) UTC"
+echo "== ape fetch $(date -u +%H:%M) UTC"
 get $NODE_HOST_1 chimp chimp_mPanTro3
 get $NODE_HOST_1 siamang siamang_mSymSyn1
 get $NODE_HOST_3 bonobo bonobo_mPanPan1
 get $NODE_HOST_3 orang_bornean orang_bornean_mPonPyg2
 get $NODE_HOST_2 gorilla gorilla_mGorGor1
 get $NODE_HOST_2 orang_sumatran orang_sumatran_mPonAbe1
-echo "== 끝 $(date -u +%H:%M) UTC"
+echo "== done $(date -u +%H:%M) UTC"

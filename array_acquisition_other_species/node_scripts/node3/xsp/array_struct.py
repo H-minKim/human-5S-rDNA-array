@@ -6,7 +6,7 @@
 #   The flank is FL bp on each side of the array; the 5S hit count, the N count and the distance to the end of the contig are recorded.
 #   Outputs: <species>.struct.tsv (one row per array), <species>.units.fa (up to 30 interior units) and <species>.flanks.fa (both sides).
 #   Arguments: species name, fasta, tblout, output folder, [flank bp = 20000].
-# MIT License · Copyright (c) 2026 Hungmin Kim
+# MIT License. Copyright (c) 2026 Hyungmin Kim
 import io
 import os
 import sys

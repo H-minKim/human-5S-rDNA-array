@@ -29,7 +29,7 @@ SITEM = collections.Counter()
 T = collections.Counter()
 
 files = sorted(glob.glob(os.path.join(IN, "METH_READUNIT_*.tsv.gz")))
-print("입력 파일 %d" % len(files))
+print("input files %d" % len(files))
 for p in files:
     f = gzip.open(p, "rt", encoding="utf8")
     ix = dict((n, i) for i, n in enumerate(f.readline().rstrip(NL).split(TAB)))
@@ -87,12 +87,12 @@ for k in sorted(SITE):
                       "%.4f" % (nm / float(n))]) + NL)
 g.close()
 
-print("자리(유닛) %d · 자리(염기) %d" % (len(RU), len(SITE)))
+print("positions (unit) %d, positions (base) %d" % (len(RU), len(SITE)))
 for k, v in sorted(T.items()):
     print("  %-20s %d" % (k, v))
 bs = [x[0] for v in RU.values() for x in v]
 if bs:
     lo = sum(1 for b in bs if b < 0.2)
     hi = sum(1 for b in bs if b > 0.7)
-    print("  read-유닛 beta : 저메틸<0.2 %d (%.1f%%) · 중간 %d · 고메틸>0.7 %d (%.1f%%)"
+    print("  read-unit beta : low-methylation<0.2 %d (%.1f%%), intermediate %d, high-methylation>0.7 %d (%.1f%%)"
           % (lo, 100.0 * lo / len(bs), len(bs) - lo - hi, hi, 100.0 * hi / len(bs)))

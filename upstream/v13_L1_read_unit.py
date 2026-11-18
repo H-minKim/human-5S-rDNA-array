@@ -52,7 +52,7 @@ def P(s=""):
 
 
 P("=" * 100)
-P("L1 = read x 유닛 통합표")
+P("L1 = read x unit integrated table")
 P("=" * 100)
 P()
 
@@ -62,20 +62,20 @@ Q["slot"] = Q.slotS.astype(str)
 E = Q[Q.eligible == 1][["sample", "slot", "N", "nread", "gate", "cov_frac",
                         "depth", "n_break", "revcomp"]]
 E = E.rename(columns={"gate": "gate_rate", "nread": "n_read_slot", "N": "N_qc"})
-P("  적격 슬롯 %d / %d · 개체 %d" % (len(E), len(Q), E["sample"].nunique()))
-P("  두 슬롯 다 적격인 개체 %d" % int((E.groupby("sample").size() == 2).sum()))
+P("  eligible slots %d / %d, individuals %d" % (len(E), len(Q), E["sample"].nunique()))
+P("  individuals with both slots eligible %d" % int((E.groupby("sample").size() == 2).sum()))
 P()
 
 # ---------------------------------------------------------------- 1. read x unit
 A = pd.read_parquet(os.path.join(T, "ru_v11.parquet"))
-P("  ru_v11 전체 %s 행" % format(len(A), ","))
+P("  ru_v11 total %s rows" % format(len(A), ","))
 A = A[A.data_source.astype(str) == "HPRC_ONT_submissions"].copy()
 A["slot"] = A.slot.astype(str)
 A = A.merge(E, on=["sample", "slot"], how="inner")
-P("  적격 슬롯으로 거른 뒤 %s 행 · read %s"
+P("  after filtering to eligible slots %s rows, reads %s"
   % (format(len(A), ","), format(A.read_id.nunique(), ",")))
-assert (A.ap_pj == A.N - A.ap_dj + 1).all(), "극성 축 불일치"
-P("  극성 검산 ap_pj == N-ap_dj+1 : 전건 일치")
+assert (A.ap_pj == A.N - A.ap_dj + 1).all(), "polarity axis mismatch"
+P("  polarity check ap_pj == N-ap_dj+1 : all match")
 P()
 
 A["array_pos"] = A.ap.astype("int32")        # the map join key, the original array_pos
@@ -136,28 +136,28 @@ for shift, tag in ((1, "prev"), (-1, "next")):
     A = A.merge(k, on=["read_id", "array_pos"], how="left")
 A["agree_prev"] = np.where(A.st_prev.notna(), (A.st == A.st_prev).astype(float), np.nan)
 A["agree_next"] = np.where(A.st_next.notna(), (A.st == A.st_next).astype(float), np.nan)
-P("  양옆 관측된 비율 : 이전 %.3f · 다음 %.3f"
+P("  fraction with neighbour observed : preceding %.3f, following %.3f"
   % (A.st_prev.notna().mean(), A.st_next.notna().mean()))
 P()
 
 # ---------------------------------------------------------------- 2. the map: the variants
 MP = pd.read_csv(MAP, sep="\t", dtype={"sample": str, "slot": str})
-P("  지도 전체 %s 행 · seg_type %s"
+P("  map total %s rows, seg_type %s"
   % (format(len(MP), ","), MP.seg_type.astype(str).value_counts().to_dict()))
 MP = MP[MP.array_pos > 0].copy()
 MP = MP[["sample", "slot", "array_pos", "unit_len", "n_var", "n_var_gene",
          "varlist", "chain_ok", "gap_to_next"]]
 MP["array_pos"] = MP.array_pos.astype("int32")
-P("  온전 유닛(array_pos>0) %s 행" % format(len(MP), ","))
+P("  intact units (array_pos>0) %s rows" % format(len(MP), ","))
 A = A.merge(MP, on=["sample", "slot", "array_pos"], how="left")
-P("  지도가 붙은 read-유닛 %.4f" % A.varlist.notna().mean())
+P("  read-units with a map %.4f" % A.varlist.notna().mean())
 P()
 
 # ---------------------------------------------------------------- 3. the variant groups
 VG = pd.read_csv(os.path.join(REF, "V11_VARIANT_GROUPS.tsv"), sep="\t")
 VG["tok"] = VG.g8_token_example.astype(str)
 VG = VG.drop_duplicates("tok")
-P("  변이 그룹표 %s 토큰" % format(len(VG), ","))
+P("  variant group table %s tokens" % format(len(VG), ","))
 
 cnt = Counter()
 for s in MP.varlist.dropna().astype(str).values:
@@ -168,13 +168,13 @@ for s in MP.varlist.dropna().astype(str).values:
 TOK = pd.DataFrame({"tok": list(cnt.keys()), "n_unit_seen": list(cnt.values())})
 TOK = TOK.merge(VG, on="tok", how="left")
 TOK["matched"] = TOK.variant.notna().astype(int)
-P("  지도 varlist 토큰 %s · 그룹표와 맞은 것 %s (%.4f)"
+P("  map varlist tokens %s, matched to the group table %s (%.4f)"
   % (format(len(TOK), ","), format(int(TOK.matched.sum()), ","), TOK.matched.mean()))
-P("  맞은 토큰이 덮는 관측 비율 %.4f"
+P("  fraction of observations covered by matched tokens %.4f"
   % (TOK.loc[TOK.matched == 1, "n_unit_seen"].sum() / TOK.n_unit_seen.sum()))
 TOK.sort_values("n_unit_seen", ascending=False).to_csv(
     os.path.join(T, "VAR_GROUP_MAP.tsv"), sep="\t", index=False)
-P("  저장 : 02_tables/VAR_GROUP_MAP.tsv")
+P("  saved : 02_tables/VAR_GROUP_MAP.tsv")
 P()
 
 CL = dict(zip(TOK.tok, TOK["class"].astype(str)))
@@ -238,9 +238,9 @@ U["vsig_n"] = [r[10] for r in rec]
 U["vsig_minfreq"] = [r[11] for r in rec]
 U = U.drop(columns=["varlist"])
 A = A.merge(U, on=["sample", "slot", "array_pos"], how="left")
-P("  유닛 변이 요약 : 흔한 변이 중앙 %.0f · 희귀 변이 중앙 %.0f · 희귀 있는 유닛 %.3f"
+P("  unit variant summary : common variants median %.0f, rare variants median %.0f, units with a rare variant %.3f"
   % (U.n_var_common.median(), U.n_var_rare.median(), (U.n_var_rare > 0).mean()))
-P("  CpG 관련 변이 있는 유닛 %.3f · 코딩부 변이 있는 유닛 %.3f"
+P("  units with a CpG-related variant %.3f, units with a coding-region variant %.3f"
   % ((U.n_var_cpg > 0).mean(), (U.n_var_coding > 0).mean()))
 P()
 
@@ -248,7 +248,7 @@ P()
 PP = pd.read_csv(POP, sep="\t")[["sample", "pop", "super_pop"]].dropna(subset=["sample"])
 PP = PP.drop_duplicates("sample")
 A = A.merge(PP, on="sample", how="left")
-P("  집단 라벨이 붙은 개체 %d / %d"
+P("  individuals with a population label %d / %d"
   % (A.dropna(subset=["super_pop"])["sample"].nunique(), A["sample"].nunique()))
 P()
 
@@ -276,13 +276,13 @@ COLS = (["sample", "slot", "read_id", "data_source", "cfg", "kind", "strand",
 COLS = [c for c in COLS if c in A.columns]
 L1 = A[COLS].copy()
 L1.to_parquet(os.path.join(T, "L1_READ_UNIT.parquet"), index=False)
-P("  저장 : 02_tables/L1_READ_UNIT.parquet  %s 행 x %d 열"
+P("  saved : 02_tables/L1_READ_UNIT.parquet  %s rows x %d columns"
   % (format(len(L1), ","), L1.shape[1]))
-P("     read %s · 슬롯 %d · 개체 %d"
+P("     reads %s, slots %d, individuals %d"
   % (format(L1.read_id.nunique(), ","),
      L1.groupby(["sample", "slot"], observed=True).ngroups, L1["sample"].nunique()))
 P()
-P("  열 목록")
+P("  column list")
 for i in range(0, len(COLS), 6):
     P("    " + " ".join("%-20s" % c for c in COLS[i:i + 6]))
 LOG.close()

@@ -16,7 +16,7 @@ markers = [r for r in csv.DictReader(open(MK), delimiter="\t")]
 ZN = {"근위(합)": "proximal", "가운데": "interior", "원위(합)": "distal"}
 MKP = collections.defaultdict(list)
 for r in markers: MKP[int(r["pos"])].append((r["variant"], r["alt"], ZN[r["zone"]]))
-print("표지", len(markers), collections.Counter(ZN[r["zone"]] for r in markers))
+print("marker", len(markers), collections.Counter(ZN[r["zone"]] for r in markers))
 R = {}
 with open(FQ) as g:
     while True:
@@ -36,7 +36,7 @@ for l in out.splitlines():
     if te - ts < 1800: continue
     cg = [x[5:] for x in f[12:] if x.startswith("cg:Z:")][0]
     HITS[qn].append((qs, qe, st, ts, te, L, cg))
-print("read", len(R), "· 유닛이 맞은 read", len(HITS), "· 유닛", sum(len(v) for v in HITS.values()))
+print("read", len(R), ", reads with a matched unit", len(HITS), "· 유닛", sum(len(v) for v in HITS.values()))
 rows = []
 for rid, hits in HITS.items():
     s, q, tags = R[rid]
@@ -76,4 +76,4 @@ for rid, hits in HITS.items():
 with open(os.path.join(W, "unit_marker_meth.tsv"), "w", newline="\n") as o:
     o.write("read\tq_start\tq_end\tstrand\tn_call\tn_meth\tmarkers\n")
     for x in rows: o.write("\t".join(map(str, x)) + "\n")
-print("-> unit_marker_meth.tsv · 유닛", len(rows), "· call ≥3", sum(1 for x in rows if x[4] >= MINCALL))
+print("-> unit_marker_meth.tsv, units", len(rows), "· call ≥3", sum(1 for x in rows if x[4] >= MINCALL))

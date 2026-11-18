@@ -2,7 +2,7 @@
 # ARRAY_ONLY actual placement, using only the gates fixed by testing
 #
 #  gate (fixed in testing, no post hoc adjustment)
-#      K = 16  ·  Δ >= 10
+#      K = 16, Δ >= 10
 #      Δ = (margin on own individual map) - (margin on another individual map)
 #    test measurement: retained 95.3%, correct 98.08%, other-map advantage 0.00%
 #
@@ -87,7 +87,7 @@ def tuc_targets(smp):
     out = set()
     # giab_tuc must be in the list, or the 4 GIAB individuals are silently skipped.
     #   If even one TUC call table directory is missing, tuc_targets returns an empty set and
-    #   "if not want: continue" makes it vanish without error. Always check the directory list.
+    #   "if not want: continue" makes it vanish without error.
     for d in ("s5s_ont_tuc", "new44_tuc", "kgp_tuc", "giab_tuc", "s5s_tuc"):
         p = os.path.expanduser("~/%s/out/%s.bound.tsv" % (d, smp))
         if not os.path.exists(p):

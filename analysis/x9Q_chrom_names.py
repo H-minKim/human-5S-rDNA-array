@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # A table mapping accession to chromosome number.
 #   The data folder holds no chromosome names for the great apes or Arabidopsis, only accessions; the zebrafish and zebra finch do have names.
-#   The names are confirmed through NCBI eutils esummary (db=nuccore) and written down rather than inferred. Queried 6 October 2026.
+#   The names are confirmed through NCBI eutils esummary (db=nuccore) and written down rather than inferred.
 #     https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=nuccore&id=<accession>&retmode=json
 #   Check: the sequence length (slen) returned by that same query must match the chromosome length in our table exactly.
 #   Output: tables/CHROM_NAMES.tsv
@@ -27,7 +27,7 @@ try:
     sys.stdout.reconfigure(encoding="utf-8")
 except Exception:
     pass
-REASON = "접근번호→염색체 번호(NCBI esummary 2026-10-06)"
+REASON = "접근번호→염색체 번호(NCBI esummary)"
 # (accession, species, the organism as NCBI records it, chromosome, NCBI slen)
 ROWS = [("CM054679.2", "수마트라오랑우탄", "Pongo abelii", "chr1", 233795519),
         ("CM054630.2", "보르네오오랑우탄", "Pongo pygmaeus", "chr1", 230807400),
@@ -40,7 +40,7 @@ ROWS = [("CM054679.2", "수마트라오랑우탄", "Pongo abelii", "chr1", 23379
         ("CP116283.2", "애기장대", "Arabidopsis thaliana", "chr4", 25768865),
         ("CP116284.1", "애기장대", "Arabidopsis thaliana", "chr5", 30142610)]
 T = pd.DataFrame(ROWS, columns=["접근번호", "종", "NCBI_organism", "염색체번호", "NCBI_slen"])
-T["출처"] = "NCBI eutils esummary db=nuccore (조회 2026-10-06)"
+T["출처"] = "NCBI eutils esummary db=nuccore"
 M = pd.read_csv(NEW + "/tables/FIGDATA_A1_chrom_map.tsv", sep="\t")
 LEN = dict(zip(M.염색체이름.astype(str), M.염색체길이))
 T["우리표_길이"] = T.접근번호.map(LEN)
@@ -52,4 +52,4 @@ T.to_csv(TMP + "/CHROM_NAMES.tsv", sep="\t", index=False, encoding="utf8", linet
 arch.put(TMP + "/CHROM_NAMES.tsv", "tables/CHROM_NAMES.tsv", REASON)
 print(T[["접근번호", "종", "염색체번호", "NCBI_slen", "우리표_길이", "길이일치"]].to_string(index=False))
 print()
-print("유인원 5 종은 모두 chromosome 1 — 사람 5S array 가 있는 염색체와 같다")
+print("all 5 ape species are on chromosome 1: the same chromosome that carries the human 5S array")

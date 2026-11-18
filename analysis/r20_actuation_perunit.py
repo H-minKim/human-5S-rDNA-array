@@ -27,7 +27,7 @@ import io, os, sys, gzip, glob, struct, bisect, collections
 import numpy as np
 from scipy.stats import wilcoxon
 
-# The data and output roots are environment variables with no default (CONVENTIONS, "the deposited copy wins").
+# The data and output roots are environment variables with no default.
 #  Paths to files inside the repository are resolved relative to __file__: a_lib, bamlite and p02_lib are deposited in this folder.
 #  The table of variables is in README.md, section 'Environment variables'.
 _HERE = os.path.dirname(os.path.abspath(__file__))
@@ -109,13 +109,13 @@ with gzip.open(os.path.join(S6, "a13_unit_state_gmm.tsv.gz"), "rt", encoding="ut
 import sys as _sys
 _sys.path.insert(0, _HERE)
 import a_lib as _alib
-print("0 차 : 유닛별 TSS 적재", flush=True)
+print("pass 0: load TSS per unit", flush=True)
 _UN, _ = _alib.load_units()
 TSSU = {k: (v[2] - v[0] + 1) for k, v in _UN.items()}
 del _UN
-print("  유닛 %d · TSS 중앙 %d" % (len(TSSU), int(np.median(list(TSSU.values())))), flush=True)
+print("  units %d, TSS median %d" % (len(TSSU), int(np.median(list(TSSU.values())))), flush=True)
 
-print("1 차 : BAM 에서 유닛별 QUAL", flush=True)
+print("pass 1: per-unit QUAL from BAM", flush=True)
 QU = {}
 BAMS = []
 for src, sub in SUB.items():
@@ -147,7 +147,7 @@ for src, bam in BAMS:
         for ap, v in acc.items():
             if v[1] >= 500:
                 QU[(smp, src, r["name"], slot, ap)] = v[0] / v[1]
-print("  QUAL 유닛 %d" % len(QU), flush=True)
+print("  QUAL units %d" % len(QU), flush=True)
 
 # ---------- second pass: stream the track and accumulate per position
 NB = ULEN + 2
@@ -155,7 +155,7 @@ P_SMP = collections.defaultdict(lambda: np.zeros((NB, 2)))      # (src,smp,state
 P_Q = collections.defaultdict(lambda: np.zeros((NB, 2)))        # (src,state,qbin)
 QCNT = collections.Counter()                                     # (source, state, quality bin) -> number of molecules
 NOTSS = collections.Counter() # units with no TSS found
-print("2 차 : 트랙 누적", flush=True)
+print("pass 2: accumulate tracks", flush=True)
 for p in sorted(glob.glob(os.path.join(S6, "a01_tracks", "*.tsv.gz"))):
     with gzip.open(p, "rt", encoding="utf8") as f:
         ix = {k: i for i, k in enumerate(f.readline().rstrip("\n").split("\t"))}
@@ -191,7 +191,7 @@ for p in sorted(glob.glob(os.path.join(S6, "a01_tracks", "*.tsv.gz"))):
                 B = P_Q[(src, st, qb)]
                 B[d0:d1, 0] += cov[k0:k1]; B[d0:d1, 1] += msp[k0:k1]
                 QCNT[(src, st, qb)] += 1
-print("  개체×상태 %d · QUAL 칸 %d · TSS 없음 %s" % (len(P_SMP), len(QCNT), dict(NOTSS)), flush=True)
+print("  individual×state %d, QUAL bins %d, no TSS %s" % (len(P_SMP), len(QCNT), dict(NOTSS)), flush=True)
 
 
 def act(A, a0, b0, mincov=MINCOV):
@@ -205,7 +205,7 @@ rows = []
 SRCS = (("UCSC_ONT_FIBERSEQ", "ONT"), ("PACBIO_FIBERSEQ", "PacBio"))
 
 print("\n" + "=" * 100)
-print("① 구역별 percent actuation (개체 단위)")
+print("(1) percent actuation by zone (individual level)")
 print("%-7s %-5s %6s %9s %9s %11s %11s" % ("src", "구역", "개체", "act_L", "act_H", "L-H", "p"))
 for src, s6 in SRCS:
     smps = sorted({k[1] for k in P_SMP if k[0] == src})
@@ -229,7 +229,7 @@ for src, s6 in SRCS:
                      round(float(dH.mean()), 5), round(float((dL - dH).mean()), 5), "%.3g" % pv))
 
 print("\n" + "=" * 100)
-print("② 창 의존성 — 구역 창 ↔ 유닛 전체")
+print("(2) window dependence: zone window vs whole unit")
 print("%-7s %-12s %6s %11s %11s" % ("src", "창", "개체", "L-H", "p"))
 for src, s6 in SRCS:
     smps = sorted({k[1] for k in P_SMP if k[0] == src})
@@ -251,8 +251,8 @@ for src, s6 in SRCS:
                      round(float(dH.mean()), 5), round(float((dL - dH).mean()), 5), "%.3g" % pv))
 
 print("\n" + "=" * 100)
-print("③ 층 의존성 — 자리당 분자 수 층 (유닛 전체 창)")
-print("%-7s %-12s %10s %10s %11s" % ("src", "분자 수 층", "act_L", "act_H", "L-H"))
+print("(3) stratum dependence: strata of molecules per position (whole-unit window)")
+print("%-7s %-12s %10s %10s %11s" % ("src", "molecule count stratum", "act_L", "act_H", "L-H"))
 CB = [(20, 50), (50, 100), (100, 200), (200, 500), (500, 10 ** 9)]
 for src, s6 in SRCS:
     TL = np.zeros((NB, 2)); TH = np.zeros((NB, 2))
@@ -265,14 +265,14 @@ for src, s6 in SRCS:
         if m.sum() < 30:
             continue
         vl = float((TL[m, 1] / TL[m, 0]).mean()); vh = float((TH[m, 1] / TH[m, 0]).mean())
-        print("%-7s %-12s %10.4f %10.4f %+11.4f   (자리 %d)" %
+        print("%-7s %-12s %10.4f %10.4f %+11.4f   (positions %d)" %
               (s6, "%d-%s" % (lo, "" if hi > 10 ** 8 else str(hi)), vl, vh, vl - vh, int(m.sum())))
         rows.append(("by_cov", s6, "%d-%s" % (lo, "" if hi > 10 ** 8 else str(hi)), int(m.sum()),
                      round(vl, 5), round(vh, 5), round(vl - vh, 5), ""))
 
 print("\n" + "=" * 100)
-print("④ 품질 교란 — QUAL 1 점 칸으로 H 분포에 맞춰 L 재가중 (유닛 전체 창)")
-print("%-7s %11s %11s %9s" % ("src", "맞춤 전", "맞춤 후", "유지율"))
+print("(4) quality confounding: L reweighted to the H distribution in 1-point QUAL bins (whole-unit window)")
+print("%-7s %11s %11s %9s" % ("src", "before matching", "맞춤 후", "retention"))
 for src, s6 in SRCS:
     qbs = sorted({k[2] for k in QCNT if k[0] == src})
     TL = np.zeros((NB, 2)); TH = np.zeros((NB, 2))
@@ -314,4 +314,4 @@ with io.open(os.path.join(W, "r20_actuation_profile.tsv"), "w", encoding="utf8",
     g.write("platform\tstate\tunit_pos\tn_mol\tactuation\n")
     for r in prof:
         g.write("%s\t%s\t%d\t%d\t%.5f\n" % r)
-print("\n저장 : r20_actuation_unified.tsv · r20_actuation_profile.tsv")
+print("\nsaved: r20_actuation_unified.tsv, r20_actuation_profile.tsv")

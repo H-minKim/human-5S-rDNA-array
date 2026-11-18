@@ -17,4 +17,4 @@ if __name__ == "__main__":
         for k in sorted(c): print("   %-34s %-6s %d" % (k + (c[k],)))
         for o in O:
             if o["cls"][0] != "A" or o["sig2"] != "유의":
-                print("    [%s · %s] %-6s %s read %d %s · 변이 Q %s · Q20 read %d · 같은자리 Q차 중앙 %s · 어긋난 쌍 %s · %s" % (o["cls"][:6], o["sig2"], o["variant"], o["mzone"], o["n_read"], o["plat"], o["q_alt"][:10], o["n_q20"], o["dq_med"], o["pair_neg"], o["why2"] or "-"))
+                print("    [%s, %s] %-6s %s read %d %s, variant Q %s, Q20 read %d, median same-position Q difference %s, mismatched pairs %s, %s" % (o["cls"][:6], o["sig2"], o["variant"], o["mzone"], o["n_read"], o["plat"], o["q_alt"][:10], o["n_q20"], o["dq_med"], o["pair_neg"], o["why2"] or "-"))

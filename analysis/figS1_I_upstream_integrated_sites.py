@@ -7,7 +7,7 @@
 # Combined: insertions and deletions on the anchor and DP axes, together with structural anomalies on the placed-position axis including the inversion positive control, in one figure.
 # Output : INTEGRATED_STRUCTURAL.md and INTEGRATED_13SITES.tsv
 import io, os, collections, statistics
-K = os.environ["RDNA_HANDOFF_AD6468DD"]; B = chr(92)
+K = os.environ["RDNA_HANDOFF_DIR"]; B = chr(92)
 D = os.path.join(K, "result_placement_slot_anchor_20260930")
 A = os.path.join(os.environ["RDNA_V11"], "09_tests", "unit_indel_all_v2_20260916",
              "anchor_check_20260918", "results", "ANCHOR_SITES.tsv")
@@ -53,9 +53,9 @@ for o in out:
                       "-" if o[12] is None else ("Y" if o[12] <= 0.5 else "N")]) + NL)
 g.close()
 T = []
-T.append("# 통합 그림 — 구조적 불일치 하나로 (2026-09-30)")
+T.append("# 통합 그림 — 구조적 불일치 하나로")
 T.append("")
-T.append("이 세션이 찾던 것은 read 와 정본 사이의 **구조적 불일치**다. 두 축으로 봤고, 각 축의 **검출력을 따로 실측**했다.")
+T.append("여기서 찾던 것은 read 와 정본 사이의 **구조적 불일치**다. 두 축으로 봤고, 각 축의 **검출력을 따로 실측**했다.")
 T.append("")
 T.append("| | 축 A — 분자 사건 (앵커 · DP) | 축 B — 정본 구조 (배치 자리) |")
 T.append("|---|---|---|")
@@ -82,8 +82,8 @@ for o in out:
         "-" if o[12] is None else "**%.2f**" % o[12], o[13], "" if o[12] is None else ("재검출" if o[12] <= 0.5 else "못잡음")))
 T.append("")
 T.append("## 한 문단으로")
-T.append("구조적 불일치는 이 세션이 다룬 범위에서 **유닛 단위 삽입/결실 한 가지 모양**으로만 나타났다. "
-         "그 사건들은 실재하고(길이의 81.6%가 유닛 정수배 · HiFi 교차 확인), 그중 **read 전원이 정본에 반대하는 5 자리**가 정본 오류에 해당하며 **2 자리(HG00133 h2 · HG03270 h1)가 실제로 수리**됐고 나머지는 **2026-09-22 에 '수리 안 함' 으로 결정**됐다. "
+T.append("구조적 불일치는 여기서 다룬 범위에서 **유닛 단위 삽입/결실 한 가지 모양**으로만 나타났다. "
+         "그 사건들은 실재하고(길이의 81.6%가 유닛 정수배 · HiFi 교차 확인), 그중 **read 전원이 정본에 반대하는 5 자리**가 정본 오류에 해당하며 **2 자리(HG00133 h2 · HG03270 h1)가 실제로 수리**됐고 나머지는 **'수리 안 함' 으로 결정**됐다. "
          "**역위 · 블록 재배치 · 중복은 전용 검정으로 0 건**이다 — 그 검정은 정본에 6 유닛 역위를 심으면 **97.4%** 로 잡고(거짓양성 1.2%) 기존 정본 오류 13 중 11 을 다시 찾으므로, 이 음성은 **근거 있는 음성**이다. "
          "다만 음성의 범위는 **정본 자리의 92.2% · 594/616 하플로 · 정본 수준**이며, **1 유닛 사건과 소수 read 분자 수준 역위는 이 검정의 밖**이다.")
 T.append("")

@@ -4,11 +4,11 @@
 #   The Source Data submitted with the paper must hold the values the current figure draws, and must be in English.
 #
 #   Principles:
-#     · Nothing is recomputed; the table the figure reads is copied across.
+#     - Nothing is recomputed; the table the figure reads is copied across.
 #       Two panels (main E and F) hold values the figure builds on the spot, so those are rebuilt with the same code
 #       and checked here against the numbers printed in the legend.
-#     · The column names are translated, with a correspondence table on the README sheet so that no meaning shifts.
-#     · One sheet per panel, and the README records which sheet is which panel.
+#     - The column names are translated, with a correspondence table on the README sheet so that no meaning shifts.
+#     - One sheet per panel, and the README records which sheet is which panel.
 import io, os, sys, hashlib, datetime
 import numpy as np, pandas as pd
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -34,14 +34,36 @@ _EN2KO_COL = {
     "SUPP3_B_HAP3.tsv": {"haplotype": "하플로타입", "length_class": "길이층",
                          "n_units": "유닛수", "molecule_index": "분자순번",
                          "unit_position": "유닛자리"},
+    "FIGX19_E_PAIR.tsv": {"zone": "띠"},
+    "FIGX19_F_SEG.tsv": {"zone": "띠", "measure": "지표"},
+    "FIGX25_PROFILE.tsv": {"side": "쪽"},
+    "FIG8_PAIRS.tsv": {"pair_name": "짝이름", "data_source": "자료원",
+                       "call_mode": "호출방식", "a_name": "a_이름", "b_name": "b_이름"},
+    "NORM_VS_CANCER_SAMPLE.tsv": {"overall_beta": "전체b"},
+    "FIG3_G_TYPEDIST.tsv": {"individual": "개체", "cluster": "무리",
+                            "cluster_size": "무리크기", "superpopulation": "초집단",
+                            "n_units": "유닛수", "n_within_cluster": "n_군안",
+                            "within_cluster_distance": "군안거리",
+                            "n_between_cluster": "n_군밖",
+                            "between_cluster_distance": "군밖거리",
+                            "difference": "차"},
 }
 _EN2KO_VAL = {
     "FIG3_A_UNITPROFILE_ZONE.tsv": ("구역", {"proximal": "근위", "interior": "내부",
                                             "distal": "원위", "all": "전체"}),
     "FIG3_B_POSBETA.tsv": ("층", {"all": "전체"}),
-    "FIG3_C_LOWCOUNT.tsv": ("컷", {"0.508 (trough measured here)": "0.508(여기서 잴 골)"}),
+    "FIG3_C_LOWCOUNT.tsv": ("컷", {"0.508 (trough measured in this work)": "0.508(여기서 잴 골)"}),
     "SUPP3_B_HAP3.tsv": ("길이층", {"short array": "짧은 array", "medium": "중간 길이",
                                    "long array": "긴 array"}),
+    "FIG1_V5_A_bp_HC.tsv": ("side", {"proximal": "근위", "distal": "원위"}),
+    "FIG1_2_UNITS.tsv": ("side", {"proximal": "근위", "distal": "원위"}),
+    "FIG3_SUPP_A_SEQ1K.tsv": ("side", {"proximal": "근위", "distal": "원위"}),
+    "FIGX25_PROFILE.tsv": ("쪽", {"proximal": "근위", "distal": "원위",
+                                 "interior": "가운데"}),
+    "FIGX19_F_SEG.tsv": ("지표", {"gene-body beta": "유전자부 β",
+                                 "spacer beta": "스페이서 β"}),
+    "FIG5V2_PAIRZONE5.tsv": ("call", {"transmitted (firm)": "전달(확정)",
+                                      "transmitted (weak)": "전달(약함)"}),
 }
 
 
@@ -97,8 +119,8 @@ COMMON = [
  "The unit state boundary 0.508 is a unit-level hard-call trough, and two independent estimators agree on it: "
  "a histogram of unit beta at a bin width of 0.005, smoothed over 5 bins and searched between 0.20 and 0.80, gives 0.5075, "
  "and a Gaussian kernel density estimate at a fixed bandwidth factor of 0.03 gives 0.5068. "
- "Per-chemistry troughs are not quoted. An earlier version of this note gave 0.5216 for R10 and 0.4648 for R9 and read them as a split of 0.508; both halves of that were wrong. "
- "The estimator behind the pair puts the pooled trough at 0.4582, so the pair is not a split of 0.508; and the R10 layer carries 6,721 units against 23,674 for R9, "
+ "Per-chemistry troughs are not quoted: "
+ "the R10 layer carries 6,721 units against 23,674 for R9, "
  "which leaves the trough bin sparse enough that the argmin is tied and the position is set by the scan order rather than by the data. "
  "What is stable is how little the call depends on the cut: moving it from 0.45 to 0.55 moves the low-methylated share from 0.208 to 0.234, 2.5 percentage points over a tenth of the beta range.",
  "Chemistry is not uniform: 143 individuals R9 (guppy 6.5.7 or 6.4.6), 41 R10 (dorado 0.6.0), 96 absent from the public index.",
@@ -119,8 +141,8 @@ def write(path, sheets, title, panels):
             rows.append({"sheet": sh, "panel": panels.get(sh, ""), "content": what,
                          "rows": len(df), "columns": df.shape[1], "source table": src})
         rd_ = pd.DataFrame(rows)
-        meta = pd.DataFrame({"field": ["figure", "generated", "origin", "script"],
-                             "value": [title, TODAY, "", os.path.basename(__file__)]})
+        meta = pd.DataFrame({"field": ["figure", "origin", "script"],
+                             "value": [title, "", os.path.basename(__file__)]})
         meta.to_excel(xw, sheet_name="README", index=False, startrow=0)
         rd_.to_excel(xw, sheet_name="README", index=False, startrow=len(meta) + 2)
         pd.DataFrame({"notes on the whole figure": COMMON}).to_excel(
@@ -130,7 +152,7 @@ def write(path, sheets, title, panels):
         if CHECK:
             pd.DataFrame(CHECK, columns=["check", "value in this workbook", "published value", "agrees"]).to_excel(
                 xw, sheet_name="CHECKS", index=False)
-    print("   %-28s 시트 %d · %.0f KB · md5 %s"
+    print("   %-28s sheets %d, %.0f KB, md5 %s"
           % (os.path.basename(path), len(sheets) + 2, os.path.getsize(path) / 1024.0, md5(path)))
 
 
@@ -162,8 +184,8 @@ C.columns = ["array_length_stratum", "axis", "unit_number_from_that_end", "x_in_
 D = rd("FIG3_C_LOWCOUNT.tsv").copy()
 D = D[D.컷.astype(str).str.startswith("0.508")]
 # The submitted file must contain no Korean, so the cut values are translated.
-D["컷"] = D.컷.map({"0.508(여기서 잴 골)": "0.508 (trough measured here)",
-                   "0.508 (trough measured here)": "0.508 (trough measured here)"}).fillna(D.컷)
+D["컷"] = D.컷.map({"0.508(여기서 잴 골)": "0.508 (trough measured in this work)",
+                   "0.508 (trough measured in this work)": "0.508 (trough measured in this work)"}).fillna(D.컷)
 D["층"] = D.층.replace({"N40-80": "40-80 units", "N81-110": "81-110 units",
                        "N111-140": "111-140 units", "N141+": "141+ units"})
 D.columns = ["low_methylation_cut", "array_length_stratum", "n_haplotypes", "median_array_length_units",
@@ -361,6 +383,6 @@ write(os.path.join(HERE, "Fig3_supp_SourceData.xlsx"), SUPP,
       PAN_S)
 print()
 bad = [c for c in CHECK if not c[3]]
-print("검산 %d 개 · 어긋남 %d" % (len(CHECK), len(bad)))
+print("checks %d, mismatch %d" % (len(CHECK), len(bad)))
 for c in bad:
-    print("   어긋남 %s : %s ↔ %s" % (c[0], c[1], c[2]))
+    print("   mismatch %s: %s vs %s" % (c[0], c[1], c[2]))

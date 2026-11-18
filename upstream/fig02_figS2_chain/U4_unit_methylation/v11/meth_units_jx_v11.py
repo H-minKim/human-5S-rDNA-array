@@ -192,4 +192,4 @@ for k in sorted(SITE):
 SI.close()
 for k, v in sorted(T.items()):
     print("  %-16s %d" % (k, v))
-print("  자리 %d" % len(SITE))
+print("  positions %d" % len(SITE))

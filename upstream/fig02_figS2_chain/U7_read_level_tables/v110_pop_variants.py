@@ -22,7 +22,7 @@ H = H[H.sp.isin(SP5)].copy()
 L = pd.read_parquet(T + "/L2_HAP_UNIT.parquet", columns=["sample", "slot", "ad", "ap", "varlist", "n_var", "n_var_rare", "n_var_common"])
 L["slot"] = L.slot.astype(str)
 L = L.merge(H[["sample", "slot", "sp", "N", "depth", "kid_in_cohort"]], on=["sample", "slot"], how="inner")
-P("[0] 자료 : 하플로 %d · 개체 %d · 유닛 %d · 집단별 하플로 %s"
+P("[0] data : haplotypes %d, individuals %d, units %d, haplotypes per population %s"
   % (L.groupby(["sample", "slot"]).ngroups, L["sample"].nunique(), len(L), H.groupby("sp").size().to_dict()))
 
 # expand unit x token
@@ -30,7 +30,7 @@ E = L[["sample", "slot", "sp", "varlist"]].copy()
 E["tok"] = E.varlist.fillna("").str.split(",")
 E = E.explode("tok")
 E = E[E.tok.astype(str).str.len() > 0]
-P("   (하플로,유닛,토큰) 쌍 %d · 서로 다른 토큰 %d" % (len(E), E.tok.nunique()))
+P("   (haplotype,unit,token) tuples %d, distinct tokens %d" % (len(E), E.tok.nunique()))
 
 nunit = L.groupby(["sample", "slot"]).size().rename("n_unit")
 hap_sp = H.set_index(["sample", "slot"]).sp
@@ -41,7 +41,7 @@ C["frac"] = C.n_hit / C.n_unit
 NH = len(H)
 tok_hap = C.groupby("tok")["sample"].size().rename("n_hap")
 keep = tok_hap[(tok_hap >= MIN_HAP) & (tok_hap <= MAX_HAPFRAC * NH)].index
-P("   검정 대상 토큰 %d (하플로 %d+ 보유 · 보유율 %.0f%% 이하) · 전체 %d"
+P("   tokens tested %d (carried by %d+ haplotypes, carrier rate at most %.0f%%), total %d"
   % (len(keep), MIN_HAP, MAX_HAPFRAC * 100, C.tok.nunique()))
 
 spn = H.groupby("sp").size().to_dict()
@@ -76,17 +76,17 @@ V["보유_q"] = bh(V.보유_p); V["빈도_q"] = bh(V.빈도_p)
 V = V.sort_values("빈도_p")
 V.to_csv(T + "/POP_VAR_TOKEN.tsv", sep="\t", index=False, float_format="%.5g")
 P()
-P("[1] 집단 간 빈도 차 (array 안 빈도 · KW · BH q)")
-P("   q<0.05 토큰 %d / %d · q<0.01 %d" % ((V.빈도_q < 0.05).sum(), len(V), (V.빈도_q < 0.01).sum()))
+P("[1] between-population frequency difference (within-array frequency, KW, BH q)")
+P("   q<0.05 tokens %d / %d, q<0.01 %d" % ((V.빈도_q < 0.05).sum(), len(V), (V.빈도_q < 0.01).sum()))
 cols = ["토큰", "보유하플로"] + ["빈도_" + s for s in SP5] + ["빈도_p", "빈도_q"]
 P(V.head(15)[cols].to_string(index=False))
 P()
-P("[2] 보유 여부 차 (Fisher · BH q) — q<0.05 토큰 %d" % (V.보유_q < 0.05).sum())
+P("[2] carrier status difference (Fisher, BH q): q<0.05 tokens %d" % (V.보유_q < 0.05).sum())
 cols2 = ["토큰", "보유하플로"] + ["보유_" + s for s in SP5] + ["보유최대차집단", "보유_OR", "보유_p", "보유_q"]
 P(V.sort_values("보유_p").head(15)[cols2].to_string(index=False))
 
 P()
-P("[3] 한 집단에만 있는 토큰 (보유 하플로 3 개 이상 · 다른 집단 0)")
+P("[3] tokens found in one population only (3 or more carrier haplotypes, 0 in other populations)")
 priv = []
 for t, g in C.groupby("tok"):
     car = g.groupby("sp")["sample"].size().to_dict()
@@ -100,27 +100,27 @@ PV = pd.DataFrame(priv)
 if len(PV):
     PV = PV.sort_values(["보유하플로"], ascending=False)
     PV.to_csv(T + "/POP_VAR_PRIVATE.tsv", sep="\t", index=False, float_format="%.5g")
-    P("   %d 개 · 집단별 %s" % (len(PV), PV.groupby("집단").size().to_dict()))
+    P("   %d, per population %s" % (len(PV), PV.groupby("집단").size().to_dict()))
     P(PV.head(20).to_string(index=False))
 else:
-    P("   없음")
+    P("   none")
 
 P()
-P("[4] 하플로당 변이 부담 (유닛당 평균 변이 수 · 희귀 변이 수)")
+P("[4] variant load per haplotype (mean variants per unit, rare variant count)")
 B = L.groupby(["sample", "slot", "sp"]).agg(n_var=("n_var", "mean"), n_rare=("n_var_rare", "mean"),
                                             n_common=("n_var_common", "mean"), N=("N", "first"),
                                             depth=("depth", "first"), kid=("kid_in_cohort", "first")).reset_index()
 B.to_csv(T + "/POP_VAR_HAPLOAD.tsv", sep="\t", index=False, float_format="%.4f")
 for met in ("n_var", "n_rare", "n_common"):
     h, p = stats.kruskal(*[g[met].values for _, g in B.groupby("sp")])
-    P("   %-9s 집단중앙 %s · KW p %.4g" % (met, B.groupby("sp")[met].median().round(3).to_dict(), p))
-P("   깊이와 희귀변이 수 rho %+.3f · N 과 rho %+.3f (검출력 교란 확인)"
+    P("   %-9s population median %s, KW p %.4g" % (met, B.groupby("sp")[met].median().round(3).to_dict(), p))
+P("   depth vs rare variant count rho %+.3f, vs N rho %+.3f (check for detection-power confounding)"
   % (stats.spearmanr(B.depth, B.n_rare)[0], stats.spearmanr(B.N, B.n_rare)[0]))
 B2 = B[~B.kid]
-P("   친족 제외(하플로 %d) : n_rare KW p %.4g" % (len(B2), stats.kruskal(*[g.n_rare.values for _, g in B2.groupby("sp")])[1]))
-P("   깊이 5 분위 안에서 n_rare : p %s"
+P("   relatives excluded (haplotypes %d) : n_rare KW p %.4g" % (len(B2), stats.kruskal(*[g.n_rare.values for _, g in B2.groupby("sp")])[1]))
+P("   n_rare within 5 depth quantiles : p %s"
   % " ".join("%.3f" % stats.kruskal(*[g.n_rare.values for _, g in q.groupby("sp") if len(g) >= 3])[1]
              for _, q in B.assign(dq=pd.qcut(B.depth, 5, labels=False)).groupby("dq")))
 P()
-P("저장 : 02_tables/POP_VAR_TOKEN.tsv · POP_VAR_PRIVATE.tsv · POP_VAR_HAPLOAD.tsv")
+P("saved : 02_tables/POP_VAR_TOKEN.tsv, POP_VAR_PRIVATE.tsv, POP_VAR_HAPLOAD.tsv")
 LOG.close()

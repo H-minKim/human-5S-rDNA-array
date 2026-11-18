@@ -47,7 +47,7 @@ NT = len(keys)
 pos_all = [q for d in A_OF.values() for q in d]
 subs = [(q, b) for d in A_OF.values() for q, b in d.items() if b != "-"]
 same = sum(1 for q, b in subs if CAN[q - 1].upper() == b.upper())
-print("참조 길이 %d · 자리 범위 %d-%d · 치환 %d 중 대립=참조 %d" % (len(CAN), min(pos_all), max(pos_all), len(subs), same))
+print("reference length %d, position range %d-%d, substitutions %d of which allele=reference %d" % (len(CAN), min(pos_all), max(pos_all), len(subs), same))
 assert len(CAN) == 2240 and 1 <= min(pos_all) and max(pos_all) <= 2240 and same == 0
 
 PACK = []
@@ -57,7 +57,7 @@ for s in sorted(MATS):
     if len(sel) < 23:
         continue
     PACK.append((s, [A_OF[(s[0], s[1], aps[i])] for i in sel]))
-print("하플로타입 %d · 유닛 %d" % (len(PACK), sum(len(x[1]) for x in PACK)))
+print("haplotypes %d, units %d" % (len(PACK), sum(len(x[1]) for x in PACK)))
 
 
 def binof(d):
@@ -119,7 +119,7 @@ with io.open(os.path.join(OUT, "COSHARE_PERHAP.tsv"), "w", encoding="utf8", newl
                 for c_ in (0, 1):
                     gp.write("%s\t%s\t%s\t%d-%d\t%d\t%d\t%d\n" % (s_[0], s_[1], nm_, a_, b_, c_,
                                                              H[hi_, si_, k_, c_, 0], H[hi_, si_, k_, c_, 1]))
-print("\n① B 를 코호트 빈도로 나눔 · 쌍 : 함께 %d · 한쪽 %d" % tuple(npair))
+print("\n(1) B split by cohort frequency, pairs : both %d, one side %d" % tuple(npair))
 g = io.open(os.path.join(OUT, "COSHARE_BSTRAT_out.tsv"), "w", encoding="utf8", newline="\n")
 g.write("# B 코호트 빈도 층별 공동 공유 · 같은 집합 · cluster bootstrap %d · seed %d\n" % (NB, SEED))
 g.write("B_stratum\tbin_bp\tn_together\tshare_together\tn_onesided\tshare_onesided\texcess\tlo\thi\n")
@@ -134,7 +134,7 @@ for si, (nm, _, _) in enumerate(BSTRAT):
     print("  ■ %s" % nm)
     for k, (a, b) in enumerate(BINS):
         lo, hi = np.percentile(BS[:, k], [2.5, 97.5])
-        print("     %5d-%-5d  함께 %8d %.4f · 한쪽 %8d %.4f · 초과 %+.4f [%+.4f, %+.4f]" % (a, b, T[k, 0, 1], r[k, 0], T[k, 1, 1], r[k, 1], r[k, 0] - r[k, 1], lo, hi))
+        print("     %5d-%-5d  both %8d %.4f, one side %8d %.4f, excess %+.4f [%+.4f, %+.4f]" % (a, b, T[k, 0, 1], r[k, 0], T[k, 1, 1], r[k, 1], r[k, 0] - r[k, 1], lo, hi))
         g.write("%s\t%d-%d\t%d\t%.5f\t%d\t%.5f\t%.5f\t%.5f\t%.5f\n" % (nm, a, b, T[k, 0, 1], r[k, 0], T[k, 1, 1], r[k, 1], r[k, 0] - r[k, 1], lo, hi))
 g.close()
 # the deposited table(s) carry English column names and values (common/fig02_figS2/taben.py)
@@ -174,7 +174,7 @@ for s, UA in PACK:
     HC.append(c)
 HC = np.array(HC)
 C = HC.sum(0)
-print("\n② 코호트 희귀(< 1%%) 변이 · array 안 1 유닛만 %d ↔ 2 유닛 이상 공유 %d" % (C[0].sum(), C[1].sum()))
+print("\n(2) cohort-rare (< 1%%) variants, in only 1 unit within the array %d; shared by 2 or more units %d" % (C[0].sum(), C[1].sum()))
 g.write("[B]\ttype\tsingle_n\tsingle_frac\tshared_n\tshared_frac\tdiff\tlo\thi\n")
 BSC = []
 for b in range(NB):
@@ -184,10 +184,10 @@ BSC = np.array(BSC)
 for k, t in enumerate(TY):
     f0, f1 = C[0, k] / C[0].sum(), C[1, k] / C[1].sum()
     lo, hi = np.percentile(BSC[:, 1, k] - BSC[:, 0, k], [2.5, 97.5])
-    print("   %-28s 홑 %6d (%.4f) · 공유 %6d (%.4f) · 차 %+.4f [%+.4f, %+.4f]" % (t, C[0, k], f0, C[1, k], f1, f1 - f0, lo, hi))
+    print("   %-28s single %6d (%.4f), shared %6d (%.4f), difference %+.4f [%+.4f, %+.4f]" % (t, C[0, k], f0, C[1, k], f1, f1 - f0, lo, hi))
     g.write("\t%s\t%d\t%.5f\t%d\t%.5f\t%.5f\t%.5f\t%.5f\n" % (t, C[0, k], f0, C[1, k], f1, f1 - f0, lo, hi))
 chi = stats.chi2_contingency(C)
-print("   종류 구성 카이제곱 %.1f · 자유도 %d · p %.3g" % (chi[0], chi[2], chi[1]))
+print("   kind composition chi-square %.1f, degrees of freedom %d, p %.3g" % (chi[0], chi[2], chi[1]))
 g.write("[B2]\tchi2\t%.3f\tdf\t%d\tp\t%.4g\n" % (chi[0], chi[2], chi[1]))
 g.close()
-print("\n산출 :", os.path.join(OUT, "COSHARE_TEST_out.tsv"))
+print("\noutput :", os.path.join(OUT, "COSHARE_TEST_out.tsv"))

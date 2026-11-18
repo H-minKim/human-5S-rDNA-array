@@ -179,7 +179,7 @@ READS = {}
 for spec in SPECS:
     fa, plat, src = spec.split(":")
     for q, r in load(fa, plat).items(): r["src"] = src; READS[q] = r
-    log(src, "사슬", sum(1 for r in READS.values() if r["src"] == src))
+    log(src, "chain", sum(1 for r in READS.values() if r["src"] == src))
 # Reaching an end means the tail aligns to the flank sequence over at least 1000 bp at identity 0.8 or more; the correspondence between the chain end and the flank file is counted.
 FLK = os.path.expanduser("~/p11_encode/ref/_flank_both.fa")
 with open(FLK, "w") as o:
@@ -205,7 +205,7 @@ for (q, side), (fn, bl) in HIT.items():
     if side == "시작": r["sf"] = True
     else: r["ef"] = True
     chk[(side, fn)] += 1
-log("끝 닿음(flank 정렬) 사슬쪽 × flank 파일", dict(chk), "· 꼬리 후보", sum(len(r["tails"]) for r in READS.values()))
+log("end reached (flank alignment) chain side × flank file", dict(chk), "· 꼬리 후보", sum(len(r["tails"]) for r in READS.values()))
 RES = []; DIRECT = []
 for (p, a), mk in sorted(MK.items(), key=lambda kv: kv[1]["variant"]):
     v = mk["variant"]; items = []
@@ -341,8 +341,8 @@ for (p, a), mk in sorted(MK.items(), key=lambda kv: kv[1]["variant"]):
                         cls=cls, zone_final=zf, zone_how=zhow, zone_res=zres, anchor=anchor, marker_col=mst, n_mis=nmis,
                         path_score=round(psc, 2), cols=["%s%s" % (s_[:2], "" if a_ is None else a_) for s_, a_ in status],
                         n_pb=sum(1 for q_ in reads if READS[q_]["plat"] == "PB")))
-    log("%-6s %s : read 창 %d · 무리 %d (2 read 이상 %d)" % (v, mk["zone"], n, len(groups), sum(1 for g in groups if len({items[x]['read'] for x in g}) >= 2)))
+    log("%-6s %s: read windows %d, clusters %d (with 2 or more reads %d)" % (v, mk["zone"], n, len(groups), sum(1 for g in groups if len({items[x]['read'] for x in g}) >= 2)))
 json.dump(dict(direction_check={"|".join(k): c for k, c in chk.items()}, results=RES, direct=DIRECT),
           open("%s/%s_markerasm_v5.json" % (W, TAG), "w"), ensure_ascii=False, indent=1, default=str)
 tot = collections.Counter((r["verdict"], r["n_read"] >= 2) for r in RES)
-log("완료", {("%s|%s" % (k[0], "2read+" if k[1] else "1read")): c for k, c in sorted(tot.items())})
+log("done", {("%s|%s" % (k[0], "2read+" if k[1] else "1read")): c for k, c in sorted(tot.items())})

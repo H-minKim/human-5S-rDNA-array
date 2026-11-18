@@ -54,5 +54,5 @@ for hap in ("hap1", "hap2"):
     n = len(us)
     for k, i in enumerate(order):
         out.write("%s\t%s\t%d\t%d\t%d\t%s\n" % (hap, best, k + 1, n - k, n, ",".join(V.get(i, [])) or "-"))
-    print(hap, best, "길이", len(s), "유닛", n, "flank", {k: (int(v[0]), v[1], v[2]) for k, v in fl.items()}, "unit1=원위쪽" if dfront else "unit1=서열 뒤")
+    print(hap, best, "length", len(s), "유닛", n, "flank", {k: (int(v[0]), v[1], v[2]) for k, v in fl.items()}, "unit1=원위쪽" if dfront else "unit1=서열 뒤")
 out.close()

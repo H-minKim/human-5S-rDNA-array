@@ -62,11 +62,11 @@ try:
     sys.stdout.reconfigure(encoding="utf-8")
 except Exception:
     pass
-REASON = "중심절 — 유인원(주석)·애기장대(CEN180 실측)·제브라피시(위성밀도) · 금화조 없음(2026-10-06)"
+REASON = "중심절 — 유인원(주석)·애기장대(CEN180 실측)·제브라피시(위성밀도) · 금화조 없음"
 M1 = "주석된 중심절 영역 (Eichler T2T centromeric_regions · Satellite 범위 · 두 하플로 합침)"
 M2 = "서열에서 측정 (CEN180 주기 178 bp 탠덤 덩어리 · 일치율>=0.80)"
 M3 = "위성 밀도 봉우리 (UCSC GenArk repeatMasker Satellite >=50%/100kb 연속 · 유전체 중앙의 40~259 배)"
-M4 = ("서열에서 측정 (Tgut191A 191 bp · Tgut716A 716 bp 의 배수 주기 · 일치율>=0.55 · 10 kb 창) — 앞선 '못 찾음' 은 주기 범위를 400~800 bp 까지만 본 탐지 한계였다(2026-10-06 정정)")
+M4 = ("서열에서 측정 (Tgut191A 191 bp · Tgut716A 716 bp 의 배수 주기 · 일치율>=0.55 · 10 kb 창)")
 ROWS = [
     ("수마트라오랑우탄", "CM054679.2", "chr1", 101370000, 110470000, M1),
     ("보르네오오랑우탄", "CM054630.2", "chr1", 101160000, 106560000, M1),
@@ -101,4 +101,4 @@ os.makedirs(TMP, exist_ok=True)
 OUT.to_csv(TMP + "/CENTROMERE.tsv", sep="\t", index=False, encoding="utf8", lineterminator="\n")
 arch.put(TMP + "/CENTROMERE.tsv", "tables/CENTROMERE.tsv", REASON)
 print(OUT[["종", "염색체", "시작Mb", "끝Mb", "길이Mb"]].to_string(index=False))
-print("\n방법 : ①유인원 %s\n       ②애기장대 %s\n       ③제브라피시 %s" % (M1, M2, M3))
+print("\nmethod: (1) apes %s\n       (2) Arabidopsis %s\n       (3) zebrafish %s" % (M1, M2, M3))

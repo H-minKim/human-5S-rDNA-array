@@ -1,4 +1,4 @@
-# P08 XA, sensitivity of the decay constant a, seed 20261010, B 2000, 2026-10-10
+# P08 XA, sensitivity of the decay constant a, seed 20261010, B 2000
 curve	start	end	free_nugget	a	lo	hi	frac_at_bound
 gamma	1	15	True	19.1694	10.8894	72.9482	0.0080
 gamma	2	15	True	3.8940	2.9490	5.3569	0.0000

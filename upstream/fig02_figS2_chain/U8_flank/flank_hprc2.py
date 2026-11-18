@@ -122,7 +122,7 @@ def locate(s, canon):
 
 for smp in sys.argv[1:]:
     if smp not in URL or smp not in SEQF:
-        print("  %s : 인덱스/정본 없음" % smp)
+        print("  %s : no index/canonical" % smp)
         continue
     need = [(slot, fn) for slot, fn in SEQF[smp] if not os.path.exists(os.path.join(W, fn))]
     if not need:
@@ -136,7 +136,7 @@ for smp in sys.argv[1:]:
         if s:
             CACHE[hap] = (c, s)
     if not CACHE:
-        print("  %s : contig 못 받음(재시도 후에도)" % smp)
+        print("  %s : contig not received (even after retry)" % smp)
         continue
     for slot, fn in need:
         canon = rd(os.path.join(CMPD, fn))
@@ -157,11 +157,11 @@ for smp in sys.argv[1:]:
         else:
             lf, rf = rc(s[a1:a1 + FL]), rc(s[max(0, a0 - FL):a0])
         new = lf + canon + rf
-        assert new[len(lf):len(lf) + len(canon)] == canon, "정본 손상"
+        assert new[len(lf):len(lf) + len(canon)] == canon, "canonical corrupted"
         io.open(os.path.join(W, fn), "w", newline=NL).write(
             ">%s|flank5=%d|flank3=%d|src=HPRC:%s:%s:%s%s%s%s"
             % (fn.replace(".fa", ""), len(lf), len(rf), c, strand, how, NL, new, NL))
-        print("  %s 슬롯%s : 정본 %d · 앞 %d · 뒤 %d (hap%s %s %s)"
+        print("  %s slot%s : canonical %d, front %d, back %d (hap%s %s %s)"
               % (smp, slot, len(canon), len(lf), len(rf), hap, strand, how))
         LOG.write(TAB.join([smp, slot, fn, c, hap, strand, str(len(lf)), str(len(rf)),
                             md5(canon), how]) + NL)

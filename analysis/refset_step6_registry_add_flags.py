@@ -137,16 +137,16 @@ with io.open(p, "w", encoding="utf8", newline=NL) as g:
     g.write(TAB.join(h + NEW) + NL)
     for r in out:
         g.write(TAB.join(str(x) for x in r) + NL)
-print("→ %s  (%d 행 · 열 %d)" % (os.path.basename(p), len(out), len(h) + len(NEW)))
+print("-> %s  (%d rows, columns %d)" % (os.path.basename(p), len(out), len(h) + len(NEW)))
 
 HP = [r for r in out if r[ix["cohort"]] == "HPRC"]
 print()
-print("HPRC %d 하플로 · 깃발 분포" % len(HP))
+print("HPRC %d haplotypes, flag distribution" % len(HP))
 c = collections.Counter(x for r in HP for x in (r[-2].split(";") if r[-2] != "-" else []))
 for k, v in c.most_common():
     print("   %-20s %3d   %s" % (k, v, FLAGDESC[k][:46]))
 print()
 d = collections.Counter(int(r[-3]) for r in HP)
 for k in sorted(d):
-    print("   깃발 %d 개 : %3d 하플로" % (k, d[k]))
-print("   깃발 0 (문제 안 잡힘) : %d / %d (%.1f%%)" % (d[0], len(HP), 100.0 * d[0] / len(HP)))
+    print("   flags %d: %3d haplotypes" % (k, d[k]))
+print("   flags 0 (no problem detected): %d / %d (%.1f%%)" % (d[0], len(HP), 100.0 * d[0] / len(HP)))

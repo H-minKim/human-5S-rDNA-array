@@ -2,12 +2,6 @@
 """
 EXPORT_origin_stability: stabilizes the inherited-type call so that it does not depend on a single lineage partition (KMeans K=8, seed 0).
 
-Background (measured)
-  A single partition is fragile: one more haplotype and one more background marker (45 -> 46) move the KMeans 8-cluster boundaries,
-  and the call changes for 68 of 838 variants (8%). The terminal-type constituent variants (635CT, DB43:2, 113GA, 380TA) and 2206GA
-  keep p=0.002, but their effect size (top-lineage occupancy - null) falls below 0.10, so inherited -> undetermined (small effect),
-  and the single site 2206GA is enough to flip the S25 strand-asymmetry main estimate.
-
 Method
   15 lineage partitions = KMeans K in {6, 8, 10} x random_state in {0..4} (n_init 20), on the 0/1 matrix of background markers
   (MID carrier rate 20-80%) over background haplotypes (MID >= 15 units). Self-reference guard: if the variant is itself a background marker, it is removed and the partition is rebuilt (same as the original call).
@@ -38,11 +32,11 @@ from sklearn.cluster import KMeans
 import unitdef_v11 as FC
 import v11_io as G
 
-F2DIR = G.OUT if MODE == "F2" else (__import__("os").environ["RDNA_DATA_ROOT"] + r"/5S_position_variant_work/2026-09-17_v11_fix2")   # F2 mode output follows G.OUT (so the mirror guard applies)
+F2DIR = G.OUT if MODE == "F2" else (__import__("os").environ["RDNA_DATA_ROOT"] + r"/5S_position_variant_work/2026-09-17_v11_fix2")   # F2 mode output follows G.OUT
 SRC_EXPORT = os.path.join(G.OUT, "export")
 OUTD = os.path.join(F2DIR, "export") if MODE == "F2" else os.path.join(F2DIR, "export", "stability_v11")
 os.makedirs(OUTD, exist_ok=True)
-print("판본 %s · 자료 %s · 출력 %s" % (MODE, G.OUT, OUTD))
+print("version %s, data %s, output %s" % (MODE, G.OUT, OUTD))
 KS = (6, 8, 10); SEEDS = (0, 1, 2, 3, 4); B = 500; EFF_MIN = 0.10; MINHAP = 8
 
 U, A, M = G.load("primary")
@@ -65,7 +59,7 @@ for i, k in enumerate(HAPS):
     for x in MIDSET[k][0]:
         j = MKI.get(x)
         if j is not None: X[i, j] = 1.0
-print("배경 하플로타입 %d · 배경 마커 %d" % (NH, len(MK)))
+print("background haplotypes %d, background markers %d" % (NH, len(MK)))
 
 PERM = np.array([rng.permutation(NH) for _ in range(B)])      # all partitions use the same permutations
 def null_table(lab, K):
@@ -78,7 +72,7 @@ for K in KS:
     for s in SEEDS:
         lab = KMeans(n_clusters=K, n_init=20, random_state=s).fit(X).labels_
         PART[(K, s)] = (lab, null_table(lab, K))
-print("분할 %d 벌 준비" % len(PART))
+print("%d split sets prepared" % len(PART))
 EXCL_CACHE = {}
 def part_excl(x, K, s):
     key = (x, K, s)
@@ -99,7 +93,7 @@ for k, rs in U.items():
 HI = {k: i for i, k in enumerate(HAPS)}
 NHAPTOT = len(U)
 cand = sorted([x for x in carry_all if len(carry_all[x]) >= MINHAP], key=lambda z: -nu[z])
-print("대상 변이 %d" % len(cand))
+print("target variants %d" % len(cand))
 
 rows = []
 for i, x in enumerate(cand):
@@ -138,7 +132,7 @@ for r in rows:
     g.write("%s\t%d\t%d\t%d\t%.4f\t%.2f\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n" % (
         r[0], r[1], r[2], r[3], r[4], r[5], "Y" if r[6] else "N", r[7], f4(r[8]), f4(r[9]), f4(r[10]),
         f4(r[13][0]), f4(r[13][1]), f4(r[11]), r[12]))
-g.close(); print("저장:", p)
+g.close(); print("saved:", p)
 ST = {r[0]: r for r in rows}
 
 # ---------- comparison with the single-partition call ----------
@@ -150,17 +144,17 @@ for j, L in enumerate(io.open(sp, encoding="utf8")):
     if j == 0: H = {c: q for q, c in enumerate(f)}; continue
     single[f[0]] = f[H["origin_call"]]
 tab = collections.Counter((single.get(x, "(없음)"), ST[x][7]) for x in ST)
-print("\n=== 한 벌(K8·seed0) 판정 → 안정판 ===")
+print("\n=== single set (K8, seed0) call -> stable version ===")
 for (a, b), n in sorted(tab.items(), key=lambda t: -t[1]): print("  %-14s → %-14s %4d" % (a, b, n))
 cnt = collections.Counter(r[7] for r in rows)
-print("\n=== 안정판 분포 ===  " + " · ".join("%s %d" % (c, n) for c, n in cnt.most_common()))
+print("\n=== stable version distribution ===  " + " · ".join("%s %d" % (c, n) for c, n in cnt.most_common()))
 sc = collections.Counter(r[12] for r in rows if r[12])
-print("안정도 : " + " · ".join("%s %d" % (c, n) for c, n in sc.items()) +
-      " · 넓은 계승 집합(frac_pass≥0.2) %d" % sum(1 for r in rows if r[8] == r[8] and r[8] >= 0.2))
-print("\n=== 확인 대상 변이 ===")
+print("stability : " + " · ".join("%s %d" % (c, n) for c, n in sc.items()) +
+      " and broad inherited set (frac_pass≥0.2) %d" % sum(1 for r in rows if r[8] == r[8] and r[8] >= 0.2))
+print("\n=== variants to check ===")
 for x in ("2205TC", "2235TG", "2206GA", "635CT", "DB43:2", "113GA", "380TA", "1164GA", "740GA", "DB16:17", "D1096:1", "1250CT", "R1498TA", "2210GT"):
     if x in ST:
-        r = ST[x]; print("  %-9s 보유 %4d · %-16s frac_pass %s · frac_sig %s · 효과 중앙 %s [%s, %s] · p중앙 %s · %s (한 벌 : %s)" % (
+        r = ST[x]; print("  %-9s carriers %4d, %-16s frac_pass %s, frac_sig %s, effect median %s [%s, %s], p median %s, %s (single set : %s)" % (
             x, r[2], r[7], f4(r[8]), f4(r[9]), f4(r[10]), f4(r[13][0]), f4(r[13][1]), f4(r[11]), r[12], single.get(x, "-")))
 
 if MODE == "F2":
@@ -168,7 +162,7 @@ if MODE == "F2":
     for name in ("V11_ORIGIN_CALL.tsv", "V11_VARIANT_GROUPS.tsv"):
         src = os.path.join(OUTD, name)
         bak = os.path.join(OUTD, name.replace(".tsv", ".single_kmeans.tsv"))
-        if not os.path.exists(bak): shutil.copy2(src, bak); print("원본 보존:", bak)
+        if not os.path.exists(bak): shutil.copy2(src, bak); print("original kept:", bak)
         hd = None; out = []
         for L in io.open(bak, encoding="utf8"):
             f = L.rstrip("\n").split("\t")
@@ -183,4 +177,4 @@ if MODE == "F2":
                 out.append(f + [old, "", "", "", "", ""])
         g = io.open(src, "w", encoding="utf8", newline="\n")
         for f in out: g.write("\t".join(f) + "\n")
-        g.close(); print("갱신:", src)
+        g.close(); print("updated:", src)

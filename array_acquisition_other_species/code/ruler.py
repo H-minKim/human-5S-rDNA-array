@@ -3,7 +3,7 @@
 #   The rulers: X12811, the human 5S repeat unit, 2,231 bp, full length; AY130738, Arabidopsis, 495 bp; AF213516, zebrafish, 175 bp.
 #   Measured: the representative unit of the same lineage, as found here.
 #   One HSP with coverage near 1.0 means a single unit; several regular HSPs mean a block of several units; low coverage means much of the sequence lies outside the ruler.
-# MIT License · Copyright (c) 2026 Hungmin Kim
+# MIT License. Copyright (c) 2026 Hyungmin Kim
 import io
 import os
 import glob
@@ -39,11 +39,11 @@ RULERS = [("X12811.1", ("human", "rhesus", "chimp", "bonobo", "gorilla", "orang"
           ("AF419701.3", ("zfinch",))]
 for racc, tags in RULERS:
     if racc not in ALL:
-        print("자 없음 " + racc)
+        print("no ruler " + racc)
         continue
     io.open(os.path.join(W, "ruler.fa"), "w", encoding="utf8", newline=NL).write(">" + racc + NL + ALL[racc] + NL)
-    print(NL + "=== 자 : %s (%d bp)  -> %s" % (racc, len(ALL[racc]), "/".join(tags)))
-    print("%-52s %6s %4s %6s %7s %s" % ("array_id", "unit", "nHSP", "cov", "pid_med", "HSP 위치(유닛 좌표)"))
+    print(NL + "=== ruler : %s (%d bp)  -> %s" % (racc, len(ALL[racc]), "/".join(tags)))
+    print("%-52s %6s %4s %6s %7s %s" % ("array_id", "unit", "nHSP", "cov", "pid_med", "HSP position (unit coordinates)"))
     keep = [a for a in U if any(t in a for t in tags)]
     for a in sorted(keep, key=lambda z: (z.split("__")[0], -len(U[z]))):
         io.open(os.path.join(W, "one.fa"), "w", encoding="utf8", newline=NL).write(">" + a + NL + U[a] + NL)
@@ -71,4 +71,4 @@ for racc, tags in RULERS:
         print("%-52s %6d %4d %6.3f %7.1f %s" % (a, len(U[a]), len(taken), cov / float(len(U[a])),
                                                 pids[len(pids) // 2],
                                                 ",".join("%d-%d" % (x, y) for x, y in sp[:5]) +
-                                                (" ... 총 %d" % len(sp) if len(sp) > 5 else "")))
+                                                (" ... total %d" % len(sp) if len(sp) > 5 else "")))

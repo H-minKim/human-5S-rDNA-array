@@ -44,7 +44,7 @@ for S in $(tr -d '\r' < "$LIST"); do
   # the free disk is checked and the run stops below 5 GB, to prevent silent corruption
   FREE=$(df --output=avail -BG / | tail -1 | tr -dc '0-9')
   if [ "$FREE" -lt 5 ]; then
-    echo "디스크 부족 ${FREE}G — 중단" >> $OUT/log/$TAG.log
+    echo "disk space low ${FREE}G: stopping" >> $OUT/log/$TAG.log
     break
   fi
   D=$(mktemp -d ~/hitmp_XXXXXX)

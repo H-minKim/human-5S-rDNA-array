@@ -3,7 +3,7 @@
 #   Alignment = minimap2 map-ont --secondary=no; a supplementary alignment also counts as overlapping, and there is no MAPQ filter because this is a tandem array.
 #   The arrays are zfinch_v03_5S_arrays.bed: cmsearch RF00001 hits grouped within 10 kb with at least 3 copies, 4 maternal and 4 paternal.
 #   Outputs: sel/<fc>.ids, sel/<fc>.paf.gz and sel/summary.tsv (flowcell, candidate reads, array reads, total bases in the array reads).
-# MIT License · Copyright (c) 2026 Hungmin Kim
+# MIT License. Copyright (c) 2026 Hyungmin Kim
 set -u
 Z=~/xsp/zfont
 A=~/xsp/asm
@@ -18,5 +18,5 @@ for f in $Z/cand/*.cand.fq.gz; do
   st=$(zcat "$f" | awk 'NR==FNR{w[$1]; next} FNR%4==1{id=substr($1,2)} FNR%4==2{t++; if(id in w){n++; s+=length($0)}} END{printf "%d\t%d\t%d", t, n, s}' $Z/sel/$b.ids -)
   printf '%s\t%s\n' "$b" "$st" >> $Z/sel/summary.tsv
 done
-echo "선별 정렬 끝 $(date -u +%H:%M) UTC"
+echo "screening alignment done $(date -u +%H:%M) UTC"
 cat $Z/sel/summary.tsv

@@ -98,11 +98,11 @@ STR=[(40,80,"N40-80"),(81,110,"N81-110"),(111,140,"N111-140"),(141,10**9,"N141+"
 g=io.open(os.path.join(OUT,"S16_abs_vs_rel.tsv"),"w",encoding="utf8",newline="\n")
 g.write("basis\tcluster\tstratum\tn\tmean_ad\tmean_ap\tmean_rel\tpred_rel_from_ad\n")
 
-print("=== (1) 좌표별 층간 흩어짐 — 작은 쪽이 '보존되는 축' ===")
-print("   구획을 길이층으로 나눠 프로파일을 만들고 층 사이 표준편차를 평균한다.")
-print("   (말단 구획만 대상 : 상대위치 평균이 0.35 미만 또는 0.65 초과)")
+print("=== (1) between-stratum dispersion by coordinate: the smaller one is the 'conserved axis' ===")
+print("   segments are split by length stratum into profiles, and the between-stratum SD is averaged.")
+print("   (terminal segments only : mean relative position below 0.35 or above 0.65)")
 print("")
-print("  기준 구획  상대위치  n유닛 | 절대좌표 흩어짐  상대좌표 흩어짐   어느 쪽이 보존?")
+print("  criterion segment  relpos  n_units | absolute-coordinate dispersion  relative-coordinate dispersion   which is conserved?")
 summ=[]
 for tag in ("A","B"):
     lab=LAB[tag]
@@ -147,11 +147,11 @@ for tag in ("A","B"):
 g.close()
 nabs=sum(1 for t,c,rm,sa,sr in summ if sa<sr)
 print("")
-print("  ⇒ 말단 구획 %d 개 중 %d 개에서 **절대 좌표**의 층간 흩어짐이 더 작다"%(len(summ),nabs))
+print("  -> of %d terminal segments, %d have smaller between-stratum dispersion in the **absolute coordinate**"%(len(summ),nabs))
 
 print("")
-print("=== (2) 구획의 평균 위치가 배열 길이에 따라 움직이는가 ===")
-print("   절대(접합에서 유닛 수)가 고정이고 상대가 밀리면, 상대좌표는 길이에 오염된 축이다.")
+print("=== (2) does the mean position of a segment move with array length ===")
+print("   if the absolute (number of units from the junction) is constant and the relative shifts, the relative coordinate is an axis contaminated by length.")
 for tag in ("A","B"):
     lab=LAB[tag]
     for c in range(12):
@@ -159,8 +159,8 @@ for tag in ("A","B"):
         rm=float(np.mean(rel[m])) if m.sum() else 9
         if m.sum()<200 or rm<=0.65: continue             # distal terminal type only
         print("")
-        print("  [기준 %s · c%d · 원위 말단형 n=%d]"%(tag,c,int(m.sum())))
-        print("    길이층        n    평균 원위거리(절대)   평균 상대위치   예측 1-ad/N")
+        print("  [criterion %s, c%d, distal terminal type n=%d]"%(tag,c,int(m.sum())))
+        print("    length stratum  n    mean distal distance (absolute)   mean relative position   predicted 1-ad/N")
         for lo,hi,lab_s in STR:
             sm=m&(Nn>=lo)&(Nn<=hi)
             if sm.sum()<20: continue

@@ -56,7 +56,7 @@ for src, meth in L.METH.items():
                     grp = ("PB fibertools0.4.2" if smp in L.PB_EXCL else
                            "PB noM6A" if smp in ("HG03672", "HG02624") else "PB jasmine2.7")
                 U.append((src, smp, x[ix["read_id"]], x[ix["slot"]], x[ix["array_pos"]], n, m, b, grp))
-print("유닛 %d · β≠n_meth/n_cpg %d" % (len(U), bad))
+print("units %d, β≠n_meth/n_cpg %d" % (len(U), bad))
 
 
 def fit(n, k, iters=60):
@@ -130,7 +130,7 @@ with io.open(os.path.join(D, "a13_mixture_params.tsv"), "w", encoding="utf8", ne
     for r in params:
         g.write("\t".join(str(v) if isinstance(v, (str, int)) else "%.4f" % v for v in r) + "\n")
 for r in params:
-    print("%-22s 유닛 %6d 개체 %2d · πL %.3f · 평균 L %.3f H %.3f · n중앙 %d: 경계 β %.2f (L확실 <%.2f, H확실 >=%.2f) · L %.3f · 보류 %.3f · 옛 L %.3f · 옛기준 일치 %.4f · 반복 %d" %
+    print("%-22s units %6d individuals %2d, πL %.3f, mean L %.3f H %.3f, median n %d: boundary β %.2f (confident L <%.2f, confident H >=%.2f), L %.3f, undecided %.3f, reference L %.3f, agreement with reference criterion %.4f, iterations %d" %
           (r[0], r[1], r[2], r[3], r[4], r[5], r[10], r[11], r[12], r[13], r[14], r[15], r[16], r[17], r[18]))
 
 with gzip.open(os.path.join(D, "a13_unit_state_gmm.tsv.gz"), "wt", encoding="utf8") as g:
@@ -139,4 +139,4 @@ with gzip.open(os.path.join(D, "a13_unit_state_gmm.tsv.gz"), "wt", encoding="utf
         p = PL[i]
         st = "L" if p >= 0.9 else "H" if p <= 0.1 else "U"
         g.write("%s\t%s\t%s\t%s\t%s\t%d\t%d\t%.4f\t%s\t%.4f\t%s\n" % (u[:8] + (u[8], p, st)))
-print("기록 a13_unit_state_gmm.tsv.gz")
+print("wrote a13_unit_state_gmm.tsv.gz")

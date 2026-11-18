@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # Undo the relabelling, by the same rule as build_ao_final.py.
 #   Why: ao_g8cut moves a read that appears to disagree with the stored placement onto the stored index, as relabeled_d.
-# The number is the real position; forcing the stored value is wrong (measured over 66 individuals, 48 against 19).
+# The number is the real position.
 #        The move is undone as in build_ao_final.py:
 #            r[7] = r[7] - d   (array_pos)
 #            r[8] = r[8] - d, on the G6 index.
@@ -26,7 +26,7 @@ for L in io.open(READF, encoding="utf8"):
     m = RE.search(r[10])
     if m:
         D[(r[0], r[1])] = int(m.group(1))
-print("relabel 된 read %d" % len(D))
+print("relabelled reads %d" % len(D))
 
 n = rel = sh = 0
 O = io.open(OUTP, "w", encoding="utf8", newline=NL)
@@ -45,4 +45,4 @@ for L in io.open(INP, encoding="utf8"):
             sh += 1
     O.write(TAB.join(r) + NL)
 O.close()
-print("%s -> %s · 전체 %d · relabel 되돌린 유닛 %d · 수리틀 보정 유닛 %d" % (INP, OUTP, n, rel, sh))
+print("%s -> %s, total %d, units with relabel undone %d, units adjusted for the repaired-slot frame %d" % (INP, OUTP, n, rel, sh))

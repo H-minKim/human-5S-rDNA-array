@@ -42,7 +42,7 @@ def P(s=""):
 
 M = pd.read_csv(OUT + "/tables/OTHERSP_UNIT_METH.tsv", sep="\t")
 P("=" * 104)
-P("유닛 구조 — 유닛 %s · array %d · 종 %d"
+P("unit structure: units %s, arrays %d, species %d"
   % (format(len(M), ","), M.array_id.nunique(), M["종"].nunique()))
 P("=" * 104)
 P()
@@ -67,7 +67,7 @@ ORDER = [s for s in ORDER if s in set(AG["종"])]
 YI = {s: i for i, s in enumerate(ORDER[::-1])}
 AG["yi"] = AG["종"].map(YI)
 
-P("  종            array  유닛길이 중앙(범위)       유닛수 중앙(범위)     array kb 중앙   유닛당 변이 중앙")
+P("  species            array  unit length median(range)       unit count median(range)     array kb median   variants per unit median")
 for s in ORDER:
     g = AG[AG["종"] == s]
     P("  %-12s %4d   %6.0f (%.0f-%.0f)    %5.0f (%d-%d)   %8.1f      %s"
@@ -75,13 +75,13 @@ for s in ORDER:
          g.n_unit.median(), g.n_unit.min(), g.n_unit.max(), g.span_kb.median(),
          ("%.1f" % g.n_var.median()) if g.n_var.notna().any() else " - "))
 P()
-P("  유닛 길이는 종 안에서 얼마나 일정한가 (array 사이 퍼짐 / 중앙)")
+P("  how constant is unit length within a species (spread between arrays / median)")
 for s in ORDER:
     g = AG[AG["종"] == s]
     if len(g) < 2:
-        P("   %-12s array 1 개 — 못 잼" % s)
+        P("   %-12s 1 array: cannot be measured" % s)
         continue
-    P("   %-12s 중앙 %6.0f bp · array 사이 sd %6.1f · 변동계수 %.3f  (%s)"
+    P("   %-12s median %6.0f bp, between-array sd %6.1f, coefficient of variation %.3f  (%s)"
       % (s, g.unit_len.median(), g.unit_len.std(),
          g.unit_len.std() / g.unit_len.median(),
          " ".join("%.0f" % v for v in sorted(g.unit_len))))
@@ -132,12 +132,12 @@ strip(ax, "span_kb", "array 길이 (kb · 로그)", "(c) array 총 길이", logx
 
 ax = fig.add_subplot(gs[1, 0])
 strip(ax, "n_var", "유닛당 합의 변이 수", "(d) 유닛당 변이 — 종마다 크게 다르다")
-P("  [d] 유닛당 변이 (array 중앙값)")
+P("  [d] variants per unit (array median)")
 for s in ORDER:
     g = AG[AG["종"] == s].dropna(subset=["n_var"])
     if not len(g):
         continue
-    P("   %-12s 변이 %5.1f (엄격판 %5.1f) · 치환 %4.1f 삽입 %4.1f 결실 %4.1f · 깊이 %3.0f"
+    P("   %-12s variants %5.1f (strict set %5.1f), substitutions %4.1f insertions %4.1f deletions %4.1f, depth %3.0f"
       % (s, g.n_var.median(), g.n_var_strict.median(), g.n_sub.median(),
          g.n_ins.median(), g.n_del.median(), g.depth.median()))
 P()
@@ -155,11 +155,11 @@ ax.set_ylabel("유닛 수")
 ax.legend(fontsize=7.2, frameon=False, ncol=2)
 ax.set_title("(e) 짧은 유닛일수록 많이 모이나", fontsize=10.5)
 rr = stats.spearmanr(np.log10(AG.unit_len), np.log10(AG.n_unit))
-P("  [e] rho(log 유닛길이, log 유닛수) = %+.3f (p=%.3g · array %d)"
+P("  [e] rho(log unit length, log unit count) = %+.3f (p=%.3g, arrays %d)"
   % (rr.statistic, rr.pvalue, len(AG)))
 gz = AG[AG["종"] == "제브라피시"]
 rz = stats.spearmanr(np.log10(gz.unit_len), np.log10(gz.n_unit))
-P("     제브라피시 안에서만 : %+.3f (p=%.3g · array %d)"
+P("     within zebrafish only: %+.3f (p=%.3g, arrays %d)"
   % (rz.statistic, rz.pvalue, len(gz)))
 
 # (f) variants against methylation
@@ -174,27 +174,27 @@ ax.set_ylim(0, 1)
 ax.legend(fontsize=7.2, frameon=False, ncol=2)
 ax.set_title("(f) 변이가 많은 array 가 메틸이 다른가", fontsize=10.5)
 rv = stats.spearmanr(D.n_var, D.meth)
-P("  [f] 변이 x 메틸 — 날것으로는 세 보이나 확립되지 않는다")
-P("     전체(종 섞음)      rho = %+.3f (p=%.2g · array %d)  <- 종 교락"
+P("  [f] variant x methylation: looks strong in raw form but is not established")
+P("     all (species mixed)      rho = %+.3f (p=%.2g, arrays %d)  <- species confounding"
   % (rv.statistic, rv.pvalue, len(D)))
 D2 = D.copy()
 D2["rv"] = D2.n_var - D2.groupby("종").n_var.transform("mean")
 D2["rm"] = D2.meth - D2.groupby("종").meth.transform("mean")
 rr2 = stats.spearmanr(D2.rv, D2.rm)
-P("     종 평균 제거 후     rho = %+.3f (p=%.3g)" % (rr2.statistic, rr2.pvalue))
+P("     species means subtracted     rho = %+.3f (p=%.3g)" % (rr2.statistic, rr2.pvalue))
 for s, g in D.groupby("종"):
     if len(g) < 4:
         continue
     r1 = stats.spearmanr(g.n_var, g.meth)
     P("     %-10s n=%2d  rho = %+.3f (p=%.3f)" % (s, len(g), r1.statistic, r1.pvalue))
 fz = D[(D.종 == "금화조") & (D.meth > 0.5)]
-P("     금화조에서 chr9 저메틸 2 개를 빼면 : n=%d rho=%+.3f p=%.3f — 사라진다"
+P("     zebra finch without the 2 low-methylation chr9 arrays: n=%d rho=%+.3f p=%.3f, it vanishes"
   % (len(fz), *stats.spearmanr(fz.n_var, fz.meth)[:2]))
 gz3 = D[(D.종 == "제브라피시") & (D.n_unit >= 30)]
-P("     제브라피시에서 유닛 30 개 이상만 : n=%d rho=%+.3f p=%.3f — 사라진다"
+P("     zebrafish with 30 or more units only: n=%d rho=%+.3f p=%.3f, it vanishes"
   % (len(gz3), *stats.spearmanr(gz3.n_var, gz3.meth)[:2]))
-P("     ⇒ 작은 array 는 변이 중앙값이 불안정하고, 금화조는 chr9 두 개가 끌었다.")
-P("       변이-메틸 연관은 확립되지 않았다.")
+P("     -> small arrays have unstable variant medians, and in zebra finch the two chr9 arrays drove it.")
+P("       The variant-methylation association is not established.")
 ax.set_title("(f) 변이 x 메틸 — 종 교락 · 이상치 주도 (확립 안 됨)", fontsize=10.5)
 P()
 
@@ -208,6 +208,6 @@ fig.text(0.085, 0.012,
          fontsize=8.6, color="#444")
 fig.savefig(OUT + "/figures/Fig_othersp_unit_struct.png")
 plt.close(fig)
-P("  저장 : 10_other_species/figures/Fig_othersp_unit_struct.png · tables/OTHERSP_ARRAY_STRUCT.tsv")
+P("  saved: 10_other_species/figures/Fig_othersp_unit_struct.png, tables/OTHERSP_ARRAY_STRUCT.tsv")
 LOG.close()
 print("done")

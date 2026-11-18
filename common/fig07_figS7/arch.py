@@ -73,7 +73,7 @@ def archive(rel, reason):
     os.makedirs(os.path.dirname(dst), exist_ok=True)
     shutil.copy2(cur, dst)          # a copy: the one in latest will be overwritten by the new file, but the archived copy remains
     log_line([time.strftime("%Y-%m-%d %H:%M"), "보관", cur, dst, "", md5(dst), reason])
-    print("보관 : %s → %s (md5 %s · 수정일 %s)" % (rel, dst, md5(dst)[:12], mt(dst)))
+    print("archived: %s -> %s (md5 %s, modified %s)" % (rel, dst, md5(dst)[:12], mt(dst)))
     return dst
 
 
@@ -83,12 +83,12 @@ def put(src, rel, reason):
     old = None
     if os.path.exists(cur):
         if md5(cur) == md5(src):
-            print("건너뜀(내용 같음) : %s" % rel)
+            print("skipped (same content): %s" % rel)
             return
         old = archive(rel, reason)
     shutil.copy2(src, cur)
-    log_line([time.strftime("%Y-%m-%d %H:%M"), "새판" if old else "새로", cur, old or "", src, md5(cur), reason])
-    print("최신 : %s ← %s (md5 %s)" % (rel, src, md5(cur)[:12]))
+    log_line([time.strftime("%Y-%m-%d %H:%M"), "new version" if old else "새로", cur, old or "", src, md5(cur), reason])
+    print("latest: %s from %s (md5 %s)" % (rel, src, md5(cur)[:12]))
 
 
 def index():
@@ -106,7 +106,7 @@ def index():
                              상대=os.path.relpath(p, ARC + "/" + box).replace("\\", "/"),
                              md5=md5(p), 크기=os.path.getsize(p), 수정일=mt(p)))
     pd.DataFrame(rows).to_csv(LED + "/ARCHIVE_FILES.tsv", sep="\t", index=False)
-    print("대장 : 90_ledger/LATEST_FILES.tsv · ARCHIVE_FILES.tsv")
+    print("ledger: 90_ledger/LATEST_FILES.tsv, ARCHIVE_FILES.tsv")
 
 
 if __name__ == "__main__":

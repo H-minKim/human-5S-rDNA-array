@@ -2,14 +2,14 @@
 # 00_catalog/5S_unit_status.tsv: the status of the representative unit of all 77 arrays in one table, reflecting the direct checks.
 #   The status values: CONFIRMED, where the measured period equals the unit; FIXED, recomputed; MIXED, two zones; SPARSE, the unit is right but the repeat is sparse;
 #            LOW_QUALITY, the units are not homogeneous; NO_UNIT, there is no consistent period; NON_5S, the repeat is not 5S; EXCLUDED, not eligible for G8.
-# MIT License · Copyright (c) 2026 Hungmin Kim
+# MIT License. Copyright (c) 2026 Hyungmin Kim
 import io
 import os
 import glob
 
 NL = chr(10)
 TAB = chr(9)
-V = "$RDNA_OTHERSP_DIR/data_v2"
+V = os.environ["RDNA_OTHERSP_DIR"] + "/data_v2"
 LOC = os.path.join(os.path.dirname(os.path.abspath(__file__)), "lit")
 US = {}
 f = io.open(os.path.join(LOC, "UNIT_STATUS.tsv"), encoding="utf8")
@@ -97,6 +97,6 @@ for aid in sorted(US):
     w.write(TAB.join([aid, r[iu["species_key"]], r[iu["copies"]], r[iu["array_span"]], rl, gpu,
                       r[iu["period_direct"]], r[iu["repeat_frac"]], mid, gu, gb, st, act, ev]) + NL)
 w.close()
-print("5S_unit_status.tsv : %d 행" % len(rows))
+print("5S_unit_status.tsv : %d rows" % len(rows))
 for k, v in cnt.most_common():
     print("   %-12s %d" % (k, v))

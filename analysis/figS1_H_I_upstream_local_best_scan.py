@@ -73,7 +73,7 @@ for s, sl, rid, ap, ts in U:
 rate = {k: (sum(v) / float(len(v)), len(v)) for k, v in pos_hit.items()}
 deep = {k: v for k, v in rate.items() if v[1] >= 5}
 allr = [v[0] for v in deep.values()]
-L = ["# 배치된 자리에서 본 앵커 — 전량 (2026-09-30)", "",
+L = ["# 배치된 자리에서 본 앵커 — 전량", "",
      "- 배치표 AO+JX 3 노드 전부 · 배치 유닛 %d · 정본 자리(깊이>=5) %d · 하플로 %d" % (
          len(U), len(deep), len(set((k[0], k[1]) for k in deep))), ""]
 L.append("- 국소 최고율(배치 자리가 ±%d 중 최고인 read 유닛 비율) 분위(5/25/50/75/95) : %s" % (

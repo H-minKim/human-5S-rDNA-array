@@ -51,7 +51,7 @@ def win_zone(D):
     z = np.where(pz >= 0, pz, z)
     z = np.where(dz >= 0, 3, z)
     z = np.where((pz >= 0) & (dz >= 0), np.where(ap <= ad, pz, 3), z)
-    P("   구역 창 : 두 구역에 다 걸린 유닛 %d → 더 얕은 쪽" % int(((pz >= 0) & (dz >= 0)).sum()))
+    P("   zone window: units falling in both zones %d -> the shallower one" % int(((pz >= 0) & (dz >= 0)).sum()))
     return [(nm, pd.Series(z == i, index=D.index)) for i, nm in enumerate(["근1_3", "근4_17", "가운데", "원1_10"])]
 
 
@@ -77,8 +77,8 @@ def build_var(D, label):
         g = sub.groupby(key); keep = g.size()[g.size() >= MINU].index
         mu = g.mean().reindex(slots); mu.loc[~mu.index.isin(keep), :] = np.nan
         for t in TOP: out["%s|VAR_%s" % (wn, t)] = mu[t].values
-        P("   창 %-8s 유닛 %7d · 유닛 %d 개 이상 하플로타입 %d" % (wn, int(m.sum()), MINU, len(keep)))
-    P("   [%s · 창 %s %d] 후보 토큰 %d → 쓰는 토큰 %d · 열 %d · 하플로 %d"
+        P("   window %-8s units %7d, haplotypes with %d or more units %d" % (wn, int(m.sum()), MINU, len(keep)))
+    P("   [%s, window %s %d] candidate tokens %d -> tokens used %d, columns %d, haplotypes %d"
       % (label, WIN, len(W), len(cand), len(TOP), out.shape[1], out.shape[0]))
     return out, TOP, len(W)
 
@@ -98,7 +98,7 @@ L = pd.read_parquet(T + "L2_HAP_UNIT.parquet",
 L = L[L.n_read >= 5].copy()
 M = pd.read_parquet(MAJ, columns=["sample", "slot", "array_pos", "ap", "ad", "N", "varlist"])
 M = M.merge(L[["sample", "slot", "array_pos", "n_read"]], on=["sample", "slot", "array_pos"], how="inner")
-P("MAJREF 자리 %s · 하플로 %d" % (format(len(M), ","), (M["sample"].astype(str) + "_" + M.slot.astype(str)).nunique()))
+P("MAJREF positions %s, haplotypes %d" % (format(len(M), ","), (M["sample"].astype(str) + "_" + M.slot.astype(str)).nunique()))
 V, TOP, NW = build_var(M, "다수형")
 
 haps = list(V.index)
@@ -123,7 +123,7 @@ lab = np.array([find(i) for i in range(len(haps))])
 sz = collections.Counter(lab)
 big = [k for k, v in sorted(sz.items(), key=lambda x: -x[1]) if v >= 3]
 gid = {k: i + 1 for i, k in enumerate(big)}
-P("자카드 중앙 %.3f (10-90%% %.3f-%.3f) · 무리(>=3) %d · 무리 안 하플로 %d · 최대 %d · 하플로 5 개 이상 무리 %d (하플로 %d)"
+P("Jaccard median %.3f (10-90%% %.3f-%.3f), groups (>=3) %d, haplotypes in groups %d, largest %d, groups with 5 or more haplotypes %d (haplotypes %d)"
   % (np.nanmedian(J[iu]), np.nanpercentile(J[iu], 10), np.nanpercentile(J[iu], 90), len(big),
      sum(sz[k] for k in big), max(sz[k] for k in big), sum(1 for k in big if sz[k] >= 5),
      sum(sz[k] for k in big if sz[k] >= 5)))
@@ -168,7 +168,7 @@ for k in big:
             drows.append(dict(무리=gid[k], 구역=z, 토큰=t, 무리안_보유율=round(float(pin), 4),
                               무리밖_보유율=round(float(pout), 4), 차=round(float(pin - pout), 4)))
 DT = pd.DataFrame(drows).sort_values(["무리", "차"], ascending=[True, False])
-P("가르는 토큰 줄 %d · 무리 %d / %d" % (len(DT), DT.무리.nunique(), len(big)))
+P("discriminating token rows %d, groups %d / %d" % (len(DT), DT.무리.nunique(), len(big)))
 
 # pairwise Jaccard within groups, single-linkage chain diagnosis (answer 9)
 CH = []
@@ -178,7 +178,7 @@ for k in big:
     CH.append(dict(무리=gid[k], 하플로=len(ii), 쌍=len(pv), 자카드최소=round(float(pv.min()), 4),
                    자카드중앙=round(float(np.median(pv)), 4), 문턱이상_몫=round(float((pv >= CUT).mean()), 4)))
 CH = pd.DataFrame(CH)
-P("무리 안 자카드 (하플로 5 개 이상) :\n" + CH[CH.하플로 >= 5].to_string(index=False))
+P("within-group Jaccard (5 or more haplotypes):\n" + CH[CH.하플로 >= 5].to_string(index=False))
 
 # the two haplotypes of the same individual (answer 12)
 smp = pd.Series([h.rsplit("_", 1)[0] for h in haps]); cc = smp.value_counts()
@@ -187,7 +187,7 @@ for s_ in [s for s, c in cc.items() if c == 2]:
     ii = [i for i in range(len(haps)) if haps[i].rsplit("_", 1)[0] == s_]
     if all(lab[i] in big for i in ii):
         bothin += 1; same += int(lab[ii[0]] == lab[ii[1]])
-P("개체 %d · 두 하플로타입이 둘 다 무리에 든 개체 %d · 그 중 같은 무리 %d" % (cc.size, bothin, same))
+P("individuals %d, individuals with both haplotypes in a group %d, of which same group %d" % (cc.size, bothin, same))
 
 GRP.to_csv(os.path.join(OUTD, "X12_TYPE_GROUPS.tsv"), sep="\t", index=False, float_format="%.6g")
 DT.to_csv(os.path.join(OUTD, "X12_SIG_TOKENS.tsv"), sep="\t", index=False)
@@ -211,9 +211,9 @@ if WIN == "nine" and os.environ.get("X12_PUB"):
                     same_ &= bool(np.allclose(a[c].values.astype(float), b[c].values.astype(float), equal_nan=True, rtol=1e-5))
                 else:
                     same_ &= bool((a[c].astype(str).values == b[c].astype(str).values).all())
-        P("관문 %-22s 발행 %s ↔ 다시 %s · 같음 %s" % (nm, a.shape, b.shape, same_))
+        P("gate %-22s released %s vs recomputed %s, same %s" % (nm, a.shape, b.shape, same_))
         ok &= same_
-    P("관문 %s" % ("통과" if ok else "실패"))
+    P("gate %s" % ("통과" if ok else "실패"))
 LOG.close()
 
 # the deposited table(s) carry English column names and values (common/fig02_figS2/taben.py)

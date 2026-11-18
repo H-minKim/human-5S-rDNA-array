@@ -3,13 +3,13 @@
 #   Array: the coordinates from 5S_array_structure.tsv, intersected with the arrays measured in AVF.
 #   Coding: the cmsearch hits of cms_tbl marked inc '!' that fall inside the array, merged where they overlap.
 #   Output: data_v2/13_array_level_diff/REGIONS_<species>.tsv, holding array_id, chrom, start, end, strand and gene_intervals.
-# MIT License · Copyright (c) 2026 Hungmin Kim
+# MIT License. Copyright (c) 2026 Hyungmin Kim
 import collections
 import csv
 import io
 import os
 
-R = "$RDNA_OTHERSP_DIR/data_v2/"
+R = os.environ["RDNA_OTHERSP_DIR"] + "/data_v2/"
 OUT = R + "13_array_level_diff/"
 os.makedirs(OUT, exist_ok=True)
 T = "\t"

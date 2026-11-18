@@ -7,7 +7,7 @@
 #  JBHIIK010000077.1), so it must not be guessed. The whole 3 GB assembly as the minimap2 query
 #  takes 200 s per haplotype.
 #
-# Unit counting uses Python sorted(). awk asorti sorts indices as strings and scrambles coordinates.
+# Unit counting uses Python sorted().
 # URLs are always read from the index CSV.
 import io, os, sys, subprocess, collections, time
 

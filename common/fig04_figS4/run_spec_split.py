@@ -23,7 +23,7 @@ for d in (SB, BB):
 K = sys.argv[1]
 ONLY = sys.argv[2:]
 if not ONLY:
-    raise SystemExit("쓰기 : run_spec_split.py <K> <코드.py> ...")
+    raise SystemExit("usage: run_spec_split.py <K> <code.py> ...")
 env = dict(os.environ)
 env["SPEC_K"] = K
 env["SPEC_FLOOR_LOG"] = os.path.join(SB, "_floor.tsv")
@@ -40,7 +40,7 @@ for fn in ONLY:
                 break
     fn = os.path.basename(fn)
     if src is None or not os.path.exists(src):
-        print("%-38s 저장소에 없음 (절대경로로 주십시오)" % fn)
+        print("%-38s not in the repository (give an absolute path)" % fn)
         continue
     s = io.open(src, encoding="utf8").read()
     out = os.path.join(SB, fn[:-3])
@@ -67,8 +67,8 @@ for fn in ONLY:
                        capture_output=True, text=True, encoding="utf8",
                        errors="replace", timeout=5400)
     nb = len([x for x in os.listdir(BB) if x.endswith(".panels.json")])
-    print("%-38s %-6s 누적 %2d  %s"
+    print("%-38s %-6s cumulative %2d  %s"
           % (fn, "OK" if r.returncode == 0 else "실패", nb,
              (r.stderr.strip().split(NL)[-1][:90] if r.returncode else "")))
     sys.stdout.flush()
-print("패널 : %s" % BB)
+print("panels: %s" % BB)

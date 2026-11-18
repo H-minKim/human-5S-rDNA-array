@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # Measurements: 1) array minus flank from the ONT data in AVF.tsv, per species and array; 2) the array count per species under each definition; 3) a check of the default definitions.
 # Results: data_v2/00_catalog/CMD01_*.tsv; only new files are written.
-# MIT License · Copyright (c) 2026 Hungmin Kim
+# MIT License. Copyright (c) 2026 Hyungmin Kim
 import collections
 import csv
 import glob
@@ -9,7 +9,7 @@ import io
 import os
 import statistics
 
-R = "$RDNA_OTHERSP_DIR/data_v2/"
+R = os.environ["RDNA_OTHERSP_DIR"] + "/data_v2/"
 OUT = R + "00_catalog/"
 TAB = "\t"
 
@@ -44,11 +44,11 @@ for k, reg in sorted(d.items()):
     o.write(TAB.join([k[0], k[1], k[2], "%.3f" % af, "%.3f" % ff, "%+.3f" % (af - ff), str(a[2])]) + "\n")
     per_sp[k[0]].append((k[2], k[1], af - ff))
 o.close()
-print("① 종별 array−flank (array×시료)")
+print("(1) array−flank per species (array×sample)")
 for sp, v in sorted(per_sp.items()):
     arrays = sorted(set(x[0] for x in v))
     vals = [x[2] for x in v]
-    print("  %-26s array %2d · 행 %3d · 범위 %+.3f ~ %+.3f · 중앙 %+.3f" % (sp, len(arrays), len(v), min(vals), max(vals), statistics.median(vals)))
+    print("  %-26s array %2d, rows %3d, range %+.3f ~ %+.3f, median %+.3f" % (sp, len(arrays), len(v), min(vals), max(vals), statistics.median(vals)))
 
 # -- 2) the array count under each definition ───────────────────────────────
 cnt = collections.defaultdict(dict)
@@ -95,7 +95,7 @@ cols = ["catalog_rows", "structure_rows", "canonical_fa", "unit_ref_rows", "unit
         "tier_n_arrays", "avf_arrays", "readunit_arrays", "tier_reads_placed"]
 o = io.open(OUT + "CMD01_ARRAY_COUNT_DEFS.tsv", "w", encoding="utf8", newline="\n")
 o.write(TAB.join(["species"] + cols) + "\n")
-print("② array 수 정의별")
+print("(2) array count by definition")
 for sp in sorted(cnt):
     o.write(TAB.join([sp] + [str(cnt[sp].get(k, "-")) for k in cols]) + "\n")
     print("  %-26s " % sp + " ".join("%s=%s" % (k.split("_")[0] + "_" + k.split("_")[-1], cnt[sp].get(k, "-")) for k in cols))

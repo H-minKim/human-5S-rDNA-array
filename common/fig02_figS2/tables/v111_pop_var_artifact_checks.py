@@ -27,12 +27,12 @@ CAR = E.groupby(["tok", "hap"]).size().reset_index()[["tok", "hap"]]     # haplo
 hap_sp = dict(zip(H.hap, H.sp))
 CAR["sp"] = CAR.hap.map(hap_sp)
 spn = H.groupby("sp").size().to_dict()
-P("[0] 하플로 %d · 집단별 %s · 토큰 %d" % (len(H), spn, CAR.tok.nunique()))
+P("[0] haplotypes %d, by population %s, tokens %d" % (len(H), spn, CAR.tok.nunique()))
 
 P()
-P("[1] 표본 크기를 맞추면 '그 집단에만 있는 토큰' 이 몇 개나 남나")
+P("[1] how many 'tokens found only in that population' remain after matching sample size")
 nmin = min(spn.values())
-P("   맞추는 수 = 최소 집단 %s 의 %d 하플로 · 200 회 내려뽑기" % (min(spn, key=spn.get), nmin))
+P("   matched size = smallest population %s with %d haplotypes, 200 downsamplings" % (min(spn, key=spn.get), nmin))
 hap_by_sp = {s: H[H.sp == s].hap.values for s in SP5}
 tok_haps = {t: set(g.hap) for t, g in CAR.groupby("tok")}
 rows = []
@@ -51,13 +51,13 @@ for it in range(200):
     rows.append(dict(반복=it, 검정가능토큰=ntok, **cnt))
 D = pd.DataFrame(rows)
 D.to_csv(T + "/POP_VAR_DOWNSAMPLE.tsv", sep="\t", index=False)
-P("   전용 토큰 수(보유 하플로 3+ · 200 회 중앙값) : %s" % {s: float(D[s].median()) for s in SP5})
-P("   같은 수로 맞춘 뒤에도 AFR 이 가장 많은 반복 : %d / 200" % int((D[["AFR"] + [s for s in SP5 if s != "AFR"]].idxmax(axis=1) == "AFR").sum()))
-P("   AFR 전용 토큰 수 범위 %d–%d · 2 위 집단 중앙 %.0f"
+P("   private token count (carried by 3+ haplotypes, median of 200 draws): %s" % {s: float(D[s].median()) for s in SP5})
+P("   draws where AFR still has the most after matching size: %d / 200" % int((D[["AFR"] + [s for s in SP5 if s != "AFR"]].idxmax(axis=1) == "AFR").sum()))
+P("   AFR private token count range %d-%d, median of the rank 2 population %.0f"
   % (D.AFR.min(), D.AFR.max(), float(np.median([sorted([r[s] for s in SP5])[-2] for _, r in D.iterrows()]))))
 
 P()
-P("[2] 상위 AFR 토큰들이 같은 하플로에 함께 실려 있나 (자카드)")
+P("[2] are the top AFR tokens carried together on the same haplotypes (Jaccard)")
 V = pd.read_csv(T + "/POP_VAR_TOKEN.tsv", sep="\t")
 top = V[(V.보유_q < 0.05) & (V.보유최대차집단 == "AFR")].sort_values("보유_p").head(60).토큰.astype(str).tolist()
 S = {t: tok_haps[t] for t in top if t in tok_haps}
@@ -76,7 +76,7 @@ for i in range(len(ks)):
         if J[i, j] >= 0.5: lab[find(i)] = find(j)
 grp = {}
 for i, t in enumerate(ks): grp.setdefault(find(i), []).append(t)
-P("   상위 %d 토큰 → 자카드 0.5 단일연결 군집 %d 개" % (len(ks), len(grp)))
+P("   top %d tokens -> Jaccard 0.5 single-linkage clusters %d" % (len(ks), len(grp)))
 rows = []
 for g in sorted(grp.values(), key=len, reverse=True):
     hs = set.intersection(*[S[t] for t in g]) if len(g) > 1 else S[g[0]]
@@ -85,14 +85,14 @@ for g in sorted(grp.values(), key=len, reverse=True):
     rows.append(dict(토큰수=len(g), 예시토큰=" ".join(g[:6]), 합집합하플로=len(un), 교집합하플로=len(hs),
                      개체=len({h.split("|")[0] for h in un}), 집단분포=str(sp_cnt)))
     if len(g) >= 2 or len(rows) <= 8:
-        P("     %2d 토큰 · 하플로 합 %3d 교 %3d · 개체 %3d · %s · %s"
+        P("     %2d tokens, haplotype union %3d intersection %3d, individuals %3d, %s, %s"
           % (len(g), len(un), len(hs), len({h.split("|")[0] for h in un}), sp_cnt, " ".join(g[:8])))
 BL = pd.DataFrame(rows)
 BL.to_csv(T + "/POP_VAR_BLOCKS.tsv", sep="\t", index=False)
-P("   해석 : 군집 하나 = 한 array 계통이 통째로 특정 집단에 몰린 것 · 토큰 하나하나가 독립 사건이 아니다")
+P("   reading: one cluster = one array lineage concentrated as a whole in one population; the individual tokens are not independent events")
 
 P()
-P("[3] 친족 제외하고 상위 결과가 남나 (자식 하플로 뺌)")
+P("[3] do the top results remain without relatives (child haplotypes dropped)")
 H2 = H[~H.kid_in_cohort]
 c2 = CAR[CAR.hap.isin(set(H2.hap))]
 spn2 = H2.groupby("sp").size().to_dict()
@@ -104,8 +104,8 @@ for t in top[:20]:
     c = sum(car.get(x, 0) for x in SP5 if x != "AFR"); d = sum(spn2[x] for x in SP5 if x != "AFR") - c
     orr, pv = stats.fisher_exact([[a, b], [c, d]])
     res.append((t, a, c, pv))
-P("   친족 제외 뒤 상위 20 토큰 : 여전히 p<0.001 인 것 %d / 20" % sum(p < 1e-3 for _, _, _, p in res))
-P("     예 : %s" % " · ".join("%s AFR %d/타 %d p %.1g" % r for r in res[:5]))
+P("   top 20 tokens after excluding relatives: still p<0.001 %d / 20" % sum(p < 1e-3 for _, _, _, p in res))
+P("     example: %s" % " · ".join("%s AFR %d/타 %d p %.1g" % r for r in res[:5]))
 LOG.close()
 
 # the deposited table(s) carry English column names and values (common/fig02_figS2/taben.py)

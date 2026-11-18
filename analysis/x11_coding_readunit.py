@@ -87,7 +87,7 @@ def load_species(sp):
         # the 1-based coordinate of the first base of the forward reference
         lo1 = a0 - (f5 if strand == "+" else f3)
         if len(s) != (a1 - a0 + 1) + f5 + f3:
-            P("   ! 길이 불일치 %s len=%d 기대=%d" % (aid, len(s), (a1 - a0 + 1) + f5 + f3))
+            P("   ! length mismatch %s len=%d expected=%d" % (aid, len(s), (a1 - a0 + 1) + f5 + f3))
         us = np.minimum(g.chrom_start.values, g.chrom_end.values)
         ue = np.maximum(g.chrom_start.values, g.chrom_end.values)
         o = np.argsort(us)
@@ -276,18 +276,18 @@ for sp in SPS:
         M = rs.merge(D, on=["read_id", "array_id", "array_pos"], how="outer", suffixes=("_old", ""), indicator=True)
         both = M[M._merge == "both"]
         same = ((both.n_calls_old == both.n_calls) & (both.n_5mC_old == both.n_5mC)).mean() if len(both) else np.nan
-        P("%s %s : 기록 %d · 행 새 %d / 옛 %d · 공통 %d · 옛만 %d · 새만 %d · (n_calls,n_5mC) 완전일치 %.4f · 통계 %s"
+        P("%s %s: records %d, rows new %d / reference %d, shared %d, reference only %d, new only %d, (n_calls,n_5mC) exact match %.4f, stats %s"
           % (sp, smp, STAT["rec"], len(D), len(rs), len(both), (M._merge == "left_only").sum(),
              (M._merge == "right_only").sum(), same, dict(STAT)))
         if len(both):
             dd = both[(both.n_calls_old != both.n_calls) | (both.n_5mC_old != both.n_5mC)]
             if len(dd):
-                P("   불일치 예 : " + dd[["array_pos", "n_calls_old", "n_calls", "n_5mC_old", "n_5mC"]].head(5).to_string().replace("\n", " | "))
-            P("   유전자 CpG 수 중앙 %.0f · 유전자 없는 유닛 비율 %.3f"
+                P("   mismatch examples: " + dd[["array_pos", "n_calls_old", "n_calls", "n_5mC_old", "n_5mC"]].head(5).to_string().replace("\n", " | "))
+            P("   median gene CpG count %.0f, fraction of units without a gene %.3f"
               % (D[D.n_gene_hits > 0].n_calls_gene.median(), (D.n_gene_hits == 0).mean()))
         allrows.append(D)
 if not PILOT:
     R = pd.concat(allrows, ignore_index=True)
     R.to_csv(OUT + "/tables/OTHERSP_READUNIT_CODING.tsv.gz", sep="\t", index=False, compression="gzip")
-    P("저장 : tables/OTHERSP_READUNIT_CODING.tsv.gz (%d 행)" % len(R))
+    P("saved: tables/OTHERSP_READUNIT_CODING.tsv.gz (%d rows)" % len(R))
 LOG.close()

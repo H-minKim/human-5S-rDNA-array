@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 # Figure 1 for topic A: the distribution of unit beta per array, drawn as a curve rather than as bars.
 # The layout follows that of human Fig. 3 A4 :
-#     · beta from 0 to 1 in 50 bins of width 0.02; y is the fraction of units in that bin, the density times the bin width, on a linear axis.
-#     · The peaks and the hypomethylated fraction are read from the table at the point of use; nothing is hard-coded.
+#     - beta from 0 to 1 in 50 bins of width 0.02; y is the fraction of units in that bin, the density times the bin width, on a linear axis.
+#     - The peaks and the hypomethylated fraction are read from the table at the point of use; nothing is hard-coded.
 #   Layer: read x unit, that is molecules, with beta = n_5mC / n_calls as a hard call at ML >= 128, in CG context.
 #   Filter: well-covered units only, n_calls >= 0.5 times the array median; the bonobo on guppy 6.3.8 alone; the siamang excluded.
 #   Three classes are drawn separately:
@@ -45,7 +45,7 @@ rcParams["figure.dpi"] = 120
 rcParams["svg.fonttype"] = "none"
 rcParams["pdf.fonttype"] = 42
 LOG = io.open(NEW + "/logs/X28_FIGA.txt", "w", encoding="utf8", newline="\n")
-REASON = "대주제 A 논문용 재작성 — 유닛 β 분포(시아망 제외 · 2026-10-01)"
+REASON = "대주제 A 논문용 재작성 — 유닛 β 분포(시아망 제외)"
 BW, NB = 0.02, 50
 OFFCUT = 0.35 # the OFF definition, the same threshold as elsewhere
 
@@ -112,9 +112,9 @@ for sp_ko, sp in SPKEY.items():
                          봉1=(float(v.peak1.iloc[0]) if len(v) else np.nan),
                          봉2=(float(v.peak2.iloc[0]) if len(v) else np.nan),
                          유닛길이=(float(v.unit_len.iloc[0]) if len(v) else np.nan)))
-    P("%-10s array %2d · read-유닛 %s" % (sp_ko, D.array_id.nunique(), format(len(D), ",")))
+    P("%-10s arrays %2d, read-units %s" % (sp_ko, D.array_id.nunique(), format(len(D), ",")))
 S = pd.DataFrame(SUMM)
-P("합계 array %d (시아망 제외) · read-유닛 %s" % (len(S), format(int(S.n_read유닛.sum()), ",")))
+P("total arrays %d (siamang excluded), read-units %s" % (len(S), format(int(S.n_read유닛.sum()), ",")))
 
 rows = []
 ctr = np.arange(NB) * BW + BW / 2
@@ -213,7 +213,7 @@ ax.grid(axis="x", alpha=0.25, lw=0.5)
 ax.set_title("c   array 하나를 점 하나로 : 유인원·애기장대는 한 덩어리, 금화조·제브라피시는 떨어져 나온 array 가 있다",
              fontsize=11.6, loc="left", fontweight="bold")
 
-fig.suptitle("대주제 A · 분자(read x 유닛) 수준 메틸 분포 — 타종 5S (시아망 제외 · 2026-10-01)", fontsize=13.5, y=0.975)
+fig.suptitle("대주제 A · 분자(read x 유닛) 수준 메틸 분포 — 타종 5S (시아망 제외)", fontsize=13.5, y=0.975)
 fig.text(0.012, 0.012,
          "층 = read x 유닛(분자) · β = n_5mC / n_calls · 5mC = ML>=128(하드콜) · context=CG · 잘 덮인 유닛만(n_calls >= array 중앙값 x 0.5) · 보노보 = guppy 6.3.8 read 만\n"
          "히스토그램 = β 0~1 을 50 칸(폭 0.02) · y 는 그 칸에 든 유닛 비율 · 봉우리 값은 판정표(x10/x19)에서 읽음 · 찍은 값 : tables/FIGDATA_A_unit_beta_hist.tsv · 코드 : code/x28_figA_unit_beta.py",
@@ -232,5 +232,5 @@ if os.path.isdir(SVGDIR):
     import shutil
     shutil.copy2(NEW + "/figures/%s.svg" % base, SVGDIR + "/%s.svg" % base)
 P("")
-P("그림 : latest/figures/%s.{png,svg,pdf} · 표 2" % base)
+P("figure: latest/figures/%s.{png,svg,pdf}, 2 tables" % base)
 LOG.close()

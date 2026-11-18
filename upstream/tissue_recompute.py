@@ -30,7 +30,7 @@ for f in (A1 + "08_methylation/node3/FINAL/RU_LCL.tsv.gz", A1 + "08_methylation/
         for line in h:
             p = line.rstrip("\n").split("\t")
             WANT.add(p[ix["sample"]]); SRCOF[p[ix["sample"]]] = p[ix["data_source"]]
-P("대상 시료 %d : %s" % (len(WANT), sorted(WANT)))
+P("target samples %d : %s" % (len(WANT), sorted(WANT)))
 
 # ---------- map ----------
 IN = re.compile(r"^(\d+)I(\d+)$"); DE = re.compile(r"^(\d+)D(\d+)$")
@@ -65,7 +65,7 @@ for mp in (A1 + "03_maps/AOG8_inputs_merged/node3/AOG8_LCL/MAP_G8.tsv",
                         if sp <= ul: arr[sp] = 0; sp += 1
                 cp += 1
             UMAP[(smp, sl, ap)] = arr
-P("지도 UNIT %s · 슬롯 %d" % (format(len(UMAP), ","), len(UNITN)))
+P("map UNIT %s, slots %d" % (format(len(UMAP), ","), len(UNITN)))
 
 rows = []
 nhit = ntot = 0
@@ -106,20 +106,20 @@ for f in (A1 + "08_methylation/node3/FINAL/RU_LCL.tsv.gz", A1 + "08_methylation/
                 r["n_" + k] = segn[k]
                 r["b_" + k] = (segm[k] / segn[k]) if segn[k] else np.nan
             rows.append(r)
-    P("   %-18s 행 %s · 지도없음 %d · %.0f 초" % (os.path.basename(f), format(nf, ","), nmap0, time.time() - t0))
+    P("   %-18s rows %s, no map %d, %.0f s" % (os.path.basename(f), format(nf, ","), nmap0, time.time() - t0))
 D = pd.DataFrame(rows)
 P()
-P("[틀 검정] 호출이 정본 CpG 에 붙는 비율 %.4f  (기준선 0.967–0.979)" % (nhit / ntot))
+P("[frame test] fraction of calls landing on canonical CpGs %.4f  (baseline 0.967-0.979)" % (nhit / ntot))
 D.to_parquet(os.path.join(HERE, "TISSUE_READUNIT.parquet"), index=False)
-P("[저장] TISSUE_READUNIT.parquet · read×유닛 %s" % format(len(D), ","))
+P("[saved] TISSUE_READUNIT.parquet, read×unit %s" % format(len(D), ","))
 P()
-P("[요약] 사람마다 두 조직")
+P("[summary] two tissues per person")
 for pr, g in D.groupby("person"):
     a = g[g.tissue == "LCL"]; b = g[g.tissue == "PBMC"]
     def wb(x, k):
         n = x["n_" + k].sum()
         return ((x["b_" + k] * x["n_" + k]).sum() / n) if n else np.nan
-    P("   %-9s LCL 유닛 %5d β %.4f gene-sp %+.4f | PBMC 유닛 %5d β %.4f gene-sp %+.4f"
+    P("   %-9s LCL units %5d β %.4f gene-sp %+.4f | PBMC units %5d β %.4f gene-sp %+.4f"
       % (pr, len(a), a.n_meth.sum() / a.n_cpg.sum(), wb(a, "gene") - wb(a, "sp"),
          len(b), b.n_meth.sum() / b.n_cpg.sum(), wb(b, "gene") - wb(b, "sp")))
 LOG.close()

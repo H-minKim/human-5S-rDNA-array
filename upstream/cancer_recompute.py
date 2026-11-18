@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # Recompute the four cancer-sample quantities directly from the raw data.
 # Input : v11-add1_tissue_cancer/08_methylation/node3/FINAL/RU_{HG008,CASTLE,CASTLE1,COLOr}.tsv.gz (read x unit, calls column)
-#                v11-add1_tissue_cancer/03_maps/AOG8_inputs_merged/node3/AOG8_*\MAP_G8.tsv               (varlist · N)
+#                v11-add1_tissue_cancer/03_maps/AOG8_inputs_merged/node3/AOG8_*\MAP_G8.tsv               (varlist, N)
 #                the canonical unit sequence canon_v2.fa
 #   For HG008 the first addition (GIAB_HG008_ONT, CpG-only from the outset) is used, not GIAB_SOMATIC_ONT from the v11 cohort, which is all-context.
 #   The method follows the same code logic as v100_build_ru_f4.py, for the segment definitions, the ML threshold and the variant-list coordinate shift.
@@ -30,7 +30,7 @@ SEG = [("alu", 1, 318), ("nts1", 319, 1178), ("ga", 1179, 1551), ("nts2", 1552, 
 UPS = (2032, 2121)
 SEGOF = {p: nm for nm, a, b in SEG for p in CPG if a <= p <= b}
 UPSET = {p for p in CPG if UPS[0] <= p <= UPS[1]}
-P("정본 길이 %d · CpG %d · 구획 %s · 프로모터 CpG %d"
+P("canonical length %d, CpG %d, segments %s, promoter CpG %d"
   % (len(canon), len(CPG), " ".join("%s %d" % (n, sum(1 for p in CPG if a <= p <= b)) for n, a, b in SEG), len(UPSET)))
 
 # ---------- the samples ----------
@@ -73,9 +73,9 @@ for mp in sorted(glob.glob(A1 + "03_maps/AOG8_inputs_merged/node3/AOG8_*/MAP_G8.
                 cp += 1
             if sp - 1 != ul: nbad += 1
             UMAP[(smp, sl, ap)] = arr; nu += 1
-P("지도 UNIT %s · 길이 불일치 %d · 슬롯 %d · %.0f 초"
+P("map UNIT %s, length mismatches %d, slots %d, %.0f s"
   % (format(nu, ","), nbad, len(UNITN), time.time() - t0))
-P("  슬롯별 N : %s" % ", ".join("%s|%s=%d" % (k[0], k[1], v) for k, v in sorted(UNITN.items())))
+P("  N by slot: %s" % ", ".join("%s|%s=%d" % (k[0], k[1], v) for k, v in sorted(UNITN.items())))
 
 # ---------- traversing read x unit ----------
 SEGK = ["alu", "nts1", "ga", "nts2", "gene", "ups", "sp"]
@@ -116,10 +116,10 @@ for f in sorted(glob.glob(A1 + "08_methylation/node3/FINAL/RU_*.tsv.gz")):
                 r["n_" + k] = segn[k]
                 r["b_" + k] = (segm[k] / segn[k]) if segn[k] else np.nan
             rows.append(r)
-    P("  %-18s 대상 행 %s · %.0f 초" % (os.path.basename(f), format(nf, ","), time.time() - t1))
+    P("  %-18s target rows %s, %.0f s" % (os.path.basename(f), format(nf, ","), time.time() - t1))
 D = pd.DataFrame(rows)
 P()
-P("read x 유닛 행 %s · 지도없음 %d · calls 빈 행 %d" % (format(len(D), ","), nmap0, nskip))
+P("read x unit rows %s, no map %d, rows with empty calls %d" % (format(len(D), ","), nmap0, nskip))
 D["role"] = np.where(D["sample"].isin(TUM), "종양", "정상")
 D["hap"] = D["sample"] + "|" + D.slot.astype(str)
 D["ad"] = D.N - D.ap + 1                      # the index counted from the distal end (array_pos in the map frame is the map index, not the distal index)
@@ -135,7 +135,7 @@ O = D.groupby(["sample", "role", "slot", "src"]).apply(lambda x: pd.Series({
     "켜진유닛비율": (x.groupby("ap").apply(lambda y: y.n_meth.sum() / y.n_cpg.sum()) >= THR).mean(),
 })).reset_index()
 P()
-P("[①] 전체 메틸 정도 (시료·슬롯)")
+P("[1] overall methylation level (sample, slot)")
 P(O.to_string(index=False))
 O.to_csv(os.path.join(HERE, "CR_OVERALL.tsv"), sep="\t", index=False, float_format="%.4f")
 
@@ -151,7 +151,7 @@ for (smp, role, sl), g in D.groupby(["sample", "role", "slot"]):
 S = pd.DataFrame(srows)
 S["gene_minus_sp"] = S["gene"] - S["sp"]
 P()
-P("[②] 구획별 β (호출 가중) — sp = 유전자부 밖 전부(스페이서) · ups = 프로모터(NTS2 끝 90bp)")
+P("[2] β by segment (call-weighted): sp = everything outside the gene region (spacer), ups = promoter (last 90bp of NTS2)")
 P(S[["sample", "role", "slot", "alu", "nts1", "ga", "nts2", "gene", "ups", "sp", "gene_minus_sp"]]
   .round(4).to_string(index=False))
 S.to_csv(os.path.join(HERE, "CR_SEG.tsv"), sep="\t", index=False, float_format="%.4f")
@@ -176,7 +176,7 @@ for (smp, role, sl), g in D.groupby(["sample", "role", "slot"]):
                       안쪽β=u5.iloc[10:-10].mean() if len(u5) > 25 else np.nan))
 B = pd.DataFrame(brows)
 P()
-P("[③] 경계 (유닛 β 가 %.3f 를 처음 넘는 자리 · read 3 개 이상 자리만)" % THR)
+P("[3] boundary (position where unit β first exceeds %.3f; only positions with 3 or more reads)" % THR)
 P(B.round(4).to_string(index=False))
 B.to_csv(os.path.join(HERE, "CR_BOUNDARY.tsv"), sep="\t", index=False, float_format="%.4f")
 
@@ -191,10 +191,10 @@ RD = R.groupby(["sample", "role", "slot"]).apply(lambda x: pd.Series({
     "저(β<0.2)": (x.β < .2).mean(), "고(β>0.8)": (x.β > .8).mean(),
     "가운데(0.2-0.8)": ((x.β >= .2) & (x.β <= .8)).mean()})).reset_index()
 P()
-P("[④] 하플로 안 read 분포 (read 당 호출 50 개 이상)")
+P("[4] read distribution within haplotype (50 or more calls per read)")
 P(RD.round(4).to_string(index=False))
 R.to_csv(os.path.join(HERE, "CR_READ.tsv"), sep="\t", index=False, float_format="%.4f")
 RD.to_csv(os.path.join(HERE, "CR_READDIST.tsv"), sep="\t", index=False, float_format="%.4f")
 P()
-P("[저장] CR_READUNIT.parquet · CR_OVERALL · CR_SEG · CR_BOUNDARY · CR_READ · CR_READDIST")
+P("[saved] CR_READUNIT.parquet, CR_OVERALL, CR_SEG, CR_BOUNDARY, CR_READ, CR_READDIST")
 LOG.close()

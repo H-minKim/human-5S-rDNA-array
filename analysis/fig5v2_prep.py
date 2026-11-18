@@ -18,13 +18,13 @@ def P(s=""): print(s, flush=True); LOG.write(str(s) + "\n"); LOG.flush()
 
 PZ0 = pd.read_csv(T + "TRIO_SRCDEF_PAIRZONE.tsv", sep="\t")
 pairs = PZ0[["child", "child_slot", "parent", "role", "trans_slot", "nontrans_slot", "call"]].drop_duplicates()
-P("[짝] %d (자식 %d · 가족 %d)" % (len(pairs), pairs.child.nunique(), pairs.parent.nunique()))
+P("[pairs] %d (children %d, families %d)" % (len(pairs), pairs.child.nunique(), pairs.parent.nunique()))
 
 ids = set(pairs.child) | set(pairs.parent)
 R = pd.read_csv(DATA_ROOT + "/02_tables/READMAP_METH_ALL_v2_2026-09-27.tsv", sep="\t",
                 usecols=["sample", "data_source", "slot", "array_pos", "n_reads", "beta_call"])
 R = R[R["sample"].isin(ids)].copy()
-P("[자리 단위 β] 합본에서 트리오 %d 개체 · 행 %s · 자료원 %s"
+P("[per-position β] from the merged set: trio %d individuals, rows %s, data source %s"
   % (R["sample"].nunique(), format(len(R), ","), sorted(R.data_source.unique())))
 R["hap"] = R["sample"].astype(str) + "|" + R.slot.astype(str)
 NM = R.groupby("hap").array_pos.max().to_dict()
@@ -34,8 +34,8 @@ R["N"] = R.hap.map(NM)
 a1 = R[R.array_pos == 1].beta_call.median()
 aN = R[R.array_pos == R.N].beta_call.median()
 P()
-P("[방향] array_pos 1 의 β 중앙 %.3f · array_pos N 의 β 중앙 %.3f → %s"
-  % (a1, aN, "array_pos 1 = 원위 (정본 규칙과 같음)" if a1 < aN else "반대 — 아래 셈법을 뒤집어야 한다"))
+P("[direction] β median at array_pos 1 %.3f, β median at array_pos N %.3f -> %s"
+  % (a1, aN, "array_pos 1 = distal (same as the canonical rule)" if a1 < aN else "반대 — 아래 셈법을 뒤집어야 한다"))
 FLIP = a1 >= aN
 R["ad"] = R.N - R.array_pos + 1 if FLIP else R.array_pos      # index counted from the distal end
 R["ap"] = R.array_pos if FLIP else R.N - R.array_pos + 1      # index counted from the proximal end
@@ -102,14 +102,14 @@ def pair_table(zcol, zorder):
 Z4ORD = ["근위1-10", "근위11-20", "원위11-20", "원위1-10"]
 P4 = pair_table("z4", Z4ORD)
 P()
-P("[① 재현] 원 표(4 구역)와 합본 재계산 대조 — |Δβ| 중앙")
-P("   %-12s %10s %10s %10s %10s" % ("구역", "원표 전달", "재현 전달", "원표 비전달", "재현 비전달"))
+P("[(1) reproduction] source table (4 zones) vs recomputation from the merged set: median |Δβ|")
+P("   %-12s %10s %10s %10s %10s" % ("구역", "원표 전달", "reproduced transmitted", "원표 비전달", "reproduced non-transmitted"))
 for z in Z4ORD:
     o = PZ0[PZ0.zone == z]; n = P4[P4.zone == z]
     P("   %-12s %10.4f %10.4f %10.4f %10.4f"
       % (z, o.d_trans.median(), n.d_trans.median(),
          o.d_non.median(), n.d_non.median() if "d_non" in n else np.nan))
-P("   ⇒ 값이 가까우면 셈법이 같은 것이다 (중앙값 비교 · 짝 %d vs %d)"
+P("   -> close values mean the same computation (median comparison, pairs %d vs %d)"
   % (PZ0[["child", "child_slot", "parent"]].drop_duplicates().shape[0], len(pairs)))
 
 # ---------- 2) the eight zones ----------
@@ -119,12 +119,12 @@ P8 = pair_table("z8", Z8ORD)
 P8.to_csv(os.path.join(HERE, "FIG5V2_PAIRZONE8.tsv"), sep="\t", index=False, float_format="%.5f")
 rows = []
 P()
-P("[② 8 구역] 자식 ↔ 전달 부모 하플로  vs  자식 ↔ 같은 부모의 비전달 하플로")
-P("   %-14s %5s %10s %10s %8s %9s" % ("구역", "짝", "전달 |Δβ|", "비전달 |Δβ|", "더 가까움", "윌콕슨 p"))
+P("[(2) 8 zones] child to transmitted parental haplotype  vs  child to non-transmitted haplotype of the same parent")
+P("   %-14s %5s %10s %10s %8s %9s" % ("구역", "짝", "전달 |Δβ|", "non-transmitted |Δβ|", "closer", "Wilcoxon p"))
 for z in Z8ORD:
     g = P8[(P8.zone == z)].dropna(subset=["d_trans", "d_non"])
     if len(g) < 3:
-        P("   %-14s %5d  (짝이 모자라 검정 안 함)" % (z, len(g)))
+        P("   %-14s %5d  (too few pairs, not tested)" % (z, len(g)))
         rows.append(dict(zone=z, n_pair=len(g), med_trans=np.nan, med_non=np.nan,
                          closer=np.nan, p=np.nan)); continue
     w = stats.wilcoxon(g.d_trans, g.d_non)
@@ -143,14 +143,14 @@ P5 = pair_table("z5", Z5ORD)
 P5.to_csv(os.path.join(HERE, "FIG5V2_PAIRZONE5.tsv"), sep="\t", index=False, float_format="%.5f")
 rows5 = []
 P()
-P("[②-b 5 구역] 같은 셈법 · 구역만 공통 5 개로")
-P("   %-12s %5s %10s %10s %8s %9s" % ("구역", "짝", "전달 |Δβ|", "비전달 |Δβ|", "더 가까움", "윌콕슨 p"))
+P("[(2)-b 5 zones] same computation, zones reduced to the common 5")
+P("   %-12s %5s %10s %10s %8s %9s" % ("구역", "짝", "전달 |Δβ|", "non-transmitted |Δβ|", "closer", "Wilcoxon p"))
 for z in Z5ORD:
     g = P5[(P5.zone == z)].dropna(subset=["d_trans", "d_non"])
     if len(g) < 3:
         rows5.append(dict(zone=z, n_pair=len(g), med_trans=np.nan, med_non=np.nan,
                           n_closer=np.nan, p=np.nan))
-        P("   %-12s %5d  (짝이 모자라 검정 안 함)" % (z, len(g))); continue
+        P("   %-12s %5d  (too few pairs, not tested)" % (z, len(g))); continue
     w = stats.wilcoxon(g.d_trans, g.d_non)
     rows5.append(dict(zone=z, n_pair=len(g), med_trans=g.d_trans.median(),
                       med_non=g.d_non.median(),
@@ -160,21 +160,21 @@ for z in Z5ORD:
          int((g.d_trans < g.d_non).sum()), len(g), w.pvalue))
 SM5 = pd.DataFrame(rows5)
 SM5.to_csv(os.path.join(HERE, "FIG5V2_ZONE5.tsv"), sep="\t", index=False, float_format="%.6g")
-P("   [저장] FIG5V2_PAIRZONE5.tsv · FIG5V2_ZONE5.tsv")
+P("   [saved] FIG5V2_PAIRZONE5.tsv, FIG5V2_ZONE5.tsv")
 
 # ---------- 3) can transmission in the flank be measured ----------
 P()
-P("[③ flank 전달] 0–2 kb / 2–50 kb 가 전달되는지")
+P("[(3) flank transmission] whether 0-2 kb / 2-50 kb is transmitted")
 FH = pd.read_csv(T + "FLANK_METH_HAP_A0_CLEAN.tsv", sep="\t")
 have = sorted(set(FH["sample"]) & ids)
 miss = sorted(ids - set(FH["sample"]))
-P("   flank β 표(FLANK_METH_HAP_A0_CLEAN)에 있는 트리오 개체 : %s" % have)
-P("   없는 개체 : %s" % miss)
-P("   ⇒ 부모 쪽 flank β 가 아예 없다 (부모는 1kGP-ONT·GIAB 이고 flank 창 계산은 HPRC 조립본에만 돌렸다)")
-P("      따라서 '전달 하플로 vs 비전달 하플로' 를 flank 에서 견주는 것은 지금 자료로 불가능 하다.")
-P("      가능해지려면 부모 ONT 자료에 flank 창 파이프라인을 돌려야 한다 (노드 작업).")
+P("   trio individuals present in the flank β table (FLANK_METH_HAP_A0_CLEAN): %s" % have)
+P("   individuals not present: %s" % miss)
+P("   -> there is no flank β for the parents (parents are 1kGP-ONT and GIAB; flank windows are computed only for HPRC assemblies)")
+P("      so 'transmitted haplotype vs non-transmitted haplotype' cannot be compared in the flank with the present data.")
+P("      it requires running the flank window pipeline on the parental ONT data (node job).")
 pd.DataFrame(dict(있음=[", ".join(have)], 없음=[", ".join(miss)])).to_csv(
     os.path.join(HERE, "FIG5V2_FLANK_AVAIL.tsv"), sep="\t", index=False)
 P()
-P("[저장] FIG5V2_PAIRZONE8.tsv · FIG5V2_SUMMARY8.tsv · FIG5V2_FLANK_AVAIL.tsv")
+P("[saved] FIG5V2_PAIRZONE8.tsv, FIG5V2_SUMMARY8.tsv, FIG5V2_FLANK_AVAIL.tsv")
 LOG.close()

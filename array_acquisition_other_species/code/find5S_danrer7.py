@@ -72,4 +72,4 @@ for strand in "+-":
         hits += 1
         out.write("\t".join([chrom, str(a), str(b), strand, typ, str(dm), str(ds)]) + "\n")
 out.close()
-print(chrom, "히트", hits)
+print(chrom, "hits", hits)

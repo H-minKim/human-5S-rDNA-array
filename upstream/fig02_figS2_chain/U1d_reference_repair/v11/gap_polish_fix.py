@@ -197,7 +197,7 @@ RES.write(TAB.join(["sample", "slot", "after_unit", "gap_bp", "n_reads", "anchor
                     "delta_bp", "acc5", "acc3", "genes_asm", "genes_cons", "breaks_asm",
                     "breaks_cons", "verdict"]) + NL)
 print("%-9s %-3s %-6s %-7s %-5s %-8s %-8s %-7s %-7s %s"
-      % ("개체", "h", "앞유닛", "간격", "read", "합의bp", "차이", "앞정확", "뒤정확", "판정"))
+      % ("개체", "h", "앞유닛", "간격", "read", "합의bp", "차이", "front exact", "뒤정확", "판정"))
 
 
 def idpair(q, ref, tag):
@@ -256,7 +256,7 @@ for k in sorted(files):
         v = "실제 변이(합의도 같음)"
     else:
         v = "부분 개선" if b_c < b_o else "끊김 남음"
-    print("%-9s %-3s %-6d %-7d %-5d %-8d %+7d %-7.2f %-7.2f 유전자 %d->%d · 끊김 %d->%d · %s"
+    print("%-9s %-3s %-6d %-7d %-5d %-8d %+7d %-7.2f %-7.2f genes %d->%d, breaks %d->%d, %s"
           % (smp, sl, ap, g, len(seqs), len(cons), len(cons) - len(old), acc5, acc3,
              len(e_o), len(e_c), b_o, b_c, v))
     RES.write(TAB.join([smp, sl, str(ap), str(g), str(len(seqs)), str(len(old)), str(len(cons)),

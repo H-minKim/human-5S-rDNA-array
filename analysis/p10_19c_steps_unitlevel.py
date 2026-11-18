@@ -121,17 +121,17 @@ CANON = {("5S", "distal"): (0.735, 0.661, 0.910, "핵 하위원소 제한판"),
          ("D4Z4_10q", "proximal"): (0.278, 0.161, 0.058, "유닛 전체")}
 LINES = ["family\tdirection\tchromosome\tn_rising_reads\tn_reads_all\tmed_total_rise\tmed_max_step"
          "\tfrac_rise_lt0.1\tfrac_rise_0.1_0.3\tfrac_rise_ge0.3\tmed_n_up_steps_ge0.1"]
-print("read 수 %s · 여섯 array 공통 정의(유닛 beta · 완전유닛 n_cpg>=%d + 흔한칸 %.0f%%)"
+print("read count %s, common definition for the six arrays (unit beta, complete units n_cpg>=%d + common bins %.0f%%)"
       % (format(len(SER), ","), MINC, 100 * COVMIN))
 print()
 print("%-9s %-9s %-13s %6s %8s %9s %8s %8s %8s %6s  %s" %
-      ("family", "방향", "염색체", "오름", "전체", "총상승", "최대걸음", "<0.1", ".1-.3", ">=.3", "정본 대조"))
+      ("family", "방향", "염색체", "rises", "전체", "total rise", "최대걸음", "<0.1", ".1-.3", ">=.3", "정본 대조"))
 
 
 def emit(fam, dirn, lab, chrom=None):
     R = absrow(per_read(fam, dirn, ZONE[fam], chrom))
     if not R:
-        print("%-9s %-9s %-13s   (오르는 read 없음)" % (fam, dirn, lab))
+        print("%-9s %-9s %-13s   (no rising reads)" % (fam, dirn, lab))
         return
     cmp_ = ""
     if lab == "ALL" and (fam, dirn) in CANON:
@@ -157,7 +157,7 @@ io.open(os.path.join(OUT, "STEPS_UNITLEVEL_ALL6.tsv"), "w", encoding="utf8",
 # ---------- 2) the form of the transition: a changing proportion of two states, or a shift in level?
 #   Within one read, over the rising stretch, does the unit beta take only the two values 0.15 and 0.86, or does it take intermediate ones?
 print()
-print("전이 구간 유닛 beta 가 두 값만 쓰는가 (중간칸 0.35-0.65 의 몫)")
+print("Does unit beta in the transition interval take only two values (share of the middle bin 0.35-0.65)")
 print("%-9s %-9s %8s %8s %8s %8s %8s" % ("family", "방향", "유닛", "<=0.25", "중간", ">=0.75", "골(.45-.55)"))
 L3 = ["family\tdirection\tn_unit\tfrac_le025\tfrac_mid\tfrac_ge075\tfrac_valley\thist20"]
 for fam in FAMS:
@@ -191,8 +191,8 @@ for k, d in SER.items():
     UB[CH[k]] += [d[(dd, p)] for (dd, p) in d if dd == "distal"]
 L2 = ["sample\thap\tn_unit\tmean_beta\tfrac_le03\tfrac_ge07\tfrac_mid\thist20"]
 print()
-print("DXZ4 염색체별 — 합치면 가짜 봉우리가 생긴다")
-print("%-10s %4s %7s %9s %8s %8s %8s" % ("sample", "hap", "n_unit", "평균beta", "<=0.3", "중간", ">=0.7"))
+print("DXZ4 by chromosome: pooling creates a spurious peak")
+print("%-10s %4s %7s %9s %8s %8s %8s" % ("sample", "hap", "n_unit", "mean beta", "<=0.3", "중간", ">=0.7"))
 for ch in sorted(UB):
     v = UB[ch]; n = float(len(v))
     hist = [0] * 20
@@ -208,4 +208,4 @@ for ch in sorted(UB):
 io.open(os.path.join(OUT, "DXZ4_BY_CHROMOSOME.tsv"), "w", encoding="utf8",
         newline="\n").write("\n".join(L2) + "\n")
 print()
-print("쓴 표 3 개 : %s" % OUT)
+print("3 tables written: %s" % OUT)

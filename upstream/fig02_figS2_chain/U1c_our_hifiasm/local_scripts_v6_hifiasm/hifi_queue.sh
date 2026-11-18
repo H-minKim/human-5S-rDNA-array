@@ -41,7 +41,7 @@ for S in $(tr -d '\r' < "$LIST"); do
   # check free disk, stop below 5 GB (prevents silent corruption)
   FREE=$(df --output=avail -BG / | tail -1 | tr -dc '0-9')
   if [ "$FREE" -lt 5 ]; then
-    echo "디스크 부족 ${FREE}G — 중단" >> $OUT/log/$TAG.log
+    echo "disk low ${FREE}G: aborting" >> $OUT/log/$TAG.log
     break
   fi
   D=$(mktemp -d ~/hitmp_XXXXXX)

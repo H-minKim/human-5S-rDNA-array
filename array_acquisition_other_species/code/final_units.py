@@ -6,7 +6,7 @@
 #     - k = round(measured period / median gene gap), with only gaps no more than twice the median counted.
 #       (The gaps are not classified into categories: that fragments a broad distribution.)
 #   Outputs: UNIT_STATUS.tsv, 77 rows, and FIXLIST.tsv, holding only the arrays to be corrected.
-# MIT License · Copyright (c) 2026 Hungmin Kim
+# MIT License. Copyright (c) 2026 Hyungmin Kim
 import io
 import os
 import glob
@@ -15,7 +15,7 @@ import collections
 
 NL = chr(10)
 TAB = chr(9)
-BASE = "$RDNA_OTHERSP_DIR/data_v2"
+BASE = os.environ["RDNA_OTHERSP_DIR"] + "/data_v2"
 LOC = os.path.join(os.path.dirname(os.path.abspath(__file__)), "lit")
 ST, P, OFF = {}, {}, {}
 f = io.open(os.path.join(BASE, "00_catalog", "5S_array_structure.tsv"), encoding="utf8")
@@ -162,4 +162,4 @@ for t in rows:
         continue
     print("%-50s %5d %6s %6d %5.2f %4d %6d  %s | %s" % (t[0].split("__")[1], t[2], t[4], t[9], t[10], t[12], t[11], t[14], t[15]))
 print()
-print("집계:", dict(collections.Counter(t[14].split(" (")[0] for t in rows)))
+print("tally:", dict(collections.Counter(t[14].split(" (")[0] for t in rows)))

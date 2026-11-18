@@ -2,14 +2,14 @@
 # Are the units within an array of one type or several? They are grouped, and a reference unit built per group.
 #   Even a species with only one array, as the great apes have, is checked for whether its array is a repeat of one unit, and divided into groups if not.
 #   The method uses the per-unit variant lists of the G8 map:
-#     · a polymorphic variant is one present in 10-90% of units (a rarer one is noise in an individual unit, and above 90% the reference unit is wrong);
-#     · with fewer than 3 polymorphic variants the array counts as a single type;
-#     · otherwise the units are clustered on their polymorphic variant vectors, grouping identical patterns and then merging patterns within 15% of each other;
-#     · only a cluster with at least 5 units and at least 3 distinguishing variants counts as a group; the rest are other.
+#     - a polymorphic variant is one present in 10-90% of units (a rarer one is noise in an individual unit, and above 90% the reference unit is wrong);
+#     - with fewer than 3 polymorphic variants the array counts as a single type;
+#     - otherwise the units are clustered on their polymorphic variant vectors, grouping identical patterns and then merging patterns within 15% of each other;
+#     - only a cluster with at least 5 units and at least 3 distinguishing variants counts as a group; the rest are other.
 #   Per group: the unit sequences are pooled into a group reference unit by a per-position majority, and the within-group identity measured by blastn.
 #   Arguments: species key, fasta, map folder, output folder.
 #   Outputs: groups/<array_id>.groups.tsv, groups/<array_id>.g<k>.unit.fa and UNIT_GROUPS_<species>.tsv.
-# MIT License · Copyright (c) 2026 Hungmin Kim
+# MIT License. Copyright (c) 2026 Hyungmin Kim
 import io
 import os
 import sys
@@ -47,7 +47,7 @@ for fn in sorted(os.listdir(MAPD)):
     if len(poly) < 3:
         SUM.write(TAB.join([SP, aid, str(n), str(len(cnt)), str(len(poly)), "한 종류", "1", str(n), "100.0", "-",
                             "다형성 변이 %d 개뿐" % len(poly)]) + NL)
-        print("%s : 유닛 %d · 다형성 변이 %d -> 한 종류" % (aid, n, len(poly)))
+        print("%s : units %d, polymorphic variants %d -> one kind" % (aid, n, len(poly)))
         continue
     idx = dict((v, i) for i, v in enumerate(poly))
     vec = [tuple(1 if v in s else 0 for v in poly) for s in V]
@@ -75,7 +75,7 @@ for fn in sorted(os.listdir(MAPD)):
     if len(big) <= 1:
         SUM.write(TAB.join([SP, aid, str(n), str(len(cnt)), str(len(poly)), "한 종류(다형성 있으나 묶임 1)", "1",
                             str(n), "100.0", "-", "다형성 변이 %d 개" % len(poly)]) + NL)
-        print("%s : 유닛 %d · 다형성 %d · 묶음 1 -> 한 종류" % (aid, n, len(poly)))
+        print("%s : units %d, polymorphic %d, clusters 1 -> one kind" % (aid, n, len(poly)))
         continue
     # the distinguishing variants and the reference unit, per group
     sizes, defs, paths = [], [], []
@@ -124,5 +124,5 @@ for fn in sorted(os.listdir(MAPD)):
     SUM.write(TAB.join([SP, aid, str(n), str(len(cnt)), str(len(poly)), "여러 종류", str(len(big)),
                         ",".join(str(x) for x in sizes), "%.1f" % (100.0 * sizes[0] / n), " | ".join(defs[:3]),
                         "그룹 유닛 파일 " + ",".join(paths)]) + NL)
-    print("%s : 유닛 %d · 다형성 %d -> 그룹 %d 개 %s" % (aid, n, len(poly), len(big), sizes))
+    print("%s : units %d, polymorphic %d -> groups %d %s" % (aid, n, len(poly), len(big), sizes))
 SUM.close()

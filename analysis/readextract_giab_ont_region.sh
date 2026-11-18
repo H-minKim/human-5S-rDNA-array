@@ -15,7 +15,7 @@ FC[hg004]="PAO83395 PAO89685"
 for S in hg001 hg002 hg003 hg004; do
   # the actual flowcell list is queried and used
   L=$(timeout 90 s5cmd --no-sign-request ls "s3://ont-open-data/giab_2023.05/analysis/${S}/sup/" 2>/dev/null | awk '{print $NF}' | grep "pass.cram$" | head -4)
-  [ -n "$L" ] || { echo "  $S CRAM 없음"; continue; }
+  [ -n "$L" ] || { echo "  $S CRAM missing"; continue; }
   n=0
   for f in $L; do
     n=$((n+1))
@@ -35,4 +35,4 @@ for S in hg001 hg002 hg003 hg004; do
     [ -n "$bad" ] && rm -f "$O"
   done
 done
-echo "GIAB_DONE 산출 $(ls out/*.fastq.gz 2>/dev/null | wc -l)"
+echo "GIAB_DONE outputs $(ls out/*.fastq.gz 2>/dev/null | wc -l)"

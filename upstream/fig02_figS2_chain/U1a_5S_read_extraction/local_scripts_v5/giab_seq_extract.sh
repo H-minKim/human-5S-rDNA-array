@@ -5,7 +5,7 @@ W=~/giab5s_seq; mkdir -p $W/{out,log,done}; cd $W || exit 9
 export PATH=$HOME/s5s_ont:$PATH
 BB=~/opt/bbmap/bbduk.sh; [ -x "$BB" ] || BB=~/s5s/opt/bbmap/bbduk.sh
 for f in ~/s5s_ont/5S_unit_discseg.fa ~/s5s_ont/5S_gene_query.fa ~/s5s_ont/gene_db.nin ~/s5s_ont/campaign_extract_v5.py; do
-  [ -s "$f" ] || { echo "FATAL 없음 $f"; exit 9; }
+  [ -s "$f" ] || { echo "FATAL missing $f"; exit 9; }
 done
 for S in hg001 hg002 hg003 hg004; do
   L=$(timeout 120 s5cmd --no-sign-request ls "s3://ont-open-data/giab_2023.05/analysis/${S}/sup/" 2>/dev/null | awk '{print $NF}' | grep "pass.cram$")

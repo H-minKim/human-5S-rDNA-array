@@ -86,7 +86,7 @@ AO = load(ao_files, "AO")
 JX = load([jx], "JX") if jx else {}
 
 lg = io.open(log, "w", encoding="utf8", newline=NL) if log else sys.stderr
-lg.write("# 합치기 기록 (충돌 해소 규칙 : 자리<%d 투표 배제 · 남은 충돌은 array only)\n" % MINSITE)
+lg.write("# merge log (conflict resolution rule : positions<%d excluded from the vote, remaining conflicts are array only)\n" % MINSITE)
 lg.write("sample\tread16\tao_slot\tjx_slot\tn_site\t채택\t사유\n")
 
 T = collections.Counter()
@@ -128,7 +128,7 @@ with io.open(out, "w", encoding="utf8", newline=NL) as o:
     for r in rows:
         o.write(r + NL)
 
-lg.write("\n# 요약\n")
+lg.write("\n# summary\n")
 for kk, vv in sorted(T.items()):
     lg.write("#   %-34s %d\n" % (kk, vv))
 lg.write("#   %-34s %d\n" % ("최종 행", len(rows)))

@@ -12,12 +12,12 @@
 #   Where an MM block carries no terminating flag it is read as equivalent to '.', per the SAM specification (the fibertools output is A+a,/T-a,; jasmine and ONT state '.' explicitly and are unaffected).
 #   CpG: the v11 code unchanged (C+m, minus 1 on the reverse strand, ML >= 128) -> METH_READUNIT and METH_SITE, with the hit rate against the canonical C and G.
 #   m6A:
-#     · A+a, the A of the original read, and T-a, the T of the original read, that is an A on the opposite strand, which occurs only in PacBio data.
-#     · The flag '.' means a base absent from the list is 0, so the denominator is every base of that kind; the '?' of C+m means the list only.
-#     · Being a single-base modification there is no minus-1 correction as there is for CpG.
-#     · mod_strand is the strand the m6A lies on in the canonical frame: '+' is a canonical A position and '-' a canonical T position.
+#     - A+a, the A of the original read, and T-a, the T of the original read, that is an A on the opposite strand, which occurs only in PacBio data.
+#     - The flag '.' means a base absent from the list is 0, so the denominator is every base of that kind; the '?' of C+m means the list only.
+#     - Being a single-base modification there is no minus-1 correction as there is for CpG.
+#     - mod_strand is the strand the m6A lies on in the canonical frame: '+' is a canonical A position and '-' a canonical T position.
 #         A+a is '+' on a forward read and '-' on a reverse read; T-a is '-' on a forward read and '+' on a reverse one.
-#     · The hit rate is the fraction of positions where the canonical base equals the expected one, A or T; one position out and it falls to about 0.3.
+#     - The hit rate is the fraction of positions where the canonical base equals the expected one, A or T; one position out and it falls to about 0.3.
 #   Both ARRAY_ONLY and junction reads were realigned to the canonical window by ao_g8cut, so the offset is 0.
 import io
 import os

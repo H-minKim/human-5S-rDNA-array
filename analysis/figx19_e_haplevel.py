@@ -80,11 +80,11 @@ for col, lab in (("f_hi_thr", "컷 0.508 (f_hi_thr) 본표"), ("f_hi", "컷 0.65
     R = run(col)
     print("\n%s" % lab)
     for _, r in R.iterrows():
-        print("   %-12s 하플로타입 %3d (유닛 %5d) · 같은집합 %.4f ↔ 다른집합 %.4f · "
-              "짝 안 Δ 중앙 %+.4f · 더 가까운 하플로 %d/%d · 윌콕슨 짝 p %.4g"
+        print("   %-12s haplotypes %3d (units %5d), same set %.4f vs different set %.4f, "
+              "median within-pair Δ %+.4f, closer haplotypes %d/%d, paired Wilcoxon p %.4g"
               % (r.띠, r.하플로타입, r.유닛, r.같은집합거리중앙, r.다른집합거리중앙,
                  r.Δ, r.더가까운하플로, r.하플로타입, r.p))
     R.to_csv(__import__("os").environ["RDNA_DATA_ROOT"] + "/v11_readvar/03_figures/paper_Fig/FIGX19_E_HAP_%s.tsv"
              % ("cut0508" if col == "f_hi_thr" else "cut065"),
              sep="\t", index=False, float_format="%.6g")
-print("\n[저장] FIGX19_E_HAP_cut0508.tsv · FIGX19_E_HAP_cut065.tsv")
+print("\n[saved] FIGX19_E_HAP_cut0508.tsv, FIGX19_E_HAP_cut065.tsv")

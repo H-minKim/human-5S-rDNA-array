@@ -94,7 +94,7 @@ def fetch(b):
             shutil.copy2(s, os.path.join(PD, b + "." + ext))
             got.append(ext)
     if "svg" not in got:
-        raise SystemExit("패널 없음 : " + b)
+        raise SystemExit("no panel: " + b)
     return "pdf" in got
 
 
@@ -268,17 +268,17 @@ def build(name, ROWS):
     refs = (set(re.findall(r'xlink:href="#([^"]+)"', txt))
             | set(re.findall(r'url\(#([^)]+)\)', txt)))
     nopdf = [b for b in need if not haspdf[b]]
-    print("%-46s %7.1f x %7.1f pt · 칸 %2d (패널 %2d)" % (name, maxw, H, n, len(need)))
-    print("     <text %d↔%d %s · id중복 %d · 끊긴참조 %d · 속letter %d%s"
+    print("%-46s %7.1f x %7.1f pt, cells %2d (panels %2d)" % (name, maxw, H, n, len(need)))
+    print("     <text %d vs %d %s, duplicate ids %d, broken references %d, inner letters %d%s"
           % (exp, got, "일치" if exp == got else "다름", len(dup),
              len(refs - set(ids)), len(left),
-             " · pdf없음 %s" % nopdf if nopdf else ""))
-    print("     폭 %.1f (목표 %.1f · 차 %+.1f) · 배율 없음(전부 1.00)"
+             " , no pdf %s" % nopdf if nopdf else ""))
+    print("     width %.1f (target %.1f, diff %+.1f), no scaling (all 1.00)"
           % (maxw, TARGET_W, maxw - TARGET_W))
-    print("     줄 남는 폭(틈으로 나눔) : %s"
+    print("     spare row width (split into gaps): %s"
           % " · ".join("%.1f" % v for v in slacks))
     nofr = [l for l, _x, _y, ok in LABXY if not ok]
-    print("     패널 글자 %.1f pt · 틀에서 잰 것 %d / %d%s"
+    print("     panel font %.1f pt, measured from the frame %d / %d%s"
           % (FS_LAB, len(LABXY) - len(nofr), len(LABXY),
              (" frame not found %s" % nofr) if nofr else ""))
     if not nopdf:
@@ -326,4 +326,4 @@ with io.open(_tsv, "w", encoding="utf8", newline=NL) as o:
     for r in ROWS_OUT:
         o.write("\t".join(str(x) for x in r) + NL)
 print()
-print("배치표 %d 행" % len(ROWS_OUT))
+print("layout table %d rows" % len(ROWS_OUT))

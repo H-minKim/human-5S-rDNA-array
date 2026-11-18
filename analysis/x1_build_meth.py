@@ -44,7 +44,7 @@ def P(s=""):
 
 
 P("=" * 104)
-P("타 생물종 5S array 메틸 — array 별 종합표")
+P("5S array methylation in other species: summary table per array")
 P("=" * 104)
 P()
 
@@ -68,7 +68,7 @@ rows = []
 # ---------------------------------------------------------------- AVF
 A = pd.read_csv(R + "/09_array_vs_flank/AVF.tsv", sep="\t")
 A["frac_5mC"] = pd.to_numeric(A.frac_5mC, errors="coerce")
-P("  AVF.tsv %d 행 · 종 %d · array %d"
+P("  AVF.tsv %d rows, species %d, arrays %d"
   % (len(A), A.species_key.nunique(), A.array_id.nunique()))
 
 
@@ -91,11 +91,11 @@ for (sp, aid), g in A.groupby(["species_key", "array_id"]):
                      meth=m_a, flank=m_f, n_call=n_a, n_call_flank=n_f,
                      reads=r_a, n_sample=ar["sample"].nunique(), src="AVF"))
 T = pd.DataFrame(rows)
-P("  -> array %d 개 (종 %d)" % (len(T), T.species_key.nunique()))
+P("  -> arrays %d (species %d)" % (len(T), T.species_key.nunique()))
 P()
 
 # ---------------------------------------------------------------- Arabidopsis CG, recounted
-P("  애기장대 : AVF 값은 전문맥이라 CG 만 다시 센다")
+P("  Arabidopsis: AVF values are all-context, so CG alone is recounted")
 bp = R + "/05_bedmethyl/arabidopsis_ColCC/ColCC_ATRun3.5S.allC.bed.gz"
 ara = T[T.species_key == "arabidopsis_ColCC"].copy()
 iv = [(r.chrom, r.array_start, r.array_start + r.array_len, r.array_id)
@@ -115,7 +115,7 @@ with gzip.open(bp, "rt") as f:
                 acc[aid][ctx][0] += nmod
                 acc[aid][ctx][1] += nmod + ncan
                 break
-P("   array                                   CG        CHG       CHH      CG 호출수")
+P("   array                                   CG        CHG       CHH      CG calls")
 for aid in ara.array_id:
     v = acc[aid]
     def fr(k):
@@ -129,7 +129,7 @@ for aid in ara.array_id:
     T.loc[T.array_id == aid, "CHG"] = fr("CHG")
     T.loc[T.array_id == aid, "CHH"] = fr("CHH")
     T.loc[T.array_id == aid, "flank"] = np.nan          # the flank lies outside the bed range
-P("   flank 는 bedmethyl 범위 밖이라 애기장대 Δ 는 못 낸다 (전문맥 Δ 만 있음)")
+P("   flank lies outside the bedmethyl range, so no Arabidopsis Δ can be given (only all-context Δ exists)")
 P()
 
 # ---------------------------------------------------------------- zebrafish unit counts
@@ -137,11 +137,11 @@ Z = pd.read_csv(R + "/00_catalog/ZEBRAFISH_ALL_ARRAYS.tsv", sep="\t")
 Z = Z[Z.meth_mean.astype(str) != "-"].copy()
 zmap = {r.array_id: (r.refunit_len, r.g8_units, r.locus_type_lit, r.chrom_name)
         for r in Z.itertuples(index=False)}
-P("  제브라피시 유닛 정보 %d array" % len(zmap))
+P("  zebrafish unit information %d arrays" % len(zmap))
 
 # ---------------------------------------------------------------- unit information in general
 U = pd.read_csv(R + "/00_catalog/UNIT_REF_TABLE.tsv", sep="\t")
-P("  UNIT_REF_TABLE %d 행 · 열 %s" % (len(U), list(U.columns)[:8]))
+P("  UNIT_REF_TABLE %d rows, columns %s" % (len(U), list(U.columns)[:8]))
 ucol = [c for c in U.columns if "unit" in c.lower() or "len" in c.lower()]
 umap = {}
 for r in U.itertuples(index=False):
@@ -184,7 +184,7 @@ RH = RH.dropna(subset=["mean_pct"])
 RH["is_flank"] = RH.array_status.astype(str).str.contains("FLANK")
 fl_mean = ((RH[RH.is_flank].mean_pct * RH[RH.is_flank].cpg_sites_with_value).sum()
            / RH[RH.is_flank].cpg_sites_with_value.sum()) / 100.0
-P("  붉은털 Tier2 : array %d 행 · flank %d 행 · flank 가중평균 %.3f"
+P("  rhesus Tier2: array %d rows, flank %d rows, flank weighted mean %.3f"
   % ((~RH.is_flank).sum(), RH.is_flank.sum(), fl_mean))
 for r in RH[~RH.is_flank].itertuples(index=False):
     if "NON_5S" in str(r.array_status):
@@ -210,10 +210,10 @@ T.to_csv(OUT + "/tables/OTHERSP_ARRAY_METH.tsv", sep="\t", index=False,
          float_format="%.5f")
 P()
 P("=" * 104)
-P("종합표 — array %d 개 · 종 %d" % (len(T), T.species_key.nunique()))
+P("summary table: arrays %d, species %d" % (len(T), T.species_key.nunique()))
 P("=" * 104)
 P()
-P("   종            array  메틸 범위          flank 범위        Δ 범위           유닛수 범위")
+P("   species            array  methylation range          flank range        Δ range           unit count range")
 for sp, g in T.groupby("species_key", sort=False):
     nm = META.get(sp, ("?",))[0]
     dd = g.delta.dropna()
@@ -224,6 +224,6 @@ for sp, g in T.groupby("species_key", sort=False):
          ("%+.3f~%+.3f" % (dd.min(), dd.max())) if len(dd) else "  (없음)   ",
          ("%d-%d" % (uu.min(), uu.max())) if len(uu) else "(없음)"))
 P()
-P("  저장 : 10_other_species/tables/OTHERSP_ARRAY_METH.tsv")
+P("  saved: 10_other_species/tables/OTHERSP_ARRAY_METH.tsv")
 LOG.close()
 print("done")

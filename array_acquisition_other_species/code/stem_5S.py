@@ -56,8 +56,8 @@ for c, g in hits.items():
                 pieces = new
             for ps, pe in pieces:
                 regions[(loc, "바깥_" + side)].append((c, ps, pe))
-    print(loc, "array", len(groups), "· 유전자", sum(len(gr) for gr in groups),
-          "· span 합 %d bp" % sum(e - s + 1 for s, e in spans))
+    print(loc, "array", len(groups), ", gene", sum(len(gr) for gr in groups),
+          ", span total %d bp" % sum(e - s + 1 for s, e in spans))
 
 # an index, for a fast lookup
 idx = {}
@@ -97,7 +97,7 @@ for samp, fn in (("oocyte_StageIII_rep1", "GSM5351778.mCG.txt.gz"), ("oocyte_Sta
                 sites[key].append((m, u))
                 break
     gw[samp] = tm / float(tm + tu)
-    print("%s 전 게놈 CpG 메틸 %.3f" % (samp, gw[samp]))
+    print("%s genome-wide CpG methylation %.3f" % (samp, gw[samp]))
     for key in sorted(regions):
         v = sites.get(key, [])
         m = sum(x[0] for x in v)
@@ -114,7 +114,7 @@ for samp, fn in (("oocyte_StageIII_rep1", "GSM5351778.mCG.txt.gz"), ("oocyte_Sta
         out.write(TAB.join([samp, key[0], key[1], str(len(v)), str(n), str(m), "%.4f" % (m / float(n)),
                             "%.4f" % bs[50], "%.4f" % bs[1949]]) + "\n")
 out.close()
-print("완료")
+print("done")
 
 # -- coding and spacer minus the flank, left plus right: a site bootstrap over independent samples, with the difference taken before any alignment --
 import numpy as np
@@ -155,4 +155,4 @@ for samp, fn in (("oocyte_StageIII_rep1", "GSM5351778.mCG.txt.gz"), ("oocyte_Sta
             lo, hi = np.percentile(bv - bf, [2.5, 97.5])
             dout.write(TAB.join([samp, loc, part + "-flank", "%+.4f" % pt, "%+.4f" % lo, "%+.4f" % hi]) + "\n")
 dout.close()
-print("차이 완료")
+print("difference done")

@@ -5,7 +5,7 @@
 set -u
 W=~/p11_encode/k562hifi_dl; cd $W
 [ -e region_ref.fa ] || samtools faidx ~/ectopic_sp/chm13v2.0.fa chr1:227626780-228142150 > region_ref.fa
-samtools quickcheck k562_hifi.bam && echo "BAM 무결성 OK" || { echo "BAM 손상"; exit 1; }
+samtools quickcheck k562_hifi.bam && echo "BAM integrity OK" || { echo "BAM corrupt"; exit 1; }
 samtools fastq -T '*' k562_hifi.bam 2> fastq.err | ~/opt/bbmap/bbduk.sh -Xmx12g in=stdin.fq interleaved=f outm=k562_region.fastq.gz ref=region_ref.fa k=31 mkf=0.2 threads=12 > region_bbduk.log 2>&1
 grep -E "^Input|^Contam" region_bbduk.log
 echo REGIONDONE

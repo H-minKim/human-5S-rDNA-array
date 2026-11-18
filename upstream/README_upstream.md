@@ -1,4 +1,4 @@
-# `upstream/` — code from the shared v11 pipeline, copied unchanged
+# `upstream/`, code from the shared v11 pipeline, copied unchanged
 
 These scripts belong to the shared v11 reference pipeline that several figures
 depend on. The numbers of published panels come out of them.
@@ -7,9 +7,9 @@ The paths in them are the ones they ran with.
 
 | File here | md5 | Lines | Original folder | What it does |
 |---|---|---|---|---|
-| `v11_node/meth_units_jx_v11.py` | `80f36bf5ec5b` | 196 | the pipeline's `node` folder | reads the `MM`/`ML` tags of the batch BAMs and writes one read-by-unit methylation table per node |
-| `v11_node/meth_units_ao_v11.py` | `781bf20a345a` | 196 | the pipeline's `node` folder | the same for the second placement set |
-| `v11_local/merge_meth.py` | `55064038fe1d` | 98 | the pipeline's `local` folder | merges the per-node tables into `READMAP_METH_G8V4.tsv` and `METH_SITE_G8V4.tsv.gz` — **those two names and no others** |
+| `v11_node/meth_units_jx_v11.py` | `e3f29aa2d94f` | 196 | the pipeline's `node` folder | reads the `MM`/`ML` tags of the batch BAMs and writes one read-by-unit methylation table per node |
+| `v11_node/meth_units_ao_v11.py` | `4b54a95e4085` | 196 | the pipeline's `node` folder | the same for the second placement set |
+| `v11_local/merge_meth.py` | `e8a0a3825b33` | 98 | the pipeline's `local` folder | merges the per-node tables into `READMAP_METH_G8V4.tsv` and `METH_SITE_G8V4.tsv.gz`, **those two names and no others** |
 
 **The folder names carry `node` and `local`.** The originals live in two
 folders, and the same filename exists in both with different content

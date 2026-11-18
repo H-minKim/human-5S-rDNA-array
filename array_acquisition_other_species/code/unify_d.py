@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
-# Unify the format of the other-species 5S outputs, reorganising the D drive.
+# Unify the format of the other-species 5S outputs.
 #   The key: array_id = <species key>__<chromosome>_<start>_<end>, which joins every table.
 #   The species key is per assembly: human_CHM13v2, zfinch_v03_dip, zebrafish_GRCz12tu, arabidopsis_ColCC and so on.
 #   Every read, unit and array table gains leading species and sample columns, so that the source is visible from the table alone.
 #   The folders: 00_catalog, 01_canonical, 02_consensus_map, 03_reads, 04_bam, 05_bedmethyl, 06_aux.
 #   The older folders are copied to their new places and never deleted.
-# MIT License · Copyright (c) 2026 Hungmin Kim
+# MIT License. Copyright (c) 2026 Hyungmin Kim
 import io
 import os
 import sys
@@ -15,7 +15,7 @@ import shutil
 
 NL = chr(10)
 TAB = chr(9)
-D = sys.argv[1] if len(sys.argv) > 1 else "$RDNA_OTHERSP_DIR"
+D = sys.argv[1] if len(sys.argv) > 1 else os.environ["RDNA_OTHERSP_DIR"]
 OLD = os.path.join(D, "data")
 NEW = os.path.join(D, "data_v2")
 SUB = ["00_catalog", "01_canonical", "02_consensus_map", "03_reads", "04_bam", "05_bedmethyl", "06_aux", "cms_tbl"]
@@ -24,7 +24,7 @@ for s in SUB:
 # the species key: old folder name -> new species key, and the sample name
 SPK = {"zebrafish": "zebrafish_GRCz12tu", "zfinch_ont": "zfinch_v03_dip", "arabidopsis_ont": "arabidopsis_ColCC"}
 # the 9-column zebrafish read table is not used; the one computed with units_matrix.py is used instead
-ZFU2 = "$SCRATCH_DIR/relay/zfu2"
+ZFU2 = os.environ["SCRATCH_DIR"] + "/relay/zfu2"
 LOG = []
 
 

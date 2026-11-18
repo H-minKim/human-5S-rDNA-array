@@ -28,7 +28,7 @@ if [ -s "$W/done.txt" ]; then
 else cp "$W/all.txt" "$W/todo.txt"; fi
 
 n=$(wc -l < "$W/todo.txt")
-echo "$(hostname) [$KIND] 보유 $(wc -l < "$W/all.txt") · 할 것 $n · 병렬 $NP"
+echo "$(hostname) [$KIND] available $(wc -l < "$W/all.txt"), to do $n, parallel $NP"
 [ "$n" -eq 0 ] && exit 0
 
 split -n "l/$NP" -d "$W/todo.txt" "$W/part_"
@@ -39,8 +39,8 @@ for p in "$W"/part_*; do
     MAPF=~/CONSENSUS_MAP_G6.tsv SUMF=~/CONSENSUS_SUM_G6.tsv \
     HSNF=~/hap_seq_node.tsv CMPD=~/cmp4d \
     nohup python3 "$CODE" "$p" > "$W/log_${PFX}${i}.txt" 2>&1 &
-  echo "  띄움 ${PFX}${i} : $(wc -l < "$p") 개체"
+  echo "  launched ${PFX}${i} : $(wc -l < "$p") individuals"
   i=$((i + 1))
 done
 sleep 3
-echo "  실행중 $(ps -eo args | grep -cE '^python3 .*(fsplace_v12|pbfsplace_v11)')"
+echo "  running $(ps -eo args | grep -cE '^python3 .*(fsplace_v12|pbfsplace_v11)')"

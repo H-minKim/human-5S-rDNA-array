@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-# Recompute the gene interval of PERARRAY_META_v3 with the strand applied, and correct it.
-#   (Without the flip into the g8 frame, the shading falls on the wrong side for a minus-strand locus. The BAMs do not need re-scanning.)
+# Recompute the gene interval of PERARRAY_META_v3 with the strand applied.
+#   (Without the flip into the g8 frame, the shading falls on the wrong side for a minus-strand locus.)
 #   The within-unit coordinate is x - unit_start + 1 for a plus-strand array and unit_end - y + 1 for a minus-strand one, which is the g8 frame with the gene at the end of the unit.
 import io, os, sys, glob, re
 import numpy as np
@@ -66,10 +66,10 @@ M["유전자시작"], M["유전자끝"] = new_s, new_e
 TMP = os.environ.get("TEMP", ".") + "/x47"
 os.makedirs(TMP, exist_ok=True)
 M.to_csv(TMP + "/PERARRAY_META_v3.tsv", sep="\t", index=False, encoding="utf8", lineterminator="\n")
-arch.put(TMP + "/PERARRAY_META_v3.tsv", "tables/PERARRAY_META_v3.tsv", "유전자 구간 strand 보정(2026-10-01)")
+arch.put(TMP + "/PERARRAY_META_v3.tsv", "tables/PERARRAY_META_v3.tsv", "유전자 구간 strand 보정")
 D = pd.DataFrame(dict(종=M.종, 묶음=M.묶음, 유닛길이=M.유닛길이, 옛시작=old_s, 옛끝=old_e, 새시작=new_s, 새끝=new_e))
 D["바뀜"] = np.where(np.abs(D.새시작 - D.옛시작) > 1, "바뀜", "같음")
 D.to_csv(TMP + "/GENE_WINDOW_FIX_v3.tsv", sep="\t", index=False, encoding="utf8", lineterminator="\n")
-arch.put(TMP + "/GENE_WINDOW_FIX_v3.tsv", "tables/GENE_WINDOW_FIX_v3.tsv", "유전자 구간 strand 보정 전후(2026-10-01)")
-print("묶음 %d 중 %d 개의 유전자 구간이 바뀜 (strand '-' 묶음)" % (len(M), flipped))
+arch.put(TMP + "/GENE_WINDOW_FIX_v3.tsv", "tables/GENE_WINDOW_FIX_v3.tsv", "유전자 구간 strand 보정 전후")
+print("of %d groups, the gene interval changed in %d (strand '-' groups)" % (len(M), flipped))
 print(D[D.바뀜 == "바뀜"].head(12).to_string(index=False))

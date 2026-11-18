@@ -1,6 +1,6 @@
-# Upstream — v12 Fiber-seq node pipeline
+# Upstream, v12 Fiber-seq node pipeline
 
-**26 files.** These files are copies of code that ran on the three
+**31 files.** These files are copies of code that ran on the three
 AWS compute nodes; they show the chain behind the published numbers and are not meant to be
 re-run from this folder.
 
@@ -11,7 +11,7 @@ re-run from this folder.
 | Figure | Through |
 |---|---|
 | **Fig. 5 A (lower profile), D, E** | `m6a_site/`, `m6a_readunit/` → `zg2_m6a_frac_profile.py`, `zk1b_m6a_by_state_cut508.py` |
-| **Fig. 5 B, C, F, G, H** · **Suppl. Fig. S7 A, B, C** | the placed unit tables → `a13_beta_mixture.py` → `zy7_make_hmm_tables.py`, `zg1_*`, `zt2_*` |
+| **Fig. 5 B, C, F, G, H** and **Suppl. Fig. S7 A, B, C** | the placed unit tables → `a13_beta_mixture.py` → `zy7_make_hmm_tables.py`, `zg1_*`, `zt2_*` |
 
 Other figures in this paper rest on the **v11** stage, which is archived separately in
 `upstream/v11_node/` and `upstream/v11_local/`. This folder is the **v12** stage only.
@@ -45,7 +45,7 @@ parallelism is `nohup python3 ... &` in `run_aojv.sh`.
 
 The pipeline ran on three nodes (`iA`, `iB`, `w3`, internal hostnames `ip-172-31-32-12`,
 `ip-172-31-57-143`, `ip-172-31-58-58`). **All fourteen `.py` files are byte-identical across the
-three nodes**, so one copy is archived here; `MD5_node_s5.txt` is the node-side checksum list.
+three nodes**, so one copy is archived here.
 `MANIFEST_upstream_v12.tsv` records, for every file, the md5 and the folder it was taken from.
 
 The three `recall_*_v10.py` files are the **sources**, not themselves run: `run_s5.sh` derives
@@ -63,6 +63,6 @@ This stage contains the only random draws anywhere in the Fig. 5 chain, and ever
 |---|---|---|
 | `fsplace_v12.py`, `pbfsplace_v11.py` | `random.Random(rid).choice(...)` when a read ties between array slots | `random.seed(20260909)`; the per-read generator is seeded with the **read id**, so the choice does not depend on processing order or on how the work is split across nodes |
 | `recall_edge_fs3.py`, `recall_edge_pb2.py` (and their v10 sources) | `random.sample(oks, 20)` | `random.seed(20260911)`; used for a spot check written to the run log, not for any tabulated value |
-| `fsmeth_v12c.py` | — | no random draw at all |
+| `fsmeth_v12c.py` | - | no random draw at all |
 
 ---

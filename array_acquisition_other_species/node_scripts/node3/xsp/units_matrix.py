@@ -8,7 +8,7 @@
 #   Inputs: --fa reference, --bed array BED (0-based), --tbl cmsearch tblout (comma-separated), --samples comma-separated.
 #          --bam path template ({s} = sample), --meth path template for the modkit extract full tsv ({s}), --out output folder.
 #   Outputs: <sample>.read_unit.tsv, 5S_unit_summary.tsv, 5S_array_summary.tsv.
-# MIT License · Copyright (c) 2026 Hungmin Kim
+# MIT License. Copyright (c) 2026 Hyungmin Kim
 import io
 import os
 import sys
@@ -121,12 +121,12 @@ for smp in a.samples.split(","):
             if site:
                 add_site(cur, site[0], site[1], site[2], codes)
             if rid in seen:
-                sys.exit("입력이 read_id · ref_position 순으로 정렬돼 있지 않다 (read 재등장): %s" % rid)
+                sys.exit("input is not sorted by read_id, ref_position (read reappears): %s" % rid)
             if cur is not None:
                 seen.add(cur)
             cur, site, codes, last = rid, None, {}, -2
         if pos0 < last:
-            sys.exit("입력이 정렬돼 있지 않다 (read 안 위치 역행): %s" % rid)
+            sys.exit("input is not sorted (position goes backward within a read): %s" % rid)
         key = (x[ix["chrom"]], pos0, x[ix["ref_strand"]])
         if key != site:
             if site:
@@ -172,6 +172,6 @@ for smp in a.samples.split(","):
                            str(sum(1 for (rid, j), k in UC.items() if j == i and k >= 10)), str(tot),
                            "%.3f" % (me / float(tot)) if tot else "NA", "%.3f" % (mh / float(th)) if th else "NA",
                            "%.3f" % fr[len(fr) // 2] if fr else "NA", "%.3f" % (hm / float(tot)) if tot else "NA"]) + NL)
-    print("%s : read-유닛-맥락 %d 행 · read %d" % (smp, len(RU), len(set(k[0] for k in RU))))
+    print("%s : read-unit-context %d rows, read %d" % (smp, len(RU), len(set(k[0] for k in RU))))
 US.close()
 AS.close()

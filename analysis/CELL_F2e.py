@@ -72,7 +72,7 @@ for p in site_alle:
     MAJ[p] = _t if (_c / NU) > 0.5 else "REF"      # without a majority the CHM13 reference is kept
 
 FLIP = sorted([p for p in MAJ if MAJ[p] != "REF"])
-print("유닛 %d · 자리 %d · 다수형이 CHM13 과 다른 자리 %d 개" % (NU, len(site_alle), len(FLIP)))
+print("units %d, positions %d, positions where the majority form differs from CHM13 %d" % (NU, len(site_alle), len(FLIP)))
 
 def el(p):
     for n_, a, b in ELEM:
@@ -80,8 +80,8 @@ def el(p):
     return "?"
 fw = io.open(os.path.join(OUT, "CELL_F2e_flips.tsv"), "w", encoding="utf8", newline="\n")
 fw.write("bp\t구획\tCHM13기준일때_변이유닛비율\t다수형토큰\t다수형비율\t다수형기준일때_변이유닛비율\t그자리대립형질수\n")
-print("\n기준이 바뀌는 자리")
-print("  bp    구획       CHM13 기준 변이율   다수형 토큰        다수형 비율   다수형 기준 변이율")
+print("\npositions where the reference changes")
+print("  bp    segment    variant rate vs CHM13   majority token     majority fraction   variant rate vs majority")
 for p in FLIP:
     old = (NU - site_alle[p]["REF"]) / NU
     m = MAJ[p]; mf = site_alle[p][m] / NU; new = 1 - mf
@@ -98,7 +98,7 @@ for k, apos, ap, ad, d in units:
     new = sum(1 for p in d if p not in FS) + (len(FS) - same)
     rows.append((k, apos, ap, ad, old, new, d))
 O = np.array([r[4] for r in rows], float); N_ = np.array([r[5] for r in rows], float)
-print("\n유닛당 변이 수 : CHM13 기준 %.3f  →  다수형 기준 %.3f  (%.1f%% 감소)"
+print("\nvariants per unit: vs CHM13 %.3f  ->  vs majority %.3f  (decrease %.1f%%)"
       % (O.mean(), N_.mean(), 100 * (1 - N_.mean() / O.mean())))
 
 # ---- per-position profile (zone 5) ----
@@ -178,4 +178,4 @@ ax.set_ylabel(CS.L("유닛당 변이 수", "Variants per unit"))   # axis title 
 # no horizontal axis title, it is in the Legend text (the ticks read 'proximal 1 ... distal 1')
 ax.legend(loc="upper center", ncol=3, frameon=False)
 CS.save(fig, OUT, "cellF2_e_majref")
-print("유닛당 %.2f 개 (CHM13 기준 %.2f) · 바뀐 자리 %d" % (N_.mean(), O.mean(), len(FLIP)))
+print("%.2f per unit (vs CHM13 %.2f), changed positions %d" % (N_.mean(), O.mean(), len(FLIP)))

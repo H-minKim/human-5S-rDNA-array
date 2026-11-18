@@ -27,7 +27,7 @@ GO, GE = 10, 1
 CIG = re.compile(r"(\d+)([=XIDM])")
 U, _, _ = G.load("h1")
 VPU = sum(len(t[4]) for v in U.values() for t in v) / sum(len(v) for v in U.values())
-print("§0 자 : var_per_unit = %.6f" % VPU)
+print("§0 ruler : var_per_unit = %.6f" % VPU)
 assert abs(VPU - 6.866) < 0.01
 NCOPY = {("%s" % k[0], "%s" % k[1]): len(v) for k, v in U.items()}
 with open(os.path.join(HERE, "OUT_P04", "Q0_alignment.pkl"), "rb") as f:
@@ -115,10 +115,10 @@ def run_get(SLc, K, label, strat=False, nsim=NSIM):
     except Exception:
         cn = cp = a = np.nan
     print("  ── %-22s hap %3d · lag 1-%d · mean d %.4f→%.4f" % (label, NH, K, T[0], T[-1]))
-    print("     global p(erl, mean_d) = %.5g · p(st) = %.5g · 띠 밖 lag %s%s"
+    print("     global p(erl, mean_d) = %.5g, p(st) = %.5g, lags outside the band %s%s"
           % (p1, p2, out.tolist() if len(out) else "없음",
              ("  lambda_env = %d" % out.max()) if len(out) else ""))
-    print("     gamma : p(erl) = %.5g · 띠 밖 %s · nugget %.3f sill %.3f a %.3f ⇒ 3a = %.3f"
+    print("     gamma : p(erl) = %.5g, outside the band %s, nugget %.3f sill %.3f a %.3f -> 3a = %.3f"
           % (pg, outg.tolist() if len(outg) else "없음", cn, cn + cp, a, 3 * a))
     return dict(label=label, NH=NH, K=K, T=T, GA=GA, FK=FK, ON=ON,
                 p_erl=p1, p_st=p2, out=out.tolist(), lam=int(out.max()) if len(out) else 0,
@@ -127,8 +127,8 @@ def run_get(SLc, K, label, strat=False, nsim=NSIM):
 
 # ---------------- (a) middle window ----------------
 print("\n" + "=" * 78)
-print("[⒜] 추세 제거 — 가운데 창 제한 (정규화 위치 0.2-0.8) · 자유 순서 순열")
-print("    (십분위 층화는 층화 변수가 예측변수와 공선 ⇒ 짧은 lag 신호를 귀무가 흉내낸다)")
+print("[a] detrending: restricted to the interior window (normalized position 0.2-0.8), free order permutation")
+print("    (with decile stratification the stratifying variable is collinear with the predictor, so the null mimics the short-lag signal)")
 RES = {}
 for lo_, hi_, K in ((0.0, 1.0, KMAX), (0.2, 0.8, 15), (0.3, 0.7, 10)):
     SLc = []
@@ -150,7 +150,7 @@ for lo_, hi_, K in ((0.0, 1.0, KMAX), (0.2, 0.8, 15), (0.3, 0.7, 10)):
 
 # ---------------- (b) per segment ----------------
 print("\n" + "=" * 78)
-print("[⒝] §3.8 구간별 — lambda = 11 은 unit 전체 거리이고 GA-rich 가 지배한다")
+print("[b] §3.8 by region: lambda = 11 is the whole-unit distance and is dominated by GA-rich")
 SETR, PSETR, INSR = {}, {}, {}
 for nm, a_, b_ in REG:
     SETR[nm] = {}
@@ -208,18 +208,18 @@ for nm, a_, b_ in REG:
                 M[i, j] = M[j, i] = pdr(nm, kk[i], kk[j])
         SLc.append((M, np.minimum((np.arange(n) * DEC) // n, DEC - 1), n))
     mp = np.mean([Mx[np.triu_indices(nx, 1)].mean() for Mx, _, nx in SLc])
-    print("\n  [%s] bp %d · 쌍당 평균 불일치 %.4f (%.3f /kb) · 행렬 %.0fs"
+    print("\n  [%s] bp %d, mean mismatches per pair %.4f (%.3f /kb), matrix %.0fs"
           % (nm, b_ - a_ + 1, mp, 1000 * mp / (b_ - a_ + 1), time.time() - t0))
     if mp < 0.5:
-        print("     쌍당 불일치 %.3f < 0.5 ⇒ 진단 부위 부족으로 range 추정 불가 (Q0-3 해상도 한계)" % mp)
+        print("     mismatches per pair %.3f < 0.5 -> too few diagnostic sites, range cannot be estimated (Q0-3 resolution limit)" % mp)
     RESR[nm] = run_get(SLc, 15, nm, strat=False, nsim=999)
     RESR[nm]["mismatch_per_pair"] = float(mp)
     RESR[nm]["per_kb"] = float(1000 * mp / (b_ - a_ + 1))
 
 # ---------------- (c) second path: direct pairwise alignment ----------------
 print("\n" + "=" * 78)
-print("[⒞] 두 번째 산출 경로 — parasail 직접 쌍별 전역정렬 (consensus 경유 없음)")
-print("    TRASH / ModDotPlot / StainedGlass 전부 미설치 ⇒ 도구 독립성은 정렬 방식 독립으로 대체")
+print("[c] second computation route: direct pairwise global alignment with parasail (not via consensus)")
+print("    tool independence is replaced by independence of the alignment method")
 
 
 def rebuild(k):
@@ -298,23 +298,23 @@ for k in list(range(1, 11)) + [15, 20, 25]:
     dv = np.array(dv)
     se = dv.std(ddof=1) / np.sqrt(len(dv))
     rows_c.append((k, len(dv), float(dv.mean()), float(se), float(np.median(dv))))
-    print("    lag %-3d n %5d · 직접정렬 mean d = %.4f ± %.4f (SE) · median %.1f   [%.0fs]"
+    print("    lag %-3d n %5d, direct alignment mean d = %.4f ± %.4f (SE), median %.1f   [%.0fs]"
           % (k, len(dv), dv.mean(), se, np.median(dv), time.time() - t0), flush=True)
 T0 = RES["interior(+-5)"]["T"]
 kk = [r[0] for r in rows_c]
 pa = np.array([T0[k - 1] for k in kk])
 pb = np.array([r[2] for r in rows_c])
 rho = stats.spearmanr(pa, pb)
-print("\n    두 경로 곡선 일치 : Spearman rho = %+.4f (p %.3g) · Pearson r = %+.4f"
+print("\n    agreement of the two route curves : Spearman rho = %+.4f (p %.3g), Pearson r = %+.4f"
       % (rho.statistic, rho.pvalue, np.corrcoef(pa, pb)[0, 1]))
-print("    lag2 최소 재현 : 프로파일 lag1 %.4f > lag2 %.4f ? %s · 직접정렬 lag1 %.4f > lag2 %.4f ? %s"
+print("    lag2 minimum reproduced : profile lag1 %.4f > lag2 %.4f ? %s, direct alignment lag1 %.4f > lag2 %.4f ? %s"
       % (T0[0], T0[1], T0[0] > T0[1], pb[0], pb[1], pb[0] > pb[1]))
 dz = (pb[0] - pb[1]) / np.sqrt(rows_c[0][3] ** 2 + rows_c[1][3] ** 2)
-print("    직접정렬의 lag1 − lag2 차 = %+.4f · z = %+.3f · 양측 p = %.4g"
+print("    direct alignment lag1 − lag2 difference = %+.4f, z = %+.3f, two-sided p = %.4g"
       % (pb[0] - pb[1], dz, 2 * (1 - stats.norm.cdf(abs(dz)))))
 
 g = io.open(os.path.join(OUT, "Q2b_results.tsv"), "w", encoding="utf8", newline="\n")
-g.write("# P08 Q2b · ruler majref %.6f · seed %d · nsim %d(구간 999) · 2026-10-10\n" % (VPU, SEED, NSIM))
+g.write("# P08 Q2b · ruler majref %.6f · seed %d · nsim %d(구간 999)\n" % (VPU, SEED, NSIM))
 g.write("[A]\twindow\tn_hap\tK\tp_erl_mean_d\tp_st\tlambda_env\tout_lags\tp_erl_gamma\tnugget\tsill\ta\tpractical_range\n")
 for t_, v in RES.items():
     g.write("\t%s\t%d\t%d\t%.6g\t%.6g\t%d\t%s\t%.6g\t%.4f\t%.4f\t%.4f\t%.4f\n"
@@ -341,7 +341,7 @@ for (k, n_, m_, se_, md_) in rows_c:
 g.write("\tspearman_two_paths\t%.6f\tp\t%.6g\tpearson\t%.6f\n" % (rho.statistic, rho.pvalue, np.corrcoef(pa, pb)[0, 1]))
 g.write("\tlag1_minus_lag2_direct\t%.6f\tz\t%.4f\tp\t%.6g\n" % (pb[0] - pb[1], dz, 2 * (1 - stats.norm.cdf(abs(dz)))))
 g.close()
-print("\n산출 :", os.path.join(OUT, "Q2b_results.tsv"))
+print("\noutputs :", os.path.join(OUT, "Q2b_results.tsv"))
 
 # the deposited table(s) carry English column names and values (common/fig02_figS2/taben.py)
 import sys as _s, os as _o

@@ -11,11 +11,11 @@ mkdir -p sra bam logs tmp
 N=8000000
 
 until grep -q MORE_EGGS_DONE more.out 2>/dev/null; do sleep 60; done
-echo "앞 작업 끝 — 대조군 시작 $(date -u +%H:%M)"
+echo "preceding job finished: controls start $(date -u +%H:%M)"
 
 guard () {
   F=$(df --output=avail -BG / | tail -1 | tr -dc '0-9')
-  if [ "$F" -lt 25 ]; then echo "STOP — 디스크 여유 ${F}G"; exit 1; fi
+  if [ "$F" -lt 25 ]; then echo "STOP: free disk ${F}G"; exit 1; fi
 }
 
 one () {
@@ -24,7 +24,7 @@ one () {
   guard
   [ -f sra/${R}_1.fastq.gz ] || fastq-dump -X $N --split-files --gzip -O sra "$R" > logs/${R}.dl.log 2>&1
   [ -f sra/${R}_1.fastq.gz ] || { echo "DL_FAIL $R"; return; }
-  echo "정렬 시작 $R ($D) $(date -u +%H:%M)"
+  echo "alignment start $R ($D) $(date -u +%H:%M)"
   bismark --genome ref --parallel 2 -p 3 --bam --temp_dir tmp -o bam \
     -1 sra/${R}_1.fastq.gz -2 sra/${R}_2.fastq.gz > logs/${R}.align.log 2>&1
   B=$(ls bam/${R}_1*bismark*pe.bam 2>/dev/null | head -1)

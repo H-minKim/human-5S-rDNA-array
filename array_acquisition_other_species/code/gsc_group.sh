@@ -13,9 +13,9 @@ mk () {  # group name, name regex
   G=$1; P=$2
   L=$(awk -F'\t' -v p="$P" '$2 ~ p {print "gsc/bam/"$1".sorted.bam"}' gsc/names.tsv | while read f; do [ -f "$f" ] && echo "$f"; done)
   N=$(echo "$L" | grep -c bam)
-  [ "$N" -eq 0 ] && { echo "빈 군 $G"; return; }
+  [ "$N" -eq 0 ] && { echo "empty group $G"; return; }
   samtools merge -f -@ 4 gsc/grp/$G.bam $L && samtools index gsc/grp/$G.bam
-  echo "$G 시료 $N · read $(samtools view -c gsc/grp/$G.bam)"
+  echo "$G samples $N, read $(samtools view -c gsc/grp/$G.bam)"
   python3 bismark_parts_meth.py gsc/grp/$G.bam "$G" zf_regions_parts.tsv gsc/GSC_PARTS.tsv 2000 >/dev/null
 }
 mk F_GSC_35to70      '_(35|40|45|50|70)d_F_GSC_'

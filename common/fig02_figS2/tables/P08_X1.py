@@ -24,7 +24,7 @@ CAN = G.CAN
 LU = len(CAN)
 U, _, _ = G.load("h1")
 VPU = sum(len(t[4]) for v in U.values() for t in v) / sum(len(v) for v in U.values())
-print("§0 자 : var_per_unit = %.6f" % VPU)
+print("§0 ruler : var_per_unit = %.6f" % VPU)
 assert abs(VPU - 6.866) < 0.01
 NCOPY = {("%s" % k[0], "%s" % k[1]): len(v) for k, v in U.items()}
 FINE, SUP = {}, {}
@@ -80,9 +80,9 @@ for s in bySlot:
 
 # ================= ⒪ orientation gate : U84C =================
 print("\n" + "=" * 78)
-print("[⒪] array 방향 관문 — v11_io 가 쓰는 U84C 로 실측 확인")
-print("    v11_io.load 가 찍는 기준 : r[0](근위)<=3 보유율 0.194 · r[1](원위)<=3 보유율 0.000")
-print("    CAN[84] = %s  ⇒ 보유 = A_OF[84] == 'C'" % CAN[83])
+print("[o] array orientation gate: confirmed by measurement with the U84C used by v11_io")
+print("    reference printed by v11_io.load : r[0](proximal)<=3 carrier rate 0.194, r[1](distal)<=3 carrier rate 0.000")
+print("    CAN[84] = %s  -> carrier = A_OF[84] == 'C'" % CAN[83])
 for tag in ("Y", "N", "ALL"):
     lo_n = lo_d = hi_n = hi_d = 0
     for s, aps in bySlot.items():
@@ -100,7 +100,7 @@ for tag in ("Y", "N", "ALL"):
                 hi_d += has
     print("    revcomp=%-3s  array_pos<=3 : %.4f (n %5d)   ·   array_pos>=N-2 : %.4f (n %5d)"
           % (tag, lo_d / max(lo_n, 1), lo_n, hi_d / max(hi_n, 1), hi_n))
-print("    ⇒ 판정 : 0.194 에 가까운 끝이 근위 · 0.000 쪽이 원위")
+print("    -> verdict : the end near 0.194 is proximal, the 0.000 end is distal")
 
 # ================= cohort =================
 INT = {}
@@ -116,12 +116,12 @@ for s in HSL:
     bySamp[s[0]].append(s)
 SAMPS = sorted(bySamp)
 PAIRED_S = [sp for sp in SAMPS if len(bySamp[sp]) == 2]
-print("\nhaplotype %d · 개체 %d · 두 하플로 다 있는 개체 %d" % (len(HSL), len(SAMPS), len(PAIRED_S)))
+print("\nhaplotype %d, individuals %d, individuals with both haplotypes %d" % (len(HSL), len(SAMPS), len(PAIRED_S)))
 fine = np.array([FINE.get(s[0], "?") for s in HSL])
 sup = np.array([SUP.get(s[0], "?") for s in HSL])
-print("대집단 분포 (haplotype) : %s" % sorted(collections.Counter(sup).items(), key=lambda x: -x[1]))
+print("super-population distribution (haplotype) : %s" % sorted(collections.Counter(sup).items(), key=lambda x: -x[1]))
 cf = collections.Counter(FINE.get(sp, "?") for sp in PAIRED_S)
-print("두 하플로 보유 개체의 세부집단 : %d 종 · 상위 %s" % (len(cf), cf.most_common(8)))
+print("subpopulations of individuals with both haplotypes : %d kinds, top %s" % (len(cf), cf.most_common(8)))
 
 sid = {}
 rows = []
@@ -140,7 +140,7 @@ SAMPARR = np.array([s[0] for s in HSL])
 
 # ================= ⒜ φ in four levels =================
 print("\n" + "=" * 78)
-print("[⒜] φ 를 네 단계로 — 집단을 좁혀가며 상동과 비교")
+print("[a] φ in four steps: narrowing the population and comparing with the homolog")
 
 
 def phi_of(mask_fn, idxs=None):
@@ -171,14 +171,14 @@ res["무관 · 같은 세부집단"] = phi_of(lambda i, j: fine[i] == fine[j] an
 res["무관 · 같은 대집단"] = phi_of(lambda i, j: sup[i] == sup[j] and sup[i] != "?")
 res["무관 · 다른 대집단"] = phi_of(lambda i, j: sup[i] != sup[j] and sup[i] != "?" and sup[j] != "?")
 res["무관 · 전체"] = phi_of(lambda i, j: True)
-print("    %-22s %12s %16s %10s" % ("층", "φ", "쌍 수 (분모)", "상동/이것"))
+print("    %-22s %12s %16s %10s" % ("층", "φ", "쌍 수 (분모)", "homolog/this"))
 for nm, (n_, d_) in res.items():
     print("    %-22s %12.6f %16d %10s"
           % (nm, n_ / d_, d_, "-" if nm.startswith("상동") else "%.4f" % ((nh / dh) / (n_ / d_))))
 print("    (%.0fs)" % (time.time() - t0))
 
 # ================= ⒝ paired cluster bootstrap =================
-print("\n[⒝] 짝지은 cluster bootstrap (재표본 단위 = 개체 · 같은 재표본에서 네 양 전부 · B = %d)" % B_BOOT)
+print("\n[b] paired cluster bootstrap (resampling unit = individual, all four quantities from the same resample, B = %d)" % B_BOOT)
 IND_HAPS = [[IDX[s] for s in bySamp[sp]] for sp in SAMPS]
 IND_FINE = [FINE.get(sp, "?") for sp in SAMPS]
 IND_SUP = [SUP.get(sp, "?") for sp in SAMPS]
@@ -234,12 +234,12 @@ for nm, key in (("무관 · 같은 세부집단", "fine"), ("무관 · 같은 �
     ci_r = np.percentile(r_, [2.5, 97.5])
     ci_d = np.percentile(d_, [2.5, 97.5])
     p = 2 * min((d_ <= 0).mean(), (d_ >= 0).mean())
-    print("    상동 / %-20s = %.4f  95%%CI [%.4f, %.4f]  (1 포함 %s) · 차이 p = %.4g"
+    print("    homolog / %-20s = %.4f  95%%CI [%.4f, %.4f]  (includes 1 %s), difference p = %.4g"
           % (nm, obs["hom"] / obs[key], ci_r[0], ci_r[1], "YES" if ci_r[0] <= 1 <= ci_r[1] else "NO", p))
     rows_b.append((nm, obs["hom"] / obs[key], ci_r[0], ci_r[1], obs["hom"] - obs[key], ci_d[0], ci_d[1], p))
 
 # ================= ⒞ individual label permutation within population =================
-print("\n[⒞] 개인 라벨 순열을 집단 안에서만 — 집단을 고정하고 '같은 개인' 관계만 무작위화 (N = %d)" % N_PERM)
+print("\n[c] individual-label permutation within populations only: population held constant, only the 'same individual' relation randomized (N = %d)" % N_PERM)
 for level, lab in (("세부집단", IND_FINE), ("대집단", IND_SUP)):
     grp = collections.defaultdict(list)
     for t, sp in enumerate(SAMPS):
@@ -247,7 +247,7 @@ for level, lab in (("세부집단", IND_FINE), ("대집단", IND_SUP)):
             grp[lab[t]].append(t)
     usable = {g: v for g, v in grp.items() if len(v) >= 2}
     nind = sum(len(v) for v in usable.values())
-    print("    %s : 쓸 수 있는 집단 %d 종 · 개체 %d (집단당 median %d)"
+    print("    %s : usable populations %d, individuals %d (median %d per population)"
           % (level, len(usable), nind, int(np.median([len(v) for v in usable.values()]))))
     on = od = 0
     for g, v in usable.items():
@@ -271,13 +271,13 @@ for level, lab in (("세부집단", IND_FINE), ("대집단", IND_SUP)):
         nul[b] = num / den if den else np.nan
     nul = nul[~np.isnan(nul)]
     pp = (1 + int((nul >= o_).sum())) / (len(nul) + 1)
-    print("       관측 φ_homolog(그 집단들) = %.6f ↔ 같은 집단 안 귀무 %.6f ± %.6f · 배율 %.4f · p = %.4g"
+    print("       observed φ_homolog (those populations) = %.6f vs within-population null %.6f ± %.6f, ratio %.4f, p = %.4g"
           % (o_, nul.mean(), nul.std(ddof=1), o_ / nul.mean(), pp))
     rows_b.append(("순열-" + level, o_, nul.mean(), nul.std(ddof=1), o_ / nul.mean(), pp, 0, 0))
 
 # ================= ⒟ twin carrier rate with population control =================
 print("\n" + "=" * 78)
-print("[⒟] 쌍둥이 보유율(=0, <=5) — 무관을 같은 집단으로 묶어 크기 맞춰 재계산 (반복 5)")
+print("[d] twin carrier rate (=0, <=5): recomputed with unrelated restricted to the same population and size-matched (5 repeats)")
 REPL = 5
 
 
@@ -329,10 +329,10 @@ rows_d.append(twin_rates(lambda a: pick(bysup.get(SUP.get(a[0], "?"), []), a), "
 rows_d.append(twin_rates(lambda a: pick([x for x in HSL if SUP.get(x[0], "?") != SUP.get(a[0], "?")], a),
                          "무관 · 다른 대집단"))
 rows_d.append(twin_rates(lambda a: pick(HSL, a), "무관 · 전체"))
-print("    (%.0fs · 반복 %d 평균 · 비교집합은 하플로타입 하나로 크기 맞춤)" % (time.time() - t0_, REPL))
+print("    (%.0fs, mean of %d repeats, comparison set size-matched to one haplotype)" % (time.time() - t0_, REPL))
 
 g = io.open(os.path.join(OUT, "X1_population_control.tsv"), "w", encoding="utf8", newline="\n")
-g.write("# P08 X1 집단 통제 · ruler majref %.6f · seed %d · B %d · N_perm %d · 2026-10-10\n"
+g.write("# P08 X1 집단 통제 · ruler majref %.6f · seed %d · B %d · N_perm %d\n"
         % (VPU, SEED, B_BOOT, N_PERM))
 g.write("[A]\tstratum\tphi\tnum\tden\tratio_hom_over\n")
 for nm, (n_, d_) in res.items():
@@ -345,7 +345,7 @@ for r in rows_d:
     g.write("\t%s\t%d\t%d\t%.6f\t%.6f\t%.6f\t%d\t%.6f\t%.6f\t%.6f\n" % r)
 g.close()
 np.savez_compressed(os.path.join(OUT, "X1_boot.npz"), **BS)
-print("\n산출 :", os.path.join(OUT, "X1_population_control.tsv"))
+print("\noutputs :", os.path.join(OUT, "X1_population_control.tsv"))
 
 # the deposited table(s) carry English column names and values (common/fig02_figS2/taben.py)
 import sys as _s, os as _o

@@ -4,11 +4,11 @@
 set -u
 cd ~/zfwgbs || exit 1
 until grep -q POTOK_DONE potok.out 2>/dev/null; do sleep 60; done
-echo "정렬 끝 — 측정 시작 $(date -u +%H:%M)"
+echo "alignment finished: measurement start $(date -u +%H:%M)"
 
 m () {
   R=$1; L=$2
-  [ -f bam/${R}.sorted.bam ] || { echo "BAM 없음 $R ($L)"; return; }
+  [ -f bam/${R}.sorted.bam ] || { echo "BAM none $R ($L)"; return; }
   python3 bismark_region_meth.py bam/${R}.sorted.bam "$L" zf_regions.tsv ZFMETH.tsv
 }
 

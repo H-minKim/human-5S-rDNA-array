@@ -15,7 +15,7 @@ python3 - <<PY
 import io
 W="$W"
 u=io.open(W+"/_unit.txt").read().strip().upper()
-assert len(u)==2240, "정본 유닛 길이 %d"%len(u)
+assert len(u)==2240, "canonical unit length %d"%len(u)
 io.open(W+"/unit_canon.fa","w",newline="\n").write(u">UNIT_CANON_2240 revcomp_CHM13_chr1_${U1}_${U2}\n%s\n"%u)
 # 40 tandem repeats (TUC mapping reference)
 io.open(W+"/tandem40.fa","w",newline="\n").write(u">tandem\n%s\n"%(u*40))
@@ -37,13 +37,13 @@ makeblastdb -in $W/tandem40.fa      -dbtype nucl -out $W/tandem_db >/dev/null
 makeblastdb -in $W/unit_canon.fa    -dbtype nucl -out $W/unit_db   >/dev/null
 rm -f $W/_unit.txt
 
-echo "=== 재생성 결과 ==="
+echo "=== regenerated result ==="
 for f in unit_canon.fa tandem40.fa 5S_unit_discseg.fa 5S_gene_query.fa FLANK_proximal_50000.fa FLANK_distal_50000.fa; do
   printf "  %-28s %8d B  md5=%s\n" "$f" "$(stat -c%s $W/$f)" "$(md5sum $W/$f | cut -c1-12)"
 done
-echo "=== 기존 AWS ONT 캠페인본과 대조 (서열만) ==="
+echo "=== comparison with the existing AWS ONT copy (sequence only) ==="
 for p in tandem40.fa 5S_unit_discseg.fa 5S_gene_query.fa; do
   a=$(grep -v '^>' ~/s5s_ont/$p 2>/dev/null | tr -d '\n' | tr a-z A-Z | md5sum | cut -c1-12)
   b=$(grep -v '^>' $W/$p          | tr -d '\n' | tr a-z A-Z | md5sum | cut -c1-12)
-  [ "$a" = "$b" ] && echo "  $p  일치 ($b)" || echo "  $p 불일치 ONT=$a 재생성=$b"
+  [ "$a" = "$b" ] && echo "  $p  match ($b)" || echo "  $p mismatch ONT=$a regenerated=$b"
 done

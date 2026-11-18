@@ -20,12 +20,12 @@ for fn in sorted(os.listdir(V)):
     if old[-1] == "": old = old[:-1]
     new = gzip.open(newp, "rt", encoding="utf8").read().split(NL)
     if new[-1] == "": new = new[:-1]
-    assert old[0] == new[0], "머리줄 다름 " + fn
+    assert old[0] == new[0], "header differs " + fn
     body_new = new[1:]
-    assert all(L.split(TAB, 1)[0] == smp for L in body_new), "다른 개체 행 " + fn
+    assert all(L.split(TAB, 1)[0] == smp for L in body_new), "rows of another individual " + fn
     idx = [i for i, L in enumerate(old) if i > 0 and L.split(TAB, 1)[0] == smp]
     if idx:
-        assert idx[-1] - idx[0] + 1 == len(idx), "옛 행 연속 아님 " + fn
+        assert idx[-1] - idx[0] + 1 == len(idx), "existing rows not contiguous " + fn
         out = old[:idx[0]] + body_new + old[idx[-1] + 1:]
     else:
         out = old + body_new

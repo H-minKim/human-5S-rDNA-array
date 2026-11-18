@@ -105,5 +105,5 @@ with io.open(os.path.join(OUT, "ARRAY_V11_UNITS.tsv"), "w", encoding="utf8", new
     O.write("pos\tstate\tn_units\n")
     for (p, s), c in sorted(NU.items()):
         O.write("%s\t%s\t%d\n" % (p, s, c))
-print("유닛 상태 :", dict(collections.Counter({s: sum(c for (p, s2), c in NU.items() if s2 == s) for s in ("low", "mid", "high", "NA")})))
+print("unit states:", dict(collections.Counter({s: sum(c for (p, s2), c in NU.items() if s2 == s) for s in ("low", "mid", "high", "NA")})))
 print("saved ARRAY_V11_BINS.tsv")

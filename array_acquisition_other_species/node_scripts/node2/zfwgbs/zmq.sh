@@ -11,7 +11,7 @@ for M in 0 30; do
     [ -f bam/$1.bam ] && B=bam/$1.bam || B=bam/$1.sorted.bam
     [ -f "$B" ] && python3 bismark_parts_mq.py "$B" "$2" zf_regions_parts.tsv ZFPARTS_mq${M}.tsv 1000 >/dev/null
   done
-  echo "MQ>=$M 완료"
+  echo "MQ>=$M done"
 done
 # the reads per kb, as a measure of clustering, is reported as well
 python3 - <<'PY'
@@ -25,7 +25,7 @@ for M in ("0","30"):
         if f[0]=="sample": continue
         d[(f[0],f[1],f[2])]=f[3:]
     print("=== mapq >= %s"%M)
-    print("시료\t부류\tread\tread/kb\tCpG\tfrac\tlo95\thi95")
+    print("sample\tclass\tread\tread/kb\tCpG\tfrac\tlo95\thi95")
     for s in ["알_Jiang","알_Potok","1k세포_MBT","sphere_4hpf","Germring_6hpf","근육성체_Potok","장성체"]:
         for k in ("코딩부","스페이서","바깥_flankL","바깥_flankR"):
             v=d.get((s,"chr18_somatic",k))

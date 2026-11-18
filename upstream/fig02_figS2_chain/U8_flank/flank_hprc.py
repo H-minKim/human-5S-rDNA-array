@@ -97,7 +97,7 @@ def fetch(u, ctg, tag):
 
 for smp in sys.argv[1:]:
     if smp not in URL or smp not in SEQF:
-        print("  %s : 인덱스/정본 없음" % smp)
+        print("  %s : no index/canonical" % smp)
         continue
     # fetch this individual's haplotype contig sequences in advance (so they are not fetched again for each slot)
     CACHE = {}
@@ -109,7 +109,7 @@ for smp in sys.argv[1:]:
         if s:
             CACHE[hap] = (c, s)
     if not CACHE:
-        print("  %s : contig 못 받음" % smp)
+        print("  %s : contig not received" % smp)
         continue
     for slot, fn in SEQF[smp]:
         outp = os.path.join(W, fn)
@@ -139,11 +139,11 @@ for smp in sys.argv[1:]:
         else:
             lf, rf = rc(s[i + len(canon):i + len(canon) + FL]), rc(s[max(0, i - FL):i])
         new = lf + canon + rf
-        assert new[len(lf):len(lf) + len(canon)] == canon, "정본 손상"
+        assert new[len(lf):len(lf) + len(canon)] == canon, "canonical corrupted"
         io.open(outp, "w", newline=NL).write(
             ">%s|flank5=%d|flank3=%d|src=HPRC:%s:%s%s%s%s"
             % (fn.replace(".fa", ""), len(lf), len(rf), c, strand, NL, new, NL))
-        print("  %s 슬롯%s : 정본 %d bp · 앞 %d · 뒤 %d (hap%s %s)"
+        print("  %s slot%s : canonical %d bp, front %d, back %d (hap%s %s)"
               % (smp, slot, len(canon), len(lf), len(rf), hap, strand))
         LOG.write(TAB.join([smp, slot, fn, c, hap, strand, str(len(lf)), str(len(rf)),
                             md5(canon), "OK"]) + NL)

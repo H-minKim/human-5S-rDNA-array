@@ -11,7 +11,7 @@
 #              (same for FLIP True/False)
 #     moved to the stored orientation
 #       FLIP=False : 5'flank = L(as is), 3'flank = R(as is)
-#       FLIP=True  : 5'flank = rc(R)     · 3'flank = rc(L)
+#       FLIP=True  : 5'flank = rc(R), 3'flank = rc(L)
 #       measured check (20 slots with assemblies): with FLIP=True 5'=R- and 3'=L-, consistent with the rule
 #
 #   test: slots that have assembly flanks are compared with them and the identity is recorded (only those that exist).
@@ -125,7 +125,7 @@ for smp, slot in sorted(todo):
         f5 = cl
         f3 = cr
     new = f5 + canon + f3
-    assert new[len(f5):len(f5) + len(canon)] == canon, "정본 손상"
+    assert new[len(f5):len(f5) + len(canon)] == canon, "canonical corrupted"
     vd = "OK" if (f5 and f3) else ("PARTIAL" if (f5 or f3) else "NONE")
     if vd == "NONE":
         n_bad += 1
@@ -141,4 +141,4 @@ for smp, slot in sorted(todo):
                         "%.2f" % v5, "%.2f" % v3, vd]) + NL)
     LOG.flush()
 LOG.close()
-print("%s  붙임 OK %d · 한쪽만 %d · 참조대조 실패/없음 %d" % (socket.gethostname(), n_ok, n_part, n_bad))
+print("%s  attached OK %d, one side only %d, reference check failed/none %d" % (socket.gethostname(), n_ok, n_part, n_bad))

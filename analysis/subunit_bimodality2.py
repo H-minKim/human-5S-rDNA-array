@@ -60,7 +60,7 @@ for i, L in enumerate(gzip.open(SU, "rt", encoding="utf8")):
             k_ = int(round(float(bb) * n_))
             CNT[e][(n_, k_)] += 1
             ROWS[e].append((ax, idx, n_, k_))
-print("요소별 유닛 수:", {e: len(ROWS[e]) for e in EL})
+print("unit count per element:", {e: len(ROWS[e]) for e in EL})
 
 
 def logbinom_pmf(k, n, p):
@@ -102,9 +102,9 @@ def em(cnt, iters=300):
 
 
 FIT = {}
-print("\n[A-1] 요소마다 독립으로 적합한 두 상태 (유닛 class 를 전혀 쓰지 않음)")
+print("\n[A-1] two states fitted independently per element (unit class not used at all)")
 print("%-6s %9s %8s %9s %9s %8s %10s %10s"
-      % ("요소", "유닛", "CpG중앙", "저상태 p", "고상태 p", "고비율 w", "애매유닛", "귀무 애매"))
+      % ("요소", "유닛", "CpG중앙", "low state p", "고상태 p", "high fraction w", "ambiguous units", "귀무 애매"))
 O = io.open(os.path.join(W, "out", "SUBUNIT_BIMODAL2.tsv"), "w", encoding="utf8", newline="\n")
 O.write("kind\telement\tn_unit\tmed_ncpg\tp_low\tp_high\tw_high\tambig_obs\tambig_null\n")
 for e in EL:
@@ -148,9 +148,9 @@ for e in EL:
           % (e, tot, med_n, plo, phi, w, amb / tot, nullamb / nulltot))
     O.write("fit\t%s\t%d\t%d\t%.5f\t%.5f\t%.4f\t%.5f\t%.5f\n"
             % (e, tot, med_n, plo, phi, w, amb / tot, nullamb / nulltot))
-print("  애매유닛 ≈ 귀무 이면 중간 상태가 없다는 뜻 = 그 요소도 이분")
+print("  ambiguous units ≈ null means there is no intermediate state = that element is also two-state")
 
-print("\n[A-2] 요소마다 자기 우도비로 분류한 HIGH 비율 (균등 사전)")
+print("\n[A-2] HIGH fraction classified by each element's own likelihood ratio (uniform prior)")
 KEYS = [("prox", 1), ("prox", 3), ("prox", 5), ("prox", 10), ("prox", 20), ("int", 0),
         ("dist", 20), ("dist", 16), ("dist", 12), ("dist", 10), ("dist", 5), ("dist", 1)]
 print("%-6s %s" % ("요소", " ".join("%5s" % x for x in
@@ -183,7 +183,7 @@ def cross(C, ax, t):
     return None
 
 
-print("\n[A-3] 요소별 교차 지수 — 독립 분류인데도 같은 자리에서 전이하는가")
+print("\n[A-3] crossover index per element: do they transition at the same position despite independent classification")
 print("%-6s %9s %9s %9s %9s %9s %9s"
       % ("요소", "근위25%", "근위50%", "근위75%", "원위75%", "원위50%", "원위25%"))
 R = {}
@@ -198,7 +198,7 @@ for e in EL:
 for j, lab in enumerate(["근위25%", "근위50%", "근위75%", "원위75%", "원위50%", "원위25%"]):
     v = [R[e][j] for e in EL if R[e][j] is not None]
     if len(v) >= 4:
-        print("  %s : 범위 %.2f ~ %.2f (폭 %.2f 유닛) · 중앙 %.2f · 요소 %d"
+        print("  %s: range %.2f ~ %.2f (width %.2f units), median %.2f, elements %d"
               % (lab, min(v), max(v), max(v) - min(v), statistics.median(v), len(v)))
 O.close()
 print("\nsaved: out/SUBUNIT_BIMODAL2.tsv")

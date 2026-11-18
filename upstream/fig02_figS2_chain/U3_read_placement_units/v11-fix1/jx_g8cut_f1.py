@@ -263,4 +263,4 @@ if __name__ == "__main__":
             TOT.update(stat)
             O.flush()
     O.close()
-    print("%s %s · 개체 %d · %s" % (socket.gethostname(), PASS, len(sams), " · ".join("%s %d" % kv for kv in sorted(TOT.items()))))
+    print("%s %s, individuals %d, %s" % (socket.gethostname(), PASS, len(sams), " · ".join("%s %d" % kv for kv in sorted(TOT.items()))))

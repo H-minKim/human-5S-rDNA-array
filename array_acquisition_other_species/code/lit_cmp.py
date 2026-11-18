@@ -5,7 +5,7 @@
 #   2) How many times does the published repeat unit fit inside a measured unit, as the number of non-overlapping HSPs?
 #      More than one means our unit has taken several units as a single block.
 #   Outputs: LIT_BEST.tsv and LIT_TILING.tsv
-# MIT License · Copyright (c) 2026 Hungmin Kim
+# MIT License. Copyright (c) 2026 Hyungmin Kim
 import io
 import os
 import glob
@@ -66,11 +66,11 @@ for q, s, pid, aln, qs, qe, ss, se, bs in rows:
 w = io.open(os.path.join(H, "LIT_BEST.tsv"), "w", encoding="utf8", newline=NL)
 w.write(TAB.join(["lit_acc", "lit_len", "lit_title", "best_array_id", "unit_len", "pident",
                   "aln_len", "cov_of_lit", "cov_of_unit", "n_arrays_hit"]) + NL)
-print("=== 1. 공개 반복단위가 가장 닮은 실측 유닛")
+print("=== 1. measured unit most similar to each published repeat unit")
 for q in sorted(LIT, key=lambda x: -len(LIT[x])):
     hits = [(s, v) for (qq, s), v in best.items() if qq == q]
     if not hits:
-        print("  %-10s %5d bp  실측 유닛 어디에도 안 붙음" % (q, len(LIT[q])))
+        print("  %-10s %5d bp  aligns to no measured unit" % (q, len(LIT[q])))
         w.write(TAB.join([q, str(len(LIT[q])), LITTITLE.get(q, ""), "NOHIT", "", "", "", "", "", "0"]) + NL)
         continue
     hits.sort(key=lambda x: -x[1][-1])
@@ -78,7 +78,7 @@ for q in sorted(LIT, key=lambda x: -len(LIT[x])):
     pid, aln, qs, qe, ss, se, bs = v
     cq = aln / float(len(LIT[q]))
     cu = aln / float(len(UNIT[s]))
-    print("  %-10s %5d bp -> %-52s 유닛 %5d bp · 일치 %.1f%% · 정렬 %4d (공개의 %.2f · 유닛의 %.2f) · 붙은 array %d"
+    print("  %-10s %5d bp -> %-52s unit %5d bp, identity %.1f%%, aligned %4d (%.2f of published, %.2f of unit), arrays hit %d"
           % (q, len(LIT[q]), s, len(UNIT[s]), pid, aln, cq, cu, len(hits)))
     w.write(TAB.join([q, str(len(LIT[q])), LITTITLE.get(q, ""), s, str(len(UNIT[s])), "%.2f" % pid,
                       str(aln), "%.3f" % cq, "%.3f" % cu, str(len(hits))]) + NL)
@@ -96,7 +96,7 @@ if not ACC2GRP:  # with no grouping file, nothing can be inferred from ALL, so e
 t = io.open(os.path.join(H, "LIT_TILING.tsv"), "w", encoding="utf8", newline=NL)
 t.write(TAB.join(["array_id", "unit_len", "lit_acc", "lit_len", "n_nonoverlap_hsp", "covered_bp",
                   "cov_frac", "pident_med", "hsp_spans"]) + NL)
-print(NL + "=== 2. 실측 유닛 안에 공개 반복단위가 몇 번 들어가나 (2 이상 = 여러 유닛 덩어리)")
+print(NL + "=== 2. how many times the published repeat unit fits in the measured unit (2 or more = block of several units)")
 for aid in sorted(UNIT, key=lambda a: -len(UNIT[a])):
     sp = aid.split("__")[0]
     accs = [a for a, g in ACC2GRP.items() if g and GRP.get(g) == sp]
@@ -125,4 +125,4 @@ for aid in sorted(UNIT, key=lambda a: -len(UNIT[a])):
                           "%.3f" % (cov / float(len(UNIT[aid]))), "%.1f" % pids[len(pids) // 2],
                           ",".join(sorted(spans, key=lambda z: int(z.split("-")[0])))]) + NL)
 t.close()
-print("표 : ~/lit5s/LIT_BEST.tsv · ~/lit5s/LIT_TILING.tsv")
+print("tables : ~/lit5s/LIT_BEST.tsv, ~/lit5s/LIT_TILING.tsv")

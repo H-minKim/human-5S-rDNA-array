@@ -8,7 +8,6 @@
 #    (1) `S4 A`: the recipe of `figx25_shape_prep.py` (H2 gate; unit beta = mean of b; `shape()`)
 #    (2) the valley of `Fig 4 a and b`: the gate of `valley_hardcall.py`
 #       (HPRC_ONT_submissions; n_cpg >= 20; H2 slots; ao/jx deduplicated with jx preferred; hard-call beta)
-#  It only reads. The only thing it writes to is its sandbox.
 # The HPRC release 2 ONT sequencing index this script reads is not part of this archive.
 # Set RDNA_HPRC_R2_ONT_INDEX to a local copy; without it the script falls back to a file of
 # that name beside itself. The README says where the index comes from and gives its md5.
@@ -54,7 +53,7 @@ for r in csv.DictReader(io.open(os.path.join(V11, "03_figures", "paper_Fig", "00
                                              "1kGP_LRSC_500_ONT_Metadata_2026-10-09.tsv"),
                                 encoding="utf8", errors="replace"), delimiter=TAB):
     kg[r["NHGRI_ID"]] = (r.get("ONT_pore") or "?").strip()
-print("화학 지도 : HPRC 색인 %d 개체 · 1kGP 메타표 %d 개체" % (len(HPCHEM), len(kg)))
+print("chemistry map: HPRC index %d individuals, 1kGP metadata table %d individuals" % (len(HPCHEM), len(kg)))
 print()
 
 #  --------- (1) `S4 A` - the figx25 recipe unchanged, with the stratum added
@@ -108,9 +107,9 @@ def stratum(row):
 
 
 U["층"] = U.apply(stratum, axis=1)
-print("## ⑴ `SuppFig S4 A` — 자료원 × 화학/시료 층  (figx25 의 자 그대로)")
+print("## (1) `SuppFig S4 A`: data source × chemistry/sample stratum  (same measure as figx25)")
 print()
-print("| 자료원 | 층 | 하플로 | 개체 | 유닛 | 평균 β | 봉우리수 | 저봉 | 고봉 | 골 | 골봉비 |")
+print("| data source | stratum | haplotypes | individuals | units | mean β | number of peaks | low peak | high peak | trough | trough/peak ratio |")
 print("|---|---|--:|--:|--:|--:|--:|--:|--:|--:|--:|")
 rows = []
 for f in ["1kGP", "GIAB", "HPRC"]:
@@ -118,7 +117,7 @@ for f in ["1kGP", "GIAB", "HPRC"]:
     groups = [("전체", sub)] + [(k, sub[sub["층"] == k]) for k in sorted(sub["층"].unique())]
     for k, g in groups:
         if len(g) < 60:
-            print("| %s | %s | %d | %d | %d | %.4f | 유닛 적어 못 잼 | | | | |"
+            print("| %s | %s | %d | %d | %d | %.4f | too few units to measure | | | | |"
                   % (f, k, g.hap.nunique(), g["sample"].nunique(), len(g),
                      g.b.mean() if len(g) else float("nan")))
             continue
@@ -148,7 +147,7 @@ for i, L in enumerate(gzip.open(RU, "rt", encoding="utf8")):
     k = (f[0], f[1], f[2], f[3])
     if k not in best or (f[6] == "jx" and best[k][0] != "jx"):
         best[k] = (f[6], float(f[9]), f[0])
-print("## ⑵ `Fig 4 a·b` 의 골 — valley_hardcall 의 관문 그대로, 화학 층만 가름")
+print("## (2) trough of `Fig 4 a, b`: same gate as valley_hardcall, split by chemistry stratum only")
 print()
 by = collections.defaultdict(list)
 for v in best.values():
@@ -171,14 +170,14 @@ def valley(b, bw=0.002, smooth=5, lo=0.20, hi=0.80):
                                                             d[mid > 0.6].max()))
 
 
-print("| 층 | 개체 | read-유닛 | 골 | 저봉 | 고봉 | 골/봉 | 0.508 과 차 |")
+print("| stratum | individuals | read-units | trough | low peak | high peak | trough/peak | difference from 0.508 |")
 print("|---|--:|--:|--:|--:|--:|--:|--:|")
 for k in ["전체"] + sorted(x for x in by if x != "전체"):
     vals = by[k]
     ns = len({v[2] for v in best.values() if HPCHEM.get(v[2], "모름(색인밖)") == k}) \
         if k != "전체" else len({v[2] for v in best.values()})
     if len(vals) < 500:
-        print("| %s | %d | %s | 적어 못 잼 | | | | |" % (k, ns, format(len(vals), ",")))
+        print("| %s | %d | %s | too few to measure | | | | |" % (k, ns, format(len(vals), ",")))
         continue
     v, pl, ph, r = valley(vals)
     print("| %s | %d | %s | **%.4f** | %.3f | %.3f | %.4f | %+.4f |"
@@ -193,4 +192,4 @@ for r in rows:
     out.append(TAB.join(str(x) for x in r))
 io.open(P, "w", encoding="utf8", newline=NL).write(NL.join(out) + NL)
 print()
-print("기록 : %s" % P)
+print("wrote: %s" % P)

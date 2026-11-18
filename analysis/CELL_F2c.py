@@ -48,4 +48,4 @@ ax.legend(frameon=False, loc="center right", handlelength=1.0, borderpad=0.1)
 # no horizontal grid lines
 ax.set_axisbelow(True)
 CS.save(fig, OUT, "cellF2_c_distance")
-print("관측 거리 1 %.3f · 15 %.3f" % (BA["obs"][0], BA["obs"][-1]))
+print("observed distance 1 %.3f, 15 %.3f" % (BA["obs"][0], BA["obs"][-1]))

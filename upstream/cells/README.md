@@ -1,6 +1,6 @@
 # The part of the K562 / GM12878 chain that comes before `cell_fhmm_units.py`
 
-Covers the chain under Fig. 6 G-J and Suppl. Fig. S9 C-F.
+Covers the chain under Fig. 6 G-H and Suppl. Fig. S9 C-H.
 
 The values below come from the compute node and from the `@PG` headers of
 the BAMs. The scripts cannot be run again from
@@ -53,7 +53,7 @@ than paths on a local machine.
 | File | md5 | Makes |
 |---|---|---|
 | `fq2ubam.py` | `f7b745901e5a` | `all/<L>.u.bam` from the hits fastq |
-| `build_gene_all.py` | `bb6343f38346` | gene-part strata labels for the whole pool |
-| `cell_sig_run_all.py` | `8ea47618a8fd` | `cells/sig_K562all.*`, `cells/sig_GM12878all.*` |
-| `cell_strata_all.py` | `f1792520e59b` | `cells/strata_K562all_gene.*`, `cells/strata_GM12878all_gene.*` |
-| `cell_nucfree.py` | `fe1019096bcf` | `cells/nucfree_K562all.json`, `cells/nucfree_GM12878all.json` |
+| `build_gene_all.py` | `2d9cdf7576ce` | gene-part strata labels for the whole pool |
+| `cell_sig_run_all.py` | `2611d7346657` | `cells/sig_K562all.*`, `cells/sig_GM12878all.*` |
+| `cell_strata_all.py` | `711f29ce7279` | `cells/strata_K562all_gene.*`, `cells/strata_GM12878all_gene.*` |
+| `cell_nucfree.py` | `23b9d79db5e1` | `cells/nucfree_K562all.json`, `cells/nucfree_GM12878all.json` |

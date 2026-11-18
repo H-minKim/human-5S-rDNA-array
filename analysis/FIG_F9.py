@@ -64,7 +64,7 @@ x = np.arange(len(SUP)); W = 0.38
 fh = [float(r[H["frac_hap"]]) for r in SUP]
 fi = [float(r[H["frac_indiv"]]) for r in SUP]
 for r in SUP:
-    rec("A", r[H["group"]], "하플로 %s/%s = %s · 개체 %s/%s = %s"
+    rec("A", r[H["group"]], "haplotypes %s/%s = %s, individuals %s/%s = %s"
         % (r[H["n_carrier_hap"]], r[H["n_haplotypes"]], r[H["frac_hap"]],
            r[H["n_indiv_with_any"]], r[H["n_individuals"]], r[H["frac_indiv"]]),
         "ZM_population_carrier.tsv")
@@ -83,10 +83,10 @@ chi = ST.get("chi2_hap", [])
 perm = ST.get("perm_indiv", [])
 if chi:
     txt = "하플로타입 χ² %s · p %s · 자유도 %s" % (chi[0], chi[2], chi[4])
-    rec("A", "χ² 검정", txt, "ZM_population_carrier.tsv")
+    rec("A", "χ² test", txt, "ZM_population_carrier.tsv")
     if perm:
         txt += "\n개체 순열 %s 벌 · 폭 %s · p %s" % (perm[5], perm[1], perm[3])
-        rec("A", "개체 순열", "%s 벌 · 폭 %s · p %s" % (perm[5], perm[1], perm[3]),
+        rec("A", "individual permutation", "%s 벌 · 폭 %s · p %s" % (perm[5], perm[1], perm[3]),
             "ZM_population_carrier.tsv")
     ax.text(0.97, 0.97, txt, transform=ax.transAxes, ha="right", va="top", fontsize=8.6, color="#17202a")
 ax.set_title("A   집단마다 크게 다르다 — AFR 이 가장 낮다", loc="left", fontsize=12.2)
@@ -98,7 +98,7 @@ xb = np.arange(len(SUB2))
 POPOF = {"ESN": "AFR", "GWD": "AFR", "MSL": "AFR", "ACB": "AFR", "PUR": "AMR", "PEL": "AMR",
          "GBR": "EUR", "CHS": "EAS", "KHV": "EAS", "JPT": "EAS", "BEB": "SAS", "PJL": "SAS"}
 for r in SUB2:
-    rec("B", r[H["group"]], "%s/%s = %s (개체 %s)" % (r[H["n_carrier_hap"]], r[H["n_haplotypes"]],
+    rec("B", r[H["group"]], "%s/%s = %s (individuals %s)" % (r[H["n_carrier_hap"]], r[H["n_haplotypes"]],
                                                    r[H["frac_hap"]], r[H["n_individuals"]]),
         "ZM_population_carrier.tsv")
 vb = [float(r[H["frac_hap"]]) for r in SUB2]
@@ -172,10 +172,10 @@ NPOP = sum(TOT[g] for g in GRP if g != "미표기")
 for g in GRP:
     if TOT[g]:
         _s = sum(sum(_n(d, g) for d in D3 if d[0] == s) / TOT[g] for s in SZ)
-        assert abs(_s - 1.0) < 1e-9, "%s 몫 합이 1 이 아니다" % g
+        assert abs(_s - 1.0) < 1e-9, "%s shares do not sum to 1" % g
 UNL = sum(d[4] for d in D3)            # Population unlabelled (not drawn in this panel)
-assert sum(TOT.values()) + UNL == NHAP, "하플로타입 총합이 안 맞는다"
-print("검산 5 절 : 패턴 %d · 하플로타입 %d (집단 표기 %d · 미표기 %d) · 크기 %s · 집단마다 비율 합 1"
+assert sum(TOT.values()) + UNL == NHAP, "haplotype totals do not match"
+print("check (5 items): patterns %d, haplotypes %d (population-labelled %d, unlabelled %d), size %s, fractions sum to 1 in every population"
       % (len(D3), NHAP, NPOP, UNL, SZ))
 # Denominator = total haplotypes of that population (ZM_population_carrier), unlabelled are counted from the cohort
 HZ, RZ = read("ZM_population_carrier.tsv")
@@ -185,9 +185,9 @@ for r in RZ:
         TOTALL[r[HZ["group"]]] = int(r[HZ["n_haplotypes"]])
 TOTALL["미표기"] = TOT.get("미표기", 0)     # (not used in this panel)
 for g in GRP:
-    assert g in TOTALL, "전체 하플로타입 수가 없다 : %s" % g
-    assert TOTALL[g] >= TOT[g], "분모가 분자보다 작다 : %s" % g
-print("분모(전체 하플로타입) : " + " · ".join("%s %d (말단형 보유 %d)" % (g, TOTALL[g], TOT[g]) for g in GRP))
+    assert g in TOTALL, "total haplotype count is missing: %s" % g
+    assert TOTALL[g] >= TOT[g], "denominator is smaller than numerator: %s" % g
+print("denominator (all haplotypes): " + " · ".join("%s %d (말단형 보유 %d)" % (g, TOTALL[g], TOT[g]) for g in GRP))
 W_ = 0.8 / len(GRP)
 for j, g in enumerate(GRP):
     if not TOT[g]:
@@ -196,7 +196,7 @@ for j, g in enumerate(GRP):
     xs = [k + (j - (len(GRP) - 1) / 2.0) * W_ for k in range(len(SZ))]
     ax.bar(xs, v, W_ * 0.92, color=GC[g], edgecolor="none", zorder=3)
     for s, x_, a_ in zip(SZ, xs, v):
-        rec("D", "%s 크기 %d" % (g, s), "몫 %.4f (%d / %d)"
+        rec("D", "%s size %d" % (g, s), "share %.4f (%d / %d)"
             % (a_, sum(_n(d, g) for d in D3 if d[0] == s), TOTALL[g]), "ZN_depthset_census.tsv")
 import matplotlib.patches as _mp
 ax.legend(handles=[_mp.Patch(color=GC[g], label="%s  \uc804\uccb4 %d \u00b7 \ub9d0\ub2e8\ud615 \ubcf4\uc720 %d"
@@ -212,9 +212,9 @@ ax.grid(axis="y"); ax.set_axisbelow(True)
 ax.set_title("D   말단형 보유 패턴의 크기 × 집단  (패턴 %d 개를 크기로 묶었다)" % len(D3),
              loc="left", fontsize=12.2)
 # the bottom text 'haplotypes with a population label %d, the 2 unlabelled ...' is not drawn on the figure, it is in the Legend text (values go to the value table)
-rec("D", "그림에서 뺀 글 (Legend 로)", "집단이 표기된 하플로타입 %d · 미표기 2 는 분모가 2 라 이 패널에서 뺐다 (그 둘은 array 유형 그림에 '집단 못 찾음' 으로 보인다)" % NPOP,
+rec("D", "text left out of the figure (to Legend)", "집단이 표기된 하플로타입 %d · 미표기 2 는 분모가 2 라 이 패널에서 뺐다 (그 둘은 array 유형 그림에 '집단 못 찾음' 으로 보인다)" % NPOP,
     "ZN_depthset_census.tsv")
-rec("D", "집단별 평균 집합 크기",
+rec("D", "mean set size by population",
     " · ".join("%s %.3f (n=%d)" % (g, MSZ[g], TOT[g]) for g in GRP if TOT[g]),
     "ZN_depthset_census.tsv")
 
@@ -224,4 +224,4 @@ fig.suptitle("말단형 계통 보유의 집단 분포",
 SRC.close()
 for ext in ("png", "svg"):
     fig.savefig(os.path.join(OUT, "fig_F9_population." + ext), dpi=160, bbox_inches="tight")
-print("저장", OUT, "· 대집단 %d · 하위 %d · 출처 %d · 패턴 %d" % (len(SUP), len(SUB2), len(SRCS), len(D3)))
+print("saved", OUT, ", superpopulations %d, subpopulations %d, sources %d, patterns %d" % (len(SUP), len(SUB2), len(SRCS), len(D3)))

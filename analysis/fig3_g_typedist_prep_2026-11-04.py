@@ -76,7 +76,7 @@ clu = D.clu.astype(int).to_numpy()
 ind = D.ind.astype(str).to_numpy()
 hap = np.array(D.index)
 n = len(hap)
-print("%s코호트 H3 · 하플로타입 %d · 개체 %d · 군 %d%s"
+print("%scohort H3, haplotypes %d, individuals %d, groups %d%s"
       % (S, n, len(set(ind)), len(set(clu)), S))
 
 DIST = np.abs(X[:, None, :] - X[None, :, :]).mean(axis=2)
@@ -95,12 +95,12 @@ for i in range(n):
                      n_군밖=len(b), 군밖거리=round(float(b.mean()), 5),
                      차=round(float(w.mean() - b.mean()), 5)))
 T = pd.DataFrame(rows)
-print("  점(하플로타입) %d · 군 안 쪽이 더 가까운 것 %d (%.1f%%)"
+print("  points (haplotypes) %d, closer within group %d (%.1f%%)"
       % (len(T), int((T.차 < 0).sum()), 100.0 * (T.차 < 0).mean()))
 st, pw = wilcoxon(T.군안거리, T.군밖거리)
-print("  짝 윌콕슨 p = %.3g · 짝 안 중앙 차 %+.4f"
+print("  paired Wilcoxon p = %.3g, median within-pair difference %+.4f"
       % (pw, float(np.median(T.차))))
-print("  중앙값 : 군 안 %.4f · 군 밖 %.4f"
+print("  median: within group %.4f, outside group %.4f"
       % (T.군안거리.median(), T.군밖거리.median()))
 
 # the null from permuting group labels, on the haplotype-level statistic
@@ -120,11 +120,11 @@ for _ in range(NP):
             dif.append(w.mean() - b.mean())
     if np.median(dif) <= obs:
         cnt += 1
-print("  군 라벨 치환 %d 회 : p = %.4f (바닥 %.4f)" % (NP, (cnt + 1) / (NP + 1), 1 / (NP + 1)))
+print("  group label permutations %d: p = %.4f (floor %.4f)" % (NP, (cnt + 1) / (NP + 1), 1 / (NP + 1)))
 
 OUT = os.environ.get("FIG3G_OUT") or os.path.join(FIG, "FIG3_G_TYPEDIST.tsv")
 HDR = [
-    "#  Fig 3 (G) 입력 — array-type 군 안 ↔ 군 밖 메틸 거리 (2026-11-04)",
+    "#  Fig 3 (G) 입력 — array-type 군 안 ↔ 군 밖 메틸 거리",
     "#  코호트 : H3 = H1 ∩ H2 (변이 참조 ∩ 메틸 참조) · 하플로타입 %d · 개체 %d · 군 14" % (
         len(T), T["개체"].nunique()),
     "#  군 : X12_HAP_GROUPS.tsv (Fig 2M · single linkage Jaccard >= 0.90 · 무리 크기 >= 5)",
@@ -143,6 +143,6 @@ with io.open(OUT, "w", encoding="utf-8", newline=NL) as f:
 with io.open(OUT + ".about.txt", "w", encoding="utf-8", newline=NL) as f:
     f.write(NL.join(HDR).replace("#  ", "") + NL)
 print()
-print("%s표 %s · %s · %d 줄%s" % (S, os.path.basename(OUT), md5(OUT), len(T), S))
-print("   곡 파일 : %s.about.txt" % os.path.basename(OUT))
-print(S + "끝" + S)
+print("%stable %s, %s, %d lines%s" % (S, os.path.basename(OUT), md5(OUT), len(T), S))
+print("   sidecar file: %s.about.txt" % os.path.basename(OUT))
+print(S + "done" + S)

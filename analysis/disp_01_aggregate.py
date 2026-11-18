@@ -43,7 +43,7 @@ for i, L in enumerate(gzip.open(os.path.join(R, "CHM13_positions", "LOCI_SITE.ts
     if wset and f[0] not in wset:
         continue
     SITE[(f[0], f[1], f[2])] = f[4]
-print("LOCI_SITE 좌위 %d" % len(SITE), flush=True)
+print("LOCI_SITE loci %d" % len(SITE), flush=True)
 
 files = sorted(glob.glob(os.path.join(R, "structure_exact_cells", "per_individual", "*.STRUCT_LOCI.tsv.gz")))
 samples = [os.path.basename(p).split(".")[0] for p in files]
@@ -99,7 +99,7 @@ for p in files:
             w[0] += n
             w[1] += k
             COV[(site, b)] += 1
-    print("  %s 끝 (자리 붙은 좌위 누계 %d · 자리 없음 %d)" % (smp, nsite, nnos), flush=True)
+    print("  %s done (cumulative loci with a position %d, no position %d)" % (smp, nsite, nnos), flush=True)
 
 with io.open(os.path.join(OUT, "DISP_SITE_BINS_%s.tsv" % tag), "w", encoding="utf8", newline="\n") as O:
     O.write("site\tstate\thalf\tbin\tn\tmeth\n")

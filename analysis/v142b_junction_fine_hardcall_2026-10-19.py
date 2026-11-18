@@ -3,8 +3,8 @@
 #
 #   why
 #     Figure 3A overlays two lines in one panel:
-#       · the orange unit axis, from FIG1_2_UNITS.tsv, a hard-call fraction, sum(b_call * n_canon) / sum(n_canon);
-#       · the black window axis, from FIG1_V5_A_bp.tsv via JUNCTION_FINE_METH.tsv, a probability mean, sum(sum_p) / sum(n_call).
+#       - the orange unit axis, from FIG1_2_UNITS.tsv, a hard-call fraction, sum(b_call * n_canon) / sum(n_canon);
+#       - the black window axis, from FIG1_V5_A_bp.tsv via JUNCTION_FINE_METH.tsv, a probability mean, sum(sum_p) / sum(n_call).
 #     These are not the same ruler. Measured, the window axis runs systematically 0.103 higher at the distal end,
 #     of which 0.093 is the difference of ruler and only 0.007 the difference in how the values are pooled.
 #     Recomputing the window axis as a hard call puts the two lines on the same ruler.
@@ -50,7 +50,7 @@ O = pd.read_csv(OFF, sep="\t", dtype={"slot": str})
 REF = {}
 for r in O.itertuples(index=False):
     REF[r.ref_name] = (r.sample, r.slot, int(r.ref_front), int(r.ref_front) + int(r.canon_len))
-P("[0] 참조 %d · 하드콜 컷 ML>=128 (p >= %.6f)" % (len(REF), HC))
+P("[0] references %d, hard-call cut ML>=128 (p >= %.6f)" % (len(REF), HC))
 
 
 def ref_span(cig):
@@ -109,7 +109,7 @@ def read_calls(flag, seq, cig, pos, mm, ml):
 
 rows = []
 files = sorted(glob.glob(SAMD + "/*/*/*.sam"))
-P("[1] SAM %d 개" % len(files))
+P("[1] SAM %d files" % len(files))
 import time
 t0 = time.time()
 for fi, f in enumerate(files):
@@ -157,14 +157,14 @@ for fi, f in enumerate(files):
         rows.extend([dict(sample=k[0], slot=k[1], side=k[2], b=k[3],
                           n_call=v[0], sum_p=v[1], sum_h=v[2]) for k, v in acc.items()])
     if (fi + 1) % 20 == 0:
-        P("   %d/%d ... %s · 누적 행 %d · %.0f 초" % (fi + 1, len(files), smp, len(rows), time.time() - t0))
+        P("   %d/%d ... %s, cumulative rows %d, %.0f s" % (fi + 1, len(files), smp, len(rows), time.time() - t0))
 
 F = pd.DataFrame(rows).groupby(["sample", "slot", "side", "b"], as_index=False).agg(
     n_call=("n_call", "sum"), sum_p=("sum_p", "sum"), sum_h=("sum_h", "sum"))
 F["beta"] = F.sum_p / F.n_call
 F["beta_hc"] = F.sum_h / F.n_call
 F.to_csv(T + "/JUNCTION_FINE_METH_HC.tsv", sep="\t", index=False, float_format="%.5f")
-P("[2] 저장 02_tables/JUNCTION_FINE_METH_HC.tsv · 행 %d · 하플로 %d · %.0f 초"
+P("[2] saved 02_tables/JUNCTION_FINE_METH_HC.tsv, rows %d, haplotypes %d, %.0f s"
   % (len(F), F.groupby(["sample", "slot"]).ngroups, time.time() - t0))
 
 # ---------- check: n_call and sum_p must match the existing table ----------
@@ -175,14 +175,14 @@ if os.path.exists(Oldp):
     m = Old.merge(F2, on=["sample", "slot", "side", "b"], suffixes=("_old", "_new"), how="outer",
                   indicator=True)
     P()
-    P("[3] 옛 표와 대조 — 옛 행 %d · 새 행 %d · 양쪽 %d · 옛쪽만 %d · 새쪽만 %d"
+    P("[3] comparison with the reference table: reference rows %d, new rows %d, both %d, reference only %d, new only %d"
       % (len(Old), len(F), int((m._merge == "both").sum()),
          int((m._merge == "left_only").sum()), int((m._merge == "right_only").sum())))
     b = m[m._merge == "both"]
     dn = (b.n_call_old - b.n_call_new).abs().max()
     dp = (b.sum_p_old - b.sum_p_new).abs().max()
-    P("   n_call 최대차 %s · sum_p 최대차 %.5f  ⇒ %s"
-      % (dn, dp, "같다 — 파싱이 그대로다" if (dn == 0 and dp < 0.02) else "다르다 — 멈추고 본다"))
-    P("   하드콜 ↔ 확률 : array 안 β 중앙 hc %.4f ↔ prob %.4f"
+    P("   n_call max difference %s, sum_p max difference %.5f  -> %s"
+      % (dn, dp, "same, parsing agrees" if (dn == 0 and dp < 0.02) else "다르다 — 멈추고 본다"))
+    P("   hard call vs probability: within-array β median hc %.4f vs prob %.4f"
       % (b.beta_hc.median(), b.beta_new.median() if "beta_new" in b else b.beta.median()))
 LOG.close()

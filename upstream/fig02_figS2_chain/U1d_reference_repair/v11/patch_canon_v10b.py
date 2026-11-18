@@ -56,7 +56,7 @@ for p in glob.glob(os.path.join(H, "cmp4d_v8", "*.fa")):
         os.remove(t)
     os.symlink(os.path.realpath(p), t)
     n += 1
-print("v8 에서 이어받은 파일 %d" % n)
+print("files carried over from v8 %d" % n)
 
 LOG = io.open(os.path.join(H, "CANON_V10_PATCH.tsv"), "w", encoding="utf8", newline=NL)
 LOG.write(TAB.join(["sample", "slot", "after_unit", "file", "anchor_start", "anchor_end",
@@ -70,19 +70,19 @@ for (smp, sl, ap) in SITES:
     a0, a1 = v[i][1], v[i + 1][2]
     spl = rdfa(os.path.join(H, "splice2", "spl_%s_%s_%d.fa" % (smp, sl, ap)))
     # check that the anchor sequence is character for character identical to the assembly (the premise of the surgery)
-    assert spl.startswith(A[v[i][1] - 1:v[i][2]]), "앞 앵커 불일치 %s %s" % (smp, sl)
-    assert spl.endswith(A[v[i + 1][1] - 1:v[i + 1][2]]), "뒤 앵커 불일치 %s %s" % (smp, sl)
+    assert spl.startswith(A[v[i][1] - 1:v[i][2]]), "front anchor mismatch %s %s" % (smp, sl)
+    assert spl.endswith(A[v[i + 1][1] - 1:v[i + 1][2]]), "back anchor mismatch %s %s" % (smp, sl)
     B = A[:a0 - 1] + spl + A[a1:]
     out = rc(B) if FLIP.get((smp, sl)) else B
     t = os.path.join(V10, fn)
     if os.path.islink(t):
         os.remove(t)
     io.open(t, "w", newline=NL).write(">%s_splice_v10%s%s%s" % (fn.replace(".fa", ""), NL, out, NL))
-    print("  %s h%s 유닛%d/%d : 창 %d -> %d bp · 전체 %d -> %d bp"
+    print("  %s h%s unit%d/%d: window %d -> %d bp, total %d -> %d bp"
           % (smp, sl, v[i][0], v[i + 1][0], a1 - a0 + 1, len(spl), len(A), len(B)))
     LOG.write(TAB.join([smp, sl, str(ap), fn, str(a0), str(a1), str(a1 - a0 + 1),
                         str(len(spl)), str(len(A)), str(len(B)),
                         "Y" if FLIP.get((smp, sl)) else "N"]) + NL)
 LOG.close()
 real = sum(1 for x in os.listdir(V10) if not os.path.islink(os.path.join(V10, x)))
-print("cmp4d_v10 : 전체 %d · 실제 파일 %d" % (len(os.listdir(V10)), real))
+print("cmp4d_v10: total %d, real files %d" % (len(os.listdir(V10)), real))

@@ -88,4 +88,4 @@ for sp in sorted(glob.glob(os.path.join(D, "sam", "*.sam"))):
     v = subprocess.run(["samtools", "view", out], capture_output=True, text=True).stdout.splitlines()
     q = sum(1 for x in v if x.split(TAB, 11)[10] != "*")
     m = sum(1 for x in v if (TAB + "MM:Z:") in x or (TAB + "Mm:Z:") in x)
-    print(TAB.join([HOST, cfg, smp, lab, str(len(v)), str(q), str(m), str(NOK[(smp, cfg)]), str(len(recs)), "ZR지움%d" % nzr]))
+    print(TAB.join([HOST, cfg, smp, lab, str(len(v)), str(q), str(m), str(NOK[(smp, cfg)]), str(len(recs)), "ZRdropped%d" % nzr]))

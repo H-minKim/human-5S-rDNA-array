@@ -228,7 +228,7 @@ FIGS = {
    ("I", "Methylation along the whole array in 5S rDNA and D4Z4 4q", [("I_segments", "LAND_SEGMENTS.tsv", None), ("I_array_bounds", "P10_ARRAY_BOUNDS.tsv", None)], ["P10_FRAME_ALL.tsv"]),
    ("J", "Unit methylation distribution in 5S rDNA and D4Z4 4q", [("J_arrays", "P10_ARRAYS.tsv", "Per-array summary. hist50 is the share of units in 50 beta bins of 0.02.")], []),
  ]),
- "FigS4": ("Supplementary Figure S4 (internal name S4)", "FigS4.pdf", [
+ "FigS4": ("Supplementary Figure S4", "FigS4.pdf", [
    ("A", "Unit methylation distribution in three datasets", [("A_density", "FIGX25_DENSITY.tsv", None), ("A_bimodality", "FIGX25_BIMODAL.tsv", None), ("A_haplotype_level", "FIGX19_E_HAP_cut0508.tsv", None), ("A_gene_body_variant", "FIGX19_F_SEG.tsv", None)], []),
    ("B", "Single molecules through a boundary", [("B_molecules", "FIG4D_SINGLE_MOLECULES.tsv", "Sliding mean of nine CpG hard calls (roll9) along each drawn molecule."), ("B_selection", "FIG4D_SELECTED_MOLECULES.tsv", None)], ["BOUNDARY_WIDE_H2_508.tsv"]),
    ("C", "Fitted state levels by sub-unit element", [("C_fit", "SUBUNIT_BIMODAL2.tsv", "Rows with kind = fit are drawn (p_low and p_high).")], []),
@@ -243,11 +243,11 @@ FIGS = {
    ("L", "Within-unit methylation of the two unit classes in D4Z4 4q", [], ["P10_CPG_ADD3.tsv.gz"]),
    ("M", "Decomposition of each molecule's total rise by step size", [("M_steps", "STEPS_UNITLEVEL_ALL6.tsv", None), ("M_transition_zone", "TRANSITION_ZONE_UNITDIST.tsv", None), ("M_model_test", "MODEL_TEST_ALL6.tsv", None), ("M_unit_steps", "P10_UNIT_STEPS_ABS.tsv", None)], ["P10_FRAME_ALL.tsv"]),
  ]),
- "FigS7": ("Supplementary Figure S7 (internal name S5)", "FigS7.pdf", [
+ "FigS7": ("Supplementary Figure S7", "FigS7.pdf", [
    ("A", "Element content of the dispersed 5S copies", [("A_sites", "PROB_A4_SITE.tsv", "29 sites that carry at least three elements, NA21133 counted once.")], []),
    ("B", "Locus methylation at each dispersed site by flank tone", [("B_points", "FigS5_B_persite_tone_points.tsv", "Plotted values. loci_frac is the share of a site's loci in each beta bin, for the lowest and the highest flank-tone third."), ("B_site_tone", "PROB_A4_SITE_TONE.tsv", None)], []),
  ]),
- "FigS6": ("Supplementary Figure S6 (internal name S6)", "FigS6.pdf", [
+ "FigS6": ("Supplementary Figure S6", "FigS6.pdf", [
    ("A F L Q", "Transcribed parts of the repeat unit (D4Z4 10q, DXZ4, RNU2, SST1)", [("AFLQ_transcribed", "TRANSCRIBED_FOR_PANEL_A.tsv", None)], []),
    ("B G M R", "Methylation along the array", [("BGMR_segments", "LAND_SEGMENTS.tsv", None), ("BGMR_array_bounds", "P10_ARRAY_BOUNDS.tsv", None), ("G_DXZ4_polarity", "P10_DXZ4_POLARITY_FINAL.tsv", None)], ["P10_FRAME_ALL.tsv"]),
    ("C H I N S", "Unit methylation distribution", [("CHINS_arrays", "P10_ARRAYS.tsv", "Per-array summary. hist50 is the share of units in 50 beta bins of 0.02.")], []),
@@ -265,8 +265,7 @@ out_md5 = []
 for key, (title, pdf, panels) in FIGS.items():
     wb = openpyxl.Workbook()
     pdfp = os.path.join(SUB, "02_보충그림" if key != "Fig4" else "01_본문그림", pdf)
-    sheet(wb, "README", ["Item", "Value"], [["Figure", title], ["Figure file", pdf], ["Figure md5", m12(pdfp)],
-                                           ["Built", "2026-11-06"]] + RULES)
+    sheet(wb, "README", ["Item", "Value"], [["Figure", title], ["Figure file", pdf], ["Figure md5", m12(pdfp)]] + RULES)
     prow, done = [], {}
     for letter, ptitle, sheets, others in panels:
         for sname, fname, note in sheets:

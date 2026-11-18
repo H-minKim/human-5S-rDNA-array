@@ -95,7 +95,7 @@ under a node's own home directory.
 
 ## 5. Which scripts are current
 
-`CODE_INDEX.tsv` lists all 108 scripts in `code/` with an `mtime`, a `status` and a one-line
+`CODE_INDEX.tsv` lists all 108 scripts in `code/` with a `status` and a one-line
 description. 86 are marked `current` plainly, and the rest carry a status with a reason in
 parentheses. **Read the status before running anything in `code/`.**
 
@@ -109,7 +109,7 @@ The file names in section 1 are the entry points.
 
 The upstream extraction, alignment and methylation calling ran on three Linux compute nodes.
 The scripts that ran there are in `node_scripts/`, one folder per node: `node3` 44 files,
-`node2` 41, `node1` 28, **113 files in all**.
+`node2` 39, `node1` 26, **109 files in all**.
 
 Where a node copy and a local copy of the same script differ, **the node copy is the one that
 ran**.

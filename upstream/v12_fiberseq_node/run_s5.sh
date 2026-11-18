@@ -1,7 +1,7 @@
 #!/bin/bash
 # Run at threshold MINSITE = 5; the outputs aog8v12fs2, fsfinal_v12b, aog8v12pb and pbfinal_v12 are not touched
 cd ~; H=$(hostname)
-for d in ~/aog8v12fs3 ~/fsfinal_v12c ~/aog8v12pb2 ~/pbfinal_v12b; do [ -e $d ] && { echo "이미 있음 $d"; exit 1; }; done
+for d in ~/aog8v12fs3 ~/fsfinal_v12c ~/aog8v12pb2 ~/pbfinal_v12b; do [ -e $d ] && { echo "already exists $d"; exit 1; }; done
 # -- 1. the merge
 cat ~/fsv12_run/fsjv_*.tsv > /tmp/ont_ao_s5.tsv
 MINSITE=5 KEYLEN=16 python3 ~/merge_aojv_v2.py /tmp/ont_ao_s5.tsv --jx ~/jxplace_all.tsv --vote ~/slotvote_qc2.tsv --out ~/AOJV_FS_merged_s5.tsv --log ~/AOJV_FS_merge_s5.log
@@ -33,7 +33,7 @@ while read -r s; do
     {h=$0; getline sq; getline p; getline q; id=substr(h,2); split(id,a,/[ \t]/)
      if(a[1] in K){print h; print sq; print p; print q}}' $P/AOJV_PB.tsv "$src" | gzip -c > "$out"
 done < $P/samples.txt
-echo "SETUP_DONE ONT개체 $(wc -l < $W/samples.txt) aoreads $(ls $W/aoreads | wc -l) · PB개체 $(wc -l < $P/samples.txt) aoreads $(ls $P/aoreads | wc -l)"
+echo "SETUP_DONE ONT individuals $(wc -l < $W/samples.txt) aoreads $(ls $W/aoreads | wc -l), PB individuals $(wc -l < $P/samples.txt) aoreads $(ls $P/aoreads | wc -l)"
 # -- 4. the cut and the recall
 sed "s|~/aog8v10/sam|~/aog8v12fs3/sam|" ~/recall_edge_v10.py > ~/recall_edge_fs3.py
 sed "s|~/aog8v10/sam|~/aog8v12fs3/sam|" ~/recall_mid_v10.py  > ~/recall_mid_fs3.py

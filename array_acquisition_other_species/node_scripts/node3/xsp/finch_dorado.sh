@@ -6,14 +6,14 @@
 #      (The same alignment as zebrafish; no MAPQ filter.)
 #   Arguments: flowcell list file, taskset core range (e.g. 0-15), [read id folder], [model = hac,5mCG_5hmCG].
 #   Outputs: bc/<fc>.ubam (the re-basecalled reads), bc/<fc>.bam (+bai), bc/<fc>.done (exit code, read count, reads with MM, seconds).
-# MIT License · Copyright (c) 2026 Hungmin Kim
+# MIT License. Copyright (c) 2026 Hyungmin Kim
 set -u
 Z=~/xsp/zfont
 A=~/xsp/asm
 D=~/xsp/tools/dorado-2.1.2-linux-x64/bin/dorado
 MNT=~/xsp/ms3mnt
-L="${1:?flowcell 목록}"
-CORES="${2:?코어 범위}"
+L="${1:?flowcell list}"
+CORES="${2:?core range}"
 IDD="${3:-$Z/sel}"
 MODEL="${4:-hac@v5.0.0,5mCG_5hmCG}"
 BC="${BC:-$Z/bc}"
@@ -32,5 +32,5 @@ for b in $(cat "$L"); do
   m=$(samtools view $BC/$b.ubam | grep -c "MM:Z")
   printf '%s\t%s\t%s\t%s\t%s\n' "$b" "$rc" "$n" "$m" "$(( $(date +%s) - s ))" > $BC/$b.done
 done
-echo "재콜링 끝 $(date -u +%H:%M) UTC"
+echo "re-basecalling finished $(date -u +%H:%M) UTC"
 cat $Z/bc/*.done

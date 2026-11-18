@@ -6,7 +6,7 @@
 #    Chain placement places a read with no flank as well, so the 31.6% with an array span of at least 12 units can be used.
 #
 #  The gates are the ones already validated on ordinary ONT data:
-#    K=12 · Δ>=10 · MINARR=26,880
+#    K=12, Δ>=10, MINARR=26,880
 #    on a pairing test over 1,067 identical reads, K = 12 gave 97.52% against 97.63% for K = 16,
 #    and of the 957 passing both at a margin of at least 10, none was called differently; the null was 0.00% for both.
 #
@@ -182,7 +182,7 @@ if os.path.exists(_dp):
 OUT = io.open(os.path.join(W, "fsjx_%s.tsv" % TAG), "a", encoding="utf8", newline=NL)
 # the per-unit variant list, the material for the read consensus map; positions alone cannot be compared as sequence
 VOU = io.open(os.path.join(W, "fsjv_%s.tsv" % TAG), "a", encoding="utf8", newline=NL)
-# "others" is rebuilt for each individual inside the loop below; a module-level cache would be wrong here.
+# "others" is rebuilt for each individual inside the loop below.
 for smp in [x.strip() for x in io.open(sys.argv[1], encoding="utf8") if x.strip()]:
     if smp in DONE:
         continue

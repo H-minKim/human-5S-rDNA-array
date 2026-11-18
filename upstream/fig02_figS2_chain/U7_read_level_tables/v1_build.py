@@ -56,13 +56,13 @@ for nm, a, b in SEG:
 UPSET = set(p for p in CPG if UPS[0] <= p <= UPS[1])
 
 P("=" * 104)
-P("v11 read x 유닛 메틸 표 만들기")
+P("build the v11 read x unit methylation table")
 P("=" * 104)
 P()
-P("  정본 CpG %d · 구획 %s · 프로모터 %d"
+P("  canonical CpG %d, segments %s, promoter %d"
   % (len(CPG), " ".join("%s%d" % (n, sum(1 for p in CPG if a <= p <= b)) for n, a, b in SEG),
      len(UPSET)))
-P("  calls 좌표는 슬롯 자신의 유닛 프레임 -> varlist 로 정본좌표에 옮긴다")
+P("  calls coordinates are in the slot's own unit frame -> moved to canonical coordinates via varlist")
 P()
 
 # ---------------------------------------------------------------- read the map
@@ -112,13 +112,13 @@ with io.open(MAP, encoding="utf8") as h:
             nbad += 1
         UMAP[(smp, sl, ap)] = arr
         nu += 1
-P("  지도 UNIT %s · 길이 불일치 %d (%.4f) · %.0f 초"
+P("  map UNIT %s, length mismatch %d (%.4f), %.0f s"
   % (format(nu, ","), nbad, nbad / max(nu, 1), time.time() - t0))
 P()
 
 # ---------------------------------------------------------------- read-unit
 files = sorted(glob.glob(os.path.join(RAW, "METH_READUNIT_*.tsv.gz")))
-P("  원천 파일 %d" % len(files))
+P("  source files %d" % len(files))
 P()
 COLS = ["sample", "data_source", "cfg", "kind", "slot", "ap", "read_id", "strand",
         "N", "n_raw", "n_canon", "frac_canon", "b", "b_prob", "nA", "nB", "bA", "bB",
@@ -129,7 +129,7 @@ for f in files:
     tag = os.path.basename(f)[len("METH_READUNIT_"):-len(".tsv.gz")]
     sp_out = os.path.join(SH, tag + ".parquet")
     if os.path.exists(sp_out):
-        P("  건너뜀 (이미 있음) %s" % tag)
+        P("  skipped (already exists) %s" % tag)
         continue
     t1 = time.time()
     rows = []
@@ -193,32 +193,32 @@ for f in files:
     for c in ("sample", "data_source", "cfg", "kind", "slot", "read_id", "strand"):
         D[c] = D[c].astype("category") if c != "read_id" else D[c].astype("string")
     D.to_parquet(sp_out, index=False)
-    P("  %-28s 행 %9s · 지도없음 %6d · %.0f 초"
+    P("  %-28s rows %9s, no map %6d, %.0f s"
       % (tag, format(len(D), ","), nmap0, time.time() - t1))
 
 P()
-P("  샤드 합치기")
+P("  merging shards")
 A = pd.concat([pd.read_parquet(x) for x in sorted(glob.glob(os.path.join(SH, "*.parquet")))],
               ignore_index=True)
-P("  합계 %s 행" % format(len(A), ","))
+P("  total %s rows" % format(len(A), ","))
 P()
 
 # ---------------------------------------------------------------- DUAL cleanup
 P("=" * 104)
-P("[QC] 관문 점검")
+P("[QC] gate check")
 P("=" * 104)
 P()
-P("  정본 CpG 적중 비율 (read-유닛당)")
-P("     중앙 %.4f · 평균 %.4f · >=0.9 인 비율 %.4f"
+P("  canonical CpG hit fraction (per read-unit)")
+P("     median %.4f, mean %.4f, fraction >=0.9 %.4f"
   % (A.frac_canon.median(), A.frac_canon.mean(), (A.frac_canon >= 0.9).mean()))
-P("     (옛 판 관문: >=0.9 가 98%% 이상이어야 정본 자료)")
+P("     (gate: >=0.9 must hold in at least 98%% for canonical data)")
 P()
-P("  유닛당 정본 CpG 개수: 중앙 %.0f · 사분위 %.0f-%.0f (최대 가능 199)"
+P("  canonical CpG count per unit: median %.0f, quartiles %.0f-%.0f (maximum possible 199)"
   % (A.n_canon.median(), A.n_canon.quantile(.25), A.n_canon.quantile(.75)))
 P()
 
 dup = A.duplicated(subset=["sample", "slot", "ap", "read_id"], keep=False)
-P("  같은 (개체,슬롯,자리,read) 가 두 번 (DUAL): %s 행" % format(int(dup.sum()), ","))
+P("  same (individual,slot,position,read) twice (DUAL): %s rows" % format(int(dup.sum()), ","))
 A["_pri"] = np.where(A.kind.astype(str) == "junction", 0, 1)
 A = A.sort_values(["sample", "slot", "ap", "read_id", "_pri"])
 A = A.drop_duplicates(subset=["sample", "slot", "ap", "read_id"], keep="first")
@@ -230,39 +230,39 @@ A["ap_dj"] = A.ap.astype("int32")
 A["ap_pj"] = (A.N - A.ap + 1).astype("int32")
 A.loc[A.N <= 0, "ap_pj"] = -1
 A.to_parquet(os.path.join(OUT, r"02_tables/ru_v11.parquet"), index=False)
-P("  저장: 02_표\\ru_v11.parquet")
+P("  saved: 02_tables\\ru_v11.parquet")
 P()
 P("=" * 104)
-P("[요약] 옛 판과 견주기")
+P("[summary] stageb vs v11")
 P("=" * 104)
 P()
 H = A[A.data_source.astype(str) == "HPRC_ONT_submissions"]
-P("   구분                 옛 (2026-09-09 · stageb)     새 (v11)")
-P("   원천                 stageb\\tsv (정본 v7 이전)     METH_READUNIT (정본 v10 · 지도 g8canonv10)")
-P("   read-유닛            555,895                      %s (HPRC %s)"
+P("   item                 stageb                       v11")
+P("   source               stageb\\tsv (pre-v7 canonical)   METH_READUNIT (canonical v10, map g8canonv10)")
+P("   read-unit            555,895                      %s (HPRC %s)"
   % (format(len(A), ","), format(len(H), ",")))
-P("   개체                 264                          %d (HPRC %d)"
+P("   individual           264                          %d (HPRC %d)"
   % (A["sample"].nunique(), H["sample"].nunique()))
-P("   하플로타입/슬롯       528                          %d (HPRC %d)"
+P("   haplotype/slot       528                          %d (HPRC %d)"
   % (A.groupby(["sample", "slot"], observed=True).ngroups,
      H.groupby(["sample", "slot"], observed=True).ngroups))
 P("   read                 22,109                       %s (HPRC %s)"
   % (format(A.read_id.nunique(), ","), format(H.read_id.nunique(), ",")))
-P("   array 안쪽 read      없음 (flank 만)                있음 (kind=array_only)")
+P("   array interior read  none (flank only)            present (kind=array_only)")
 P()
-P("   출처별")
+P("   by source")
 for k, g in A.groupby("data_source", observed=True):
-    P("     %-24s 행 %9s · 개체 %3d · 슬롯 %3d · read %6s"
+    P("     %-24s rows %9s, individuals %3d, slots %3d, reads %6s"
       % (k, format(len(g), ","), g["sample"].nunique(),
          g.groupby(["sample", "slot"], observed=True).ngroups,
          format(g.read_id.nunique(), ",")))
 P()
-P("   kind 별")
+P("   by kind")
 for k, g in A.groupby("kind", observed=True):
-    P("     %-12s 행 %9s · read %6s · 자리 중앙 %.0f"
+    P("     %-12s rows %9s, reads %6s, median position %.0f"
       % (k, format(len(g), ","), format(g.read_id.nunique(), ","), g.ap.median()))
 P()
-P("   N (array 길이) : 중앙 %.0f · 범위 %.0f-%.0f"
+P("   N (array length) : median %.0f, range %.0f-%.0f"
   % (A[A.N > 0].N.median(), A[A.N > 0].N.min(), A[A.N > 0].N.max()))
 P()
 LOG.close()

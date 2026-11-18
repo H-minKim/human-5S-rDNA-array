@@ -140,8 +140,6 @@ def gene_hits(seq, tag):
             pass
     os.remove(fa)
     # F method: interval overlap + fragment call
-    #   1kb bins fail here: a ghost end 145074 and the real end 145147 differ by 73bp, but
-    #                 fall into bins 144/145 so both survive, giving a false break + a unit with its boundary shifted by 73bp
     #   the extension rule applies (some real ends are one or two bases short because of an end-base variant)
     keep = []
     for h in sorted(hits):

@@ -64,9 +64,9 @@ for v in best.values():
     by["전체"].append(v[1])
 
 LOW, CUT = 0.4470, 0.508          # The R10 valley and the published cut
-print("## 컷을 0.4470(R10 골) ~ 0.508(발행 컷) 사이로 옮길 때 뒤집힐 수 있는 read-유닛의 몫")
+print("## share of read-units that can flip when the cut is moved within 0.4470 (R10 trough) ~ 0.508 (published cut)")
 print()
-print("| 층 | read-유닛 | [0.4470, 0.508) 안 | 그 몫 | 0.508 아래 몫 | 0.4470 아래 몫 | 차 |")
+print("| stratum | read-units | within [0.4470, 0.508) | its share | share below 0.508 | share below 0.4470 | difference |")
 print("|---|--:|--:|--:|--:|--:|--:|")
 rows = []
 for k in ["전체", "R941", "R1041", "모름(색인밖)"]:
@@ -88,4 +88,4 @@ for r in rows:
     out.append(TAB.join(str(x) for x in r))
 io.open(P, "w", encoding="utf8", newline=NL).write(NL.join(out) + NL)
 print()
-print("기록 : %s" % P)
+print("wrote: %s" % P)

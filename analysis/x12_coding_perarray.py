@@ -33,7 +33,7 @@ def _need(k):
 OUT = _need("RDNA_PREV_OUT_DIR")
 src = io.open(OUT + "/code/x10_readunit_per_array.py", encoding="utf8").read()
 LOGLINE = 'LOG = io.open(OUT + "/X10_READUNIT_PERARRAY.txt", "w", encoding="utf8", newline="\\n")'
-assert LOGLINE in src, "x10 로그 줄을 못 찾음 — x10 로그를 덮어쓸 위험"
+assert LOGLINE in src, "x10 log line not found: risk of overwriting the x10 log"
 head = src.split("P(\"=\" * 104)")[0].replace(LOGLINE, "LOG = io.StringIO()")
 G = {}
 exec(head, G)
@@ -103,10 +103,10 @@ for (sp, aid), g in D.groupby(["종", "array_id"]):
 T = pd.DataFrame(ROWS)
 T.to_csv(OUT + "/tables/OTHERSP_READUNIT_CODING_PERARRAY.tsv", sep="\t", index=False, float_format="%.5f")
 P("=" * 100)
-P("coding(5S 유전자) CpG 만 — read x 유닛 메틸 분포 판정 · array 마다")
+P("coding (5S gene) CpG only: verdict on the read x unit methylation distribution, per array")
 P("=" * 100)
-P("   종          array                      유닛  read-유닛 codingCpG  coding평균 OFF(coding) OFF(유닛전체)  과분산  "
-  "봉1  봉2  골비  소수쪽  coding 판정      (유닛전체 판정)")
+P("   species          array                      units  read-units codingCpG  coding_mean OFF(coding) OFF(whole_unit)  overdispersion  "
+  "peak1  peak2  trough_ratio  minor_side  coding verdict      (whole-unit verdict)")
 for r in T.sort_values(["group", "종", "mean"]).itertuples(index=False):
     P("   %-10s %-26s %5s %8s   %4.0f       %.3f     %.3f       %.3f      %5.1f  %.2f %s %s %.3f  %-14s (%s)"
       % (r.종, r.array_id.split("__")[-1][:26], ("%.0f" % r.unit_len) if r.unit_len == r.unit_len else "-",
@@ -114,7 +114,7 @@ for r in T.sort_values(["group", "종", "mean"]).itertuples(index=False):
          ("%.2f" % r.peak2) if r.peak2 == r.peak2 else "  - ",
          ("%.2f" % r.trough_ratio) if r.trough_ratio == r.trough_ratio else "  - ", r.minor_mass, r.call, r.call_all))
 P()
-P("  판정 집계 (coding)")
+P("  verdict tally (coding)")
 for grp, gg in T.groupby("group"):
     P("   %-10s array %2d : %s" % (grp, len(gg), " · ".join("%s %d" % (k, v) for k, v in gg.call.value_counts().items())))
 
@@ -151,5 +151,5 @@ for page, grps in PAGES:
     fig.tight_layout(rect=[0, 0.02, 1, 0.97])
     fig.savefig(OUT + "/figures/Fig_coding_readunit_perarray_%s.png" % page)
     plt.close(fig)
-    P("  저장 : figures/Fig_coding_readunit_perarray_%s.png" % page)
+    P("  saved: figures/Fig_coding_readunit_perarray_%s.png" % page)
 LOG.close()

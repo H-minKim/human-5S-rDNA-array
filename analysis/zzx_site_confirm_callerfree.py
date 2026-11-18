@@ -96,7 +96,7 @@ for node in ("w3", "iB", "iA"):
 A = np.array(A, np.int64)
 M = np.array(M, np.int64)
 nmol = len(A)
-print("분자 %s · 폭 %d · 치환 %d" % (format(nmol, ","), len(WIDTHS), NB))
+print("molecules %s, widths %d, permutations %d" % (format(nmol, ","), len(WIDTHS), NB))
 
 
 def W(cs, c0, c1):
@@ -138,7 +138,7 @@ for nm, a, b in SITES:
         if o[j] > best[0]:
             best = (o[j], rel[j], w)
     OBSMAX[nm] = best
-    print("  %-10s 관측 최대 %.4f (자리 %+d · core %d bp)" % (nm, best[0], best[1], best[2]))
+    print("  %-10s observed max %.4f (position %+d, core %d bp)" % (nm, best[0], best[1], best[2]))
 
 NMAX = {nm: np.empty(NB) for nm, _, _ in SITES}
 NMAXW = {nm: {w: np.empty(NB) for w in WIDTHS} for nm, _, _ in SITES}
@@ -162,11 +162,11 @@ for t in range(NB):
                 vs.append(v)
         NMAX[nm][t] = max(vs) if vs else np.nan
     if (t + 1) % 500 == 0:
-        print("   치환 %d / %d" % (t + 1, NB))
+        print("   permutation %d / %d" % (t + 1, NB))
 
 print()
 print("=" * 94)
-print("## 확인 검정 — HMM 이 고른 두 자리를 호출기 없는 방법으로 (창 안 다중성 통제)")
+print("## confirmation test: the two positions chosen by the HMM, by a caller-free method (multiplicity within the window controlled)")
 print("  %-10s %9s %8s %6s | %9s %9s %9s | %s"
       % ("자리", "관측최대", "자리", "폭", "귀무중앙", "귀무95%", "배수", "p (치환 %d)" % NB))
 ROWS = []
@@ -180,7 +180,7 @@ for nm, a, b in SITES:
     ROWS.append((nm, a, b, ob, q, w, med, p95, ob / med, pv, len(nd)))
 
 print()
-print("## 폭마다 따로 (창 안 자리 다중성만 통제)")
+print("## each width separately (only position multiplicity within the window controlled)")
 print("  %-10s %6s %9s %8s %9s %9s  %s" % ("자리", "폭", "관측", "자리", "귀무중앙", "배수", "p"))
 PW = []
 for nm, a, b in SITES:
@@ -201,24 +201,24 @@ for nm, a, b in SITES:
 
 out = os.path.join(OUTD, "TableS5_confirmation_test_no_caller.tsv")
 with io.open(out, "w", encoding="utf8", newline=NL) as g:
-    g.write("# 표S5 · 확인 검정 — HMM 이 고른 두 자리를 호출기 없는 방법으로 다시" + NL)
-    g.write("# 창은 HMM 쪽에서 왔으므로(TFIIIB -28..-10 · ICR +57..+68) 이 검정은 순환이 아니다." + NL)
-    g.write("# p = (귀무에서 그 창 안 최대가 관측 최대 이상이었던 치환 + 1) / (치환 + 1)" + NL)
-    g.write("#   창 안 자리 x 폭 전부에 대한 최대를 쓰므로 창 안 다중성은 통제된다." + NL)
-    g.write("# 귀무 : 분자마다 (A, m6A) 자리표를 통째로 원형 이동 · 치환 %d 회" % NB + NL)
+    g.write("# Table S5, confirmation test: the two positions chosen by the HMM, retested by a caller-free method" + NL)
+    g.write("# the windows come from the HMM side (TFIIIB -28..-10, ICR +57..+68), so this test is not circular." + NL)
+    g.write("# p = (permutations where the null maximum within the window was at least the observed maximum + 1) / (permutations + 1)" + NL)
+    g.write("#   the maximum is over all positions x widths within the window, so multiplicity within the window is controlled." + NL)
+    g.write("# null : circular shift of the whole (A, m6A) position table per molecule, %d permutations" % NB + NL)
     g.write(TB.join(["자리", "창lo", "창hi", "관측최대", "그자리", "그폭",
                      "귀무중앙", "귀무95", "귀무대비배수", "p", "치환수"]) + NL)
     for r in ROWS:
         g.write(TB.join(["%s" % r[0], "%d" % r[1], "%d" % r[2], "%.4f" % r[3],
                          "%+d" % r[4], "%d" % r[5], "%.4f" % r[6], "%.4f" % r[7],
                          "%.4f" % r[8], "%.5g" % r[9], "%d" % r[10]]) + NL)
-    g.write("#" + NL + "# 폭마다 따로 (창 안 자리 다중성만 통제)" + NL)
+    g.write("#" + NL + "# each width separately (only position multiplicity within the window controlled)" + NL)
     g.write(TB.join(["자리", "core폭", "관측", "그자리", "귀무중앙", "배수", "p"]) + NL)
     for r in PW:
         g.write(TB.join(["%s" % r[0], "%d" % r[1], "%.4f" % r[2], "%+d" % r[3],
                          "%.4f" % r[4], "%.4f" % r[5], "%.5g" % r[6]]) + NL)
 print()
-print("적었다 ->", out)
+print("written ->", out)
 np.savez_compressed(os.path.join(DD, "site_confirm_callerfree.npz"),
                     nmax_T=NMAX[SITES[0][0]], nmax_I=NMAX[SITES[1][0]],
                     obs_T=OBSMAX[SITES[0][0]][0], obs_I=OBSMAX[SITES[1][0]][0],
@@ -227,4 +227,4 @@ np.savez_compressed(os.path.join(DD, "site_confirm_callerfree.npz"),
                                  if r[0] == SITES[0][0]]),
                     pw_i=np.array([[r[1], r[2], r[4], r[6]] for r in PW
                                    if r[0] == SITES[1][0]]))
-print("저장 -> site_confirm_callerfree.npz")
+print("saved -> site_confirm_callerfree.npz")

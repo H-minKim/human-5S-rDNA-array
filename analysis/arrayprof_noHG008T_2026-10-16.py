@@ -80,7 +80,7 @@ for i, L in enumerate(io.open(SUM, encoding="utf8")):
     if len(f) >= 8 and int(f[7]) > 0:
         BRK.add((f[0], f[1]))
 
-#  (variant, state, bin) -> [n, meth] · variant : ALL / TUM
+#  (variant, state, bin) -> [n, meth], variant : ALL / TUM
 BINS = collections.defaultdict(lambda: [0, 0])
 haps = {"ALL": set(), "TUM": set()}
 inds = {"ALL": set(), "TUM": set()}
@@ -164,7 +164,7 @@ HDR = ["state", "bin", "bin_start", "bin_mid", "element",
 io.open(OUT, "w", encoding="utf8", newline=NL).write(
     NL.join([TAB.join(HDR)] + [TAB.join(str(x) for x in r) for r in rows]) + NL)
 
-p("# 패널 f·g 의 array 프로필 — `HG008-T` 를 뺀 판 (2026-10-16)")
+p("# 패널 f·g 의 array 프로필 — `HG008-T` 를 뺀 판")
 p()
 p("입력 `out/CALLS.tsv.gz` %s 줄 · %.1f 분" % (format(n, ","), (time.time() - t0) / 60.0))
 p()

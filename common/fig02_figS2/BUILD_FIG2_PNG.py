@@ -45,7 +45,7 @@ def build(figdir, which, out):
                         "--window-size=%d,%d" % (math.ceil(wpx), math.ceil(hpx)),
                         "--screenshot=" + tmp, "file:///" + svg.replace("\\", "/")],
                        capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=180)
-    assert r.returncode == 0 and os.path.exists(tmp), "Chrome 렌더 실패 : %s" % (r.stderr or "")[-300:]
+    assert r.returncode == 0 and os.path.exists(tmp), "Chrome render failed : %s" % (r.stderr or "")[-300:]
     im = Image.open(tmp).convert("RGB")
     bg = Image.new("RGB", (max(im.width, tw), max(im.height, th)), "white")
     bg.paste(im, (0, 0))
@@ -55,16 +55,16 @@ def build(figdir, which, out):
     os.remove(tmp)
     import hashlib, time, shutil
     h = hashlib.md5(open(loc, "rb").read()).hexdigest()
-    for att in range(4):                              # copy finished files to F: one at a time and check md5
+    for att in range(4):                              # copy finished files one at a time and check md5
         try:
             shutil.copyfile(loc, out); time.sleep(0.3)
             if hashlib.md5(open(out, "rb").read()).hexdigest() == h: break
         except OSError as e:
-            if getattr(e, 'errno', None) == 22:                 # Errno 22 = USB hub fault -> stop at once, no retry
-                raise SystemExit('Errno 22 — 즉시 중단 (재시도 안 함) : %s' % e)
-            print("      %s 복사 시도 %d : %s" % (os.path.basename(out), att + 1, e)); time.sleep(3.0)
+            if getattr(e, 'errno', None) == 22:                 # Errno 22 -> stop at once, no retry
+                raise SystemExit('Errno 22: stop immediately (no retry) : %s' % e)
+            print("      %s copy attempt %d : %s" % (os.path.basename(out), att + 1, e)); time.sleep(3.0)
     else:
-        raise OSError("%s 를 F: 에 못 썼다 (네 번)" % os.path.basename(out))
+        raise OSError("%s could not be written to F: (four attempts)" % os.path.basename(out))
     # vector pdf for NAR submission, made in the same call as the png: print-to-pdf of the same svg with the same Chrome (page size = svg size in pt, margin 0)
     #   the pdf contains its creation time, so its md5 changes every time -> judge versions by the png
     body = io.open(svg, encoding="utf8").read()
@@ -80,7 +80,7 @@ def build(figdir, which, out):
     r = subprocess.run([CHROME, "--headless=new", "--disable-gpu", "--no-first-run", "--no-default-browser-check", "--user-data-dir=" + PROF,
                         "--no-pdf-header-footer", "--print-to-pdf-no-header", "--print-to-pdf=" + lpdf, "file:///" + htm.replace("\\", "/")],
                        capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=180)
-    assert r.returncode == 0 and os.path.exists(lpdf), "Chrome pdf 실패 : %s" % (r.stderr or "")[-300:]
+    assert r.returncode == 0 and os.path.exists(lpdf), "Chrome pdf failed : %s" % (r.stderr or "")[-300:]
     os.remove(htm)
     # Chrome rounds the page size to 0.72 pt steps (measured 423.50 x 643.32 -> 424.08 x 642.96), and the figure starts at the top left of the page, so
     #   reset the page boxes (MediaBox, CropBox) to the svg size anchored at the top left (the drawing itself is not touched)
@@ -98,9 +98,9 @@ def build(figdir, which, out):
         shutil.copyfile(lpdf, opdf); time.sleep(0.3)
     except OSError as e:
         if getattr(e, 'errno', None) == 22:
-            raise SystemExit('Errno 22 — 즉시 중단 (재시도 안 함) : %s' % e)
+            raise SystemExit('Errno 22: stop immediately (no retry) : %s' % e)
         raise
-    assert hashlib.md5(open(opdf, "rb").read()).hexdigest() == hp, "pdf 복사 md5 다름"
+    assert hashlib.md5(open(opdf, "rb").read()).hexdigest() == hp, "pdf copy md5 differs"
     n = len(C.load_plan(TAB, which))
     return img.size, hpt, n
 
@@ -111,10 +111,10 @@ for which, stem in JOBS:
     for lang, d in (("ko", "그림"), ("en", "그림_영어판")):
         o = os.path.join(OUT, "%s_%s.png" % (stem, lang))
         size, H, n = build(os.path.join(P, d), which, o)
-        print("   %-20s %4d x %5d px · 칸 %2d · %.1f x %.1f pt · %7.2f MB"
+        print("   %-20s %4d x %5d px, panels %2d, %.1f x %.1f pt, %7.2f MB"
               % (os.path.basename(o), size[0], size[1], n, C.W, H, os.path.getsize(o) / 1e6))
 
 old = os.path.join(OUT, "preview_for_checking")
 if os.path.isdir(old):
     shutil.rmtree(old)
-    print("\n   옛 저해상 미리보기 폴더는 지웠다 (위 300 dpi PNG 로 갈음)")
+    print("\n   low-resolution preview folder deleted (the 300 dpi PNG above takes its place)")

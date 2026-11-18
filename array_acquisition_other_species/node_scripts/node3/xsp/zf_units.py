@@ -109,6 +109,6 @@ for smp in SAMPLES:
                            str(sum(1 for (rid, j), k in UC.items() if j == i and k >= 10)), str(tot),
                            "%.3f" % (me / float(tot)) if tot else "NA", "%.3f" % (mh / float(th)) if th else "NA",
                            "%.3f" % fr[len(fr) // 2] if fr else "NA"]) + NL)
-    print("%s : read-유닛 %d 행 · read %d" % (smp, len(RU), len(set(k[0] for k in RU))))
+    print("%s : read-unit %d rows, read %d" % (smp, len(RU), len(set(k[0] for k in RU))))
 US.close()
 AS.close()

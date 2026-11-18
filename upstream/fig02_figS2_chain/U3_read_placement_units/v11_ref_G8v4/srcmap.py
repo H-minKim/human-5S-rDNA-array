@@ -2,7 +2,7 @@
 # per node and per sample, the fastq actually used for placement and its data source (run on the node)
 #   chosen with the same path order as rjfreq2 / aoplace (the first file that exists)
 #   source labels: HPRC_ONT (s5s_ont = UCSC HPRC submission, s5s_new = HPRC working new 44)
-#               1kGP_ONT (kgp_ont/out) · GIAB_ONT (giab5s_seq · ONT Open Data)
+#               1kGP_ONT (kgp_ont/out), GIAB_ONT (giab5s_seq, ONT Open Data)
 #               GIAB_SOMATIC_ONT (hg008/out), PACBIO_HIFI (cancer5s/hits, HG008-T and COLO829 are in the HiFi manifest)
 import io
 import os

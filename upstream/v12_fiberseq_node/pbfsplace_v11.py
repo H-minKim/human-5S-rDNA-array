@@ -76,7 +76,7 @@ for i, x in enumerate(io.open(SUMF, encoding="utf8")):
         #   it is the 5th, having no seq_file column. Reading it by index would read off_prox as revcomp
         #   and silently treat every array as forward.
         if "revcomp" not in f:
-            raise SystemExit("SUMF 에 revcomp 열이 없다: %s" % SUMF)
+            raise SystemExit("SUMF has no revcomp column: %s" % SUMF)
         RCI = f.index("revcomp")
         continue
     if len(f) > RCI:
@@ -191,7 +191,7 @@ DSRC = os.environ.get("DSRC", "PacBio_FiberSeq")
 SAMD = os.path.expanduser(os.environ["SAMD"])
 os.makedirs(SAMD, exist_ok=True)
 SAMR = collections.defaultdict(list)
-# "others" is rebuilt for each individual inside the loop below; a module-level cache would be wrong here.
+# "others" is rebuilt for each individual inside the loop below.
 for lab in [x.strip() for x in io.open(sys.argv[1], encoding="utf8") if x.strip()]:
     if lab in DONE:
         continue
@@ -297,10 +297,6 @@ for lab in [x.strip() for x in io.open(sys.argv[1], encoding="utf8") if x.strip(
         io.open(_dp, "a", encoding="utf8", newline=NL).write(lab + NL)
         continue
     # The competitor candidates are rebuilt for every individual.
-    #   With a module-level list filled once and reused, when one process handles several individuals
-    #   the first individual drops out of the candidate list from the second onwards and the individual itself enters it.
-    #   Drawing itself as its own competitor compares its own map against itself, giving a margin of 0, and that read is rejected outright.
-    #   The candidate list, and so the result, would also depend on how the run is divided.
     others = sorted(set(a for (a, s) in UB if a != smp))
     flat = [s for _r, _c, seg, _q, _sq in REC for _u, s, _a, _b in seg]
     V = varof(flat, "%s_%s" % (TAG, lab))
@@ -318,9 +314,6 @@ for lab in [x.strip() for x in io.open(sys.argv[1], encoding="utf8") if x.strip(
         if not r0:
             continue
         # competitors are selected deterministically by read name.
-        #   Using the global random state makes the individual drawn depend on how many reads that process has already handled,
-        #   so that the same input gives a different accepted list under a different division of the run (measured: the accepted sets agree
-        #   at 86.6-90.8%). Where a read is placed is deterministic either way, with no mismatch of slot or unit.
         #   The test is still a comparison against one competitor, so the K = 4 and margin >= 5 calibration holds.
         o = random.Random(rid).choice(others)
         os_ = sorted(s for (a, s) in UB if a == o)

@@ -6,9 +6,9 @@
 #   The four fastq lines are joined with the control character 0x01, so that a tab in the header cannot break the record.
 #   Arguments: a file listing the S3 keys, and the number of concurrent streams.
 #   Outputs: cand/<flowcell>.cand.fq.gz and <flowcell>.done (candidate count, exit code of each stage of the pipe).
-# MIT License · Copyright (c) 2026 Hungmin Kim
+# MIT License. Copyright (c) 2026 Hyungmin Kim
 set -u
-L="${1:?키목록}"
+L="${1:?key list}"
 P="${2:-4}"
 export O=~/xsp/zfont/cand
 mkdir -p "$O"
@@ -29,5 +29,5 @@ one() {
 }
 export -f one
 xargs -a "$L" -P "$P" -I{} bash -c 'one "$1"' _ {}
-echo "선별 끝 $(date -u +%H:%M) UTC"
+echo "screening finished $(date -u +%H:%M) UTC"
 cat "$O"/*.done

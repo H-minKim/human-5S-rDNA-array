@@ -3,7 +3,7 @@
 #   The input is the units in <species>.units.fa from array_struct.py; the first 119 bp of a unit is the gene (the hit interval).
 #   A majority vote over several units avoids the variants of any one unit.
 #   Arguments: units.fa, gene length (default 119), output file.
-# MIT License · Copyright (c) 2026 Hungmin Kim
+# MIT License. Copyright (c) 2026 Hyungmin Kim
 import io
 import sys
 import collections
@@ -35,5 +35,5 @@ for k in ks:
     o.write(k + NL)
     o.write("".join(COMP[x] for x in reversed(k)) + NL)
 o.close()
-print("유닛 %d 개에서 합의 유전자 %d bp · k-mer %d 줄" % (len(genes), len(gene), 2 * len([k for k in ks if "N" not in k])))
+print("from %d units: consensus gene %d bp, k-mer %d lines" % (len(genes), len(gene), 2 * len([k for k in ks if "N" not in k])))
 print(gene)

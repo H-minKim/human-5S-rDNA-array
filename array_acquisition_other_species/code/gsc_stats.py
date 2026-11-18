@@ -41,7 +41,7 @@ out.write(TAB.join(["group", "branch", "part", "n_read", "n_cpg", "frac", "lo95"
 BS = {}
 groups = ["F_GSC_35to70", "M_GSC_35to70", "early_GSC_1to28", "F_Control_35to70", "M_Control_35to70",
           "early_Control_1to28", "F_GSC_35d", "F_GSC_40d", "F_GSC_45d", "F_GSC_50d", "F_GSC_70d"]
-print("군 | chr4 코딩부 [95%] r | 스페이서 [95%] r | 바깥 [95%] r | 코딩−바깥 [95%]")
+print("group | chr4 coding [95%] r | spacer [95%] r | outside [95%] r | coding−outside [95%]")
 for g in groups:
     row = {}
     for p in ("코딩부", "스페이서", "바깥"):
@@ -66,7 +66,7 @@ for g in groups:
     print("%s | %s | %s" % (g, " | ".join(txt), ("%+.3f [%+.3f,%+.3f]" % mf) if mf else "-"))
 
 print()
-print("군간 차이(chr4 코딩부, 부트스트랩 95%) :")
+print("between-group difference (chr4 coding, bootstrap 95%) :")
 for a, b in [("F_GSC_35to70", "M_GSC_35to70"), ("F_GSC_35to70", "F_Control_35to70"),
              ("F_GSC_35to70", "early_GSC_1to28"), ("M_GSC_35to70", "M_Control_35to70")]:
     for p in ("코딩부",):

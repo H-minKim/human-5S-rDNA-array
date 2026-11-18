@@ -1,19 +1,16 @@
 # -*- coding: utf-8 -*-
 # d is counted as the number of distinct array_pos values a read covers.
-#   Counting rows instead double-counts a read across the two placements and configurations, which drove d/c as high as 2-4.
+#   Counting rows instead double-counts a read across the two placements and configurations.
 import io, os, gzip, glob, collections, statistics
 
 # -- (repo) paths come from the environment --------------------------------
 #   The roots are required; the output and table directories fall back to this file's folder.
-#@DROP
 V = os.environ["V_ROOT"]
 
 MAP = os.path.join(V, r"03_maps/g8canonv10/CONSENSUS_MAP_G8_full.tsv")
 HSN = os.path.join(V, r"02_canonical/hap_seq_node_v8.tsv")
 RAW = os.path.join(V, r"08_methylation/raw")
-# The original wrote next to itself. This copy lives in analysis/, so writing there
-#   would create a data file inside the code repository, which holds code only.
-#   DC_OUT therefore sets the location, defaulting to this file's folder.
+#   DC_OUT sets the location, defaulting to this file's folder.
 OUT = os.environ.get("DC_OUT",
                      os.path.join(os.path.dirname(os.path.abspath(__file__)), "DC_TABLE.tsv"))
 
@@ -45,7 +42,7 @@ for path in sorted(glob.glob(os.path.join(RAW, "METH_READUNIT_*.tsv.gz"))):
             k = (r[0], r[j["slot"]])
             pos[k][r[j["read_id"]]].add(int(r[j["array_pos"]]))
             kinds[k][r[j["read_id"]]].add(tag)
-    print("  읽음 %s" % os.path.basename(path), flush=True)
+    print("  read %s" % os.path.basename(path), flush=True)
 
 rows = []
 for k in sorted(c):
@@ -60,11 +57,11 @@ with io.open(OUT, "w", encoding="utf8", newline="\n") as g:
     g.write("sample\tslot\tsource\tc_units\td_longest_read_units\td_over_c\tn_reads\tlongest_read_kind\n")
     for r in rows:
         g.write("%s\t%s\t%s\t%d\t%d\t%.4f\t%d\t%s\n" % r)
-print("표 %d 행 → %s" % (len(rows), OUT))
+print("table %d rows -> %s" % (len(rows), OUT))
 
 print()
-print("## 출처별 d/c  (d = 가장 긴 read 가 덮은 서로 다른 유닛 수)")
-print("| 출처 | 하플로타입 | c 중앙 | d 중앙 | d/c 중앙 | d/c 최소 | d/c 최대 | d/c>1 |")
+print("## d/c by source  (d = number of distinct units covered by the longest read)")
+print("| source | haplotypes | c median | d median | d/c median | d/c min | d/c max | d/c>1 |")
 print("|---|---:|---:|---:|---:|---:|---:|---:|")
 by = collections.defaultdict(list)
 for smp, sl, s, cc, dd, q, nr, kd in rows:
@@ -80,16 +77,16 @@ hi = by.get("hifiasm", [])
 mn = min(hi, key=lambda x: x[2])
 thr = mn[2]
 print()
-print("hifiasm 하플로타입 %d 개 · 최소 d/c = %.4f  (%s 슬롯 %s · c=%d · d=%d)"
+print("hifiasm haplotypes %d, min d/c = %.4f  (%s slot %s, c=%d, d=%d)"
       % (len(hi), thr, mn[3], mn[4], mn[0], mn[1]))
 qs = sorted(x[2] for x in hi)
-print("   hifiasm d/c 분포 : q10 %.3f · q25 %.3f · 중앙 %.3f · q75 %.3f · 최대 %.3f"
+print("   hifiasm d/c distribution: q10 %.3f, q25 %.3f, median %.3f, q75 %.3f, max %.3f"
       % (qs[int(len(qs) * .1)], qs[int(len(qs) * .25)], statistics.median(qs), qs[int(len(qs) * .75)], qs[-1]))
 
 print()
-print("## 문턱별 제거 대상 read (전 하플로타입)")
+print("## reads to remove by threshold (all haplotypes)")
 tot = sum(len(pos[k]) for k in pos)
-print("| 문턱 d/c | 제거 read | 비율 | 영향 하플로타입 |")
+print("| threshold d/c | reads to remove | fraction | haplotypes affected |")
 print("|---|---:|---:|---:|")
 for t2 in (thr, 0.20, 0.30, 0.50, 0.80, 1.00):
     rem = 0; aff = 0
@@ -102,4 +99,4 @@ for t2 in (thr, 0.20, 0.30, 0.50, 0.80, 1.00):
             aff += 1
     print("| %.4f%s | %s | %.2f%% | %d / %d |"
           % (t2, " 최소" if abs(t2 - thr) < 1e-9 else "", format(rem, ","), 100.0 * rem / tot, aff, len(pos)))
-print("read 합계 %s" % format(tot, ","))
+print("read total %s" % format(tot, ","))

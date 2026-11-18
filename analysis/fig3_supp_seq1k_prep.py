@@ -32,7 +32,7 @@ D = pd.read_parquet(S + "02_tables/L1_READ_UNIT.parquet",
                     columns=["sample", "slot", "data_source", "gate"])
 D = D[(D.gate == 1) & (D.data_source.astype(str) == "HPRC_ONT_submissions")]
 HP = set(zip(D["sample"].astype(str), D.slot.astype(str)))
-print("[코호트] 하플로타입 %d" % len(HP))
+print("[cohort] haplotypes %d" % len(HP))
 
 SUM = pd.read_csv(SUMF, sep="\t", dtype={"slot": str})
 SUM["off_원위"] = SUM.off_prox
@@ -54,7 +54,7 @@ o = np.array([off.get((s, sl, sd), np.nan) for s, sl, sd in
 b = A.b.values.astype(float)
 A["u"] = np.where(b <= 0, o - np.abs(b), b + o)      # the same expression as fig1_v5_prep
 A = A.dropna(subset=["u"])
-print("[재좌표] 서열 행 %s · 하플로타입 %d" % (format(len(A), ","), A.groupby(["sample", "slot"]).ngroups))
+print("[recoordinate] sequence rows %s, haplotypes %d" % (format(len(A), ","), A.groupby(["sample", "slot"]).ngroups))
 
 # ---- re-bin onto a single window width of 1 kb ----
 a = np.abs(A.u.values)
@@ -76,7 +76,7 @@ print()
 # FIG1_V5_A_bp.tsv, the table this is compared against, is built from v143. The window is the same 1 kb, so
 #   the difference is exactly the difference between the input tables.
 #   It should not be 0; a difference of 0 would mean V145 had not taken effect.
-print("검산 ⑴ — 깊은 쪽(1 kb 창)에서 v143 표와 얼마나 달라졌나")
+print("check (1): how much the deep side (1 kb windows) differs from the v143 table")
 n_same = n_diff = 0
 for side in ("근위", "원위"):
     o2 = old[(old.side == side) & (old.u < -8000) & old.cpg_per_kb.notna()]
@@ -89,13 +89,13 @@ for side in ("근위", "원위"):
             else:
                 n_diff += 1
                 if n_diff <= 3:
-                    print("   다름 %s u %.0f : 옛 %.2f ↔ 새 %.2f" % (side, r.u, r.cpg_per_kb, n2.loc[r.u, "cpg_per_kb"]))
-print("   v143 과 같은 칸 %d · 달라진 칸 %d — 창이 같으므로 이 차이 = 고친 양 이다"
+                    print("   differs %s u %.0f: original %.2f vs new %.2f" % (side, r.u, r.cpg_per_kb, n2.loc[r.u, "cpg_per_kb"]))
+print("   bins equal to v143 %d, bins that differ %d; the windows are the same, so this difference is the amount of the change"
       % (n_same, n_diff))
 if n_diff == 0:
-    sys.exit("멈춘다 — 한 칸도 안 달라졌다. V145 가 안 읽힌 것이다.")
+    sys.exit("stopping: no bin differs. V145 was not read.")
 print()
-print("검산 ⑵ — 구간마다 출렁임(이웃 칸 차의 중앙값)")
+print("check (2): fluctuation per interval (median difference between neighbouring bins)")
 for side in ("근위", "원위"):
     for lo_, hi_, nm in ((0, 8000, "0~8 kb (전에는 50·200 bp 창)"), (8000, 43000, "8~43 kb (전에도 1 kb 창)")):
         for T, tag in ((old, "옛"), (g, "새")):
@@ -104,8 +104,8 @@ for side in ("근위", "원위"):
             q = d[(d.dist >= lo_) & (d.dist < hi_)].sort_values("dist")
             if len(q) > 2:
                 j = np.median(np.abs(np.diff(q.cpg_per_kb.values)))
-                print("   %-4s %-28s %s 톱니 %6.2f · 중앙 %6.2f · 칸 %d"
+                print("   %-4s %-28s %s sawtooth %6.2f, median %6.2f, bins %d"
                       % (side, nm, tag, j, q.cpg_per_kb.median(), len(q)))
 print()
-print("낸 표 %s · 칸 %d (근위 %d · 원위 %d)"
+print("table written %s, bins %d (proximal %d, distal %d)"
       % (os.path.basename(OUT), len(g), (g.side == "근위").sum(), (g.side == "원위").sum()))

@@ -44,7 +44,7 @@ W_TOTAL = float(os.environ.get("SPEC_W", "423.5"))
 LAB_DX, LAB_DY, FS_LAB = -22.48, -1.53, 8.2
 # where a cell exceeds the page width of 423.5, the right frame line is pulled in by that much
 XR_ADJ = [0.0]
-# a figure holding someone else's panel, which cannot be redrawn, is scaled down whole
+# a figure which cannot be redrawn is scaled down whole
 # only the cell, the plot, is scaled; the panel letter stays at 8.2 pt
 # the 4.5 pt floor on type size is then broken, and that fact is printed and recorded
 FIG_SCALE = {"S5": None}        # None means it is fitted automatically to the page width
@@ -86,7 +86,7 @@ def fetch(b):
             shutil.copy2(s, os.path.join(PD, b + "." + ext))
             got.append(ext)
     if "svg" not in got:
-        raise SystemExit("패널 없음 : " + b)
+        raise SystemExit("no panel: " + b)
     return "pdf" in got
 
 
@@ -265,7 +265,7 @@ def build(name, rows):
     H = y - GAP_Y
 
     # Using 423.5 as the page width unconditionally clips any cell wider than that
-    # (S5 holds someone else's panel at 1,116 pt).
+    # (S5 at 1,116 pt).
     # So where the content is wider, that width is used: better to record it as out of specification than to ship a clipped figure.
     WNEED = 0.0
     for f, px, py in place:
@@ -288,7 +288,7 @@ def build(name, rows):
         WNEED = (WNEED - XMIN) * _sc
         SCALE[0] = _sc
         if XMIN < -0.05 or YMIN < -0.05:
-            print("     왼쪽 %.1f · 위 %.1f pt 나가 있던 것을 안으로 밀어 넣었다"
+            print("     overhang of left %.1f, top %.1f pt pushed back inside"
                   % (-XMIN * _sc, -YMIN * _sc))
         # the cell letter at 8.2 pt is not scaled, so in a scaled-down figure it protrudes above the page
         # (A of S5 at y0 = -4.9), so the content is pushed down by the height of that ink.
@@ -299,15 +299,15 @@ def build(name, rows):
             place = [(f, px, py + _d) for f, px, py in place]
             labs = [(l, lx, ly + _d) for l, lx, ly in labs]
             H += _d
-            print("     칸 글자가 쪽 위로 %.1f pt 나가 있어 %.1f pt 내렸다" % (-_top, _d))
-        print("     통째로 %.4f 배로 줄였다 (다시 못 그리는 패널) — 글자 하한 4.5 가 깨진다"
+            print("     cell letter is %.1f pt above the page top, lowered by %.1f pt" % (-_top, _d))
+        print("     scaled down as a whole by a factor of %.4f (panel that cannot be redrawn): the font-size floor of 4.5 is broken"
               % _sc)
     PAGEW = W_TOTAL
     if WNEED > W_TOTAL + 0.5 and not RETRY[0]:
         return WNEED            # the caller pulls in the right line and calls again
     if WNEED > W_TOTAL + 0.5:
         PAGEW = round(WNEED + 1.0, 2)
-        print("     칸이 쪽보다 넓다 %.1f > %.1f ⇒ 쪽을 %.1f 로 (규격 밖 · 잘리지 않게)"
+        print("     cells wider than the page %.1f > %.1f -> page set to %.1f (outside the spec, to avoid clipping)"
               % (WNEED, W_TOTAL, PAGEW))
     out, idx = [], 0
     for f, px, py in place:
@@ -338,11 +338,11 @@ def build(name, rows):
     try:
         _ET.fromstring(txt.encode("utf8"))
     except Exception as _e:
-        print("     조립본 svg 가 XML 로 깨졌다 : %s ⇒ 패널 svg 의 <g> 짝을 보라" % _e)
-    print("%-46s %7.2f x %7.2f pt · 칸 %2d" % (name, PAGEW, H, len(labs)))
+        print("     assembly svg is broken as XML: %s -> check the <g> pairs of the panel svg" % _e)
+    print("%-46s %7.2f x %7.2f pt, cells %2d" % (name, PAGEW, H, len(labs)))
     # -- measurements for the report
     if not all(haspdf[b] for b in need):
-        print("     pdf 없는 패널 — png·pdf 는 건너뜀")
+        print("     panel without pdf: png and pdf skipped")
         return
     import pymupdf
     doc = pymupdf.open()
@@ -380,6 +380,6 @@ for nm, R in (("Fig4_main_2026-10-16", FIG4),
             break
         _d = _over - W_TOTAL + 0.5
         XR_ADJ[0] += _d
-        print("     오른쪽 틀 선을 %.1f pt 당긴다 (%d 차)" % (XR_ADJ[0], _try + 1))
+        print("     right frame line pulled in by %.1f pt (pass %d)" % (XR_ADJ[0], _try + 1))
         if _try == 2:
             RETRY[0] = True      # as a last resort the page is widened so that nothing is clipped

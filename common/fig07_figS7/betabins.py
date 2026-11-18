@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 # The common ruler for binning beta.
 #   Because beta = k / n_cpg, it takes only n + 1 distinct values. Cutting 0 to 1 at a fixed width such as 0.02
-#     · spreads those values unevenly across the bins and distorts the shape, and
-#     · drawing through the bin centres ends short of 1.0 at the right-hand end (with 8 CpG sites the last centre is 0.95).
+#     - spreads those values unevenly across the bins and distorts the shape, and
+#     - drawing through the bin centres ends short of 1.0 at the right-hand end (with 8 CpG sites the last centre is 0.95).
 #   The boundaries are therefore chosen so that the bin centres fall at 0, 1/n, ..., 1. Above a count of CAP it falls back to fixed bins.
 import numpy as np
 

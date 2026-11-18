@@ -67,8 +67,8 @@ for k in sorted(D):
     s["하플로타입"] += 1; s["그룹수합"] += len(grp); s["다수몫합"] += len(big) / len(dd)
     s["소수그룹(2개이상 멤버)"] += len(minors); s["그중 붙은 것"] += adj; s["그중 떨어진 것"] += spr
 g.close()
-print("=== ① 원위 그룹 배치 : '말단형 없음' vs '보유' (원위 12 유닛 이상) ===")
-print("  집단          하플로타입  평균 그룹수  다수그룹 몫  소수그룹(2+)  붙은 것  떨어진 것  떨어진 비율")
+print("=== (1) distal group placement : 'no terminal type' vs 'carrier' (12 or more distal units) ===")
+print("  set           haplotypes  mean n_groups  majority-group share  minority groups (2+)  adjacent  separated  separated fraction")
 for gname in ("말단형 없음", "말단형 보유"):
     s = summ[gname]; n = s["하플로타입"]
     if not n: continue
@@ -94,8 +94,8 @@ for k in sorted(D):
         if d + 1 in mm: acc["가운데 이웃"].append(diff_bp(mm[d], mm[d + 1]) / UNIT)
 g = io.open(os.path.join(OUT, "ZB_neighbour_divergence.tsv"), "w", encoding="utf8", newline="\n")
 g.write("pair_kind\tn_pairs\tmedian_pct\tmean_pct\tq25\tq75\tp90\tfrac_over_1pct\tfrac_over_0.5pct\n")
-print("\n=== ② 이웃한 두 유닛의 서열 불일치율 (변이 대칭차 bp / 2,240 bp) ===")
-print("  짝 종류                 짝 수   중앙 %   평균 %   사분위 %        90% 지점   >1% 비율  >0.5% 비율")
+print("\n=== (2) sequence mismatch rate of two neighboring units (variant symmetric difference bp / 2,240 bp) ===")
+print("  pair type               n_pairs median %   mean %   quartiles %        90% point   >1% prop.  >0.5% prop.")
 for kind in ("말단형–말단형", "말단형–보통(이웃)", "보통–보통(원위 이웃)", "가운데 이웃", "근위 이웃"):
     v = np.array(acc[kind]) * 100
     if len(v) < 5: continue
@@ -105,7 +105,7 @@ for kind in ("말단형–말단형", "말단형–보통(이웃)", "보통–�
           % (kind, len(v), np.median(v), v.mean(), np.percentile(v, 25), np.percentile(v, 75), np.percentile(v, 90),
              np.mean(v > 1), np.mean(v > 0.5)))
 g.close()
-print("\n저장 :", OUT)
+print("\nsaved :", OUT)
 
 # the deposited table(s) carry English column names and values (common/fig02_figS2/taben.py)
 import sys as _s, os as _o

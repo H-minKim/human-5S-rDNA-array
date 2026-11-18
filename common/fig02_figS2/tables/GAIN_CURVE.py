@@ -75,20 +75,20 @@ e = {**os.environ, "PYTHONIOENCODING": "utf-8", "PYTHONHASHSEED": "0", "S24_NOBE
 t0 = time.time()
 r = subprocess.run([sys.executable, run], cwd=TMP, env=e, capture_output=True, text=True,
                    encoding="utf8", errors="replace", timeout=5400)
-print("이득 곡선 %s %.1fs" % ("ok" if r.returncode == 0 else "실패", time.time() - t0))
+print("gain curve %s %.1fs" % ("ok" if r.returncode == 0 else "실패", time.time() - t0))
 print((r.stdout or "").strip()[-400:])
 if r.returncode: print((r.stderr or "")[-1500:]); sys.exit(1)
 
 f = os.path.join(OUT, "S24_gain_curve.tsv")
 L = [l.rstrip("\n").split("\t") for l in io.open(f, encoding="utf8") if l.strip()]
 H = {c: i for i, c in enumerate(L[0])}
-print("\n■ 벌점 1.0 에서 채택된 자리와 그 이득")
+print("\npositions adopted at penalty 1.0 and their gain")
 for side in ("prox", "dist"):
     rs = [r for r in L[1:] if r[H["side"]] == side and r[H["pen"]] == "1.0"]
     th = float(rs[0][H["threshold"]])
-    print("   %-5s 문턱 %.1f" % (side, th))
+    print("   %-5s threshold %.1f" % (side, th))
     for r in rs:
         if r[H["chosen"]] == "1":
-            print("      단계 %s · 깊이 %s 뒤에서 자름 · 이득 %.1f %s"
+            print("      step %s, cut after depth %s, gain %.1f %s"
                   % (r[H["step"]], r[H["cut_after_depth"]], float(r[H["gain"]]),
-                     "(문턱 넘음 ⇒ 채택)" if float(r[H["gain"]]) > th else "(문턱 못 넘음 ⇒ 멈춤)"))
+                     "(above threshold -> accepted)" if float(r[H["gain"]]) > th else "(문턱 못 넘음 ⇒ 멈춤)"))

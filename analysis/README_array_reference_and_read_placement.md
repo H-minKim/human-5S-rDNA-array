@@ -18,8 +18,8 @@ any array, because the array is tandem and a probe containing it aligns anywhere
 
 | § | step | script |
 |---|---|---|
-| — | pull 5S reads out of each BAM through a k-mer gate that preserves MM/ML | `readextract_5s_read_gate.py`, with `readextract_{hprc_ont,giab_ont_region,giab_hits_and_flank,cancer,hg008}_*.sh` per cohort |
-| — | assemble, for individuals with no public assembly | `refset_assembly_queue.sh` (`hifiasm --ont`, one individual at a time, intermediates deleted immediately — a run needs 676 MB and the node had 43 GB) |
+| - | pull 5S reads out of each BAM through a k-mer gate that preserves MM/ML | `readextract_5s_read_gate.py`, with `readextract_{hprc_ont,giab_ont_region,giab_hits_and_flank,cancer,hg008}_*.sh` per cohort |
+| - | assemble, for individuals with no public assembly | `refset_assembly_queue.sh` (`hifiasm --ont`, one individual at a time, intermediates deleted immediately, a run needs 676 MB and the node had 43 GB) |
 | §1 | cut the array flank to flank, from a public assembly | `refset_step1_cut_array_public_assembly.py` |
 | §1 | the same cut, from the assemblies of this work (the GFA `S` lines) | `refset_step1_cut_array_our_assembly.py` |
 | §1 | count units in a public assembly without storing sequence | `refset_step1_count_units_public_assembly.py` |
@@ -27,9 +27,9 @@ any array, because the array is tandem and a probe containing it aligns anywhere
 | §2 | index every cut sequence by its unit count | `refset_step2_sequence_index.py` |
 | §3 | assign one sequence to each haplotype slot | `refset_step3_assign_slots.py`, with `refset_step0_*` for the pairing and fingerprint steps that feed it |
 | §3 | repair the few references that needed it | `refset_step3b_canon_repair_*.py` |
-| §4–5 | cut units, call variants, check the sequence back | `refset_step4_5_unit_map_and_variants.py` |
+| §4-5 | cut units, call variants, check the sequence back | `refset_step4_5_unit_map_and_variants.py` |
 | §6 | build the registry and its tier flags | `refset_step6_registry_build.py`, `refset_step6_registry_add_flags.py` |
-| — | place reads on the finished map | `readplacement_align_reads_to_map.py`, `readplacement_methylation_map.py` |
+| - | place reads on the finished map | `readplacement_align_reads_to_map.py`, `readplacement_methylation_map.py` |
 
 The array-only and junction placement routes themselves live under `upstream/`: `aoplace_v8fix.py`
 (in `upstream/fig02_figS2_chain/U3_read_placement_units/v11/`) for reads lying wholly inside the
@@ -83,7 +83,7 @@ that a reader checking one does not have to search.
 
 - *Reads that reach a junction* are assigned by a vote at the positions where the two haplotypes'
   flanks differ; mismatches anywhere else are treated as sequencing error. Only flank is used,
-  because the array is tandem and both haplotypes align equally well along it — including array
+  because the array is tandem and both haplotypes align equally well along it, including array
   sequence in the vote dropped accuracy from 100% to 84.7%. The vote is accurate to 99.3% at a margin
   of 0.90.
 - *Reads lying wholly inside the array* are assigned by a **map-margin difference**. The read is

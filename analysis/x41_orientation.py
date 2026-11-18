@@ -44,7 +44,7 @@ try:
 except Exception:
     pass
 LOG = io.open(NEW + "/logs/X41_ORIENT.txt", "w", encoding="utf8", newline="\n")
-REASON = "array 방향(근위/원위) 조립본 실측(2026-10-01)"
+REASON = "array 방향(근위/원위) 조립본 실측"
 K = 21
 
 
@@ -123,24 +123,24 @@ for t in ST.itertuples(index=False):
                      중심절까지_Mb=round(gap / 1e6, 3), 중심절겹침=("예" if ovl else "아니오"),
                      근위근거="중심절 (%s)" % how,
                      끝자와같나=("같음" if prox != tel else "다름")))
-assert not missing, "중심절을 못 찾은 array 가 있다 — 조용히 넘기지 않는다 : %r" % (missing,)
+assert not missing, "centromere not found for some arrays; this is not passed over silently: %r" % (missing,)
 O = pd.DataFrame(rows)
-assert len(O) == len(SPK), "array %d / 대장 %d — 수가 안 맞는다" % (len(O), len(SPK))
-P("array %d · 근위(중심절) 쪽 분포 :" % len(O))
+assert len(O) == len(SPK), "arrays %d / registry %d: the counts do not match" % (len(O), len(SPK))
+P("arrays %d, distribution of the proximal (centromere) side:" % len(O))
 P(O.groupby(["종", "근위쪽"]).size().to_string())
 P("")
-P("옛 자('가까운 끝') 와 다른 줄 : %d / %d" % (int((O.끝자와같나 == "다름").sum()), len(O)))
+P("rows that differ from the 'nearest end' rule: %d / %d" % (int((O.끝자와같나 == "다름").sum()), len(O)))
 for _r in O[O.끝자와같나 == "다름"].itertuples(index=False):
-    P("  %-9s %-12s %-11s 중심절 %.2f-%.2f Mb · array %.2f-%.2f Mb ⇒ 근위 %s (옛 자 %s)"
+    P("  %-9s %-12s %-11s centromere %.2f-%.2f Mb, array %.2f-%.2f Mb -> proximal %s ('nearest end' rule %s)"
       % (_r.종, _r.chrom, str(_r.array_id)[-11:], _r.중심절시작 / 1e6, _r.중심절끝 / 1e6,
          _r.array시작 / 1e6, _r.array끝 / 1e6, _r.근위쪽,
          "높은 좌표" if _r.가까운끝 == "낮은 좌표" else "낮은 좌표"))
 P("")
-P("중심절과 겹쳐 근위/원위를 적을 수 없는 array : %d" % int((O.중심절겹침 == "예").sum()))
+P("arrays that overlap the centromere, so proximal/distal cannot be assigned: %d" % int((O.중심절겹침 == "e.g.").sum()))
 for _r in O[O.중심절겹침 == "예"].itertuples(index=False):
     P("  %-9s %s" % (_r.종, _r.array_id))
 P("")
-P("종마다 가까운 끝까지 / 먼 끝까지 (Mb · 중앙값)")
+P("per species, distance to the nearer end / to the farther end (Mb, median)")
 P(O.groupby("종")[["가까운끝까지_Mb", "먼끝까지_Mb"]].median().to_string())
 
 # ---------------------------------------------------------------- b) 21-mer flank homology, the great apes
@@ -170,7 +170,7 @@ for sp in APE:
             out.add(min(w, rc))                                  # the strand-independent canonical form
         return out
     FL[sp] = dict(lo=kmers(lo), hi=kmers(hi), lo_len=lo_len, hi_len=hi_len)
-    P("  %-24s 낮은쪽 flank %d bp (21-mer %s) · 높은쪽 %d bp (%s)"
+    P("  %-24s low-side flank %d bp (21-mer %s), high-side %d bp (%s)"
       % (sp, lo_len, format(len(FL[sp]["lo"]), ","), hi_len, format(len(FL[sp]["hi"]), ",")))
 
 jac = lambda a, b: (len(a & b) / len(a | b)) if (a or b) else np.nan
@@ -185,10 +185,10 @@ for a, b in itertools.combinations(APE, 2):
 J = pd.DataFrame(jr)
 J["배수"] = J.같은쪽_평균 / J.엇갈린쪽_평균.replace(0, np.nan)
 P("")
-P("유인원 쌍마다 flank 21-mer 자카드 (같은 쪽 vs 엇갈린 쪽)")
+P("flank 21-mer Jaccard per ape pair (same side vs crossed side)")
 P(J.round(4).to_string(index=False))
 P("")
-P("같은 쪽이 엇갈린 쪽보다 몇 배 : 중앙 %.1f 배 (최소 %.1f · 최대 %.1f) · 쌍 %d/%d 에서 같은 쪽이 큼"
+P("fold of same side over crossed side: median %.1f-fold (min %.1f, max %.1f), same side larger in pairs %d/%d"
   % (J.배수.median(), J.배수.min(), J.배수.max(), int((J.같은쪽_평균 > J.엇갈린쪽_평균).sum()), len(J)))
 
 TMP = os.environ.get("TEMP", ".") + "/x41"
@@ -198,5 +198,5 @@ J.round(6).to_csv(TMP + "/ORIENTATION_FLANK_JACCARD.tsv", sep="\t", index=False,
 arch.put(TMP + "/ORIENTATION.tsv", "tables/ORIENTATION.tsv", REASON)
 arch.put(TMP + "/ORIENTATION_FLANK_JACCARD.tsv", "tables/ORIENTATION_FLANK_JACCARD.tsv", REASON)
 P("")
-P("표 : latest/tables/ORIENTATION.tsv · ORIENTATION_FLANK_JACCARD.tsv")
+P("tables: latest/tables/ORIENTATION.tsv, ORIENTATION_FLANK_JACCARD.tsv")
 LOG.close()

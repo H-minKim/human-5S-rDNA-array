@@ -47,9 +47,9 @@ for i, p in enumerate(ORD):
     m = float(np.median(V[p]))
     ax.plot([x[i] - 0.28, x[i] + 0.28], [m, m], color=CO if p == "AFR" else CB, lw=1.0, zorder=4)
     # no median text on the figure (values go to the value table via rec below)
-    rec("B", "%s 중앙값" % p, "%.1f (200 회 · 사분위 %.1f-%.1f)"
+    rec("B", "%s median" % p, "%.1f (200 runs, quartiles %.1f-%.1f)"
         % (m, np.percentile(V[p], 25), np.percentile(V[p], 75)), "X12_POP_VAR_DOWNSAMPLE.tsv")
-rec("B", "검정 가능 토큰 수", "중앙 %.0f (범위 %.0f-%.0f)" % (np.median(NT), NT.min(), NT.max()),
+rec("B", "number of testable tokens", "median %.0f (range %.0f-%.0f)" % (np.median(NT), NT.min(), NT.max()),
     "X12_POP_VAR_DOWNSAMPLE.tsv")
 ax.set_xticks(x); ax.set_xticklabels(ORD)
 ax.set_ylabel(CS.L("집단 고유 토큰 수", "Private tokens"))   # axis label on one line
@@ -60,10 +60,10 @@ H3, R3 = read("X12_POP_VAR_PERM.tsv")
 _pr = [r for r in R3 if r[H3["통계량"]].startswith("AFR 고유")][0]
 _p = float(_pr[H3["P"]])
 ax.text(0.97, 0.97, "P = %.3f" % _p, transform=ax.transAxes, ha="right", va="top", fontsize=CS.FS_ANN, color="#1b2631")
-rec("B", "치환 검정 (개인 단위 표지 섞기)", "AFR 고유 토큰 중앙 관측 %s · 귀무 중앙 %s (범위 %s-%s) · %s 회 · P %.6g (가장 작은 값 %.6g) · 하플로타입 %s · 개인 %s"
+rec("B", "permutation test (markers shuffled at the individual level)", "AFR-specific tokens median observed %s, null median %s (range %s-%s), %s runs, P %.6g (smallest value %.6g), haplotypes %s, individuals %s"
     % (_pr[H3["관측"]], _pr[H3["귀무중앙"]], _pr[H3["귀무최소"]], _pr[H3["귀무최대"]], _pr[H3["치환수"]], _p,
        float(_pr[H3["가장작은P"]]), _pr[H3["하플로타입"]], _pr[H3["개인"]]), "X12_POP_VAR_PERM.tsv")
 SRC.close()
 _xl = ax.get_xlim(); ax.set_xlim(_xl[0], _xl[1] + 0.35)   # right margin so the EUR value text does not touch the right axis line
 CS.save(fig, OUT, "cellF2_o_poptoken")
-print("중앙값 %s" % " ".join("%s %.1f" % (p, np.median(V[p])) for p in ORD))
+print("median %s" % " ".join("%s %.1f" % (p, np.median(V[p])) for p in ORD))

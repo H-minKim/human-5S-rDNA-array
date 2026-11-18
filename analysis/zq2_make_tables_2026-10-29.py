@@ -24,7 +24,7 @@ import collections
 import numpy as np
 from scipy.stats import wilcoxon
 
-# The data and output roots are environment variables with no default (CONVENTIONS, "the deposited copy wins").
+# The data and output roots are environment variables with no default.
 #  Paths to files inside the repository are resolved relative to __file__; a_lib is deposited in this folder.
 #  The table of variables is in README.md, section 'Environment variables'.
 _HERE = os.path.dirname(os.path.abspath(__file__))
@@ -87,7 +87,7 @@ for p in sorted(glob.glob(os.path.join(FH, "FHMM_UNITS_*.tsv"))):
             SEG[(x[h["sample"]], x[h["read_id"]][:30], x[h["slot"]])].append(
                 (x[h["array_pos"]], x[h["cls"]],
                  int(x[h["rel_start"]]), int(x[h["rel_end"]])))
-print("상태 칸 %s · FHMM 묶음 %s" % (format(len(STATE), ","), format(len(SEG), ",")))
+print("state bins %s, FHMM bundles %s" % (format(len(STATE), ","), format(len(SEG), ",")))
 
 RG = collections.defaultdict(lambda: np.zeros(4))   # big, cov, own_cov, own_big
 MOL = collections.defaultdict(set)                  # (plat,smp,rid30) -> {L,H}
@@ -179,12 +179,12 @@ RES = collections.OrderedDict((nm, tally(nm)) for nm, _a, _b in REG)
 # -- 1) per zone, over the five windows
 O1 = os.path.join(OUTD, "HMM_20261029_alu_by_zone.tsv")
 with io.open(O1, "w", encoding="utf8", newline=NL) as g:
-    g.write("# FiberHMM 판 — 구역별 large MSP(>150bp) 덮은 염기 · 개체 단위 Wilcoxon" + NL)
-    g.write("# zy7_make_hmm_tables.py 의 구역 절을 그대로 베끼고 alu 창을 더했다 (2026-10-29)" + NL)
-    g.write("# 창(TSS 기준) alu -2122..-1805 · far -1500..-1000 · mid -900..-400 "
+    g.write("# FiberHMM version: bases covered by large MSP(>150bp) per region, individual-level Wilcoxon" + NL)
+    g.write("# region section as in zy7_make_hmm_tables.py, with the alu window added" + NL)
+    g.write("# windows (relative to TSS) alu -2122..-1805, far -1500..-1000, mid -900..-400 "
             "· up -300..-1 · gene 0..118" + NL)
-    g.write("# alu 는 제 유닛 염기만 센다(own) — 나머지 넷은 own_frac 1.0000 이라 "
-            "같은 자다. alu 를 그냥 세면 1.1%가 앞 유닛에서 온다" + NL)
+    g.write("# alu counts only bases of its own unit (own); the other four have own_frac 1.0000, so "
+            "the measure is the same. Counting alu plainly, the preceding unit contributes 1.1%" + NL)
     g.write(TB.join(["kind", "platform", "key", "n", "v_L", "v_H", "diff", "p"]) + NL)
     for nm, _a, _b in REG:
         for plat in ("ONT", "PacBio"):
@@ -198,10 +198,9 @@ with io.open(O1, "w", encoding="utf8", newline=NL) as g:
 O2 = os.path.join(OUTD, "HMM_20261029_paired_molecule_fraction.tsv")
 PAIRPCT = {}
 with io.open(O2, "w", encoding="utf8", newline=NL) as g:
-    g.write("# 저메틸·고메틸 유닛을 둘 다 지나간 분자의 비율 — FiberHMM 판 (2026-10-29)" + NL)
-    g.write("# 분모 = 상태가 불린 유닛을 하나 이상 가진 분자 (유닛 여과 호출염기>=1800 뒤)" + NL)
-    g.write("# 분자 키 = (개체, read_id[:30], 슬롯) — zy7 과 같은 키" + NL)
-    g.write("# 적혀 있던 31.8 / 20.9 는 ft 판(CHECK_20261012s · 2335 / 686)이었다" + NL)
+    g.write("# fraction of molecules spanning both a low-methylation and a high-methylation unit, FiberHMM version" + NL)
+    g.write("# denominator = molecules with at least one unit with a called state (after unit filter called bases>=1800)" + NL)
+    g.write("# molecule key = (individual, read_id[:30], slot), same key as zy7" + NL)
     g.write(TB.join(["platform", "mol_all", "mol_pair", "pair_pct"]) + NL)
     for plat in ("ONT", "PacBio"):
         ks = [v for k, v in MOL.items() if k[0] == plat]
@@ -226,11 +225,9 @@ for l in io.open(P3, encoding="utf8"):
         rows3.append(x)
 LAB = {}
 with io.open(O3, "w", encoding="utf8", newline=NL) as g:
-    g.write("# m6A 표지율 — 저메틸 유닛 ÷ 고메틸 유닛 (2026-10-29)" + NL)
-    g.write("# 자 = 그 자리에서 m6A 인 분자 비율(%) · 깊이로 가중한 유닛 평균" + NL)
-    g.write("# 읽은 표 = REF2_20261011_m6a_in_unit_by_state_cut508.tsv (본문 (d)(e) 가 그리는 표)" + NL)
-    g.write("# 범례에 글자로 박혀 있던 '2.80 배' 는 어느 표에서도 재현되지 않았다 — "
-            "플랫폼마다 다르므로 한 수로 적을 수 없다" + NL)
+    g.write("# m6A marking rate: low-methylation units ÷ high-methylation units" + NL)
+    g.write("# measure = fraction of molecules with m6A at that position (%), depth-weighted unit mean" + NL)
+    g.write("# input table = REF2_20261011_m6a_in_unit_by_state_cut508.tsv (the table plotted in main-text panels (d)(e))" + NL)
     g.write(TB.join(["platform", "m6a_L_pct", "m6a_H_pct", "ratio_L_over_H",
                      "n_pos_L", "n_pos_H"]) + NL)
     for plat in ("ONT", "PacBio"):
@@ -247,7 +244,7 @@ with io.open(O3, "w", encoding="utf8", newline=NL) as g:
 
 # ───────────────────────────────── checks
 print()
-print(ST + ST + " 검산 ① 발행 네 창이 그대로 재현되는가 (alu 는 새 창)")
+print(ST + ST + " check (1): are the four published windows reproduced as is (alu is an added window)")
 pub = {}
 for l in io.open(os.path.join(R, "HMM_20261014_by_zone.tsv"), encoding="utf8"):
     if l.startswith("#") or l.startswith("kind"):
@@ -271,23 +268,23 @@ for nm, _a, _b in REG:
                                          "ok" if got == want else ST + "다름 " + got))
 print("   ⇒ " + ST + "같음 %d · 어긋남 %d" % (ok, bad))
 if bad:
-    raise SystemExit(ST + ST + "발행 넷이 안 맞는다 — 멈춘다.")
+    raise SystemExit(ST + ST + "the four published windows do not match: stopping.")
 
 print()
-print(ST + ST + " 검산 ② alu 가 alu_own 인가 (앞 글 zq1 과 맞대기)")
+print(ST + ST + " check (2): is alu equal to alu_own (compared with zq1)")
 for plat, want in (("ONT", "0.02913"), ("PacBio", "0.03454")):
     got = "%.5f" % RES["alu"][plat][3]
-    print("   %-7s zq1 의 alu_own %s ↔ 이번 alu %s %s"
+    print("   %-7s zq1 alu_own %s vs this alu %s %s"
           % (plat, want, got, "ok" if got == want else ST + "다름"))
 
 print()
-print(ST + ST + " 검산 ③ 새 표 값")
+print(ST + ST + " check (3): values of the added tables")
 for plat in ("ONT", "PacBio"):
-    print("   %-7s 짝분자 %.2f%% (분모 %s · 짝 %s) · 표지율 배수 %.2f"
+    print("   %-7s paired molecules %.2f%% (denominator %s, pairs %s), marking-rate fold %.2f"
           % (plat, PAIRPCT[plat],
              format(len([1 for k in MOL if k[0] == plat]), ","),
              format(len([1 for k, v in MOL.items() if k[0] == plat and len(v) == 2]), ","),
              LAB[plat]))
 print()
 for p in (O1, O2, O3):
-    print("낸 것 : %s" % p)
+    print("written : %s" % p)

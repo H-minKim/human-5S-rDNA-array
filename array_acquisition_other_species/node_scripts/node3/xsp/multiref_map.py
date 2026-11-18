@@ -16,7 +16,7 @@
 #   6) Write a separate position crosswalk between the group reference and the array reference; the frames differ, so it is required.
 #
 # Arguments: array_id, map file, assembly fasta, reference unit folder, group unit files (comma separated), CTX, output folder.
-# MIT License · Copyright (c) 2026 Hungmin Kim
+# MIT License. Copyright (c) 2026 Hyungmin Kim
 import io
 import os
 import re
@@ -229,5 +229,5 @@ for k in refs:
 os.remove(ar)
 os.remove(up)
 os.remove(cp)
-print("%s : 유닛 %d · 참조거리 Dmax=%d · %s"
+print("%s : units %d, reference distance Dmax=%d, %s"
       % (AID, len(use), DM, " ".join("%s=%d" % (k, v) for k, v in cnt.most_common())))

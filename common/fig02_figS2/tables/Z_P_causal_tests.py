@@ -59,8 +59,8 @@ def bp(t):
 
 
 # ---------------- P1 ----------------
-print("=== P1. 용량-반응 : 앞쪽 절반의 서열 차이 → 뒤쪽 절반의 변이 공유 ===")
-print("  (순환논증 회피 : 차이와 공유를 유닛의 서로 다른 구간에서 잰다)")
+print("=== P1. dose-response : sequence difference in the first half -> variant sharing in the second half ===")
+print("  (avoids circular reasoning : difference and sharing are measured in different parts of the unit)")
 rows = []
 for k in HK:
     d = {}
@@ -82,13 +82,13 @@ for k in HK:
             y = np.nanmean([y1, y2])
             kind = "말단형-말단형" if (A[2] and B[2]) else ("말단형-보통" if (A[2] or B[2]) else "보통-보통")
             rows.append((k, x, y, kind, b - a))
-print("  쌍 %d (보통-보통 %d · 말단형-보통 %d · 말단형-말단형 %d)" % (
+print("  pairs %d (ordinary-ordinary %d, terminal-ordinary %d, terminal-terminal %d)" % (
     len(rows), sum(1 for r in rows if r[3] == "보통-보통"), sum(1 for r in rows if r[3] == "말단형-보통"),
     sum(1 for r in rows if r[3] == "말단형-말단형")))
 BINS = [0, 0.2, 0.4, 0.6, 0.9, 1.3, 1.8, 2.5, 3.5, 100]
 g = io.open(os.path.join(OUT, "ZP_dose_response.tsv"), "w", encoding="utf8", newline="\n")
 g.write("bin_lo\tbin_hi\tkind\tn_pairs\tmean_div_front\tmean_share_back\n")
-print("\n  앞절반 차이%%     보통-보통 (n · 뒤절반 공유)      말단형-보통 (n · 공유)     차이")
+print("\n  first-half diff%%  both ordinary (n, second-half sharing)   terminal-ordinary (n, sharing)   difference")
 for lo, hi in zip(BINS, BINS[1:]):
     o = [r for r in rows if r[3] == "보통-보통" and lo <= r[1] < hi]
     t = [r for r in rows if r[3] == "말단형-보통" and lo <= r[1] < hi]
@@ -102,7 +102,7 @@ for lo, hi in zip(BINS, BINS[1:]):
         ("%.3f" % st) if t else "  -  ", ("%+.3f" % (st - so)) if (o and t) else "   -"))
 g.close()
 oo = [r for r in rows if r[3] == "보통-보통"]
-print("\n  보통-보통 쌍 안에서 Spearman(앞절반 차이, 뒤절반 공유) = %+.3f (p %.3g · n %d)" % (
+print("\n  within ordinary-ordinary pairs, Spearman(first-half difference, second-half sharing) = %+.3f (p %.3g, n %d)" % (
     *spearmanr([r[1] for r in oo], [r[2] for r in oo])[:2], len(oo)))
 # Difference-matched comparison: are terminal pairs lower within the same difference bin
 dif = []
@@ -111,14 +111,14 @@ for lo, hi in zip(BINS, BINS[1:]):
     t = [r[2] for r in rows if r[3] == "말단형-보통" and lo <= r[1] < hi]
     if len(o) >= 30 and len(t) >= 30:
         dif.append((lo, hi, np.nanmean(t) - np.nanmean(o), mannwhitneyu(t, o, nan_policy="omit")[1], len(t), len(o)))
-print("\n  차이 맞춤 칸(양쪽 30 쌍 이상) : 말단형 − 보통")
+print("\n  difference-matched bins (30 or more pairs on both sides) : terminal type − ordinary")
 for lo, hi, dd, p, nt, no in dif:
-    print("    %.1f-%.1f%%  차 %+.3f  (p %.3g · 말단형 %d · 보통 %d)" % (lo, hi, dd, p, nt, no))
+    print("    %.1f-%.1f%%  : difference %+.3f  (p %.3g, terminal type %d, ordinary %d)" % (lo, hi, dd, p, nt, no))
 if dif:
-    print("  → 칸 %d 개 중 |차| < 0.05 인 칸 %d 개" % (len(dif), sum(1 for x in dif if abs(x[2]) < 0.05)))
+    print("  -> of %d bins, %d with |difference| < 0.05" % (len(dif), sum(1 for x in dif if abs(x[2]) < 0.05)))
 
 # ---------------- P2 ----------------
-print("\n=== P2. read 합의(조립본 아님)로 섞임 검정 다시 ===")
+print("\n=== P2. mixing test repeated with read consensus (not assembly) ===")
 RV = collections.defaultdict(dict)
 for f, H in G._rows(G.READMAPF):
     if int(f[H["depth"]]) < 10:
@@ -165,9 +165,9 @@ for k in HK:
     if toks:
         perhap.append((isT, toks))
 tot = sum(obs.values())
-print("  하플로타입 %d · 소수 토큰 %d" % (len(perhap), tot))
+print("  haplotypes %d, minority tokens %d" % (len(perhap), tot))
 if tot:
-    print("  관측 : 보통만 %.3f · 말단형만 %.3f · **섞임 %.3f**" % (
+    print("  observed : ordinary only %.3f, terminal type only %.3f, **mixed %.3f**" % (
         obs["보통만"] / tot, obs["말단형만"] / tot, obs["섞임"] / tot))
     nul = []
     for _ in range(1000):
@@ -180,7 +180,7 @@ if tot:
         nul.append(c["섞임"] / sum(c.values()))
     nul = np.array(nul)
     p = (np.sum(nul <= obs["섞임"] / tot) + 1) / 1001.0
-    print("  귀무 %.3f [%.3f-%.3f] · p = %.4f  (조립본 판 : 관측 0.052 · 귀무 0.530)" % (
+    print("  null %.3f [%.3f-%.3f], p = %.4f  (assembly version : observed 0.052, null 0.530)" % (
         nul.mean(), np.percentile(nul, 2.5), np.percentile(nul, 97.5), p))
     g = io.open(os.path.join(OUT, "ZP_readlevel_mixing.tsv"), "w", encoding="utf8", newline="\n")
     g.write("layer\tn_hap\tn_tokens\tobs_mixed\tnull_mixed\tnull_lo\tnull_hi\tp\n")
@@ -189,7 +189,7 @@ if tot:
     g.close()
 
 # ---------------- P3 ----------------
-print("\n=== P3. 간격 분포의 모양 — '2 이상 아무거나' vs '2-3 봉우리' ===")
+print("\n=== P3. shape of the gap distribution: 'anything 2 or more' vs '2-3 peak' ===")
 obsg = collections.Counter(); n_t = []
 for k in HK:
     d = {r[1]: TD.is_term(r[4]) for r in U[k] if r[1] <= 15 and r[1] <= r[0]}
@@ -216,10 +216,10 @@ for _ in range(2000):
 tA = sum(nA.values()); tB = sum(nB.values())
 g = io.open(os.path.join(OUT, "ZP_gap_shape.tsv"), "w", encoding="utf8", newline="\n")
 g.write("gap\tobs\tobs_frac\tnull_free\tnull_min2\tenrich_vs_min2\n")
-print("  간격  관측    관측비율   귀무A(자유)   귀무B(간격>=2 강제)   B 대비 배수")
+print("  gap   observed  observed_frac  nullA(free)   nullB(gap>=2 forced)   fold vs B")
 for gp in range(1, 9):
     o = obsg[gp] / max(tot, 1); a = nA[gp] / max(tA, 1); b = nB[gp] / max(tB, 1)
     g.write("%d\t%d\t%.4f\t%.4f\t%.4f\t%.4f\n" % (gp, obsg[gp], o, a, b, o / max(b, 1e-9)))
     print("   %d   %5d   %.3f      %.3f        %.3f            %.2f" % (gp, obsg[gp], o, a, b, o / max(b, 1e-9)))
 g.close()
-print("\n저장 :", OUT)
+print("\nsaved :", OUT)

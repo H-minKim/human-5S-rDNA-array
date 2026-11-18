@@ -155,18 +155,18 @@ OUT.close()
 
 smps = set(k[0] for k in V)
 print("=" * 78)
-print("  flank read 전역 하플로타입 배정 — 개체 %d · read x side %d" %
+print("  global haplotype assignment of flank reads: individuals %d, read x side %d" %
       (len(smps), sum(n.values())))
 print("=" * 78)
 print()
-print("  개체별 연결 근거")
-print("     관통(SPAN)으로 연결 : %d  (모순 %d 제외)" % (len(LINK), len(CONF)))
-print("     부모로 연결        : %d  (관통 없는 개체 중 %d)" %
+print("  linking evidence per individual")
+print("     linked by spanning (SPAN) : %d  (contradictions %d excluded)" % (len(LINK), len(CONF)))
+print("     linked by parent        : %d  (among individuals without spanning %d)" %
       (len(PLINK), len(set(PLINK) - set(LINK))))
-print("     둘 중 하나       : %d / %d" % (len(set(LINK) | set(PLINK)), len(smps)))
-print("     미확정           : %d" % len(smps - set(LINK) - set(PLINK)))
+print("     either of the two       : %d / %d" % (len(set(LINK) | set(PLINK)), len(smps)))
+print("     undetermined           : %d" % len(smps - set(LINK) - set(PLINK)))
 print()
-print("  read x side 배정")
+print("  read x side assignment")
 for k, v in n.most_common():
     print("     %-8s %6d (%5.1f%%)" % (k, v, 100.0 * v / sum(n.values())))
 print()
@@ -175,7 +175,7 @@ for s in smps:
     c = per[s]
     st["전부 확정" if c["none"] == 0 else
        ("전부 미확정" if c["none"] == sum(c.values()) else "일부만")] += 1
-print("  개체 단위 :", dict(st))
+print("  individual level:", dict(st))
 un = sorted(s for s in smps if per[s]["none"] == sum(per[s].values()))
 io.open(os.path.join(S, "hap_unlinked.txt"), "w", newline=NL).write(NL.join(un) + NL)
-print("  저장 : HAP_READ_GLOBAL.tsv · hap_unlinked.txt (%d 개체)" % len(un))
+print("  saved: HAP_READ_GLOBAL.tsv, hap_unlinked.txt (%d individuals)" % len(un))

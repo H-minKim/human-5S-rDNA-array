@@ -1,13 +1,7 @@
 # -*- coding: utf-8 -*-
 """The calculation of zz7 with the null not thinned.
 
-NSUB counts only molecules that carry a footprint (`if not cen: continue` sits above it),
-        while NMOL counts all. Scaling a thinned null by NMOL/NSUB is therefore inexact:
-        with the eight 10 bp bins (10-200 bp) nearly every molecule has a footprint and
-        the factor is 3.28 / 3.28 / 3.44 (low/mid/high), close to SUB=3 but different per stratum,
-        which shifts the low/high ratio by about 5%
-        (in narrow bins the factor reaches 5.2 / 7.2 / 8.6).
-Here the null is not thinned (SUB=1), so the factor is exactly 1 and nothing is multiplied.
+Here the null is not thinned (SUB=1), so nothing is multiplied.
 The output is written as fhmm_peaks_v2.npz.
 """
 import io
@@ -66,7 +60,7 @@ for p in sorted(glob.glob(os.path.join(FD, "FHMM_UNITS_*.tsv"))):
             if x[5] == "msp":
                 continue
             SEG[(x[1], x[0], x[4], x[2], x[3])].append((int(x[6]), int(x[7]), int(x[8])))
-print("구간 보유 read x 유닛 %s" % format(len(SEG), ","))
+print("read x unit with intervals %s" % format(len(SEG), ","))
 
 OBS = np.zeros((2, 3, NC, PER))         # platform x stratum x size group x position
 NUL = np.zeros((2, 3, NC, PER))
@@ -118,10 +112,10 @@ NUL /= float(NB)
 np.savez_compressed(os.path.join(DD, "fhmm_peaks_v2.npz"),
                     obs=OBS, nul=NUL, nmol=NMOL, nsub=NSUB,
                     per=PER, half=HALF, cls=np.array([c[2] for c in CLS]))
-print("창을 다 안 덮어 버린 분자 %s" % format(nskip, ","))
-print("분자 수  저 / 중 / 고")
+print("molecules dropped for not covering the whole window %s" % format(nskip, ","))
+print("molecule count  low / mid / high")
 for nm, pi in (("PacBio", 1), ("ONT", 0)):
-    print("  %-8s %s   (귀무 표본 %s)"
+    print("  %-8s %s   (null samples %s)"
           % (nm, " / ".join("%d" % NMOL[pi, s] for s in range(3)),
              " / ".join("%d" % NSUB[pi, s] for s in range(3))))
 
@@ -135,12 +129,12 @@ def sm(v):
 
 print()
 print("=" * 86)
-print("## 봉우리 — 관측 ÷ 자리 귀무 (평활 %d bp · 분자 규모로 맞춤)" % SM)
+print("## peaks: observed ÷ positional null (smoothing %d bp, scaled to molecule count)" % SM)
 for nm, pi in (("PacBio", 1), ("ONT", 0)):
     print()
     print("  %s" % nm)
     print("    %-9s %10s %10s %10s %10s %10s"
-          % ("크기", "저 자리", "저 배수", "중 배수", "고 배수", "저 관측/1000"))
+          % ("크기", "저 자리", "low fold", "중 배수", "high fold", "low observed/1000"))
     for k, (a0, a1, lab) in enumerate(CLS):
         o0 = sm(OBS[1 if nm == "PacBio" else 0, 0, k])
         n0 = sm(NUL[1 if nm == "PacBio" else 0, 0, k])     # scale 1
@@ -155,4 +149,4 @@ for nm, pi in (("PacBio", 1), ("ONT", 0)):
         print("    %-9s %+10d %10.2f %10.2f %10.2f %10.2f"
               % (lab, pos, row[0], row[1], row[2], 1000.0 * o0[j] / max(NMOL[pi, 0], 1)))
 print()
-print("저장 -> fhmm_peaks_v2.npz")
+print("saved -> fhmm_peaks_v2.npz")

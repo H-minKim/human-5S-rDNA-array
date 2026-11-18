@@ -23,7 +23,7 @@ C["대조"] = "암"
 C["a_이름"] = C.정상; C["b_이름"] = C.종양
 for k in ("gene", "sp", "gene_sp"):
     C["a_" + k] = C["정상_" + k]; C["b_" + k] = C["종양_" + k]
-P("[1] 암 짝 %d (같은 환자 · 같은 자료원)" % len(C))
+P("[1] cancer pairs %d (same patient, same data source)" % len(C))
 P(C[["짝이름", "자료원", "호출방식", "a_gene", "b_gene", "a_gene_sp", "b_gene_sp"]].to_string(index=False))
 
 # ---------- 2) the immortalisation pairs ----------
@@ -41,7 +41,7 @@ for p_, g in Y.groupby("person"):
                      a_gene_sp=a.고_gene_sp, b_gene_sp=b.고_gene_sp))
 I = pd.DataFrame(rows)
 P()
-P("[2] 불멸화 짝 %d (같은 사람 · HPRC Year7 · PBMC → LCL)" % len(I))
+P("[2] immortalization pairs %d (same person, HPRC Year7, PBMC -> LCL)" % len(I))
 P(I[["짝이름", "a_gene", "b_gene", "a_gene_sp", "b_gene_sp"]].to_string(index=False))
 
 PAIR = pd.concat([C[["짝이름", "대조", "자료원", "호출방식", "a_이름", "b_이름",
@@ -51,7 +51,7 @@ PAIR.to_csv(os.path.join(HERE, "FIG8_PAIRS.tsv"), sep="\t", index=False, float_f
 
 # ---------- the tests ----------
 P()
-P("[검정] 짝마다 b - a (암 = 종양 - 정상 · 불멸화 = LCL - PBMC)")
+P("[test] b - a per pair (cancer = tumor - normal, immortalization = LCL - PBMC)")
 rows = []
 for nm, g in PAIR.groupby("대조"):
     for k, lab in (("gene", "고메틸 유닛 안 유전자부 β"), ("sp", "고메틸 유닛 안 스페이서 β"),
@@ -61,23 +61,23 @@ for nm, g in PAIR.groupby("대조"):
         sg = stats.binomtest(int((d < 0).sum()), len(d), 0.5).pvalue
         rows.append(dict(대조=nm, 지표=lab, n=len(d), 중앙Δ=float(np.median(d)),
                          내려간짝=int((d < 0).sum()), 윌콕슨p=w.pvalue, 부호검정p=sg))
-        P("   %-6s %-22s n %2d · 중앙 Δ %+.4f · 내려간 %d/%d · 윌콕슨 p %.4f · 부호검정 p %.4f"
+        P("   %-6s %-22s n %2d, median Δ %+.4f, decreased %d/%d, Wilcoxon p %.4f, sign test p %.4f"
           % (nm, lab, len(d), np.median(d), int((d < 0).sum()), len(d), w.pvalue, sg))
 T = pd.DataFrame(rows)
 T.to_csv(os.path.join(HERE, "FIG8_TESTS.tsv"), sep="\t", index=False, float_format="%.6g")
 
 # ---------- only pairs with the same calling mode, 6 cancer pairs ----------
 P()
-P("[민감도] 암에서 호출방식까지 같은 6 짝만")
+P("[sensitivity] cancer, only the 6 pairs that also share the call method")
 c6 = PAIR[(PAIR.대조 == "암") & (PAIR.호출방식 == "같음")]
 for k, lab in (("gene", "유전자부"), ("gene_sp", "gene - sp")):
     d = (c6["b_" + k] - c6["a_" + k]).dropna()
-    P("   %-8s n %d · 중앙 Δ %+.4f · 내려간 %d/%d · 윌콕슨 p %.4f"
+    P("   %-8s n %d, median Δ %+.4f, decreased %d/%d, Wilcoxon p %.4f"
       % (lab, len(d), np.median(d), int((d < 0).sum()), len(d), stats.wilcoxon(d).pvalue))
 
 # ---------- the difference between data sources, as a reference line ----------
 P()
-P("[참고] 자료원 차이 — Y7 LCL 10 vs HPRC 본 코호트 280 (둘 다 LCL 유래)")
+P("[note] data source difference: Y7 LCL 10 vs HPRC main cohort 280 (both LCL-derived)")
 H = pd.read_csv(os.path.join(HERE, "HPRC280_SAMPLE.tsv"), sep="\t")
 lcl = R[R.군 == "비암 세포주(LCL)"]
 ref = []
@@ -88,5 +88,5 @@ for k, col in (("gene", "고_gene"), ("sp", "고_sp"), ("gene_sp", "고_gene_sp"
     P("   %-8s Δ %+.4f · p %.4g" % (k, d, u.pvalue))
 pd.DataFrame(ref).to_csv(os.path.join(HERE, "FIG8_SOURCEREF.tsv"), sep="\t", index=False, float_format="%.6g")
 P()
-P("[저장] FIG8_PAIRS.tsv · FIG8_TESTS.tsv · FIG8_SOURCEREF.tsv")
+P("[saved] FIG8_PAIRS.tsv, FIG8_TESTS.tsv, FIG8_SOURCEREF.tsv")
 LOG.close()

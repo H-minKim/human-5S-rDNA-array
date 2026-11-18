@@ -46,7 +46,7 @@ TMP = OUT + "/_one.fa"
 for label, path, ctg in TARGETS:
     seqs = dict(rd(path))
     if ctg not in seqs:
-        P("!! %s : contig %s 없음 (%s)" % (label, ctg, path)); continue
+        P("!! %s: contig %s missing (%s)" % (label, ctg, path)); continue
     s = seqs[ctg]
     open(TMP, "w").write(">%s\n%s\n" % (ctg, s))
     P("\n" + "=" * 90)
@@ -74,24 +74,24 @@ for label, path, ctg in TARGETS:
     ded = []
     for h in hits:
         if not ded or h[0] - ded[-1][0] > 800: ded.append(h)
-    P("  유전자 히트 %d 개 · 구간 %d-%d · strand %s" %
+    P("  gene hits %d, interval %d-%d, strand %s" %
       (len(ded), ded[0][0], ded[-1][0],
        dict((x, sum(1 for h in ded if h[2] == x)) for x in set(h[2] for h in ded))))
     gaps = [b[0] - a[0] for a, b in zip(ded, ded[1:])]
     if gaps:
         import statistics
         inr = [g for g in gaps if 1500 < g < 3500]
-        P("  간격 중앙 %s · 1500-3500 밖 %d %s" % (int(statistics.median(inr)) if inr else "-",
+        P("  spacing median %s, outside 1500-3500 %d %s" % (int(statistics.median(inr)) if inr else "-",
                                                 len(gaps) - len(inr), sorted(g for g in gaps if not (1500 < g < 3500))[:8]))
 
     # --- orientation : DESC if the distal flank has higher coordinates than the gene cluster
     d = fl["dist"]
     if d is None:
-        P("  !! 원위 flank 없음 → 건너뜀"); continue
+        P("  !! no distal flank -> skipped"); continue
     gmid = (ded[0][0] + ded[-1][0]) / 2
     desc = d[2] > gmid          # True: distal = higher coordinates → units run in decreasing coordinate direction
-    P("  방향 : 원위 flank %s → %s" % ("HIGHER" if desc else "LOWER",
-                                      "contig 좌표 감소" if desc else "contig 좌표 증가"))
+    P("  orientation: distal flank %s -> %s" % ("HIGHER" if desc else "LOWER",
+                                      "contig coordinate decreasing" if desc else "contig 좌표 증가"))
 
     # --- unit boundary = gene END (contig coordinate of canonical base 2240)
     # desc (= stored in reverse): the canonical end is the left end of the hit, f[2]
@@ -102,10 +102,10 @@ for label, path, ctg in TARGETS:
     else:
         B = sorted([h[1] for h in ded])                  # 0-based exclusive end
         flank_edge = d[3]
-    P("  원위 flank 끝 → 첫 유전자 END 거리 = %d bp" % abs(B[0] - flank_edge))
+    P("  distal flank end to first gene END distance = %d bp" % abs(B[0] - flank_edge))
 
     if len(B) < 21:
-        P("  !! 경계 %d 개뿐 → 20 유닛 불가" % len(B))
+        P("  !! only %d boundaries -> 20 units not possible" % len(B))
     nmax = min(20, len(B) - 1)
     fa = open(OUT + "/%s_distal20.fa" % label, "w")
     for k in range(nmax):
@@ -118,7 +118,7 @@ for label, path, ctg in TARGETS:
         fa.write(">%s_pos%03d %s:%d-%d(%s) len=%d\n%s\n" % (label, ap, ctg, cs, ce, st, len(sub), sub))
         tsv.write("%s\t%s\t%d\t%d\t%d\t%s\t%d\t%d\t%d\n" % (label, ctg, ap, cs, ce, st, len(sub), b1, b2))
     fa.close()
-    P("  → %s_distal20.fa : %d 유닛 · 길이 %s" %
+    P("  -> %s_distal20.fa: %d units, lengths %s" %
       (label, nmax, [ (B[k]-B[k+1] if desc else B[k+1]-B[k]) for k in range(min(nmax,20)) ]))
 
 tsv.close(); log.close()

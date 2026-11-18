@@ -64,7 +64,7 @@ MG = np.nanmean(S / Cn[:, :, None], 0)
 NHpos = np.sum(C > 0, 0)
 TOT = MG.sum(1)
 FR = MG / TOT[:, None]
-print("층 %s · 남은 변이 출현 %d / %d (%.4f) · 유닛당 %.3f"
+print("stratum %s, remaining variant occurrences %d / %d (%.4f), per unit %.3f"
       % (KEEP, kept, kept + drop, kept / (kept + drop), TOT[RI["MID"]]))
 
 ZP = os.path.join(HERE, "REPRO", "VTZONE3_%s_zones.tsv" % KEEP)
@@ -75,7 +75,7 @@ ZR = {r[0]: dict(zone=[float(x) for x in r[1:5]], z=float(r[ZH["최대_귀무z"]
                  far=r[ZH["가장_먼_구역"]]) for r in ZL[1:]}
 PICK = sorted([g for g in GROUPS if g in ZR and abs(ZR[g]["z"]) >= ZCUT],
               key=lambda g: -abs(ZR[g]["z"]))
-print("고른 무리 %d : %s" % (len(PICK), " · ".join(PICK)))
+print("selected groups %d : %s" % (len(PICK), " · ".join(PICK)))
 
 src = io.open(os.path.join(OUT, NAME + "_source_values.tsv"), "w", encoding="utf8", newline="\n")
 src.write("자리\t쪽\t접합부로부터_유닛\t하플로타입수\t유닛당_변이수_합\t"
@@ -199,7 +199,7 @@ fig.suptitle("변이 기원 층 : %s" % KTXT, fontsize=13.0, y=0.985)
 
 fig.savefig(os.path.join(OUT, NAME + ".png"), dpi=150)
 fig.savefig(os.path.join(OUT, NAME + ".svg"))
-print("저장 %s" % os.path.join(OUT, NAME + ".png"))
+print("saved %s" % os.path.join(OUT, NAME + ".png"))
 
 # the deposited table(s) carry English column names and values (common/fig02_figS2/taben.py)
 import sys as _s, os as _o

@@ -227,11 +227,11 @@ def pick(smp):
 
 
 print("=" * 86)
-print("  1단계 v2. 하플로타입 확정 — 개체 %d  (v1 은 270)" % len(smps))
+print("  Stage 1 v2. Haplotype determination: individuals %d  (v1: 270)" % len(smps))
 print("=" * 86)
-print("  코호트  HPRC ONT %d · 신규추출44 %d · 그 외 %d" %
+print("  cohort  HPRC ONT %d, newly-extracted44 %d, other %d" %
       (len(set(smps) & hprc), len(set(smps) & EX44), len(set(smps) - hprc - EX44)))
-print("  강한 관통(양쪽 flank)을 가진 개체 %d · 그중 서로 다른 관통군 2 개 이상 %d" %
+print("  individuals with strong spanning (both flanks) %d, of which with 2 or more distinct spanning groups %d" %
       (len([s for s in smps if STRONG.get(s)]),
        len([s for s in smps if len(STRONG.get(s, ())) >= 2])))
 print()
@@ -251,30 +251,30 @@ for s in smps:
         sup[c["n"]] += 1
         tiers[tier_of(c)] += 1
 
-print("  후보 군집 수 분포 (추리기 전)")
+print("  distribution of candidate cluster counts (before selection)")
 for k in sorted(nc):
-    print("     %-3s개 : %3d 개체 (%5.1f%%)" %
+    print("     %-3s : %3d individuals (%5.1f%%)" %
           ("5+" if k == 5 else k, nc[k], 100.0 * nc[k] / len(smps)))
 print()
 n2 = sum(1 for s in smps if len(final[s]) >= 2)
 tot = sum(tiers.values())
-print("  2 슬롯 채운 개체 : %d / %d (%.1f%%) · 1 슬롯 %d · 0 슬롯 %d" %
+print("  individuals with 2 slots filled: %d / %d (%.1f%%), 1 slot %d, 0 slots %d" %
       (n2, len(smps), 100.0 * n2 / len(smps),
        sum(1 for s in smps if len(final[s]) == 1),
        sum(1 for s in smps if not final[s])))
-print("  쌍둥이 예외로 구제한 개체 : %d" % ntwin)
-print("  확정 하플로타입 : %d / %d 슬롯 = %.1f%%" %
+print("  individuals rescued by the twin exception: %d" % ntwin)
+print("  confirmed haplotypes: %d / %d slots = %.1f%%" %
       (tot, 2 * len(smps), 100.0 * tot / (2 * len(smps))))
 print()
-print("  채택 근거")
+print("  basis of adoption")
 for k in sorted(tiers):
     print("     %-20s %4d (%5.1f%%)" % (TN[k], tiers[k], 100.0 * tiers[k] / tot))
 print()
-print("  교차지지 (몇 개 방법이 같은 유닛 수를 지목했나)")
+print("  cross-support (how many methods pointed to the same unit count)")
 for k in sorted(sup, reverse=True):
-    print("     %d 개 방법 : %4d (%5.1f%%)" % (k, sup[k], 100.0 * sup[k] / tot))
+    print("     %d methods: %4d (%5.1f%%)" % (k, sup[k], 100.0 * sup[k] / tot))
 print()
-print("  단독 지목인 하플로타입의 출처")
+print("  source of haplotypes supported by a single method")
 one = collections.Counter()
 for s in smps:
     for c in final[s]:
@@ -285,8 +285,8 @@ for k, v in one.most_common():
 print()
 
 # ---- cases where the public assembly lost ----
-print("  === 공개조립본이 밀린 건 (관통이 이긴 경우) ===")
-print("  %-11s %-14s %-14s %s" % ("개체", "채택", "버린 공개조립본", "강한관통(read수)"))
+print("  === cases where the public assembly was overruled (spanning won) ===")
+print("  %-11s %-14s %-14s %s" % ("개체", "채택", "버린 공개조립본", "strong spanning (read count)"))
 print("  " + "-" * 76)
 lost = 0
 for s in smps:
@@ -304,11 +304,11 @@ for s in smps:
            ",".join("%d" % c["u"] for c in drop),
            ",".join("%d(%d)" % (x, NREAD[s][x]) for x in sorted(STRONG.get(s, ())))
            or "없음"))
-print("  공개조립본이 밀린 개체 : %d" % lost)
+print("  individuals where the public assembly was overruled: %d" % lost)
 print()
 
 # ---- cases where the spanning read and hifiasm disagree outright, for inspection by hand ----
-print("  === 관통 단독이 hifiasm+재조합관통 을 이긴 건 (검토 필요) ===")
+print("  === cases where spanning alone beat hifiasm+recombined spanning (review needed) ===")
 flag = 0
 for s in smps:
     got, cl = pick(s)
@@ -318,10 +318,10 @@ for s in smps:
     if not drop:
         continue
     flag += 1
-    print("  %-11s 채택 %-12s 버림 %s" %
+    print("  %-11s adopted %-12s discarded %s" %
           (s, ",".join("%d(%s)" % (c["u"], TN[tier_of(c)][:6]) for c in got),
            " · ".join("%d(%s)" % (c["u"], ",".join(sorted(c["m"]))) for c in drop)))
-print("  검토 대상 : %d" % flag)
+print("  to review: %d" % flag)
 
 OUT = io.open(os.path.join(S, "hap_final2.tsv"), "w", encoding="utf8", newline=NL)
 OUT.write("sample\tslot\tunits\tn_method\tstrong_span\tn_span_read\ttier\tmethods\n")
@@ -336,4 +336,4 @@ for s in smps:
                    TN[tier_of(c)], ",".join(sorted(c["m"]))))
 OUT.close()
 print()
-print("  저장 : hap_final2.tsv")
+print("  saved: hap_final2.tsv")

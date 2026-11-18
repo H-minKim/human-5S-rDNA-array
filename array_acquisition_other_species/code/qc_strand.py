@@ -24,6 +24,6 @@ for path in sys.argv[1:]:
                 ga += 1
             if n >= 200000:
                 break
-    print("%s\tread %d\tC %.1f%%\tG %.1f%%\tT %.1f%%\tA %.1f%%\tC→T형 %.1f%%\tG→A형 %.1f%%\t합 %.1f%%" % (
+    print("%s\tread %d\tC %.1f%%\tG %.1f%%\tT %.1f%%\tA %.1f%%\tC->T type %.1f%%\tG->A type %.1f%%\tsum %.1f%%" % (
         path.split("/")[-1], n, 100.0 * C / tot, 100.0 * G / tot, 100.0 * T / tot, 100.0 * A / tot,
         100.0 * ct / n, 100.0 * ga / n, 100.0 * (ct + ga) / n))

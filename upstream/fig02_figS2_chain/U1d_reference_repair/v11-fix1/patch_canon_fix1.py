@@ -47,7 +47,7 @@ for k in U:
     U[k].sort()
 
 V10 = os.path.join(H, "cmp4d_v11_fix1")
-assert not os.path.exists(V10), "이미 있음 - 덮어쓰지 않음"
+assert not os.path.exists(V10), "already exists - not overwritten"
 os.makedirs(V10)
 n = 0
 for p in glob.glob(os.path.join(H, "cmp4d_v11", "*.fa")):
@@ -55,7 +55,7 @@ for p in glob.glob(os.path.join(H, "cmp4d_v11", "*.fa")):
     t = os.path.join(V10, b)
     shutil.copyfile(os.path.realpath(p), t)          # real copy
     n += 1
-print("v11 에서 실제 복사한 파일 %d" % n)
+print("files actually copied from v11 %d" % n)
 
 LOG = io.open(os.path.join(H, "fix1", "CANON_V11_FIX1_PATCH.tsv"), "w", encoding="utf8", newline=NL)
 LOG.write(TAB.join(["sample", "slot", "after_unit", "file", "anchor_start", "anchor_end",
@@ -70,18 +70,18 @@ for (smp, sl, ap, apR) in SITES:
     a0, a1 = v[i][1], v[iR][2]
     spl = rdfa(os.path.join(H, "fix1", "splice", "spl_%s_%s_%d.fa" % (smp, sl, ap)))
     # check that the anchor sequences are identical, character for character, to the assembly (the premise of the surgical method)
-    assert spl.startswith(A[v[i][1] - 1:v[i][2]]), "앞 앵커 불일치 %s %s" % (smp, sl)
-    assert spl.endswith(A[v[iR][1] - 1:v[iR][2]]), "뒤 앵커 불일치 %s %s" % (smp, sl)
+    assert spl.startswith(A[v[i][1] - 1:v[i][2]]), "front anchor mismatch %s %s" % (smp, sl)
+    assert spl.endswith(A[v[iR][1] - 1:v[iR][2]]), "back anchor mismatch %s %s" % (smp, sl)
     B = A[:a0 - 1] + spl + A[a1:]
     out = rc(B) if FLIP.get((smp, sl)) else B
     t = os.path.join(V10, fn)
     assert not os.path.islink(t)
     io.open(t, "w", newline=NL).write(">%s_splice_v11fix1%s%s%s" % (fn.replace(".fa", ""), NL, out, NL))
-    print("  %s h%s 유닛%d/%d : 창 %d -> %d bp · 전체 %d -> %d bp"
+    print("  %s h%s unit%d/%d: window %d -> %d bp, total %d -> %d bp"
           % (smp, sl, v[i][0], v[iR][0], a1 - a0 + 1, len(spl), len(A), len(B)))
     LOG.write(TAB.join([smp, sl, str(ap), fn, str(a0), str(a1), str(a1 - a0 + 1),
                         str(len(spl)), str(len(A)), str(len(B)),
                         "Y" if FLIP.get((smp, sl)) else "N"]) + NL)
 LOG.close()
 real = sum(1 for x in os.listdir(V10) if not os.path.islink(os.path.join(V10, x)))
-print("cmp4d_v10 : 전체 %d · 실제 파일 %d" % (len(os.listdir(V10)), real))
+print("cmp4d_v10: total %d, real files %d" % (len(os.listdir(V10)), real))

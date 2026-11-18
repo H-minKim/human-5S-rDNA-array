@@ -24,7 +24,7 @@ CAN = G.CAN
 LU = len(CAN)
 U, _, _ = G.load("h1")
 VPU = sum(len(t[4]) for v in U.values() for t in v) / sum(len(v) for v in U.values())
-print("§0 자 : var_per_unit = %.6f" % VPU)
+print("§0 ruler : var_per_unit = %.6f" % VPU)
 assert abs(VPU - 6.866) < 0.01
 NCOPY = {("%s" % k[0], "%s" % k[1]): len(v) for k, v in U.items()}
 with open(os.path.join(HERE, "OUT_P04", "Q0_alignment.pkl"), "rb") as f:
@@ -49,7 +49,7 @@ for k in keys:
         HAPS_OF[(q, b)].add((k[0], k[1]))
 NT = len(keys)
 NH_ALL = len({(k[0], k[1]) for k in keys})
-print("유닛 %d · haplotype %d · 서로 다른 (자리,대립) %d" % (NT, NH_ALL, len(CF)))
+print("units %d, haplotype %d, distinct (position,allele) %d" % (NT, NH_ALL, len(CF)))
 
 PACK = []
 for s in sorted(MATS):
@@ -64,12 +64,12 @@ for s in sorted(MATS):
     kk = [(s[0], s[1], aps[i]) for i in sel]
     dec = np.minimum((np.arange(n) * DEC) // n, DEC - 1)
     PACK.append((s, M, kk, n, dec))
-print("가운데 창 haplotype %d · 유닛 %d" % (len(PACK), sum(x[3] for x in PACK)))
+print("interior window haplotype %d, units %d" % (len(PACK), sum(x[3] for x in PACK)))
 
 # ---------------- (a)(b)(c) distance between variant-carrying units, by frequency stratum ----------------
 print("\n" + "=" * 78)
-print("[핵심] 변이를 공유한 유닛들이 array 위에서 얼마나 가까운가 — 코호트 희귀도 층별")
-print("    귀무 = 같은 carrier 수를 위치 십분위 층화해 무작위 배치 (N = %d)" % N_PERM)
+print("[core] how close along the array are units sharing a variant: by cohort rarity stratum")
+print("    null = the same number of carriers placed at random, stratified by position decile (N = %d)" % N_PERM)
 STRATA = [("사유 (그 haplotype 에만)", lambda q, b: len(HAPS_OF[(q, b)]) == 1),
           ("매우 희귀 (<0.1%)", lambda q, b: CF[(q, b)] / NT < 0.001),
           ("희귀 (0.1-1%)", lambda q, b: 0.001 <= CF[(q, b)] / NT < 0.01),
@@ -112,7 +112,7 @@ t0 = time.time()
 for nm, f in STRATA:
     gs = SETS[nm]
     if len(gs) < 20:
-        print("    %-22s 사례 %d — 너무 적어 건너뜀" % (nm, len(gs)))
+        print("    %-22s cases %d: too few, skipped" % (nm, len(gs)))
         continue
     obs, ncar = nn_stats(gs)
     nul = np.zeros(N_PERM)
@@ -127,14 +127,14 @@ for nm, f in STRATA:
             orders[s] = o
         nul[b] = nn_stats(gs, orders)[0]
     p = (1 + int((nul <= obs).sum())) / (N_PERM + 1)
-    print("    %-22s 변이 %6d · carrier %7d · 최근접 거리 관측 %7.4f ↔ 귀무 %7.4f ± %.4f · 배율 %.4f · p = %.4g"
+    print("    %-22s variants %6d, carrier %7d, nearest distance observed %7.4f vs null %7.4f ± %.4f, ratio %.4f, p = %.4g"
           % (nm, len(gs), ncar, obs, nul.mean(), nul.std(ddof=1), obs / nul.mean(), p))
     rows.append((nm, len(gs), ncar, float(obs), float(nul.mean()), float(nul.std(ddof=1)),
                  float(obs / nul.mean()), p))
-print("    (%.0fs)  읽는 법 : 배율 < 1 = 관측이 귀무보다 가깝다 = 국소 교환" % (time.time() - t0))
+print("    (%.0fs)  how to read : ratio < 1 = observed is closer than null = local exchange" % (time.time() - t0))
 
 # ---------------- distance distribution of private variant carrier pairs ----------------
-print("\n[보강] 사유 변이 (그 haplotype 에만 있는 변이) carrier 쌍의 거리 분포")
+print("\n[supplement] distance distribution of carrier pairs of private variants (variants found only in that haplotype)")
 pri = SETS["사유 (그 haplotype 에만)"]
 dd = []
 for s, v in pri:
@@ -144,16 +144,16 @@ for s, v in pri:
             dd.append(pos[b2] - pos[a])
 dd = np.array(dd)
 if len(dd):
-    print("    carrier 쌍 %d · 거리 median %.1f · 1 copy 몫 %.4f · <=5 copy 몫 %.4f · <=10 몫 %.4f"
+    print("    carrier pairs %d, distance median %.1f, share at 1 copy %.4f, share <=5 copies %.4f, share <=10 %.4f"
           % (len(dd), np.median(dd), (dd == 1).mean(), (dd <= 5).mean(), (dd <= 10).mean()))
     p2 = float("nan")
     nul2 = np.array([np.nan])
-    print("    (쌍 거리의 별도 귀무는 생략 — 위 층별 최근접 귀무가 같은 것을 이미 검정한다)")
+    print("    (no separate null for pair distance: the per-stratum nearest-distance null above already tests the same thing)")
 
 # ---------------- (d) sensitivity to the divergence quartile threshold ----------------
 print("\n" + "=" * 78)
-print("[민감도] 발산 임계값을 바꿔도 lag1 − lag2 가 0 으로 가는가")
-print("    %8s %10s %12s %12s %12s" % ("임계", "제외 몫", "lag1", "lag2", "lag1 − lag2"))
+print("[sensitivity] does lag1 − lag2 still go to 0 when the divergence cutoff is changed")
+print("    %8s %10s %12s %12s %12s" % ("threshold", "제외 몫", "lag1", "lag2", "lag1 − lag2"))
 rows_d = []
 for pct in (0, 50, 67, 75, 90):
     num = np.zeros(2)
@@ -177,7 +177,7 @@ for pct in (0, 50, 67, 75, 90):
     rows_d.append((pct, ndrop / sum(x[3] for x in PACK), float(c[0]), float(c[1]), float(c[0] - c[1])))
 
 g = io.open(os.path.join(OUT, "X7_homogenisation_evidence.tsv"), "w", encoding="utf8", newline="\n")
-g.write("# P08 X7 · ruler majref %.6f · seed %d · N_perm %d · 2026-10-10\n" % (VPU, SEED, N_PERM))
+g.write("# P08 X7 · ruler majref %.6f · seed %d · N_perm %d\n" % (VPU, SEED, N_PERM))
 g.write("[freq]\tstratum\tn_variant\tn_carrier\tobs_nn\tnull_nn\tnull_sd\tratio\tp\n")
 for r in rows:
     g.write("\t%s\t%d\t%d\t%.6f\t%.6f\t%.6f\t%.6f\t%.6g\n" % r)
@@ -191,7 +191,7 @@ for r in rows_d:
     g.write("\t%d\t%.6f\t%.6f\t%.6f\t%.6f\n" % r)
 g.close()
 np.save(os.path.join(OUT, "X7_private_pair_dist.npy"), dd)
-print("\n산출 :", os.path.join(OUT, "X7_homogenisation_evidence.tsv"))
+print("\noutputs :", os.path.join(OUT, "X7_homogenisation_evidence.tsv"))
 
 # the deposited table(s) carry English column names and values (common/fig02_figS2/taben.py)
 import sys as _s, os as _o

@@ -11,7 +11,7 @@
 #          map/<species>__<chrom>_<start>_<end>.map.tsv (consensus map)
 #          canon_unit/<species>__....unit.fa, that array's representative unit
 #          MAP_SUMMARY.tsv, one row per array
-# MIT License · Copyright (c) 2026 Hungmin Kim
+# MIT License. Copyright (c) 2026 Hyungmin Kim
 import io
 import os
 import sys
@@ -172,5 +172,5 @@ for (c, s0, e1, strand, cop) in ARR:
     SUM.write(TAB.join([SP, aid, c, str(s0), str(e1), strand, str(cop), str(len(units)), str(ln),
                         "%.1f" % (100.0 * ident / len(units)), str(len(allv)), str(nv[len(nv) // 2]),
                         os.path.join("canon", aid + ".fa"), os.path.join("map", aid + ".map.tsv")]) + NL)
-    print("%s %s : 유닛 %d · 대표유닛 %d bp · 변이없는 유닛 %.1f%% · 변이자리 %d" % (SP, aid, len(units), ln, 100.0 * ident / len(units), len(allv)))
+    print("%s %s : units %d, representative unit %d bp, units without variants %.1f%%, variant positions %d" % (SP, aid, len(units), ln, 100.0 * ident / len(units), len(allv)))
 SUM.close()

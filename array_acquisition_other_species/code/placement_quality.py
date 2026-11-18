@@ -5,13 +5,13 @@
 #   An array-spanning read is one molecule covering the array from start to end; reaching both flanks as well makes it flank-to-flank.
 #   A junction read crosses the array boundary and carries at least JFLANK bp of outside flank, on one side.
 #   The axes of placement soundness:
-#     · the mapq 0 fraction, which is normally high in a tandem array, but how high is recorded;
+#     - the mapq 0 fraction, which is normally high in a tandem array, but how high is recorded;
 # - clip fraction: if many reads are heavily clipped at both ends, the placement is doubtful
-#     · the median alignment identity, the read-to-reference identity computed from the NM tag.
+#     - the median alignment identity, the read-to-reference identity computed from the NM tag.
 #   Reads are not filtered by mapq.
 #
 #   Arguments: species key, sample, bam, chrom, array start, array end, [JFLANK = 1000].
-# MIT License · Copyright (c) 2026 Hungmin Kim
+# MIT License. Copyright (c) 2026 Hyungmin Kim
 import sys
 import pysam
 

@@ -4,7 +4,7 @@
 #   Same type means blastn identity >= ID and the alignment covering at least COV of the longer spacer (defaults 80% and 0.50).
 #   The distribution of gaps between gene ends (the period) is also reported per array, to show whether one unit or several were taken as one.
 #   Outputs: SPACER_TYPES.tsv, PERIOD_DIST.tsv.
-# MIT License · Copyright (c) 2026 Hungmin Kim
+# MIT License. Copyright (c) 2026 Hyungmin Kim
 import io
 import os
 import sys
@@ -81,18 +81,18 @@ for sp in sorted(BYSP):
                     st.append(y)
         types.append(sorted(comp, key=lambda z: -int(ST[z][ix["copies"]])))
     types.sort(key=lambda t: -sum(int(ST[z][ix["copies"]]) for z in t))
-    print("== %s : array %d · 스페이서 종류 %d" % (sp, len(aids), len(types)))
+    print("== %s : array %d, spacer types %d" % (sp, len(aids), len(types)))
     for i, t in enumerate(types, 1):
         cps = sum(int(ST[z][ix["copies"]]) for z in t)
         sl = sorted(len(SPACER[z]) for z in t)
         gc = [float(ST[z][ix["gc_spacer"]]) for z in t if ST[z][ix["gc_spacer"]] != "NA"]
-        print("   종류 %d : array %2d · copy %5d · 스페이서 %s bp · GC %s" % (
+        print("   type %d : array %2d, copy %5d, spacer %s bp, GC %s" % (
             i, len(t), cps, ("%d-%d" % (sl[0], sl[-1])) if sl[0] != sl[-1] else str(sl[0]),
             ("%.1f-%.1f" % (min(gc), max(gc))) if gc else "NA"))
         for z in t[:3]:
             print("        %s copy %s" % (z.split("__")[1], ST[z][ix["copies"]]))
         if len(t) > 3:
-            print("        ... 그 밖 %d 개" % (len(t) - 3))
+            print("        ... %d more" % (len(t) - 3))
         r0 = t[0]
         for z in t:
             b = best.get((z, r0))
@@ -134,4 +134,4 @@ for sp in sorted(BYSP):
                            str(gs[int(0.9 * (len(gs) - 1))]), str(gs[0]), str(gs[-1]), str(top[0][0]),
                            ",".join("%d:%d" % (k, v) for k, v in top)]) + NL)
 pd.close()
-print("표 : SPACER_TYPES.tsv · PERIOD_DIST.tsv")
+print("tables : SPACER_TYPES.tsv, PERIOD_DIST.tsv")

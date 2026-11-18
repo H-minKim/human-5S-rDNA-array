@@ -10,7 +10,7 @@
 set -u
 cd ~/zfwgbs || exit 1
 mkdir -p qc logs
-printf "run\tdesc\tR1_C_pct\tR1_T_pct\tconverted_read_pct\t판정\n"
+printf "run\tdesc\tR1_C_pct\tR1_T_pct\tconverted_read_pct\tverdict\n"
 for X in "SRR800059 알_Potok2013_PRJNA193544" \
          "SRR800056 정자_Potok2013" \
          "SRR800061 2-16세포_Potok2013" \
@@ -26,14 +26,14 @@ for X in "SRR800059 알_Potok2013_PRJNA193544" \
     fastq-dump -X 200000 --split-files --gzip -O qc "$R" > logs/qc_${R}.log 2>&1
   fi
   F=qc/${R}_1.fastq.gz
-  [ -f "$F" ] || { printf "%s\t%s\t-\t-\t-\t내려받기 실패\n" "$R" "$D"; continue; }
+  [ -f "$F" ] || { printf "%s\t%s\t-\t-\t-\tdownload failed\n" "$R" "$D"; continue; }
   zcat "$F" | head -400000 | awk -v r="$R" -v d="$D" '
     NR%4==2{ n=length($0); tot+=n;
       c=gsub(/C/,"C"); t=gsub(/T/,"T"); C+=c; T+=t;
       if(100*c/n<=5) k++; m++ }
-    END{ if(tot==0){printf "%s\t%s\t-\t-\t-\t빈 파일\n", r, d; exit}
+    END{ if(tot==0){printf "%s\t%s\t-\t-\t-\tempty file\n", r, d; exit}
       cp=100*C/tot; tp=100*T/tot; kp=100*k/m;
-      v = (kp>=70) ? "쓸 만함" : ((kp>=40) ? "의심" : "불가(변환 안 됨)");
+      v = (kp>=70) ? "usable" : ((kp>=40) ? "doubtful" : "unusable(not converted)");
       printf "%s\t%s\t%.1f\t%.1f\t%.1f\t%s\n", r, d, cp, tp, kp, v }'
 done
 rm -f qc/*.fastq.gz

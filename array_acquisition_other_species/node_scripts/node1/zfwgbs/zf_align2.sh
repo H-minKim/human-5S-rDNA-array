@@ -1,15 +1,15 @@
 #!/bin/bash
 # Zebrafish WGBS alignment, the small-footprint version.
-#   · --upto takes only the first 8 million read pairs, which is enough for an array mean: about 1.6x over the whole genome, which is still thousands of reads over the 800 kb array.
-#   · --parallel 2 reduces the temporary files.
-#   · The temporary files go to zfwgbs/tmp, and the run stops itself below 25 GB of free disk.
+#   - --upto takes only the first 8 million read pairs, which is enough for an array mean: about 1.6x over the whole genome, which is still thousands of reads over the 800 kb array.
+#   - --parallel 2 reduces the temporary files.
+#   - The temporary files go to zfwgbs/tmp, and the run stops itself below 25 GB of free disk.
 cd ~/zfwgbs
 export PATH=$HOME/zfwgbs/Bismark-0.24.2:$PATH
 mkdir -p bam logs tmp
 for S in SRR14703401 SRR14703403; do
   [ -f bam/${S}_done ] && { echo "SKIP $S"; continue; }
   FREE=$(df --output=avail -BG / | tail -1 | tr -dc '0-9')
-  if [ "$FREE" -lt 25 ]; then echo "STOP $S — 여유 ${FREE}G"; break; fi
+  if [ "$FREE" -lt 25 ]; then echo "STOP $S: free ${FREE}G"; break; fi
   bismark --genome ref --parallel 2 -p 2 --bam --temp_dir tmp --upto 8000000     -o bam -1 sra/${S}_1.fastq.gz -2 sra/${S}_2.fastq.gz > logs/${S}.align2.log 2>&1
   B=$(ls bam/${S}_1*bismark*pe.bam 2>/dev/null | head -1)
   if [ -n "$B" ]; then

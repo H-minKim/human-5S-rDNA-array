@@ -47,7 +47,7 @@ for bi, b in enumerate(BAS):
         if row is None:
             continue
         v = float(row[H["slope"]])
-        rec("B", "기준%s · %s" % (b, gname), "기울기 %s [%s,%s] · 평균크기 %s · 유닛 %s · rho %s"
+        rec("B", "reference%s, %s" % (b, gname), "slope %s [%s,%s], mean size %s, units %s, rho %s"
             % (row[H["slope"]], row[H["slope_lo"]], row[H["slope_hi"]], row[H["mean_size"]],
                row[H["n_units"]], row[H["spearman"]]), "S14_length.tsv")
         xs.append(gi + (bi - 0.5) * W); ys.append(v)
@@ -72,4 +72,4 @@ ax.legend(loc="lower left", bbox_to_anchor=(0.0, 1.02), borderaxespad=0.0, ncol=
 # The note 'only the middle grows, both ends stay near 0' is not drawn on the figure; it is in the legend (it hides bars in an 80 pt cell)
 SRC.close()
 CS.save(fig, OUT, "cellF2_k_length")
-print("기준 %s" % BAS)
+print("reference %s" % BAS)

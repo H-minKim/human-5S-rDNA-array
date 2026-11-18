@@ -17,7 +17,7 @@ from scipy import stats
 
 U, _, _ = G.load("h1")
 VPU = sum(len(t[4]) for v in U.values() for t in v) / sum(len(v) for v in U.values())
-print("§0 자 : var_per_unit = %.6f" % VPU)
+print("§0 ruler : var_per_unit = %.6f" % VPU)
 assert abs(VPU - 6.866) < 0.01
 NCOPY = {("%s" % k[0], "%s" % k[1]): len(v) for k, v in U.items()}
 with open(os.path.join(HERE, "OUT_P04", "S3_matrices.pkl"), "rb") as f:
@@ -37,7 +37,7 @@ for s in sorted(MATS):
     med = int(np.argmin(M.sum(1)))
     div = M[med].astype(float)
     PACK.append((M, n, div > np.percentile(div, 75)))
-print("haplotype %d · 유닛 %d · 발산 %d"
+print("haplotype %d, units %d, divergent %d"
       % (len(PACK), sum(x[1] for x in PACK), sum(int(x[2].sum()) for x in PACK)))
 
 
@@ -106,24 +106,24 @@ for tag, ua, key in (("전체", True, "all"), ("발산 사분위 제외", False,
     obs, sims, p, lo, hi, allmean, den = run(ua)
     out = (np.where((obs < lo) | (obs > hi))[0] + 1).tolist()
     nm = sims.mean(0)
-    print("[%s]  쌍 수 : 거리 1 %d · 거리 15 %d" % (tag, den[0], den[-1]))
-    print("    그 집합 안 모든 쌍의 평균 차이 = %.4f bp" % allmean)
-    print("    귀무 곡선 평균 : 거리 1 %.4f · 거리 15 %.4f (차 %.4f — 평평)" % (nm[0], nm[-1], abs(nm[0] - nm[-1])))
-    print("    귀무 띠 폭 평균 %.4f bp · 거리 1 [%.4f, %.4f]" % (np.mean(hi - lo), lo[0], hi[0]))
-    print("    관측 : 거리 1 %.4f · 거리 15 %.4f" % (obs[0], obs[-1]))
-    print("    거리 1 이 귀무보다 %.4f bp 낮다 = %.2f%%" % (nm[0] - obs[0], 100 * (nm[0] - obs[0]) / nm[0]))
-    print("    전역 p = %.5g · 띠 밖 거리 %s\n" % (p, out))
+    print("[%s]  number of pairs : distance 1 %d, distance 15 %d" % (tag, den[0], den[-1]))
+    print("    mean difference over all pairs in that set = %.4f bp" % allmean)
+    print("    null curve mean : distance 1 %.4f, distance 15 %.4f (difference %.4f: flat)" % (nm[0], nm[-1], abs(nm[0] - nm[-1])))
+    print("    null band width mean %.4f bp, distance 1 [%.4f, %.4f]" % (np.mean(hi - lo), lo[0], hi[0]))
+    print("    observed : distance 1 %.4f, distance 15 %.4f" % (obs[0], obs[-1]))
+    print("    distance 1 is %.4f bp below null = %.2f%%" % (nm[0] - obs[0], 100 * (nm[0] - obs[0]) / nm[0]))
+    print("    global p = %.5g, distances outside the band %s\n" % (p, out))
     rows.append((tag, allmean, float(nm[0]), float(lo[0]), float(hi[0]), float(obs[0]), float(obs[-1]),
                  float(np.mean(hi - lo)), p, out))
     np.savez_compressed(os.path.join(OUT, "XB2_band_%s.npz" % key),
                         KS=KS, obs=obs, lo=lo, hi=hi, null_mean=nm, p=p, n_pair=den)
 print("=" * 78)
-print("두 집합의 귀무 띠 높이 : %.4f bp ↔ %.4f bp — 같은 띠를 쓰면 안 된다" % (rows[0][2], rows[1][2]))
+print("null band height of the two sets : %.4f bp vs %.4f bp: the same band must not be used" % (rows[0][2], rows[1][2]))
 g = io.open(os.path.join(OUT, "XB2_band_explained.tsv"), "w", encoding="utf8", newline="\n")
-g.write("# P08 XB2 · Fig2a 귀무 띠의 정체 · 거리 정의 고침 (원래 번호 유지) · nsim %d · seed %d\n" % (NSIM, SEED))
+g.write("# P08 XB2, nature of the Fig2a null band, nsim %d, seed %d\n" % (NSIM, SEED))
 g.write("set\tmean_all_pairs\tnull_mean_lag1\tlo_lag1\thi_lag1\tobs_lag1\tobs_lag15\tband_width\tp_erl\tout_lags\n")
 for r in rows:
     g.write("%s\t%.6f\t%.6f\t%.6f\t%.6f\t%.6f\t%.6f\t%.6f\t%.6g\t%s\n"
             % (r[0], r[1], r[2], r[3], r[4], r[5], r[6], r[7], r[8], ",".join(map(str, r[9]))))
 g.close()
-print("\n산출 :", os.path.join(OUT, "XB2_band_explained.tsv"))
+print("\noutputs :", os.path.join(OUT, "XB2_band_explained.tsv"))

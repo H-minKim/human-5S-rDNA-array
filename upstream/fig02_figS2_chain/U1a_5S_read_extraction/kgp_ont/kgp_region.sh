@@ -21,7 +21,7 @@ while read -r S; do
   [ -n "$S" ] || continue
   [ -f "done/${S}.done" ] && { echo "  skip $S"; continue; }
   U=$(grep -P "^${S}\t" manifest.tsv | cut -f3)
-  [ -n "$U" ] || { echo "  $S URL 없음"; echo "$S" >> log/no_url.txt; continue; }
+  [ -n "$U" ] || { echo "  $S no URL"; echo "$S" >> log/no_url.txt; continue; }
   H=$(echo "$U" | sed 's|s3://1000g-ont/|https://1000g-ont.s3.amazonaws.com/|')
   t0=$(date +%s)
   # Index query -> primary only -> fastq (MM/ML/HP kept)
@@ -32,15 +32,15 @@ while read -r S; do
   st=("${PIPESTATUS[@]}"); set +o pipefail
   bad=""; for j in "${!st[@]}"; do [ "${st[$j]}" -ne 0 ] && bad="$bad s$j=${st[$j]}"; done
   if [ -n "$bad" ]; then
-    echo "  $S 파이프 실패:$bad"; echo "$S$bad" >> log/failed.txt
+    echo "  $S pipe failed:$bad"; echo "$S$bad" >> log/failed.txt
     rm -f "out/${S}.array.fastq.gz"; continue
   fi
   gz=$(stat -c%s "out/${S}.array.fastq.gz" 2>/dev/null || echo 0)
-  [ "$gz" -gt 1000 ] || { echo "  $S 산출 없음"; echo "$S" >> log/empty.txt; continue; }
+  [ "$gz" -gt 1000 ] || { echo "  $S no output"; echo "$S" >> log/empty.txt; continue; }
   nr=$(zcat "out/${S}.array.fastq.gz" | awk 'END{print NR/4}')
   nm=$(zcat "out/${S}.array.fastq.gz" | awk 'NR%4==1 && /MM:Z:/{n++} END{print n+0}')
   t1=$(date +%s)
   echo "$S ok reads=$nr mm=$nm gz=$gz sec=$((t1-t0))" > "done/${S}.done"
   echo "  [$(date -u +%H:%M:%S)] $S read=$nr MM=$nm $((gz/1048576))MB $((t1-t0))s"
 done < "$LIST"
-echo "[$(date -u +%H:%M:%S)] KGP_DONE 완료=$(ls done | wc -l)"
+echo "[$(date -u +%H:%M:%S)] KGP_DONE done=$(ls done | wc -l)"

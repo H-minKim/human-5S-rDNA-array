@@ -258,7 +258,7 @@ def _selftest():
         #  ⑵ text -- a # header added: body ruler agrees, file bytes do not
         t1, t2 = os.path.join(d, 'a.tsv'), os.path.join(d, 'b.tsv')
         io.open(t1, 'wb').write(b'x\ty\n1\t2\n')
-        io.open(t2, 'wb').write(b'# built 2026-10-23\nx\ty\n1\t2\n')
+        io.open(t2, 'wb').write(b'# built\nx\ty\n1\t2\n')
         ok.append(('tsv: file bytes differ', _ruler_bytes(t1) != _ruler_bytes(t2)))
         ok.append(('tsv: ruler agrees', same(t1, t2)))
         io.open(t2, 'wb').write(b'# built\nx\ty\n1\t3\n')

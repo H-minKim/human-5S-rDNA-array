@@ -2,7 +2,7 @@
 # Per array: the number of unit types, and for each type the length of its reference unit, with the period and the unit count.
 #   With one type there is a single array reference unit; with several there are group reference units.
 #   Argument: the 00_catalog folder.
-# MIT License · Copyright (c) 2026 Hungmin Kim
+# MIT License. Copyright (c) 2026 Hyungmin Kim
 import io
 import os
 import re
@@ -66,20 +66,20 @@ for r in sorted(rows, key=lambda x: (x["species_key"], x["array_id"])):
                                  io.open(fp, encoding="utf8").read().split(NL)[1:])))
     e = dict(base, ref_name="arrayref", ref_len=rl, ref_period="-",
              ref_n_units=r["n_units_OK"], ref_make_method="modal_consensus", ref_member_identity="-")
-    if r["gate_result"].startswith(chr(9733)):
+    if r["gate_result"].startswith("불통과"):
         e["unit_type_verdict"] = "한 종류(1 단계 탈락)"
         e["n_unit_types"] = "1"
-    elif r.get("stage2_result", "").startswith(chr(9733) + "사용자"):
+    elif r.get("stage2_result", "").startswith("사용자"):
         e["unit_type_verdict"] = "한 종류(그룹핑 철회)"
         e["n_unit_types"] = "1"
-    elif r.get("stage2_result", "").startswith(chr(9733)):
+    elif r.get("stage2_result", "").startswith("불통과"):
         e["unit_type_verdict"] = "한 종류(2 단계 탈락·연속체)"
         e["n_unit_types"] = "1"
     out.write(TAB.join(str(e.get(k, "-")) for k in HDR) + NL)
     show.append((e, None))
 out.close()
 print("%-22s %-32s %5s %-16s %4s %-9s %6s %6s %5s %-16s %s"
-      % ("종", "array", "유닛", "판정", "종류", "참조", "길이", "주기", "유닛", "만든법", "구성원일치도"))
+      % ("종", "array", "유닛", "판정", "kind", "참조", "길이", "주기", "유닛", "method", "구성원일치도"))
 for b, ent in show:
     if ent:
         for i, e in enumerate(ent):

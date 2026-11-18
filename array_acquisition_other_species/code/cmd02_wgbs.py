@@ -5,7 +5,8 @@
 #   The difference is chr18 minus chr4, bootstrapped independently in the two groups, with the difference taken before any alignment.
 #   Citability: fewer than 10 reads on the chr18 side must not be cited, 10-29 is weak, and 30 or more is usable.
 #   The stage III oocytes (GSE175951) are an author-processed CpG table with no reads, so only the per-site sum is reported, with no interval.
-# MIT License · Copyright (c) 2026 Hungmin Kim
+# MIT License. Copyright (c) 2026 Hyungmin Kim
+import os
 import collections
 import csv
 import io
@@ -13,7 +14,7 @@ import numpy as np
 
 rng = np.random.default_rng(0)
 NB = 2000
-R = "$RDNA_OTHERSP_DIR/data_v2/"
+R = os.environ["RDNA_OTHERSP_DIR"] + "/data_v2/"
 D = R + "13_array_level_diff/"
 T = "\t"
 SRC = {"알_Jiang": ("알(난자)", "MBT 전", "PRJNA188516 Jiang2013"),
@@ -99,4 +100,4 @@ for s in ("oocyte_StageIII_rep1", "oocyte_StageIII_rep2"):
                         "호출%d" % a[0], "호출%d" % b[0], "%.3f" % fa, "%.3f" % fb, "%+.3f" % (fa - fb), "-", "-",
                         "자리단위·read없음"]) + "\n")
 o.close()
-print("완료")
+print("done")

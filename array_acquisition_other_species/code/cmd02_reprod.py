@@ -4,14 +4,15 @@
 #   Outputs: ZF_CHR4_ARRAY_REPRO.tsv, the whole-array methylation per array and individual with the read count, plus the mean over the 6 individuals;
 #          ZF_CHR4_ARRAY_REPRO_SPEARMAN.tsv, a Spearman correlation per pair of individuals, over the arrays with at least 20 reads in both.
 #   Each individual's value is measured within that individual alone; the individuals are never pooled, and only whether the ranking agrees is examined.
-# MIT License · Copyright (c) 2026 Hungmin Kim
+# MIT License. Copyright (c) 2026 Hyungmin Kim
+import os
 import csv
 import io
 import itertools
 import numpy as np
 from scipy.stats import spearmanr
 
-D = "$RDNA_OTHERSP_DIR/data_v2/13_array_level_diff/"
+D = os.environ["RDNA_OTHERSP_DIR"] + "/data_v2/13_array_level_diff/"
 T = "\t"
 S = ["Control%d" % i for i in range(1, 7)]
 d = {}
@@ -39,4 +40,4 @@ o.write(T.join(["중앙값", "", "", "%.3f" % np.median(rs)]) + "\n")
 o.write(T.join(["최소", "", "", "%.3f" % min(rs)]) + "\n")
 o.write(T.join(["최대", "", "", "%.3f" % max(rs)]) + "\n")
 o.close()
-print("완료 array", len(L), "쌍", len(rs), "중앙 %.3f" % np.median(rs))
+print("done array", len(L), "쌍", len(rs), "중앙 %.3f" % np.median(rs))

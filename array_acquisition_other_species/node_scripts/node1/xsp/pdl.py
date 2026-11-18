@@ -5,7 +5,7 @@
 #   OUT = - streams to stdout in order, so it can be piped straight into tar without writing the whole file to disk.
 #   For each chunk the received length is checked against the requested length, and a failure is retried up to 20 times with exponential backoff.
 #   Progress: one line on stderr per GB.
-# MIT License · Copyright (c) 2026 Hungmin Kim
+# MIT License. Copyright (c) 2026 Hyungmin Kim
 import os
 import sys
 import time
@@ -27,7 +27,7 @@ def head_size():
             return int(r.headers["Content-Length"])
         except Exception:
             time.sleep(2 ** k)
-    raise RuntimeError("HEAD 실패")
+    raise RuntimeError("HEAD failed")
 
 
 SIZE = head_size()
@@ -57,7 +57,7 @@ def fetch(a, b):
         except Exception:
             pass
         time.sleep(min(60, 2 ** k))
-    raise RuntimeError("조각 실패 %d-%d" % (a, b))
+    raise RuntimeError("chunk failed %d-%d" % (a, b))
 
 
 def worker():

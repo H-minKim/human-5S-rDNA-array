@@ -46,7 +46,7 @@ ap=np.array([u[1] for u in units],dtype=np.int32)
 ad=np.array([u[2] for u in units],dtype=np.int32)
 Nn=np.array([u[3] for u in units],dtype=np.int32)
 rel=(ap-0.5)/Nn                                        # 0 = proximal end, 1 = distal end
-print("유닛 %d · 하플로타입 %d"%(NU,len(HK)))
+print("units %d, haplotypes %d"%(NU,len(HK)))
 
 # ---------- variant parsing ----------
 def parse(t):
@@ -83,7 +83,7 @@ for i,u in enumerate(units):
     for v in u[4]:
         j=VAI.get(v)
         if j is not None: XA[i,j]=1.0
-print("특징 A (개별 변이) : %d 종"%len(VA))
+print("feature A (individual variants) : %d kinds"%len(VA))
 
 # ---------- feature B: variant character ----------
 FB=["deamination_CpG","C>T_nonCpG","oxidation_C>A_G>T","transition_T>C_A>G",
@@ -113,7 +113,7 @@ for i,u in enumerate(units):
             if p is not None and p>=2122: XB[i,FBI["coding_indel"]]+=1
         e=elem(p)
         if e and e!="coding": XB[i,FBI[e]]+=1
-print("특징 B (변이 성격) : %d 개"%len(FB))
+print("feature B (variant character) : %d"%len(FB))
 
 # ---------- centering within haplotype plus standardization ----------
 def center_scale(X):
@@ -175,28 +175,28 @@ def null_conc(lab,K,rep=200):
 
 def run(Z,tag,name):
     print("\n"+"#"*70)
-    print("### 기준 %s — %s"%(tag,name))
+    print("### criterion %s: %s"%(tag,name))
     print("#"*70)
-    print("\n[진단] k 별 위치 집중도 (군집은 위치를 모른다 · 귀무는 배열 안 순서 섞기)")
+    print("\n[diagnostic] positional concentration by k (clustering is blind to position; null is order shuffling within array)")
     diag={}
     for K in (2,3,4,5,6,8):
         lab=KMeans(n_clusters=K,n_init=20,random_state=0).fit(Z).labels_
         cc=concentration(lab,K)
         diag[K]=(lab,cc)
-        print("   k=%d  집중도 %.4f"%(K,cc))
+        print("   k=%d  concentration %.4f"%(K,cc))
     KMAIN=3
     lab=diag[KMAIN][0]
     nm,nhi=null_conc(lab,KMAIN)
-    print("   주구획 k=%d : 집중도 %.4f · 귀무 평균 %.4f (97.5%% %.4f) → %s"%(
-        KMAIN,diag[KMAIN][1],nm,nhi,"위치 구조 있음" if diag[KMAIN][1]>nhi else "귀무와 구별 안 됨"))
+    print("   main segments k=%d : concentration %.4f, null mean %.4f (97.5%% %.4f) -> %s"%(
+        KMAIN,diag[KMAIN][1],nm,nhi,"positional structure present" if diag[KMAIN][1]>nhi else "귀무와 구별 안 됨"))
     pr=profile(lab,KMAIN)
     # name clusters by median relative position (0 = proximal)
     order=sorted(pr,key=lambda c:pr[c]["rel"])
     nameof={}
     for rank,c in enumerate(order):
         nameof[c]=["근위형","중간형","원위형"][rank] if KMAIN==3 else "군집%d"%c
-    print("\n[주구획] 위치는 군집화에 쓰이지 않았다 — 아래는 결과로 나온 분포")
-    print("   구획      n       상대위치평균  근위거리중앙 원위거리중앙  근위8내 원위8내 가운데")
+    print("\n[main segments] position was not used in clustering: below is the resulting distribution")
+    print("   segment   n       mean_relpos   prox_dist_med dist_dist_med  in_prox8 in_dist8 interior")
     for c in order:
         p=pr[c]
         print("   %-8s %6d   %.3f        %5.0f       %5.0f      %.3f  %.3f  %.3f"%(
@@ -204,7 +204,7 @@ def run(Z,tag,name):
     # subsegments
     sub=np.full(NU,-1,dtype=np.int32); subname={}
     nxt=0
-    print("\n[하위구획] 각 주구획을 다시 k=3 으로")
+    print("\n[sub-segments] each main segment split again with k=3")
     for c in order:
         m=lab==c
         sl=KMeans(n_clusters=3,n_init=20,random_state=0).fit(Z[m]).labels_
@@ -216,7 +216,7 @@ def run(Z,tag,name):
             sub[idx[sl==s]]=gi
             subname[gi]="%s-%d"%(nameof[c],rank+1)
             mm=idx[sl==s]
-            print("   %-10s n=%6d  상대위치 %.3f  근위거리중앙 %5.0f  원위거리중앙 %5.0f  가운데비율 %.3f"%(
+            print("   %-10s n=%6d  relative position %.3f  median proximal distance %5.0f  median distal distance %5.0f  interior fraction %.3f"%(
                 subname[gi],len(mm),rv,np.median(ap[mm]),np.median(ad[mm]),
                 float(((ap[mm]>30)&(ad[mm]>30)).mean())))
     # save
@@ -232,7 +232,7 @@ def run(Z,tag,name):
                 float(((ap[m]>30)&(ad[m]>30)).mean())))
     g.close()
     # feature interpretation: the most prominent features in each main segment
-    print("\n[무엇이 그 구획을 만드나] 중심화한 값의 군집 평균 (표준편차 단위) 상위/하위 5")
+    print("\n[what makes the segment] cluster mean of centered values (in SD units), top/bottom 5")
     for c in order:
         m=lab==c
         mu=Z[m].mean(0)
@@ -249,15 +249,15 @@ LB,orderB,nameB,subB,subnameB=run(ZB,"B","변이의 성격 (탈아미노화·산
 
 # ---------- length contribution ----------
 print("\n"+"#"*70)
-print("### 하플로타입 간 유닛 수 차이는 '어느 구획이 길어져서' 인가")
+print("### the difference in unit number between haplotypes: 'which segment gets longer'")
 print("#"*70)
 Nh=np.array([U[k][0][2] for k in HK],dtype=float)
 g=io.open(os.path.join(OUT,"S13_length_contribution.tsv"),"w",encoding="utf8",newline="\n")
 g.write("basis\tlevel\tsegment\tslope\tslope_lo\tslope_hi\tintercept\tspearman\tmean_size\n")
 def contrib(lab,names,basis,level):
     K=int(lab.max())+1
-    print("\n  [%s · %s] 구획 크기 = a + b*N  (b 합 = 1)"%(basis,level))
-    print("   구획        평균 크기   기울기 b [95%CI]        해석")
+    print("\n  [%s, %s] segment size = a + b*N  (sum of b = 1)"%(basis,level))
+    print("   segment     mean size   slope b [95%CI]         interpretation")
     tot=np.zeros(len(HK))
     rows=[]
     for c in range(K):
@@ -278,10 +278,10 @@ def contrib(lab,names,basis,level):
     rows.sort(key=lambda r:-r[2])
     for nm,mu,sl,lo,hi,ic,sp in rows:
         tag=("길이 변이의 주된 자리" if sl>0.4 else ("거의 고정" if abs(sl)<0.1 else ""))
-        print("   %-10s %8.1f   %+.3f [%+.3f,%+.3f]   절편 %6.1f · rho %+.2f  %s"%(nm,mu,sl,lo,hi,ic,sp,tag))
+        print("   %-10s %8.1f   %+.3f [%+.3f,%+.3f]   intercept %6.1f, rho %+.2f  %s"%(nm,mu,sl,lo,hi,ic,sp,tag))
         g.write("%s\t%s\t%s\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.3f\n"%(basis,level,nm,sl,lo,hi,ic,sp,mu))
 contrib(LA,nameA,"A","주구획"); contrib(subA,subnameA,"A","하위구획")
 contrib(LB,nameB,"B","주구획"); contrib(subB,subnameB,"B","하위구획")
 g.close()
 np.save(os.path.join(OUT,"S13_labels.npy"),np.vstack([LA,subA,LB,subB,ap,ad,Nn,hid]))
-print("\n저장: %s"%OUT)
+print("\nsaved: %s"%OUT)

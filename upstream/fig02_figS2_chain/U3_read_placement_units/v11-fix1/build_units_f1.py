@@ -21,9 +21,9 @@ for fn in sorted(os.listdir(V)):
     old = io.open(src, encoding="utf8").read().split(NL)
     if old and old[-1] == "": old = old[:-1]
     new = [L for L in io.open(newp, encoding="utf8").read().split(NL) if L]
-    assert all(L.split("\t")[0] == smp for L in new), "새 표에 다른 개체"
+    assert all(L.split("\t")[0] == smp for L in new), "another individual in the new table"
     idx = [i for i, L in enumerate(old) if L.split("\t", 1)[0] == smp]
-    assert idx and idx[-1] - idx[0] + 1 == len(idx), "옛 행이 연속이 아님 %s" % fn
+    assert idx and idx[-1] - idx[0] + 1 == len(idx), "existing rows not contiguous %s" % fn
     out = old[:idx[0]] + new + old[idx[-1] + 1:]
     io.open(dst, "w", encoding="utf8", newline=NL).write(NL.join(out) + NL)
     log.append("교체 %s : %s 옛 %d 행 -> 새 %d 행 · 전체 %d -> %d" % (fn, smp, len(idx), len(new), len(old), len(out)))

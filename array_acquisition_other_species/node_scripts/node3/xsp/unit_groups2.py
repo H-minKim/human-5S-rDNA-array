@@ -2,8 +2,8 @@
 # Are the units within an array of one type or several? Version 2, based on association, with a null control and positional clustering reported alongside.
 #   Splitting whenever the variant patterns merely differ is not used: it cuts a human array into 6 groups, since random variants also give different patterns.
 #   The criterion: do the variants travel together as a block?
-#     · In a single-type array the variants are scattered independently across units, with no association.
-#     · The presence of subtypes means several variants appear together in the same units, a strong association.
+#     - In a single-type array the variants are scattered independently across units, with no association.
+#     - The presence of subtypes means several variants appear together in the same units, a strong association.
 #   method
 #     1) A polymorphic variant is one present in 10-90% of units.
 #     2) the association phi between variant pairs; |phi| >= 0.8 links them
@@ -13,7 +13,7 @@
 #        plus the observed over expected ratio of neighbouring unit pairs in the same group, with a permutation p value
 #   No call is made with fewer than 20 units, the frequency estimates being too coarse.
 #   Arguments: species key, fasta, map folder, output folder, [shuffles = 50].
-# MIT License · Copyright (c) 2026 Hungmin Kim
+# MIT License. Copyright (c) 2026 Hyungmin Kim
 import io
 import os
 import sys
@@ -107,7 +107,7 @@ for fn in sorted(os.listdir(MAPD)):
         base.update({"n_blocks": 0, "verdict": "한 종류", "n_groups": 1, "group_sizes": n,
                      "largest_group_pct": "100.0", "note": "다형성 변이 %d 개뿐" % len(poly)})
         w(base)
-        print("%s : 유닛 %d · 다형성 %d -> 한 종류" % (aid, n, len(poly)))
+        print("%s : units %d, polymorphic %d -> one kind" % (aid, n, len(poly)))
         continue
     cols = [set(i for i in range(n) if v in V[i]) for v in poly]
     bl = blocks(cols, n)
@@ -122,7 +122,7 @@ for fn in sorted(os.listdir(MAPD)):
         base.update({"verdict": "한 종류(연관 블록 없음)", "n_groups": 1, "group_sizes": n,
                      "largest_group_pct": "100.0", "note": "변이는 있으나 서로 묶이지 않는다"})
         w(base)
-        print("%s : 유닛 %d · 다형성 %d · 블록 0 (귀무 %.1f) -> 한 종류" % (aid, n, len(poly), nm))
+        print("%s : units %d, polymorphic %d, blocks 0 (null %.1f) -> one kind" % (aid, n, len(poly), nm))
         continue
     bl.sort(key=lambda b: -len(b))
     b1 = bl[0]
@@ -191,6 +191,6 @@ for fn in sorted(os.listdir(MAPD)):
                  "largest_group_pct": "%.1f" % (100.0 * sizes[0] / n),
                  "note": "유닛파일 " + ",".join(files)})
     w(base)
-    print("%s : 유닛 %d · 다형성 %d · 블록 %s (귀무 %.1f) -> 그룹 %d %s · 위치응집 %.2f p=%.3f"
+    print("%s : units %d, polymorphic %d, blocks %s (null %.1f) -> groups %d %s, positional clustering %.2f p=%.3f"
           % (aid, n, len(poly), [len(b) for b in bl], nm, len(grp), sizes, ratio, pv))
 SUM.close()

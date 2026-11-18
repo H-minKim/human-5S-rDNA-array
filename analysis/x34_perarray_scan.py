@@ -34,7 +34,7 @@ try:
 except Exception:
     pass
 LOG = io.open(NEW + "/logs/X34_PERARRAY.txt", "w", encoding="utf8", newline="\n")
-REASON = "array 마다 유닛 안 프로파일 + 경계 거리별 메틸 (2026-10-01)"
+REASON = "array 마다 유닛 안 프로파일 + 경계 거리별 메틸"
 CUT, LOWC, HIGHC, FLMAX = 128, 0.35, 0.70, 20000
 
 
@@ -254,7 +254,7 @@ for ko, sp in SPK:
                         유닛1쪽=("낮은 좌표" if (v["us"][int(np.argmin(v["pos"]))] - st["a0"]) < (st["a1"] - v["ue"][int(np.argmin(v["pos"]))]) else "높은 좌표"),
                         read유닛_ALL=st["cnt"]["ALL"], read유닛_HIGH=st["cnt"]["HIGH"],
                         read유닛_LOW=st["cnt"]["LOW"], read유닛_MID=st["cnt"]["MID"]))
-    P("%-10s array %2d · read-유닛 %s" % (ko, len(keep), format(sum(ST[a]["cnt"]["ALL"] for a in keep), ",")))
+    P("%-10s arrays %2d, read-units %s" % (ko, len(keep), format(sum(ST[a]["cnt"]["ALL"] for a in keep), ",")))
 
 WUD = pd.DataFrame(WU, columns=["종", "array_id", "이름표", "등급", "유닛길이", "칸폭", "위치", "호출수", "메틸호출수", "beta"])
 LSD = pd.DataFrame(LS, columns=["종", "array_id", "이름표", "쪽", "위치", "d", "호출수", "메틸호출수", "beta"])
@@ -269,5 +269,5 @@ for f, rel in ((TMP + "/PERARRAY_WITHIN_UNIT.tsv.gz", "tables/PERARRAY_WITHIN_UN
                (TMP + "/PERARRAY_META.tsv", "tables/PERARRAY_META.tsv")):
     arch.put(f, rel, REASON)
 P("")
-P("유닛안 %s 행 · 지형 %s 행 · array %d" % (format(len(WUD), ","), format(len(LSD), ","), len(MTD)))
+P("within-unit %s rows, landscape %s rows, arrays %d" % (format(len(WUD), ","), format(len(LSD), ","), len(MTD)))
 LOG.close()

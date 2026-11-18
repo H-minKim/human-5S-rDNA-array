@@ -1,4 +1,4 @@
-# P08 X7 · ruler majref 6.868174 · seed 20261010 · N_perm 999 · 2026-10-10
+# P08 X7 · ruler majref 6.868174 · seed 20261010 · N_perm 999
 [freq]	stratum	n_variant	n_carrier	obs_nn	null_nn	null_sd	ratio	p
 	private (that haplotype only)	189	639	6.264476	6.780330	0.387991	0.923919	0.106
 	very rare (<0.1%)	2516	6665	7.578845	8.074901	0.046750	0.938568	0.001

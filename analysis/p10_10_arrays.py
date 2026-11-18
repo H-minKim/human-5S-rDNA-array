@@ -3,10 +3,10 @@
 # Inputs: out/P10/P10_FRAME_ALL.tsv from p10_08, built on the measured period, plus P10_FRAME_SEGS_ALL.tsv and P10_SUBUNIT_FRAMES.json.
 #
 # Rules
-#  · The unit class comes from the likelihood ratio of a two-component binomial mixture fitted per family by EM, not from a fixed threshold at 0.5.
-#  · Coupling: the class is decided from everything except the sub-unit in question, then that sub-unit's beta difference is divided by the dynamic range, which avoids circularity.
-#  · The boundary profile is a score normalised against the LL and HH contrast in the same canonical bin, with a sustained crossing over 200 bp.
-#  · DXZ4 is split by sex, for Xa and Xi, and a DXZ4 block whose polarity is in conflict is not given a distal or proximal call.
+#  - The unit class comes from the likelihood ratio of a two-component binomial mixture fitted per family by EM, not from a fixed threshold at 0.5.
+#  - Coupling: the class is decided from everything except the sub-unit in question, then that sub-unit's beta difference is divided by the dynamic range, which avoids circularity.
+#  - The boundary profile is a score normalised against the LL and HH contrast in the same canonical bin, with a sustained crossing over 200 bp.
+#  - DXZ4 is split by sex, for Xa and Xi, and a DXZ4 block whose polarity is in conflict is not given a distal or proximal call.
 import io, os, math, json, collections, statistics
 
 def _need(_v):
@@ -83,7 +83,7 @@ for f, cb in RAW:
     RU[grp(fam, f[0])].append((f[0], f[1], f[3], f[4], f[6], int(f[7]), f[8], int(f[9]),
                                None if f[10] == "NA" else int(f[10]), int(f[11]), int(f[12]), cb))
 del RAW
-print("적재(완전 유닛 / 전체) : " + " · ".join("%s %d/%d" % (g, len(RU[g]), NALL[g]) for g in GROUPS))
+print("loaded (complete units / all): " + " · ".join("%s %d/%d" % (g, len(RU[g]), NALL[g]) for g in GROUPS))
 # blocks per haplotype, which indicates where the assembly is broken
 _segs = set()
 for i, L in enumerate(io.open(os.path.join(OUT, "P10_FRAME_SEGS_ALL.tsv"), encoding="utf8")):
@@ -92,7 +92,7 @@ for i, L in enumerate(io.open(os.path.join(OUT, "P10_FRAME_SEGS_ALL.tsv"), encod
     f = L.rstrip("\n").split("\t")
     _segs.add((f[0], f[1], f[2], f[3]))
 NSEG = collections.Counter((s, h, fam) for s, h, fam, _m in _segs)
-print("하플로당 조각 수 분포 : " + " · ".join(
+print("distribution of fragments per haplotype: " + " · ".join(
     "%s %s" % (fam, dict(collections.Counter(v for (s, h, f_), v in NSEG.items() if f_ == fam)))
     for fam in ("5S", "D4Z4_4q", "D4Z4_10q", "DXZ4", "RNU2", "SST1")))
 
@@ -167,9 +167,9 @@ def bc(x):
 
 FIT = {}
 print("\n" + "=" * 100)
-print("[B] 유닛 β 이봉성 (배치 read-유닛, CpG>=%d)" % MINC)
+print("[B] unit β bimodality (placed read-units, CpG>=%d)" % MINC)
 print("  %-9s %6s %8s %8s %6s %6s %6s %6s %6s %6s  %s"
-      % ("그룹", "유닛", "p_LOW", "p_HIGH", "w_lo", "μ_lo", "μ_hi", "D", "BC", "LOW≤.3", "판정"))
+      % ("group", "유닛", "p_LOW", "p_HIGH", "w_lo", "μ_lo", "μ_hi", "D", "BC", "LOW≤.3", "판정"))
 for g in GROUPS:
     rows = [r for r in RU[g] if r[9] >= MINC]
     if len(rows) < 200:
@@ -212,7 +212,7 @@ def cls_of(g, n, k):
 
 # ---------- [C] the absolute array axis ----------
 print("\n" + "=" * 100)
-print("[C] array 절대축 — 원위 끝부터 / 근위 끝부터 (극성 확정 조각만) · 유닛 β 평균")
+print("[C] array absolute axis: from the distal end / from the proximal end (polarity-resolved fragments only), mean unit β")
 for g in GROUPS:
     rows = [r for r in RU[g] if r[9] >= MINC]
     if len(rows) < 200:
@@ -245,7 +245,7 @@ for g in GROUPS:
     d15, p15 = seg(D_, 1, 5), seg(P_, 1, 5)
     e15 = seg(E_, 1, 5)
     ein = [x for u, v in E_.items() if u > 20 for x in v]
-    print("  %-9s 극성확정 %5d/%5d | 원위1-5 %.3f(%d) 내부(>20) %s 근위1-5 %.3f(%d) | 끝1-5(극성무관) %.3f · 끝>20 %s"
+    print("  %-9s polarity resolved %5d/%5d | distal 1-5 %.3f(%d) interior(>20) %s proximal 1-5 %.3f(%d) | end 1-5 (any polarity) %.3f, end>20 %s"
           % (g, nd, len(rows), d15[0], d15[1],
              "%.3f(%d)" % (statistics.mean(inner), len(inner)) if inner else "-",
              p15[0], p15[1], e15[0], "%.3f" % statistics.mean(ein) if ein else "-"))
@@ -263,7 +263,7 @@ for g in GROUPS:
         i1 = [r[10] / float(r[9]) for r in one if r[8] > 20 and r[5] - r[8] + 1 > 20]
         nh = len(set((r[0], r[1]) for r in one))
         f_ = lambda v: "%.3f(%d)" % (statistics.mean(v), len(v)) if v else "-"
-        print("  %-9s   └ 하플로당 조각 1개인 %d 하플로만 : 원위1-5 %s · 내부 %s · 근위1-5 %s"
+        print("  %-9s     only the %d haplotypes with 1 fragment per haplotype: distal 1-5 %s, interior %s, proximal 1-5 %s"
               % ("", nh, f_(d1), f_(i1), f_(p1_)))
         w(g, "onesegment_haps", nh)
         w(g, "onesegment_d_i_p", "%s|%s|%s" % (f_(d1), f_(i1), f_(p1_)))
@@ -310,8 +310,8 @@ def labq(fam, b):
 
 # ---------- [D-1] sub-unit coupling, leave-one-subunit-out ----------
 print("\n" + "=" * 100)
-print("[D-1] sub-unit 결합도 — 그 sub-unit 을 뺀 나머지로 class 를 정하고, 그 sub-unit 이 따라가나")
-print("   결합도 = (HIGH일 때 β − LOW일 때 β) / (그 sub-unit 의 HIGH−LOW 최대폭 : 전 sub-unit 중 최대)")
+print("[D-1] sub-unit coupling: class is set from the rest without that sub-unit; does that sub-unit follow")
+print("   coupling = (β when HIGH − β when LOW) / (maximum HIGH−LOW range of that sub-unit: maximum over all sub-units)")
 for g in GROUPS:
     fam = base(g)
     rows = [r for r in RU[g] if r[9] >= MINC]
@@ -319,7 +319,7 @@ for g in GROUPS:
         continue
     order = FR[fam]["order"]
     if len(order) < 2:
-        print("  %-9s : 주석 sub-unit 없음 → 칸 단위만 (아래 D-2)" % g)
+        print("  %-9s : no annotated sub-unit -> bin level only (D-2 below)" % g)
         continue
     acc = {s: {0: [0, 0], 1: [0, 0]} for s in order}
     for r in rows:
@@ -353,14 +353,14 @@ for g in GROUPS:
     if not ok:
         continue
     dyn = max(x[2] - x[1] for x in ok)
-    print("  %-9s %s" % (g, " | ".join("%s L%.3f H%.3f 결합%.2f" % (s, lo, hi, (hi - lo) / dyn)
+    print("  %-9s %s" % (g, " | ".join("%s L%.3f H%.3f coupling%.2f" % (s, lo, hi, (hi - lo) / dyn)
                                       for s, lo, hi in ok)))
     w(g, "subunit_coupling", ";".join("%s:%.4f:%.4f:%.4f" % (s, lo, hi, (hi - lo) / dyn) for s, lo, hi in ok))
 
 # ---------- [D-2] the canonical bin profile per class, plus the boundary profile ----------
 print("\n" + "=" * 100)
-print("[D-2] 경계 — 같은 read 에서 canonical 순서로 이웃한 두 유닛의 class 가 다를 때")
-print("   새 블록 첫 유닛의 canonical 칸 score (0 = 그 칸의 LOW 내부, 1 = HIGH 내부), 지속 교차 200 bp")
+print("[D-2] boundary: when two units adjacent in canonical order on the same read differ in class")
+print("   canonical bin score of the first unit of the new block (0 = LOW interior of that bin, 1 = HIGH interior), sustained crossing 200 bp")
 for g in GROUPS:
     fam = base(g)
     rows = [r for r in RU[g] if r[9] >= MINC]

@@ -5,7 +5,7 @@
 #   if V11_TIER = h1 | h3, G.load("primary") is replaced by loading that preset.
 #   => the tier is applied without editing the 73 scripts that hardcode "primary".
 #   If V11_TIER is not set, nothing changes (= identical to hook_majref).
-#   Output paths are confined to the mirror by REPRO_MIRROR, so the canonical copy (F:) cannot be written.
+#   Output paths are confined to the mirror by REPRO_MIRROR, so the canonical copy cannot be written.
 # ============================================================================
 r"""Replaces v11_io.load so that the majority-form consensus is used as the reference
 

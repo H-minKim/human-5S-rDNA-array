@@ -8,7 +8,7 @@
 #   Method C: at the chosen period p, the actual fraction of repeat, as the fraction of positions where a 50 bp window matches the window p away at 45 of 50 or better
 #            (close to 1 for a genuine tandem array, close to 0 where only the genes are dispersed).
 #   Output: PERIOD_DIRECT2.tsv
-# MIT License · Copyright (c) 2026 Hungmin Kim
+# MIT License. Copyright (c) 2026 Hyungmin Kim
 import io
 import os
 import sys
@@ -18,7 +18,7 @@ import numpy as np
 
 NL = chr(10)
 TAB = chr(9)
-CAN = "$RDNA_OTHERSP_DIR/data_v2/01_canonical"
+CAN = os.environ["RDNA_OTHERSP_DIR"] + "/data_v2/01_canonical"
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "lit")
 WIN = 150000
 MAXLAG = 20000
@@ -82,7 +82,7 @@ def kmer_gap(s, k=25):
 
 
 ST = {}
-f = io.open("$RDNA_OTHERSP_DIR/data_v2/00_catalog/5S_array_structure.tsv", encoding="utf8")
+f = io.open(os.environ["RDNA_OTHERSP_DIR"] + "/data_v2/00_catalog/5S_array_structure.tsv", encoding="utf8")
 hd = f.readline().rstrip(NL).split(TAB)
 ix = dict((n, i) for i, n in enumerate(hd))
 for L in f:
@@ -98,7 +98,7 @@ w.write(TAB.join(["array_id", "array_span", "measured_bp", "my_unit_len", "cms_p
                   "A_period", "A_ident", "A_base", "A_signal", "A_harmonics", "B_period", "B_frac",
                   "C_tandem_frac", "C_at_my_unit", "copies_from_A", "verdict"]) + NL)
 files = [p for p in sorted(glob.glob(os.path.join(CAN, "*", "*.fa"))) if not p.endswith(".unit.fa")]
-print("%-50s %7s %6s %6s %6s %6s %6s %5s  %s" % ("array_id", "span", "unit", "A", "B", "A일치", "C반복", "copyA", "판정"))
+print("%-50s %7s %6s %6s %6s %6s %6s %5s  %s" % ("array_id", "span", "unit", "A", "B", "A match", "C반복", "copyA", "판정"))
 res = []
 for p0 in files:
     aid = os.path.basename(p0).replace(".fa", "")
@@ -166,5 +166,5 @@ for p0 in files:
     sys.stdout.flush()
 w.close()
 print()
-print("판정 집계:", dict(collections.Counter(v.split(" (")[0].split(" !=")[0] for _, v in res)))
-print("표 : lit/PERIOD_DIRECT2.tsv")
+print("verdict tally:", dict(collections.Counter(v.split(" (")[0].split(" !=")[0] for _, v in res)))
+print("table : lit/PERIOD_DIRECT2.tsv")

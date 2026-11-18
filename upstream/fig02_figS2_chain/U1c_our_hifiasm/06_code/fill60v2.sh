@@ -12,7 +12,7 @@
 #
 #  1kGP is not used. Output goes to ~/fill60.
 set -u
-MODE=${1:?A 또는 B}
+MODE=${1:?A or B}
 SLOT=${2:-0}          # parallel slot number (0,1), the list is split between slots
 NSLOT=${3:-1}
 D=~/fill60
@@ -24,9 +24,9 @@ for c in ~/miniconda3/bin/python python3; do
   p=$(command -v "$c" 2>/dev/null) || continue
   "$p" -c "import sys" 2>/dev/null && { PY="$p"; break; }
 done
-[ -n "$PY" ] || { echo "FATAL python 없음"; exit 9; }
+[ -n "$PY" ] || { echo "FATAL python not found"; exit 9; }
 LIST=~/fill60_$MODE.txt
-[ -s "$LIST" ] || { echo "  목록 없음"; exit 0; }
+[ -s "$LIST" ] || { echo "  no list"; exit 0; }
 
 i=-1
 for S in $(tr -d '\r' < "$LIST"); do
@@ -37,9 +37,9 @@ for S in $(tr -d '\r' < "$LIST"); do
   for p in ~/s5s_ont/hits/$S.hits.fastq.gz ~/giab_hits/$S.hits.fastq.gz ~/cancer5s/hits/$S.hits.fastq.gz; do
     [ -f "$p" ] && { Q=$p; break; }
   done
-  [ -n "$Q" ] || { echo "  $S read 없음"; continue; }
+  [ -n "$Q" ] || { echo "  $S no read"; continue; }
   FREE=$(df --output=avail -BG / | tail -1 | tr -dc '0-9')
-  [ "${FREE:-0}" -lt 30 ] && { echo "  디스크 ${FREE}G — 중단"; break; }
+  [ "${FREE:-0}" -lt 30 ] && { echo "  disk ${FREE}G: aborting"; break; }
   MB=$(( $(stat -c %s "$Q") / 1048576 ))
   echo "[$(date +%T)] s$SLOT $S ($MB MB) mode=$MODE"
 
@@ -69,7 +69,7 @@ for S in $(tr -d '\r' < "$LIST"); do
       NH=$(awk -F'\t' -v s="$S" '$2=="OK" && ($1==s || index($1,s"_f")==1){print $5}' "$SUM" \
            | sort -rn | awk '{if(!n||($0<last-1200)){print;last=$0;n++}}' | wc -l)
       if [ "${NH:-0}" -ge 2 ]; then
-        echo "    s$SLOT 두 하플로타입 확보 — 나머지 비율 건너뜀"
+        echo "    s$SLOT both haplotypes obtained: remaining ratios skipped"
         break
       fi
     done

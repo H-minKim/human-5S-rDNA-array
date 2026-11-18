@@ -3,7 +3,7 @@
 #   Locus classes: chr4 (a cluster of 6 arrays) and chr18.
 #   Region classes: coding, spacer, outside.
 #   Arguments: regions.tsv out.tsv bam:group [bam:group ...]
-# MIT License · Copyright (c) 2026 Hungmin Kim
+# MIT License. Copyright (c) 2026 Hyungmin Kim
 import bisect
 import collections
 import io
@@ -67,4 +67,4 @@ for arg in sys.argv[3:]:
                     o.write(TAB.join([grp, br, k, "%s:%d" % (qn, rs), str(c), str(m)]) + NL)
     b.close()
 o.close()
-print("완료")
+print("done")

@@ -69,4 +69,4 @@ ax.legend(frameon=False, loc="upper right", handlelength=1.0, borderpad=0.1)
 # no horizontal grid lines
 ax.set_axisbelow(True)
 CS.save(fig, OUT, "cellF2_b_scope")
-print("완전 동일 %s · 5 변이 이내 %s" % (["%.1f" % v for v in f0], ["%.1f" % v for v in f5]))
+print("identical %s, within 5 variants %s" % (["%.1f" % v for v in f0], ["%.1f" % v for v in f5]))

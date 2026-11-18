@@ -34,7 +34,7 @@ for hi, k in enumerate(HK):
         VEC.append(v); AP.append(row[0]); AD.append(row[1]); HI.append(hi)
 VEC = np.asarray(VEC); AP = np.asarray(AP); AD = np.asarray(AD); HI = np.asarray(HI)
 NH = len(HK)
-print("유닛 %d · 하플로타입 %d · 변이 %d · '기타' %d 개"
+print("units %d, haplotypes %d, variants %d, '기타' %d"
       % (len(VEC), NH, int(VEC.sum()), int(VEC[:, GI["기타"]].sum())))
 
 ZN = ["근위 1-3", "근위 4-17", "가운데", "원위 1-10"]
@@ -92,14 +92,14 @@ for t in GROUPS:
                OBS[k, j] - mid, zz[kz] if np.isfinite(zz[kz]) else 0.0, ZN[kz]))
 g.close()
 
-print("\n■ 23 무리 · 구역 사이 변화 (|귀무 z| 로 정렬) — 유닛당 개수")
+print("\n23 families, change between zones (sorted by |null z|): count per unit")
 print("   %-14s %8s %8s %8s %8s | %8s %9s %-10s"
       % ("무리", ZN[0], ZN[1], ZN[2], ZN[3], "log2비", "귀무z", "가장 먼 구역"))
 for r in sorted(rows, key=lambda r: -abs(r[4]) if np.isfinite(r[4]) else 0):
     print("   %-14s %8.4f %8.4f %8.4f %8.4f | %8s %9.1f %s"
           % (r[0], r[1][0], r[1][1], r[1][2], r[1][3],
              ("%.2f" % r[2]) if np.isfinite(r[2]) else "-", r[4], r[5]))
-print("\n   하플로타입 : " + " · ".join("%s %d" % (z, n) for z, n in zip(ZN, NHZ)))
+print("\n   haplotypes : " + " · ".join("%s %d" % (z, n) for z, n in zip(ZN, NHZ)))
 
 # ---- also a per-position table (proximal 1..30, middle, distal 30..1) ----
 REG = ["P%d" % d for d in range(1, 31)] + ["MID"] + ["D%d" % d for d in range(30, 0, -1)]
@@ -126,4 +126,4 @@ for r in REG:
             % (r, sd, -1 if r == "MID" else int(r[1:]), NHpos[i], Mpos[i].sum(),
                "\t".join("%.5f" % x for x in Mpos[i])))
 g.close()
-print("저장 %s/VTZONE2_zones.tsv · VTZONE2_positions.tsv" % OUT)
+print("saved %s/VTZONE2_zones.tsv, VTZONE2_positions.tsv" % OUT)

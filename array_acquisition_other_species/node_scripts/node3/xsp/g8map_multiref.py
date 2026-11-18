@@ -21,7 +21,7 @@
 # No filling: variants come from the alignment (cs / BTOP) alone. If the chosen reference's unit interval is not fully covered, the result is NO_FULL.
 #
 # Arguments: array_id, fasta, gene.fa, reference folder, group files (comma separated), PAD, CTX, GL, output folder, array start, array end, chrom, strand.
-# MIT License · Copyright (c) 2026 Hungmin Kim
+# MIT License. Copyright (c) 2026 Hyungmin Kim
 import io
 import os
 import sys
@@ -298,6 +298,6 @@ S.write(TAB.join([AID, str(N), str(brk), str(n_rescued), str(cnt["OK"]), str(cnt
                   " ".join("%s:%d-%d(주기%d)" % (k, WIN[k][0], WIN[k][1], PERIOD[k]) for k in refs),
                   ovtxt, "%d-%d" % (ULO, UHI), " · ".join(warn) if warn else "없음"]) + NL)
 S.close()
-print("%s : 유닛 %d (끊김 %d · 그룹 창이 살린 유닛 %d) · OK %d NO_FULL %d NOALN %d · 배정 %s · 참조 %s%s"
+print("%s : units %d (broken %d, units rescued by the group window %d), OK %d NO_FULL %d NOALN %d, assigned %s, reference %s%s"
       % (AID, N, brk, n_rescued, cnt["OK"], cnt["NO_FULL"], cnt["NOALN"], dict(acnt), dict(rcnt),
-         (" · 배수함정 " + warn[0]) if warn else ""))
+         (" , multiple trap " + warn[0]) if warn else ""))

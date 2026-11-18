@@ -75,7 +75,7 @@ POS = collections.defaultdict(set)                # (source, cell) -> the set of
 nline = 0
 with gzip.open(os.path.join(A, "a13_unit_state_gmm.tsv.gz"), "rt", encoding="utf8") as f:
     head = f.readline().rstrip(chr(10)).split(chr(9))
-    print("a13 열 :", " | ".join(head))
+    print("a13 columns :", " | ".join(head))
     for l in f:
         x = l.rstrip(chr(10)).split(chr(9))
         nline += 1
@@ -90,7 +90,7 @@ with gzip.open(os.path.join(A, "a13_unit_state_gmm.tsv.gz"), "rt", encoding="utf
             continue
         OBS[(src, c)] += 1
         POS[(src, c)].add((smp, slot, ap))
-print("a13 줄 %d · 칸 %d" % (nline, len(OBS)))
+print("a13 rows %d, bins %d" % (nline, len(OBS)))
 
 rows = []
 for src in ("UCSC_ONT_FIBERSEQ", "PACBIO_FIBERSEQ"):
@@ -103,21 +103,21 @@ for src in ("UCSC_ONT_FIBERSEQ", "PACBIO_FIBERSEQ"):
         rows.append((plat, lab(c), c, o, k, o / float(k)))
 
 with io.open(OUT, "w", encoding="utf8", newline=chr(10)) as g:
-    g.write("# 칸마다 유닛 자리 수와 자리 하나당 평균 깊이 (2026-10-12)" + chr(10))
-    g.write("# 관측수 = a13 의 read x 유닛 줄 수 · 자리수 = 서로 다른 (개체,슬롯,array_pos)"
+    g.write("# per bin: number of unit positions and mean depth per position" + chr(10))
+    g.write("# observations = number of read x unit rows in a13, positions = distinct (individual,slot,array_pos)"
             + chr(10))
-    g.write("# 자리당깊이 = 관측수 / 자리수 — 칸 너비에 안 휘둘리는 자다" + chr(10))
-    g.write("# 칸 규칙은 zg1 과 같다 (양 끝 %d 절대 · 가운데 %d 상대)" % (E, NB) + chr(10))
+    g.write("# depth per position = observations / positions: a measure not affected by bin width" + chr(10))
+    g.write("# bin rule same as zg1 (both ends %d absolute, interior %d relative)" % (E, NB) + chr(10))
     g.write(chr(9).join(["플랫폼", "자리", "칸번호", "관측수", "자리수", "자리당깊이"]) + chr(10))
     for r in rows:
         g.write(chr(9).join([r[0], r[1], str(r[2]), str(r[3]), str(r[4]),
                              "%.2f" % r[5]]) + chr(10))
 
 print()
-print("=== 보기 — 끝 칸은 자리 1 개 · 가운데 칸은 여럿")
+print("=== view: end bins hold 1 position, interior bins hold several")
 print("%-8s %-13s %10s %9s %11s" % ("플랫폼", "자리", "관측수", "자리수", "자리당깊이"))
 for r in rows:
     if r[2] in (0, 1, 19, 20, 24, 29, 30, 48, 49):
         print("%-8s %-13s %10d %9d %11.2f" % (r[0], r[1], r[3], r[4], r[5]))
 print()
-print("적었다 ->", os.path.basename(OUT))
+print("written ->", os.path.basename(OUT))

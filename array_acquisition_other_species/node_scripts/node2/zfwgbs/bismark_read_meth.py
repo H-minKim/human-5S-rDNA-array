@@ -6,7 +6,7 @@
 #   So one CpG methylation ratio is computed per read, and the mean and interval are taken over reads as the sampling unit.
 #
 #   Arguments: bam, label, regions.tsv, out.tsv, [minimum CpG sites per read (default 3)].
-# MIT License · Copyright (c) 2026 Hungmin Kim
+# MIT License. Copyright (c) 2026 Hyungmin Kim
 import io
 import math
 import os
@@ -69,4 +69,4 @@ for L in io.open(REG, encoding="utf8"):
                       "%.4f" % sd, "%.4f" % se, str(tot)]) + NL)
 o.close()
 b.close()
-print("%s 완료" % LAB)
+print("%s done" % LAB)

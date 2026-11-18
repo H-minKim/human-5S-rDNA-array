@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 # 5S in other species: a G8v4-style unit map, each array against its own reference unit.
 #   The rules follow the human consmapG8v4.py unchanged; only the per-species values (reference unit, PAD, CTX, LO/HI) are read from REFUNIT_PARAMS.tsv.
-#     · A unit runs from gene end + 1 to the next gene end, with the gene HSP extended to the full length using the query coordinates.
-#     · cut with PAD bp of slack on each side; the alignment target is [last CTX bp of the reference unit][reference unit][first CTX bp of the reference unit]
-#     · No filling: variants come from the alignment (cs / BTOP) alone. If the middle unit interval is not fully covered the result is NO_FULL.
-#     · if the gap falls outside LO..HI, no unit is made and a break is recorded (n_break)
-#     · The fragments at either end are recorded as PARTIAL and no variants are called for them.
+#     - A unit runs from gene end + 1 to the next gene end, with the gene HSP extended to the full length using the query coordinates.
+#     - cut with PAD bp of slack on each side; the alignment target is [last CTX bp of the reference unit][reference unit][first CTX bp of the reference unit]
+#     - No filling: variants come from the alignment (cs / BTOP) alone. If the middle unit interval is not fully covered the result is NO_FULL.
+#     - if the gap falls outside LO..HI, no unit is made and a break is recorded (n_break)
+#     - The fragments at either end are recorded as PARTIAL and no variants are called for them.
 #   Outputs: g8map/<array_id>.g8map.tsv, G8MAP_SUM.tsv.
 #   Arguments: species key, fasta, tblout, REFUNIT_PARAMS.tsv, reference unit folder, output folder.
-# MIT License · Copyright (c) 2026 Hungmin Kim
+# MIT License. Copyright (c) 2026 Hyungmin Kim
 import io
 import os
 import sys
@@ -259,7 +259,7 @@ for r in PR:
     SUM.write(TAB.join([SP, aid, c, major, str(U), str(GL), str(N), str(brk), str(cnt["OK"]), str(cnt["NO_FULL"]),
                         str(cnt["NOALN"]), str(sum(nv)), str(nvg), str(len(allv)),
                         str(nv[len(nv) // 2]) if nv else "NA"]) + NL)
-    print("%s : 유닛 %d (끊김 %d) · OK %d · NO_FULL %d · NOALN %d · 변이자리 %d · 유전자부 변이 %d"
+    print("%s : units %d (broken %d), OK %d, NO_FULL %d, NOALN %d, variant positions %d, gene-region variants %d"
           % (aid, N, brk, cnt["OK"], cnt["NO_FULL"], cnt["NOALN"], len(allv), nvg))
     for x in (rp, qp, ctxp):
         try:

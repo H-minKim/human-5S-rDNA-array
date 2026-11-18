@@ -123,6 +123,6 @@ for fn in os.listdir(W):
     try: os.remove(os.path.join(W, fn))
     except OSError: pass
 os.rmdir(W)
-print("%s h%s 앵커 %d/%d · 조립본 창 %d bp · 합의용 %d · fastq 찾음 %d · 지문 기준값 %.3f" % (smp, sl, aL, aR, asm_win, len(use), len(seqs), base))
+print("%s h%s anchors %d/%d, assembly window %d bp, for consensus %d, found in fastq %d, fingerprint threshold %.3f" % (smp, sl, aL, aR, asm_win, len(use), len(seqs), base))
 for kk in sorted(T): print("   %-26s %d" % (kk, T[kk]))
 for r in LOG: print("   %s  %s" % r)

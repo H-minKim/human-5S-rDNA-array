@@ -1,14 +1,7 @@
 #!/bin/bash
 # Reassemble with HPRC ONT the individuals that hifi_queue.sh assembles from low-quality 1kGP reads
 #
-#    find_reads() in hifi_queue.sh searches
-#      ~/kgp_ont/out/$s.array.fastq.gz   <- 1kGP (10-24 MB) first
-#      ~/s5s_ont/hits/$s.hits.fastq.gz   <- HPRC ONT (250-670 MB) later
-#    so individuals present in both cohorts are assembled from 1kGP data there
-#    (27x too little data, only 1 of 12 haplotypes with known truth was correct).
-#    This affects 17 of the 607 hifi_queue outputs (12 individuals).
-#
-#  Here the order is reversed and HPRC ONT is used first. 1kGP is not used at all.
+#  HPRC ONT is used first. 1kGP is not used at all.
 #  Outputs go separately to ~/refix. They must not mix with the 1kGP outputs.
 set -u
 D=~/refix
@@ -19,24 +12,24 @@ for c in ~/miniconda3/bin/python python3; do
   p=$(command -v "$c" 2>/dev/null) || continue
   "$p" -c "import sys" 2>/dev/null && { PY="$p"; break; }
 done
-[ -n "$PY" ] || { echo "FATAL python 없음"; exit 9; }
+[ -n "$PY" ] || { echo "FATAL python not found"; exit 9; }
 
 for S in "$@"; do
-  grep -q "^$S	" "$SUM" 2>/dev/null && { echo "  $S 이미 함"; continue; }
+  grep -q "^$S	" "$SUM" 2>/dev/null && { echo "  $S already done"; continue; }
   # 1kGP is not used
   Q=""
   for p in ~/s5s_ont/hits/$S.hits.fastq.gz ~/giab_hits/$S.hits.fastq.gz ~/cancer5s/hits/$S.hits.fastq.gz; do
     [ -f "$p" ] && { Q=$p; break; }
   done
-  [ -n "$Q" ] || { echo "  $S HPRC/GIAB read 없음 — 건너뜀"; continue; }
+  [ -n "$Q" ] || { echo "  $S no HPRC/GIAB read, skipped"; continue; }
   MB=$(( $(stat -c %s "$Q") / 1048576 ))
   echo "  $S : $Q (${MB} MB)"
   FREE=$(df --output=avail -BG / | tail -1 | tr -dc '0-9')
-  [ "${FREE:-0}" -lt 25 ] && { echo "    디스크 ${FREE}G — 중단"; break; }
+  [ "${FREE:-0}" -lt 25 ] && { echo "    disk ${FREE}G: aborting"; break; }
   W="$D/w_$S"
   rm -rf "$W"; mkdir -p "$W"
   ( cd "$W" && timeout 10800 ~/hifiasm --ont -o "$S" -t 8 "$Q" > log 2>&1 )
-  echo "    조립 rc=$?"
+  echo "    assembly rc=$?"
   R=$("$PY" ~/hiarr.py "$S" "$W" "$D" 2>/dev/null)
   echo "$R" >> "$SUM"
   echo "    $(echo "$R" | tr '\n' ' | ')"

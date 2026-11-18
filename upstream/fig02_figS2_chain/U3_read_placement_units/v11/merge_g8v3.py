@@ -140,13 +140,13 @@ def pct(p):
     return 100.0 * G[p + "TP"] / t if t else float("nan")
 
 
-print("junction read 유닛 제외 : %s · ARRAY_ONLY : %s" % (dict(JBAD), dict(ABAD)))
-print("자리 %d · UNIT 깊이3+ 지도있음 %d : 변이염기 %.3f%% · 스페이서(1-2121) %.3f%% · 유전자부(2122-2240) %.3f%% · 전체염기 %.4f%% · 완전일치 %.2f%%"
+print("junction read units excluded: %s, ARRAY_ONLY: %s" % (dict(JBAD), dict(ABAD)))
+print("positions %d, UNIT depth3+ with map %d: variant bases %.3f%%, spacer (1-2121) %.3f%%, gene region (2122-2240) %.3f%%, all bases %.4f%%, exact match %.2f%%"
       % (G["rows"], G["cmp"], pct("all"), pct("sp"), pct("ge"),
          100.0 * (1 - (G["allFN"] + G["allFP"]) / float(2240 * G["cmp"])) if G["cmp"] else 0, 100.0 * G["ex"] / G["cmp"] if G["cmp"] else 0))
-print("유전자부 TP %d · FN %d · FP %d" % (G["geTP"], G["geFN"], G["geFP"]))
+print("gene region TP %d, FN %d, FP %d" % (G["geTP"], G["geFN"], G["geFP"]))
 srcs = collections.defaultdict(set)
 for (smp, src, sl) in PH:
     srcs[smp].add(src)
-print("출처별 하플로타입 : %s" % dict(collections.Counter(k[1] for k in PH)))
-print("출처가 둘 이상인 개체 %d : %s" % (sum(1 for v in srcs.values() if len(v) > 1), " ".join("%s[%s]" % (s, "+".join(sorted(v))) for s, v in sorted(srcs.items()) if len(v) > 1)))
+print("haplotypes by source: %s" % dict(collections.Counter(k[1] for k in PH)))
+print("individuals with two or more sources %d: %s" % (sum(1 for v in srcs.values() if len(v) > 1), " ".join("%s[%s]" % (s, "+".join(sorted(v))) for s, v in sorted(srcs.items()) if len(v) > 1)))

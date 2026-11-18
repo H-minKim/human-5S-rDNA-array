@@ -10,14 +10,14 @@
 #        (Earlier the upper vertex was only 6.4 pt wide and the X was invisible.)
 #
 #   Why the two orientations are opposite, measured:
-#     · blastn over CHM13 chr1:227,740,000-228,030,000: 126 of the 127 5S genes lie on the minus strand
+#     - blastn over CHM13 chr1:227,740,000-228,030,000: 126 of the 127 5S genes lie on the minus strand
 #       (neighbouring genes are 2,237-2,240 bp apart, matching the 2,240 bp frame used here).
-#     · Flank windows: proximal chr1:227,704,289-227,744,288 (low)
+#     - Flank windows: proximal chr1:227,704,289-227,744,288 (low)
 #                 and distal chr1:228,026,263-228,066,262 (high).
 #       So transcription runs towards decreasing chr1 coordinates, distal to proximal, right to left in the figure.
-#     · This frame: AluY 1-318 ... 5'-flanking 2032-2121, 5S gene 2122-2240 (TSS at 2122).
+#     - This frame: AluY 1-318 ... 5'-flanking 2032-2121, 5S gene 2122-2240 (TSS at 2122).
 #       Increasing frame coordinate is the direction of transcription, so drawing the frame 1 to 2240 left to right opposes the genome.
-#     · The manuscript states that right to left is the direction of transcription, and
+#     - The manuscript states that right to left is the direction of transcription, and
 #             that the proximal end of the array is drawn on the left.
 #     So in genome orientation the gene is on the left, AluY on the right, and transcription runs leftwards;
 #        in the frame used here AluY is on the left, the gene on the right, and transcription runs rightwards.

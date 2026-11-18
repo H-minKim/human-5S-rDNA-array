@@ -11,7 +11,7 @@ W = os.path.expanduser("~/p11_encode")
 ARRAY = ("chr1", 227743598, 228025872)
 IDX_G = os.path.join(W, "idx", "chm13")
 IDX_AD = os.path.join(W, "ref", "GM_ARRAY_plus_DECOY")
-assert os.path.exists(IDX_AD + ".1.bt2"), "GM 색인이 없다"
+assert os.path.exists(IDX_AD + ".1.bt2"), "GM index is missing"
 canon = "".join(l.strip() for l in open(os.path.join(W, "ref", "canon_v2.fa")) if not l.startswith(">")).upper()
 L = len(canon)
 MK = []
@@ -23,7 +23,7 @@ for _pl in ("c3_poslist_3zone_GM12878.tsv", "c3_poslist_mix_new_GM12878.tsv"):
 POS = {p for p, _, _, _ in MK}
 QMIN = 20
 B2 = ["-N", "0", "-L", "20", "--score-min", "L,-12,0", "--no-unal", "-p", "12"]
-print("GM12878 표지 %d 개 · Q>=%d · 색인 %s" % (len(MK), QMIN, IDX_AD), flush=True)
+print("GM12878 markers %d, Q>=%d, index %s" % (len(MK), QMIN, IDX_AD), flush=True)
 HIST = {}
 
 
@@ -104,7 +104,7 @@ def run(files, lab, off, recode):
                 rp += num; qp += num
             elif op in "DN": rp += num
             elif op in "IS": qp += num
-    print("  %-16s 입력 %s · 붙음 %s · A통과 %s · 최종 %s · 표지관측 %s · Q<%d 탈락 %s (%.1f%%)"
+    print("  %-16s input %s, aligned %s, passed A %s, final %s, marker observed %s, Q<%d dropped %s (%.1f%%)"
           % (lab, format(nin, ","), format(len(best), ","), format(len(passA), ","), format(len(keep), ","),
              format(nt, ","), QMIN, format(nd, ","), 100.0 * nd / max(1, nt)), flush=True)
     return pall, phq, dict(nin=nin, n_aligned=len(best), pass_a=len(passA), kept=len(keep), n_marker_obs=nt, n_lowq=nd,
@@ -120,7 +120,7 @@ for lab, off, fs in JOBS:
     if off == 64:
         for fp in fs:
             HIST[fp] = fq_hist(os.path.join(W, fp))
-            print("  %s reads %d · 최대 ord<74 인 read %d · ord 33 낀 read %d" % (fp, HIST[fp]["reads"], HIST[fp]["reads_max_lt74"], HIST[fp]["reads_with_ord33"]), flush=True)
+            print("  %s reads %d, reads with max ord<74 %d, reads containing ord 33 %d" % (fp, HIST[fp]["reads"], HIST[fp]["reads_max_lt74"], HIST[fp]["reads_with_ord33"]), flush=True)
 out = os.path.join(W, "GM_QUALGATE_20261101.tsv")
 ST = {}
 with open(out, "w") as o:

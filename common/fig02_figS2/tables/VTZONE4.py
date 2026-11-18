@@ -79,7 +79,7 @@ for b in range(NN):
         ap2[ix] = AP[ix][q]; ad2[ix] = AD[ix][q]
     PERM.append(zone_of(ap2, ad2))
 
-# produce two rank rulers. The code builds the table to the end (no manual pasting later)
+# produce two rank rulers.
 #   within-zone rank = by |null z| (how unexpected)   ,   ratio rank = by |log2 ratio to middle| (size of change)
 MIDI4 = ZN.index("가운데")
 OUTZ = {}
@@ -115,13 +115,13 @@ g.close()
 
 for l in ("전부", "단일유닛형만"):
     O, Zz = OUTZ[l]
-    print("\n■ %s — 구역마다 상위 6 (그 구역의 귀무 z)" % l)
+    print("\n%s: top 6 per zone (null z of that zone)" % l)
     for i, zn in enumerate(ZN):
         order = sorted([gg for gg in GROUPS if gg != "기타"],
                        key=lambda gg: -abs(np.nan_to_num(Zz[i, GI[gg]])))[:6]
         print("   %-10s %s" % (zn, " · ".join("%s(%+.0f)" % (gg, Zz[i, GI[gg]])
                                               for gg in order)))
-print("\n저장 %s/VTZONE4_byzone.tsv" % OUT)
+print("\nsaved %s/VTZONE4_byzone.tsv" % OUT)
 
 # the deposited table(s) carry English column names and values (common/fig02_figS2/taben.py)
 import sys as _s, os as _o

@@ -41,7 +41,7 @@ for fn in files:
     h, newp, has_head = t
     old = rlines(src); new = rlines(newp)
     if has_head:
-        assert old[0] == new[0], "머리줄 다름 " + fn
+        assert old[0] == new[0], "header differs " + fn
         head, old, new = [old[0]], old[1:], new[1:]
     else:
         head = []
@@ -49,13 +49,13 @@ for fn in files:
     byn = collections.defaultdict(list)
     for L in new:
         s = L.split(TAB, 1)[0]
-        assert s in smps, "새 파일에 다른 개체 %s %s" % (fn, s)
+        assert s in smps, "another individual in the new file %s %s" % (fn, s)
         byn[s].append(L)
     out = list(old)
     for s in smps:
         idx = [i for i, L in enumerate(out) if L.split(TAB, 1)[0] == s]
         if idx:
-            assert idx[-1] - idx[0] + 1 == len(idx), "옛 행 연속 아님 %s %s" % (fn, s)
+            assert idx[-1] - idx[0] + 1 == len(idx), "existing rows not contiguous %s %s" % (fn, s)
             out = out[:idx[0]] + byn[s] + out[idx[-1] + 1:]
         else:
             out = out + byn[s]

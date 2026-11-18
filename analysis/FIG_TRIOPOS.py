@@ -39,7 +39,7 @@ for r in TR:
     if b is not None: NT.append(b)
 UN = [r for r in best.values() if r["relation"] == "무관"]
 assert (len(TR), len(NT), len(UN)) == (5, 5, 150), (len(TR), len(NT), len(UN))
-assert all(r["child_N"] == r["parent_N"] for r in TR), "전달 짝의 유닛 수가 다르다"
+assert all(r["child_N"] == r["parent_N"] for r in TR), "transmitted pairs differ in unit count"
 n_ex = sum(round(float(r["frac_exact"]) * int(r["n_pairs"])) for r in TR)
 n_al = sum(int(r["n_pairs"]) for r in TR)
 
@@ -82,4 +82,4 @@ axs[0].text(0, 1.035, "%d / %d" % (n_ex, n_al), ha="center", va="bottom", fontsi
 fig.suptitle("삼자 전달, 유닛 자리까지 맞춘 비교", fontsize=10.5)
 for ext in ("png", "svg"):
     fig.savefig(os.path.join(OUT, "fig_trio_unitmatch." + ext), dpi=300, bbox_inches="tight")
-print("전달 %d · 비전달 %d · 무관 %d · 전달 유닛 %d 중 완전 일치 %d" % (len(TR), len(NT), len(UN), n_al, n_ex))
+print("transmitted %d, non-transmitted %d, unrelated %d, of %d transmitted units identical %d" % (len(TR), len(NT), len(UN), n_al, n_ex))

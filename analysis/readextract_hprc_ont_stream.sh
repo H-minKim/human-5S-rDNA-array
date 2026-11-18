@@ -13,7 +13,7 @@
 #    The extractor (campaign_extract_v5.py) and its options must be the same for every individual; altering them would break comparability between individuals.
 #  Preserving MM/ML with -T MM,ML and passing -F 0x900 are both required.
 set -u
-S=${1:?개체}
+S=${1:?individual}
 PAR=${2:-5}
 W=~/s5s_new
 G=~/giab5s_seq
@@ -21,11 +21,11 @@ BB=~/s5s/opt/bbmap/bbduk.sh
 MAN=~/ao_urls.tsv
 mkdir -p $W/hits $W/done $W/log $W/tmp/fx_$S
 
-[ -f "$W/done/$S.done" ] && { echo "  $S 이미 완료"; exit 0; }
+[ -f "$W/done/$S.done" ] && { echo "  $S already done"; exit 0; }
 urls=$(awk -F'\t' -v s="$S" '$1==s{print $2}' "$MAN")
 N=$(echo "$urls" | grep -c .)
-[ "$N" -gt 0 ] || { echo "  $S URL 없음"; exit 1; }
-echo "[$(date +%T)] $S : BAM $N 개를 최대 $PAR 병렬로"
+[ "$N" -gt 0 ] || { echo "  $S URL missing"; exit 1; }
+echo "[$(date +%T)] $S : BAM $N files, up to $PAR in parallel"
 
 i=0
 for u in $urls; do
@@ -44,7 +44,7 @@ for u in $urls; do
   while [ "$(jobs -rp | wc -l)" -ge "$PAR" ]; do sleep 5; done
 done
 wait
-echo "[$(date +%T)] $S : BAM 처리 끝 ($(wc -l < "$W/tmp/fx_$S/done.list" 2>/dev/null || echo 0)/$N)"
+echo "[$(date +%T)] $S : BAM processing finished ($(wc -l < "$W/tmp/fx_$S/done.list" 2>/dev/null || echo 0)/$N)"
 
 # the chunks are concatenated in numerical order; the order does not matter for correctness, but it makes the output reproducible
 : > "$W/tmp/$S.fx.fastq"
@@ -56,11 +56,11 @@ if [ -s "$W/tmp/$S.fx.fastq" ]; then
   gzip -c "$W/tmp/$S.fx.fastq" > "$W/hits/$S.hits.fastq.gz"
   R=$(( $(wc -l < "$W/tmp/$S.fx.fastq") / 4 ))
   echo "$R" > "$W/done/$S.done"
-  echo "[$(date +%T)] $S 완료 · 5S read $R · $(ls -lh $W/hits/$S.hits.fastq.gz | awk '{print $5}')" >> $W/progress.log
-  echo "  $S 완료 · read $R"
+  echo "[$(date +%T)] $S done, 5S read $R, $(ls -lh $W/hits/$S.hits.fastq.gz | awk '{print $5}')" >> $W/progress.log
+  echo "  $S done, read $R"
 else
   echo "0" > "$W/done/$S.done"
-  echo "[$(date +%T)] $S 결과 없음" >> $W/progress.log
-  echo "  $S 결과 없음"
+  echo "[$(date +%T)] $S no result" >> $W/progress.log
+  echo "  $S no result"
 fi
 rm -rf "$W/tmp/fx_$S" "$W/tmp/$S.fx.fastq"

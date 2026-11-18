@@ -24,7 +24,7 @@ REG = [("AluY", 1, 318), ("NTS1", 319, 1178), ("GA-rich", 1179, 1551),
        ("NTS2", 1552, 2031), ("promoter", 2032, 2121), ("gene", 2122, 2240)]
 U, _, _ = G.load("h1")
 VPU = sum(len(t[4]) for v in U.values() for t in v) / sum(len(v) for v in U.values())
-print("§0 자 : var_per_unit = %.6f" % VPU)
+print("§0 ruler : var_per_unit = %.6f" % VPU)
 assert abs(VPU - 6.866) < 0.01
 NCOPY = {("%s" % k[0], "%s" % k[1]): len(v) for k, v in U.items()}
 RC = {}
@@ -50,7 +50,7 @@ for s in bySlot:
 
 # ---------------- ⒜ orientation gate ----------------
 print("\n" + "=" * 78)
-print("[⒜] array 방향 관문 — U84C (v11_io 기준 : 근위 0.194 · 원위 0.000)")
+print("[a] array orientation gate: U84C (v11_io reference : proximal 0.194, distal 0.000)")
 ORI = {}
 for tag in ("Y", "N"):
     lo_d = lo_n = hi_d = hi_n = 0
@@ -71,7 +71,7 @@ for tag in ("Y", "N"):
     # the end closer to 0.194 is proximal
     ORI[tag] = "LOW_IS_PROX" if abs(r_lo - 0.194) < abs(r_hi - 0.194) else "HIGH_IS_PROX"
     print("    revcomp=%s : array_pos<=3 %.4f (n %d) · >=N-2 %.4f (n %d)  ⇒ %s"
-          % (tag, r_lo, lo_n, r_hi, hi_n, "array_pos 1 = 근위" if ORI[tag] == "LOW_IS_PROX" else "array_pos 1 = 원위"))
+          % (tag, r_lo, lo_n, r_hi, hi_n, "array_pos 1 = proximal" if ORI[tag] == "LOW_IS_PROX" else "array_pos 1 = 원위"))
 
 
 def prox_frac(s, ap):
@@ -92,7 +92,7 @@ for s, aps in bySlot.items():
     if len(aps) >= 12:
         ALL[s] = aps
 HSL = sorted(INT)
-print("    interior haplotype %d · 전체(양끝 포함) haplotype %d" % (len(HSL), len(ALL)))
+print("    interior haplotype %d, all (both ends included) haplotype %d" % (len(HSL), len(ALL)))
 
 
 def mmpos(k1, k2):
@@ -125,7 +125,7 @@ def cboot(vals, haps, B=B_BOOT, fn=np.mean):
 
 # ---------------- ⒝ by array zone ----------------
 print("\n" + "=" * 78)
-print("[⒝] 최장 공유동일 구간 by array 구역 (근위 0 → 원위 1 · 양끝 포함 · lag 1 쌍)")
+print("[b] longest shared identical stretch by array zone (proximal 0 to distal 1, both ends included, lag 1 pairs)")
 NB = 5
 bins = np.linspace(0, 1, NB + 1)
 acc = [([], []) for _ in range(NB)]
@@ -156,7 +156,7 @@ for bi in range(NB):
     rows_b.append((lab, nm, len(v), float(v.mean()), ci[0], ci[1], float(np.median(v))))
 print("    (%.0fs)" % (time.time() - t0))
 mid = np.array([r[3] for r in rows_b])
-print("    근위단 %.1f ↔ 중앙 %.1f ↔ 원위단 %.1f bp · 최대/최소 %.4f 배"
+print("    proximal end %.1f vs center %.1f vs distal end %.1f bp, max/min %.4f-fold"
       % (mid[0], mid[NB // 2], mid[-1], mid.max() / mid.min()))
 # both ends vs center test (haplotype unit)
 e_, m_ = [], []
@@ -169,12 +169,12 @@ for h, (a_, b_) in byh.items():
         e_.append(np.mean(a_))
         m_.append(np.mean(b_))
 w = stats.wilcoxon(np.array(e_), np.array(m_))
-print("    양끝 두 칸 vs 중앙 세 칸 (haplotype 단위 Wilcoxon · n=%d) : 끝 %.3f ↔ 중앙 %.3f · 차 %+.3f · p = %.4g"
+print("    two end bins vs three center bins (haplotype-level Wilcoxon, n=%d) : ends %.3f vs center %.3f, difference %+.3f, p = %.4g"
       % (len(e_), np.mean(e_), np.mean(m_), np.mean(e_) - np.mean(m_), w.pvalue))
 
 # ---------------- ⒞ identity probability by unit zone ----------------
 print("\n" + "=" * 78)
-print("[⒞] 구역 전체가 동일할 확률 by unit 구역 × lag  (0-1 확률이라 구역 길이가 달라도 비교 가능)")
+print("[c] probability that the whole zone is identical by unit zone × lag  (a 0-1 probability, so comparable across zone lengths)")
 LAGS = list(range(1, 26))
 NP_ = 2000
 PID = {nm: np.zeros(len(LAGS)) for nm, a, b in REG}
@@ -201,8 +201,8 @@ for li, lag in enumerate(LAGS):
         PID[nm][li] = cnt[nm] / len(pl)
         MMR[nm][li] = mmc[nm] / len(pl)
     PIDn[li] = len(pl)
-print("    lag 1-%d · 갈래당 쌍 %d (%.0fs)" % (max(LAGS), NP_, time.time() - t0))
-print("    %-10s %5s %8s %8s %8s %8s %12s %14s" % ("구역", "bp", "P(1)", "P(2)", "P(10)", "P(25)", "불일치/쌍(1)", "감쇠길이 a"))
+print("    lag 1-%d, pairs per branch %d (%.0fs)" % (max(LAGS), NP_, time.time() - t0))
+print("    %-10s %5s %8s %8s %8s %8s %12s %14s" % ("구역", "bp", "P(1)", "P(2)", "P(10)", "P(25)", "불일치/쌍(1)", "decay length a"))
 rows_c = []
 
 
@@ -224,17 +224,17 @@ for nm, a_, b_ in REG:
     ok = (y[0] - y[-1]) > 0.005
     print("    %-10s %5d %8.4f %8.4f %8.4f %8.4f %12.4f %14s"
           % (nm, b_ - a_ + 1, y[0], y[1], y[9], y[24], MMR[nm][0],
-             ("%.3f" % a_dec) if ok else "추정불가"))
+             ("%.3f" % a_dec) if ok else "not estimable"))
     rows_c.append((nm, b_ - a_ + 1, y[0], y[1], y[9], y[24], float(MMR[nm][0]),
                    float(pinf), float(a_dec), ok))
-print("    읽는 법 : P(1) 이 높을수록 그 구역이 이미 동일하다 · 감쇠길이 a 가 짧을수록 국소적으로만 동질")
+print("    how to read : the higher P(1), the more the zone is already identical; the shorter the decay length a, the more local the homogeneity")
 
 # ---------------- ⒟ two-component mixture by lag ----------------
 print("\n" + "=" * 78)
-print("[⒟] 두 성분 혼합을 lag 별로 — 거리 의존성이 긴 성분에만 있는가")
+print("[d] two-component mixture by lag: is the distance dependence only in the long component")
 SUBL = [1, 2, 3, 5, 8, 12, 18, 25]
 rows_d = []
-print("    %5s %8s %10s %10s %12s %12s" % ("lag", "n", "w(짧은)", "T1(짧은)", "T2(긴)", "평균 = wT1+(1-w)T2"))
+print("    %5s %8s %10s %10s %12s %12s" % ("lag", "n", "w(short)", "T1(짧은)", "T2(긴)", "평균 = wT1+(1-w)T2"))
 for lag in SUBL:
     pl = []
     for s, aps in INT.items():
@@ -275,20 +275,20 @@ for nm, v in (("T1 (짧은 성분)", t1v), ("T2 (긴 성분)", t2v), ("w (짧은
 
 # ---------------- ⒠ mean shared-identical length within zone ----------------
 print("\n" + "=" * 78)
-print("[⒠] 구역 안 평균 공유동일 길이 = 구역 bp / (구역 불일치 + 1) · 구역 길이로 절단")
-print("    %-10s %5s %14s %16s %10s" % ("구역", "bp", "불일치/쌍(lag1)", "평균 동일 길이", "절단?"))
+print("[e] mean shared identical length within zone = zone bp / (zone mismatches + 1), truncated at the zone length")
+print("    %-10s %5s %14s %16s %10s" % ("구역", "bp", "불일치/쌍(lag1)", "mean same length", "truncated?"))
 rows_e = []
 for nm, a_, b_ in REG:
     bp = b_ - a_ + 1
     m1 = MMR[nm][0]
     L = bp / (m1 + 1)
     cens = L >= bp * 0.9
-    print("    %-10s %5d %14.4f %16.2f %10s" % (nm, bp, m1, min(L, bp), "절단" if cens else ""))
+    print("    %-10s %5d %14.4f %16.2f %10s" % (nm, bp, m1, min(L, bp), "truncated" if cens else ""))
     rows_e.append((nm, bp, float(m1), float(min(L, bp)), cens))
-print("    절단 = 쌍당 불일치가 1 미만이라 구역 전체가 보통 동일하다 ⇒ 그 구역의 '동질화 길이' 는 구역보다 길다")
+print("    truncation = fewer than 1 mismatch per pair, so the whole zone is usually identical -> the 'homogenization length' of that zone exceeds the zone")
 
 g = io.open(os.path.join(OUT, "X2_zone_region.tsv"), "w", encoding="utf8", newline="\n")
-g.write("# P08 X2 · ruler majref %.6f · seed %d · B %d · 2026-10-10\n" % (VPU, SEED, B_BOOT))
+g.write("# P08 X2 · ruler majref %.6f · seed %d · B %d\n" % (VPU, SEED, B_BOOT))
 g.write("# 방향 : revcomp Y -> %s · N -> %s (U84C 실측)\n" % (ORI.get("Y"), ORI.get("N")))
 g.write("[B]\tbin\tzone\tn_pair\tmaxrun_mean\tlo\thi\tmaxrun_median\n")
 for r in rows_b:
@@ -310,7 +310,7 @@ g.close()
 np.savez_compressed(os.path.join(OUT, "X2_curves.npz"),
                     LAGS=np.array(LAGS), **{("PID_" + nm): PID[nm] for nm, a, b in REG},
                     **{("MMR_" + nm): MMR[nm] for nm, a, b in REG})
-print("\n산출 :", os.path.join(OUT, "X2_zone_region.tsv"))
+print("\noutputs :", os.path.join(OUT, "X2_zone_region.tsv"))
 
 # the deposited table(s) carry English column names and values (common/fig02_figS2/taben.py)
 import sys as _s, os as _o

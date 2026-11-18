@@ -50,14 +50,14 @@ for p in POP + ["미표기"]:
     ax.bar(x, v, 0.76, bottom=bot, color=PC[p], edgecolor="none", zorder=3,
            label=p if p != "미표기" else "집단 못 찾음")
     bot += v
-assert np.allclose(bot, 1.0), "구성 합이 1 이 아니다"
+assert np.allclose(bot, 1.0), "composition does not sum to 1"
 for i, r in enumerate(G):
     ax.text(x[i], 1.015, r[H["하플로"]], ha="center", va="bottom", fontsize=CS.FS_ANN - 0.8, color="#566573")
-    rec("A", "무리 %s" % r[H["무리"]],
-        "하플로타입 %s · " % r[H["하플로"]]
+    rec("A", "group %s" % r[H["무리"]],
+        "haplotype %s, " % r[H["하플로"]]
         + " · ".join("%s %s" % (p, r[H["n_" + p]]) for p in POP)
-        + " · 미표기 %d" % UN[i], "X12_TYPE_GROUPS.tsv")
-rec("A", "미표기 합", "%d / %d" % (UN.sum(), NH.sum()), "X12_TYPE_GROUPS.tsv")
+        + " and unlabelled %d" % UN[i], "X12_TYPE_GROUPS.tsv")
+rec("A", "unlabelled total", "%d / %d" % (UN.sum(), NH.sum()), "X12_TYPE_GROUPS.tsv")
 ax.set_xticks(x); ax.set_xticklabels([r[H["무리"]] for r in G])   # tick number size = common to the figure
 ax.set_xlabel("array 유형 무리")   # the bracket '(numbers above are haplotype counts)' is in the Legend text
 ax.set_ylabel("집단 구성")
@@ -68,4 +68,4 @@ ax.legend(frameon=False, ncol=3, loc="upper left", bbox_to_anchor=(0.0, -0.24), 
           handlelength=1.0, columnspacing=0.7, handletextpad=0.3, fontsize=CS.FS_LEG - 0.4)
 SRC.close()
 CS.save(fig, OUT, "cellF2_n_typepop")
-print("무리 %d · 하플로타입 %d · 미표기 %d" % (len(G), NH.sum(), UN.sum()))
+print("groups %d, haplotypes %d, unlabelled %d" % (len(G), NH.sum(), UN.sum()))

@@ -48,7 +48,7 @@ for k, rs in U.items():
     for r in mid: c.update(r[4])
     MIDSET[k] = (c, len(mid))
 NH = len(HAPS)
-print("배경 하플로타입 %d (MID >= 15 유닛)" % NH)
+print("background haplotypes %d (MID >= 15 units)" % NH)
 
 # background markers: MID carrier fraction is 20-80% of haplotypes
 have = collections.Counter()
@@ -56,7 +56,7 @@ for k in HAPS:
     c, n = MIDSET[k]
     for x in c: have[x] += 1
 MK = sorted([x for x in have if 0.20 * NH <= have[x] <= 0.80 * NH])
-print("배경 마커 %d" % len(MK))
+print("background markers %d" % len(MK))
 MKI = {x: i for i, x in enumerate(MK)}
 X = np.zeros((NH, len(MK)), dtype=np.float32)
 for i, k in enumerate(HAPS):
@@ -99,10 +99,10 @@ def conc(carmask, B=500, lab=None):
     return float(top), float(np.median(nul)), float((np.sum(nul >= top) + 1) / (B + 1.0)), int(np.argmax(c))
 
 MINHAP = 8
-print("판정 대상 : 배경 하플로타입 중 보유 %d 개 이상" % MINHAP)
+print("call targets : carried by %d or more of the background haplotypes" % MINHAP)
 rows = []
 cand = [x for x in carry_all if len(carry_all[x]) >= MINHAP]
-print("대상 변이 %d / 전체 %d" % (len(cand), len(nu)))
+print("target variants %d / all %d" % (len(cand), len(nu)))
 for i, x in enumerate(sorted(cand, key=lambda z: -nu[z])):
     cm = np.array([1 if k in carry_all[x] else 0 for k in HAPS])
     nc = int(cm.sum())
@@ -135,22 +135,22 @@ for r in rows:
         ("%.4f" % r[6]) if r[6] == r[6] else "", ("%.4f" % r[7]) if r[7] == r[7] else "",
         ("%.4g" % r[8]) if r[8] == r[8] else "", r[9], r[10], r[11]))
 g.close()
-print("저장:", p1)
+print("saved:", p1)
 
 cnt = collections.Counter(r[11] for r in rows)
 print("")
-print("=== 판정 분포 (대상 %d) ===" % len(rows))
+print("=== call distribution (targets %d) ===" % len(rows))
 for c, n in cnt.most_common():
     sub = [r for r in rows if r[11] == c]
-    print("  %-10s %5d  · 배열당 사본 중앙 %5.2f · 보유 하플로 중앙 %4.0f · 재발문맥 %4.1f%%" % (
+    print("  %-10s %5d, copies per array median %5.2f, carrier haplotypes median %4.0f, recurrence context %4.1f%%" % (
         c, n, np.median([r[5] for r in sub]), np.median([r[2] for r in sub]),
         100 * np.mean([r[10] == "Y" for r in sub])))
 print("")
-print("=== 판정별 대표 변이 ===")
+print("=== representative variants by call ===")
 for c in ("계승형", "재발시사형", "분산형", "조상형"):
     sub = sorted([r for r in rows if r[11] == c], key=lambda r: -r[3])[:4]
     for r in sub:
-        print("  %-10s %-12s 유닛 %6d · 배열 %3d · 배열당 %5.1f · 최다계통 %s (귀무 %s) p=%s" % (
+        print("  %-10s %-12s units %6d, arrays %3d, per array %5.1f, top lineage %s (null %s) p=%s" % (
             c, r[0], r[3], r[2], r[5],
             ("%.3f" % r[6]) if r[6] == r[6] else "-", ("%.3f" % r[7]) if r[7] == r[7] else "-",
             ("%.3g" % r[8]) if r[8] == r[8] else "-"))
@@ -179,4 +179,4 @@ g = io.open(src, "w", encoding="utf8", newline="\n")
 for f in out: g.write("\t".join(f) + "\n")
 g.close()
 print("")
-print("그룹표에 열 6 개 추가:", src, " (원본 보존:", os.path.basename(bak) + ")")
+print("6 columns added to the group table:", src, " (original kept:", os.path.basename(bak) + ")")

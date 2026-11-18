@@ -59,7 +59,7 @@ for h in _big:
     s = set()
     for i in np.where(hid == h)[0]: s |= set(units[i])
     hap3.update(s)
-print("새 분류 코호트 : 하플로타입 %d / %d (유닛 >= %d) · fT %.2f" % (NS3, NH, MINU3, FT3))
+print("classification cohort : haplotypes %d / %d (units >= %d), fT %.2f" % (NS3, NH, MINU3, FT3))
 CLS = ["다개체 공유형", "배열내 다중형", "단일유닛형"]
 def klass(h, t):
     if hap3[t] / NS3 >= FT3: return "다개체 공유형"
@@ -70,11 +70,11 @@ for i, vs in enumerate(units):
     UC.append([c[k] for k in CLS])
 UC = np.array(UC, float)
 tot = UC.sum(0)
-print("부류별 (하플로타입×유닛×변이) 건수 : " + " · ".join("%s %d (%.1f%%)" % (k, tot[j], 100 * tot[j] / tot.sum()) for j, k in enumerate(CLS)))
-print("유닛당 평균 : " + " · ".join("%s %.3f" % (k, UC[:, j].mean()) for j, k in enumerate(CLS)))
+print("counts by class (haplotype×unit×variant) : " + " · ".join("%s %d (%.1f%%)" % (k, tot[j], 100 * tot[j] / tot.sum()) for j, k in enumerate(CLS)))
+print("mean per unit : " + " · ".join("%s %.3f" % (k, UC[:, j].mean()) for j, k in enumerate(CLS)))
 
 # ---------- (1) position distribution ----------
-print("\n=== (1) 부류별 유닛당 개수 — 가운데 대비 비 (2단계 · 하플로타입 부트스트랩 300) ===")
+print("\n=== (1) count per unit by class: ratio to interior (two-stage, haplotype bootstrap 300) ===")
 regs = [("P", d) for d in range(1, 31)] + [("MID", 0)] + [("D", d) for d in range(30, 0, -1)]
 def regmask(side, d):
     if side == "P": return (ap == d)
@@ -98,11 +98,11 @@ for side, d in regs:
         g.write("%s\t%s\t%d\t%.5f\t%.4f\t%.4f\t%.4f\n" % ("MID" if side == "MID" else "%s%d" % (side, d), k, n, v, v / mid[j],
                 np.percentile(bs[:, j], 2.5) / mid[j], np.percentile(bs[:, j], 97.5) / mid[j]))
 g.close()
-print("  구역   " + "".join("%10s" % k for k in CLS))
+print("  zone   " + "".join("%10s" % k for k in CLS))
 for side, d in [("P", 1), ("P", 2), ("P", 3), ("P", 5), ("P", 10), ("P", 17), ("P", 30), ("MID", 0), ("D", 30), ("D", 17), ("D", 10), ("D", 8), ("D", 5), ("D", 3), ("D", 2), ("D", 1)]:
     v = HM[(side, d)].mean(0)
     print("  %-5s " % ("MID" if side == "MID" else "%s%d" % (side, d)) + "".join("%10.2f" % (v[j] / mid[j]) for j in range(len(CLS))))
-print("  가운데 유닛당 : " + " · ".join("%s %.3f" % (k, mid[j]) for j, k in enumerate(CLS)))
+print("  interior per unit : " + " · ".join("%s %.3f" % (k, mid[j]) for j, k in enumerate(CLS)))
 
 # ---------- reading change points ----------
 CP = collections.defaultdict(dict)
@@ -139,7 +139,7 @@ def loc_of(t, n):
     return pz or dz or "가운데"
 g = io.open(os.path.join(OUT, "S26b_boundary_drivers.tsv"), "w", encoding="utf8", newline="\n")
 g.write("basis\tset\tlocation\tn_boundaries\t" + "\t".join("n_%s" % k for k in CLS) + "\t" + "\t".join("dens_diff_%s" % k for k in CLS) + "\n")
-print("\n=== (2) 경계를 가르는 변이의 기원 (|보유율 차| ≥%.1f · 창 %d 유닛) ===" % (THR, W))
+print("\n=== (2) origin of the variants that separate a boundary (|carrier rate difference| ≥%.1f, window %d units) ===" % (THR, W))
 for basis in ("A", "B"):
     RES = collections.defaultdict(lambda: [collections.Counter(), [], 0])
     for hk, (n, cps) in CP[basis].items():
@@ -160,8 +160,8 @@ for basis in ("A", "B"):
             if r is None: continue
             for key in (("귀무", loc_of(int(t), n)), ("귀무", "전체")):
                 RES[key][0].update(r[0]); RES[key][1].append(r[1]); RES[key][2] += 1
-    print("\n  [기준 %s · %s]" % (basis, "개별 변이 160 종" if basis == "A" else "변이 성격 20 개"))
-    print("   %-4s %-16s %6s | 경계당 가르는 변이 수 : %s | 경계 양쪽 유닛당 개수 차 : %s" % ("", "위치", "경계", " ".join("%8s" % k for k in CLS), " ".join("%8s" % k for k in CLS)))
+    print("\n  [criterion %s, %s]" % (basis, "individual variants 160 kinds" if basis == "A" else "변이 성격 20 개"))
+    print("   %-4s %-16s %6s | separating variants per boundary : %s | difference in count per unit across the boundary : %s" % ("", "pos", "boundary", " ".join("%8s" % k for k in CLS), " ".join("%8s" % k for k in CLS)))
     for loc in ("전체", "근위 1-3", "근위 4-17", "가운데", "원위 1-10"):
         for st in ("실제", "귀무"):
             c, dl, nb = RES[(st, loc)]
@@ -230,7 +230,7 @@ def feats(h, cls):
     if X.shape[1] > 5:
         u, s_, vt = np.linalg.svd(X, full_matrices=False); X = u[:, :5] * s_[:5]; X = X / np.maximum(X.std(0), 1e-9)
     return X
-print("\n=== (3) 부류만으로 배열마다 경계 찾기 (벌점 1·d·logN · 순서섞기 귀무) ===")
+print("\n=== (3) boundaries per array from classes alone (penalty 1*d*logN, order-shuffle null) ===")
 bins = [(1, 3), (4, 6), (7, 10), (11, 15), (16, 20), (21, 30), (31, 60)]
 g = io.open(os.path.join(OUT, "S26b_class_segmentation.tsv"), "w", encoding="utf8", newline="\n")
 g.write("class\tn_hap\tmean_cp\tmean_cp_null\tside\tdist_bin\tobs\texp\tobs_over_exp\n")
@@ -252,18 +252,18 @@ for cls in ("다개체 공유형", "배열내 다중형", "단일유닛형"):
                 w = len(c) / float(m)
                 if x <= n - x: se["P"][x] += w
                 else: se["D"][n - x] += w
-    print("  [%s] 하플로타입 %d · 변화점 평균 %.2f (순서섞기 귀무 %.2f)" % (cls, len(ncp), np.mean(ncp), np.mean(nnull)))
+    print("  [%s] haplotypes %d, changepoints mean %.2f (order-shuffle null %.2f)" % (cls, len(ncp), np.mean(ncp), np.mean(nnull)))
     for s, lab in (("P", "근위"), ("D", "원위")):
         row = []
         for a_, b_ in bins:
             o = so[s][a_:b_ + 1].sum(); e = se[s][a_:b_ + 1].sum()
             row.append("%d-%d %.2f" % (a_, b_, o / e if e > 0 else float("nan")))
             g.write("%s\t%d\t%.3f\t%.3f\t%s\t%d-%d\t%d\t%.2f\t%.3f\n" % (cls, len(ncp), np.mean(ncp), np.mean(nnull), lab, a_, b_, o, e, o / e if e > 0 else float("nan")))
-        print("     %s 관측/기대 : %s" % (lab, " · ".join(row)))
+        print("     %s observed/expected : %s" % (lab, " · ".join(row)))
 g.close()
 
 # ---------- (4) character by zone: multi-individual shared type vs single-unit type ----------
-print("\n=== (4) 최적 구역별 성격 — 다개체 공유형 vs 단일유닛형 (유닛 1000 개당 · log2 구역/내부) ===")
+print("\n=== (4) character by optimal zone: shared across individuals vs single-unit type (per 1000 units, log2 zone/interior) ===")
 def zone_of(i):
     if ad[i] <= 8: return "원위1-8"
     if ap[i] <= 3: return "근위1-3"
@@ -287,17 +287,17 @@ for cls, members in (("다개체 공유형", ("다개체 공유형",)), ("단일
         DEV[cls][z] = dv
         for j, fname in enumerate(CHAR):
             g.write("%s\t%s\t%d\t%s\t%.2f\t%.3f\n" % (cls, z, Z[z][1], fname, Z[z][0][j], dv[j]))
-    print("  [%s] 유닛 1000 개당 총 변이 : %s" % (cls, " · ".join("%s %.0f" % (z, Z[z][0][CHAR.index("AluY")] + Z[z][0][CHAR.index("NTS1")] + Z[z][0][CHAR.index("GArich")] + Z[z][0][CHAR.index("NTS2")] + Z[z][0][CHAR.index("coding")]) for z in ZN)))
+    print("  [%s] total variants per 1000 units : %s" % (cls, " · ".join("%s %.0f" % (z, Z[z][0][CHAR.index("AluY")] + Z[z][0][CHAR.index("NTS1")] + Z[z][0][CHAR.index("GArich")] + Z[z][0][CHAR.index("NTS2")] + Z[z][0][CHAR.index("coding")]) for z in ZN)))
     for z in ("근위1-3", "근위4-17", "원위1-8"):
-        print("     %-8s log2(구역/내부) : %s" % (z, " ".join("%s %+.2f" % (CHAR[j], DEV[cls][z][j]) for j in range(len(CHAR)))))
+        print("     %-8s log2(zone/interior) : %s" % (z, " ".join("%s %+.2f" % (CHAR[j], DEV[cls][z][j]) for j in range(len(CHAR)))))
 g.close()
-print("\n  계승형 편차와 드문(1유닛) 편차의 상관 (성격 14 개 · 구역별)")
+print("\n  correlation between the inherited-type deviation and the rare (1-unit) deviation (14 characters, by zone)")
 for z in ("근위1-3", "근위4-17", "원위1-8"):
     a_ = DEV["다개체 공유형"][z]; b_ = DEV["단일유닛형"][z]
     r = np.corrcoef(a_, b_)[0, 1]
     rr = np.array([np.corrcoef(a_, rng.permutation(b_))[0, 1] for _ in range(2000)])
-    print("   %-8s r = %+.2f (순열 p = %.3f)" % (z, r, (np.sum(np.abs(rr) >= abs(r)) + 1) / 2001.0))
-print("\n저장 : S26_position_profile.tsv · S26_boundary_drivers.tsv · S26_class_segmentation.tsv · S26_zone_character.tsv")
+    print("   %-8s r = %+.2f (permutation p = %.3f)" % (z, r, (np.sum(np.abs(rr) >= abs(r)) + 1) / 2001.0))
+print("\nsaved : S26_position_profile.tsv, S26_boundary_drivers.tsv, S26_class_segmentation.tsv, S26_zone_character.tsv")
 
 # the deposited table(s) carry English column names and values (common/fig02_figS2/taben.py)
 import sys as _s, os as _o

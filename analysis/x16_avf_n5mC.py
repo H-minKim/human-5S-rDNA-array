@@ -66,25 +66,25 @@ for (sp, aid), g in A.groupby(["species_key", "array_id"]):
 T = pd.DataFrame(rows)
 T.to_csv(OUT + "/tables/OTHERSP_ARRAY_METH_n5mC.tsv", sep="\t", index=False, float_format="%.5f")
 
-P("x1 표 재현 검산 : delta_frac vs x1 표 delta 최대 차 %.2e" % np.nanmax(np.abs(T.delta_frac - T.delta_x1_table)))
-P("정수 n_5mC 로 바꾼 효과 : |delta_int − delta_frac| 최대 %.4f · 중앙 %.5f" %
+P("check of x1 table reproduction: max difference delta_frac vs x1 table delta %.2e" % np.nanmax(np.abs(T.delta_frac - T.delta_x1_table)))
+P("effect of switching to integer n_5mC: |delta_int − delta_frac| max %.4f, median %.5f" %
   (np.nanmax(np.abs(T.delta_int - T.delta_frac)), np.nanmedian(np.abs(T.delta_int - T.delta_frac))))
 P()
 GRP = {"유인원 5 (시아망 제외)": ["bonobo_mPanPan1", "chimp_mPanTro3", "gorilla_mGorGor1", "orang_bornean_mPonPyg2", "orang_sumatran_mPonAbe1"],
        "시아망": ["siamang_mSymSyn1"]}
 for nm, keys in GRP.items():
     g = T[T.species_key.isin(keys)]
-    P("%-22s x1(frac) %+.3f ~ %+.3f  →  정수 n_5mC %+.3f ~ %+.3f" % (nm, g.delta_frac.min(), g.delta_frac.max(), g.delta_int.min(), g.delta_int.max()))
+    P("%-22s x1(frac) %+.3f ~ %+.3f  ->  integer n_5mC %+.3f ~ %+.3f" % (nm, g.delta_frac.min(), g.delta_frac.max(), g.delta_int.min(), g.delta_int.max()))
     for r in g.itertuples():
         P("   %-45s frac %+.4f · int %+.4f" % (r.array_id.split("__")[1], r.delta_frac, r.delta_int))
 f = T[(T.species_key == "zfinch_v03_dip") & ~T.array_id.str.contains("CM109798|CM109759")]
 P()
-P("금화조 chr2·chr4 (6 array)")
-P("  (가) array 마다 LIG+UL 합산 : frac %+.3f ~ %+.3f · int %+.3f ~ %+.3f" % (f.delta_frac.min(), f.delta_frac.max(), f.delta_int.min(), f.delta_int.max()))
+P("zebra finch chr2, chr4 (6 arrays)")
+P("  (a) LIG+UL summed per array: frac %+.3f ~ %+.3f, int %+.3f ~ %+.3f" % (f.delta_frac.min(), f.delta_frac.max(), f.delta_int.min(), f.delta_int.max()))
 allps = []
 for r in f.itertuples():
-    P("   %-38s 합산 int %+.3f | 시료별 %s" % (r.array_id.split("__")[1], r.delta_int, r.delta_int_per_sample))
+    P("   %-38s summed int %+.3f | per sample %s" % (r.array_id.split("__")[1], r.delta_int, r.delta_int_per_sample))
     for part in r.delta_int_per_sample.split("; "):
         allps.append(float(part.split()[1]))
-P("  (나) 시료별 : %+.3f ~ %+.3f (%d 행)" % (min(allps), max(allps), len(allps)))
+P("  (b) per sample: %+.3f ~ %+.3f (%d rows)" % (min(allps), max(allps), len(allps)))
 LOG.close()

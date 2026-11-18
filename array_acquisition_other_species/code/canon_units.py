@@ -7,7 +7,7 @@
 #   Check: every unit sequence cut out must equal the unit sequence taken directly from the assembly.
 #   Outputs: <out>/<array>.units.fa with the unit sequences, <array>.units.tsv with their positions, and CANON_UNITS_SUM.tsv.
 #   Arguments: the data_v2 folder and the output folder.
-# MIT License · Copyright (c) 2026 Hungmin Kim
+# MIT License. Copyright (c) 2026 Hyungmin Kim
 import io
 import os
 import re
@@ -80,4 +80,4 @@ for mf in sorted(glob.glob(os.path.join(SRC, "02_consensus_map", "*", "*.g8map.t
     tot["unit"] += len(rows)
     tot["bad"] += bad
 SUM.close()
-print("array %d · 유닛 %d · 길이 불일치 %d" % (tot["array"], tot["unit"], tot["bad"]))
+print("array %d, units %d, length mismatch %d" % (tot["array"], tot["unit"], tot["bad"]))

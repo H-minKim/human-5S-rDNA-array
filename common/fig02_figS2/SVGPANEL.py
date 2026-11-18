@@ -472,7 +472,7 @@ def find_panel(path, title_head, panel_label=None):
             hit2 = [q for q in hit if any(norm(s).startswith(lab) for s in q[4])]
             if len(hit2) == 1:
                 return root, hit2[0]
-    raise LookupError("%s : '%s' 로 axes 를 못 가렸다 (후보 제목 %s)"
+    raise LookupError("%s : could not identify the axes by '%s' (candidate titles %s)"
                       % (os.path.basename(path), title_head[:30],
                          [next((s for s in q[4] if re.match(r"^[A-Za-z]\d?\s", s)), (q[4][0] if q[4] else "?"))[:30]
                           for q in ps]))
@@ -532,4 +532,4 @@ if __name__ == "__main__":
         print("■ %s · viewBox %s · axes %d" % (f, viewbox(root), len(ps)))
         for nm, g, box, ax, tx in ps:
             head = next((s for s in tx if re.match(r"^[A-Za-z]\d?\s", s)), (tx[0] if tx else "(없음)"))
-            print("   %-8s 구역(%.0f,%.0f,%.0fx%.0f) 글자 %d · %s" % (nm, box[0], box[1], box[2], box[3], len(tx), head[:52]))
+            print("   %-8s region(%.0f,%.0f,%.0fx%.0f) text items %d, %s" % (nm, box[0], box[1], box[2], box[3], len(tx), head[:52]))

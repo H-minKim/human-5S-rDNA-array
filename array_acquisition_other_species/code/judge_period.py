@@ -4,7 +4,7 @@
 #   The higher-order repeat is the offset with the greatest aligned length, recorded as a multiple of the base period where it is one.
 #   Both are then compared with our own representative unit length.
 #   Output: PERIOD_FINAL.tsv
-# MIT License · Copyright (c) 2026 Hungmin Kim
+# MIT License. Copyright (c) 2026 Hyungmin Kim
 import io
 import os
 import glob
@@ -14,13 +14,13 @@ NL = chr(10)
 TAB = chr(9)
 B = os.path.dirname(os.path.abspath(__file__))
 L = os.path.join(B, "lit")
-CAN = "$RDNA_OTHERSP_DIR/data_v2/01_canonical"
+CAN = os.environ["RDNA_OTHERSP_DIR"] + "/data_v2/01_canonical"
 UL = {}
 for p in glob.glob(os.path.join(CAN, "*", "*.unit.fa")):
     aid = os.path.basename(p).replace(".unit.fa", "")
     UL[aid] = len("".join(x.strip() for x in io.open(p, encoding="utf8").read().split(NL)[1:]))
 ST = {}
-f = io.open("$RDNA_OTHERSP_DIR/data_v2/00_catalog/5S_array_structure.tsv", encoding="utf8")
+f = io.open(os.environ["RDNA_OTHERSP_DIR"] + "/data_v2/00_catalog/5S_array_structure.tsv", encoding="utf8")
 hd = f.readline().rstrip(NL).split(TAB)
 ix = dict((n, i) for i, n in enumerate(hd))
 for LL in f:
@@ -128,5 +128,5 @@ for t in rows:
     hs = ("%d(x%d)" % (hor, horm)) if horm > 1 else "-"
     print("%-50s %5s %6d %6d %6d %5.2f %5d %5s  %-12s %s" % (aid, cps, myu, fund, af, frac, nr, hs, vr, vu))
 print()
-print("반복 판정:", dict(collections.Counter(t[-2] for t in rows)))
-print("유닛 판정:", dict(collections.Counter(t[-1].split(" (")[0] for t in rows)))
+print("repeat verdict:", dict(collections.Counter(t[-2] for t in rows)))
+print("unit verdict:", dict(collections.Counter(t[-1].split(" (")[0] for t in rows)))

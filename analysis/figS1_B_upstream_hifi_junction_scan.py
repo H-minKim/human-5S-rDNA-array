@@ -5,7 +5,6 @@
 
 # -*- coding: utf-8 -*-
 # Test 2: place HiFi reads by their flank (junction), build a HiFi consensus map, and test whether it recovers the variant list.
-#@DROP
 #
 #  What is measured:
 #    whether a consensus built from HiFi reads recovers the per-unit variant list of the map,

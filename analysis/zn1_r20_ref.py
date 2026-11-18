@@ -98,7 +98,7 @@ for smp, src, rid, slot, arr, lo, us in L.iter_reads(UNIT, 0, 0):
                 p[0] += int(b_); p[1] += 1
             for t_ in np.unique(tt):
                 PR[(plat, st, int(t_))][2] += 1
-print("read %d · 구역 칸 %d · 자리 칸 %d" % (nread, len(RG), len(PR)))
+print("reads %d, zone bins %d, position bins %d" % (nread, len(RG), len(PR)))
 
 # ───────── unified: per zone, with a Wilcoxon over individuals
 OUT1 = os.path.join(W, "r20_actuation_unified_REF.tsv")
@@ -119,17 +119,17 @@ for plat in ("ONT", "PacBio"):
         rows.append(("region", plat, nm, len(aL), aL.mean(), aH.mean(),
                      aL.mean() - aH.mean(), p))
 with io.open(OUT1, "w", encoding="utf8", newline=chr(10)) as g:
-    g.write("# r20 을 레퍼런스 문턱으로 : actuation = large MSP(>150bp) 덮은 염기 / 호출 염기"
+    g.write("# r20 with the reference threshold: actuation = bases covered by large MSP(>150bp) / called bases"
             + chr(10))
-    g.write("# 구역·검정·제외는 r20 과 같다 (개체 단위 Wilcoxon)" + chr(10))
+    g.write("# zones, test and exclusions are the same as r20 (individual-level Wilcoxon)" + chr(10))
     g.write(chr(9).join(["kind", "platform", "key", "n", "v_L", "v_H", "diff", "p"]) + chr(10))
     for r in rows:
         g.write(chr(9).join([r[0], r[1], r[2], str(r[3]), "%.5f" % r[4], "%.5f" % r[5],
                              "%.5f" % r[6], "%.3g" % r[7]]) + chr(10))
 
 print()
-print("=== 구역별 (large MSP >150 bp)")
-print("   %-5s %-6s %4s %9s %9s %9s %10s" % ("플랫", "구역", "n", "저메틸", "고메틸", "차", "p"))
+print("=== by zone (large MSP >150 bp)")
+print("   %-5s %-6s %4s %9s %9s %9s %10s" % ("platform", "구역", "n", "저메틸", "고메틸", "차", "p"))
 for r in rows:
     print("   %-5s %-6s %4d %9.5f %9.5f %9.5f %10.2e%s"
           % (r[1], r[2], r[3], r[4], r[5], r[6], r[7], "" if r[7] < 0.01 else "  n.s."))
@@ -137,8 +137,8 @@ for r in rows:
 # ───────── the profile, by position
 OUT2 = os.path.join(W, "r20_actuation_profile_REF.tsv")
 with io.open(OUT2, "w", encoding="utf8", newline=chr(10)) as g:
-    g.write("# 자리별 actuation = large MSP(>150bp) 덮은 염기 / 호출 염기 "
-            "(유닛마다 자기 TSS 를 %d 에 맞춤)" % OFF + chr(10))
+    g.write("# actuation by position = bases covered by large MSP(>150bp) / called bases "
+            "(each unit's own TSS aligned to %d)" % OFF + chr(10))
     g.write(chr(9).join(["platform", "state", "unit_pos", "n_mol", "actuation"]) + chr(10))
     n2 = 0
     for (plat, st, upx), v in sorted(PR.items()):
@@ -148,5 +148,5 @@ with io.open(OUT2, "w", encoding="utf8", newline=chr(10)) as g:
                              "%.5f" % (v[0] / v[1])]) + chr(10))
         n2 += 1
 print()
-print("자리 줄 %d -> %s" % (n2, os.path.basename(OUT2)))
-print("구역 줄 %d -> %s" % (len(rows), os.path.basename(OUT1)))
+print("position rows %d -> %s" % (n2, os.path.basename(OUT2)))
+print("zone rows %d -> %s" % (len(rows), os.path.basename(OUT1)))

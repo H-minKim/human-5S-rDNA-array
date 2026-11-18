@@ -40,8 +40,8 @@ out.write(TAB.join(["sample", "branch", "part", "n_read", "n_cpg", "frac", "lo95
 diffo = io.open(os.path.join(W, "ADULT_DIFFS.tsv"), "w", encoding="utf8", newline="\n")
 diffo.write(TAB.join(["sample", "branch", "contrast", "diff", "lo95", "hi95"]) + "\n")
 for br in ("chr4", "chr18"):
-    print("\n#### %s   (값 [95%%] r=read)" % br)
-    print("시료 | 코딩부 | 스페이서 | flankL | flankR | 코딩−flank(L+R) | 스페이서−flank")
+    print("\n#### %s   (value [95%%] r=read)" % br)
+    print("sample | coding | spacer | flankL | flankR | coding−flank(L+R) | spacer−flank")
     for g in groups:
         cells = []
         B = {}

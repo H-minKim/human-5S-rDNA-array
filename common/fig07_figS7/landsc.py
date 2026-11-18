@@ -13,7 +13,7 @@
 #        the same data is pooled over a wider window, which reduces the number of points and the jitter. The window width is stated in the panel and the legend.
 #
 # Inputs, read-only: tables/PERARRAY_LANDSCAPE.tsv.gz, tables/PERARRAY_META.tsv, tables/ORIENTATION.tsv and
-#                tables/UNITBETA_PERARRAY_v13.tsv.gz · tables/CHROM_NAMES.tsv
+#                tables/UNITBETA_PERARRAY_v13.tsv.gz, tables/CHROM_NAMES.tsv
 import numpy as np
 import pandas as pd
 

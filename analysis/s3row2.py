@@ -12,13 +12,13 @@ Prediction  : if so, m6A/A of the nucleosome-free molecules should be low as wel
 import os
 import numpy as np
 
-DD = r"$RDNA_FHMM_DIR\data"
+DD = os.environ["RDNA_FHMM_DIR"] + r"\data"
 z = np.load(os.path.join(DD, "nucfree_flankcore_span.npz"))
 nA, nM, nmol = z["nA"], z["nM"], z["nmol"]
 rel = np.arange(int(z["lo"]), int(z["hi"]) + 1)
 SITE = [("TFIIIB", 0, (-28, -10)), ("ICR", 1, (57, 68))]
 
-print("## 구역 창 안 m6A/A — 뉴클레오솜 없는 분자 ↔ 있는 분자")
+print("## m6A/A within the zone window: molecules without a nucleosome vs molecules with one")
 print("%-8s %-6s %-12s %10s %10s %9s"
       % ("자리", "층", "무리", "A", "m6A", "m6A/A"))
 OUT = {}
@@ -34,9 +34,9 @@ for nm, j, (a, b) in SITE:
                   % (nm, sl, fn, format(int(A), ","), format(int(M), ","), r))
     print()
 
-print("## 표S3 2 번 줄에 넣을 값 (TFIIIB · 양분)")
+print("## values for row 2 of Table S3 (TFIIIB, two-way split)")
 for sl in ("저메틸", "고메틸"):
     r, A, n = OUT[("TFIIIB", sl)]
-    print("   %-6s %.4f   (A %s · 분자 %s)" % (sl, r, format(A, ","), format(n, ",")))
+    print("   %-6s %.4f   (A %s, molecules %s)" % (sl, r, format(A, ","), format(n, ",")))
 print()
-print("   판정 : 뉴클레오솜 있는 분자보다 훨씬 높으면 '작은 뉴클레오솜' 설명은 기각")
+print("   verdict: if far higher than in molecules with a nucleosome, the 'small nucleosome' explanation is rejected")

@@ -10,7 +10,7 @@ if [ ! -s $X/asm/zebrafish_GRCz12tu.fna.fai ]; then
   unzip -o -q $X/asm/grcz12.zip -d $X/asm/grcz12.d && cat $(find $X/asm/grcz12.d -name "*.fna") > $X/asm/zebrafish_GRCz12tu.fna && rm -rf $X/asm/grcz12.d
   samtools faidx $X/asm/zebrafish_GRCz12tu.fna
 fi
-echo "GRCz12tu 서열 $(wc -l < $X/asm/zebrafish_GRCz12tu.fna.fai) · md5(zip) $(md5sum $X/asm/grcz12.zip | cut -c1-12)"
+echo "GRCz12tu sequences $(wc -l < $X/asm/zebrafish_GRCz12tu.fna.fai), md5(zip) $(md5sum $X/asm/grcz12.zip | cut -c1-12)"
 if [ ! -x $X/tools/modkit ]; then
   curl -sL -o $X/tools/modkit.tgz https://github.com/nanoporetech/modkit/releases/download/v0.6.4/modkit_v0.6.4_u16_x86_64.tar.gz
   tar -xzf $X/tools/modkit.tgz -C $X/tools && find $X/tools -name modkit -type f -exec mv {} $X/tools/modkit \; 2>/dev/null

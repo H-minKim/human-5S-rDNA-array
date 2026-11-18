@@ -6,7 +6,7 @@
 #   Variants: first minimap2 -cx asm20 --cs, the human method, then blastn -task blastn for units that are short or heavily diverged.
 #            The tokens match the human map: 1484T for a substitution, 437D1 for a deletion, 1056I3 for an insertion, in 1-based representative-unit coordinates.
 #   Arguments: species key, fasta, tblout, structure table, output folder, [flank bp = 20000].
-# MIT License · Copyright (c) 2026 Hungmin Kim
+# MIT License. Copyright (c) 2026 Hyungmin Kim
 import io
 import os
 import sys
@@ -249,7 +249,7 @@ for (c, s0, e1, strand, cop) in ARR:
                         ("%.1f" % (100.0 * ident / na)) if na else "NA", str(len(allv)),
                         str(nv[na // 2]) if na else "NA", os.path.join("canon", aid + ".fa"),
                         os.path.join("map", aid + ".map.tsv")]) + NL)
-    print("%s : 유닛 %d (mm2 %d · blastn %d · 실패 %d) · 대표유닛 %d bp · 변이없음 %s · 변이자리 %d"
+    print("%s : units %d (mm2 %d, blastn %d, failed %d), representative unit %d bp, no variants %s, variant positions %d"
           % (aid, len(units), cnt["mm2"], cnt["blastn"], cnt["none"], ln,
              ("%.1f%%" % (100.0 * ident / na)) if na else "NA", len(allv)))
 SUM.close()

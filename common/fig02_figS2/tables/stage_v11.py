@@ -4,14 +4,14 @@ stage_v11 - recompute the haplotype stage table on the v11 basis.
   The rules were verified against `01_code\\reference_G8v4_code\\stage_all4.py` and carried over **as is**:
     cov1 = fraction of units with 1 or more reads, cov3 = fraction with depth 3 or more
     agreement = TP/(TP+FN+FP) over units with depth 3 or more
-    stage : B_정본무효 if canon_src is span(tier1ref), C_배치산출0 if jx=ao=0
-            cov3>=90 & agreement>=95 -> OK, cov3<90 -> D_피복부족, otherwise E_정본불일치
+    stage : `B_정본무효` if canon_src is span(tier1ref), `C_배치산출0` if jx=ao=0
+            cov3>=90 & agreement>=95 -> OK, cov3<90 -> `D_피복부족`, otherwise `E_정본불일치`
     two versions: union (sources merged) and rep (the single source with the largest depth sum).
   Differences from the original (recorded from measurement):
     - canon_src is read from v11 `02_canonical\\hap_seq_node_v8.tsv` (no header) instead of SUM_G6.
       prefix distribution: asmunits3 400, arr 142, fill60 26, tier1ref 12, resub2 10, refix 8,
                   cons2seq 6, sweep31 5, nopurge 5, resub 1, hg002asm 1 (total 616)
-    - cohort is not read from the old table, the rule of stage_all4.py is carried over into code as is
+    - cohort is not read from a table, the rule of stage_all4.py is carried over into code as is
       (hg001-4=GIAB, COLO829-BL/T and HG008-T=cancer, the rest=HPRC).
       The NEW44 list is not in the release, so the new44 split cannot be produced (it merges into HPRC).
       new44 is only a reporting split and is not used in stage calls or filters. The hapread_labeled column is also dropped.
@@ -46,7 +46,7 @@ for L in io.open(HSN, encoding="utf8"):
     d = r[2].split("__")[0]
     HAP[(r[0], r[1])] = ("cons2" if (r[0], r[1]) in C2 else
                          "pub" if d in PUB else "span" if d in SPAN else "hifi")
-print("정본 슬롯 %d · canon_src %s" % (len(HAP), dict(collections.Counter(HAP.values()))))
+print("canonical slots %d, canon_src %s" % (len(HAP), dict(collections.Counter(HAP.values()))))
 
 NU = collections.Counter()
 f = io.open(MAPF, encoding="utf8")
@@ -121,14 +121,14 @@ for x in rows:
 o.close()
 
 CO = ["HPRC", "GIAB", "암"]
-print("개체 %d · 하플로타입 %d · 지도 유닛 합 %d" % (len(set(x[0][0] for x in rows)), len(rows), sum(x[3] for x in rows)))
-print("== union 판정")
+print("individuals %d, haplotypes %d, map unit total %d" % (len(set(x[0][0] for x in rows)), len(rows), sum(x[3] for x in rows)))
+print("== union stage call")
 for s in sorted(set(x[11] for x in rows)):
     c = collections.Counter(x[1] for x in rows if x[11] == s)
-    print("  %-22s %s  계 %4d" % (s, " ".join("%6d" % c[q] for q in CO), sum(c.values())))
-print("== rep 판정")
+    print("  %-22s %s  total %4d" % (s, " ".join("%6d" % c[q] for q in CO), sum(c.values())))
+print("== rep stage call")
 for s in sorted(set(x[16] for x in rows)):
     print("  %-22s %4d" % (s, sum(1 for x in rows if x[16] == s)))
 d = [x for x in rows if x[12] > 1]
-print("출처 2 개인 하플로타입 %d · union≠rep %d" % (len(d), sum(1 for x in d if x[11] != x[16])))
-print("저장: %s" % p)
+print("haplotypes with 2 sources %d, union≠rep %d" % (len(d), sum(1 for x in d if x[11] != x[16])))
+print("saved: %s" % p)

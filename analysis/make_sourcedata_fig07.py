@@ -421,8 +421,6 @@ ws.append([])
 for line in [
     "Cross-species 5S rDNA. Every sheet holds the numbers of one panel, taken from the result "
     "table that panel reads, through the same code the figure uses.",
-    "Supplementary figures S11, S12 and S13 were numbered S11, S12 and S13 while the figures "
-    "were being made; the file names of the published figures carry the new numbers.",
     "Beta is the fraction of methylated calls among the CpG calls of the unit, or of the "
     "window, as the sheet says. A pooled beta is the sum of methylated calls over the sum of "
     "calls, never a mean of ratios.",

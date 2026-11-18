@@ -93,5 +93,5 @@ for (smp, sl, ap, a0, a1, g) in SITES:
             gfh.write(">%s|%s|%d|%d%s%s%s" % (rid, src, d0, d1, NL, sq, NL))
     tot[(smp, sl, ap)] = len(recs)
 for k, v in sorted(tot.items()):
-    print("  %s h%s 유닛%d : 조각 %d" % (k[0], k[1], k[2], v))
-print("자리 %d · 조각 합 %d" % (len(tot), sum(tot.values())))
+    print("  %s h%s unit%d: pieces %d" % (k[0], k[1], k[2], v))
+print("positions %d, pieces total %d" % (len(tot), sum(tot.values())))

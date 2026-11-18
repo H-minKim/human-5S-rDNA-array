@@ -85,7 +85,7 @@ MC = np.nanmean(Sc / Cn[:, :, None], 0)
 NHpos = np.sum(C > 0, 0)
 TOT = MG.sum(1)
 FR = MG / TOT[:, None]
-print("유닛당 변이 — 두 분류 합이 같은가 : 최대 차 %.3g" % np.nanmax(np.abs(MG.sum(1) - MC.sum(1))))
+print("variants per unit: do the sums of the two classifications agree : max difference %.3g" % np.nanmax(np.abs(MG.sum(1) - MC.sum(1))))
 
 # ---------- read zone outputs (selection rule) ----------
 ZP = os.path.join(HERE, "REPRO", "VTZONE2_zones.tsv")
@@ -96,7 +96,7 @@ ZR = {r[0]: dict(zone=[float(x) for x in r[1:5]], z=float(r[ZH["최대_귀무z"]
                  far=r[ZH["가장_먼_구역"]]) for r in ZL[1:]}
 PICK = [g for g in GROUPS if g in ZR and abs(ZR[g]["z"]) >= ZCUT]
 PICK.sort(key=lambda g: -abs(ZR[g]["z"]))
-print("고른 무리 %d / %d : %s" % (len(PICK), NG, " · ".join(PICK)))
+print("selected groups %d / %d : %s" % (len(PICK), NG, " · ".join(PICK)))
 
 ZP2 = os.path.join(HERE, "REPRO", "VTZONE_zones.tsv")      # coarse 11 types (for panel Cb)
 import taben  # English tables are read back with their original labels
@@ -243,7 +243,6 @@ fig.legend(h[::-1], lb[::-1], loc="upper left", bbox_to_anchor=(0.812, 0.955), f
            title_fontsize=9.2)
 
 TXT = ["A·B 는 %d 무리 · 판 C 는 옛 11 유형 그대로다." % NG,
-       # the number is computed, not hard-coded: tokens are 4,051, while 360,904 is the count of variant occurrences
        "전수 조사 : 변이 출현 %s 개 · '기타' 0 개 (거른 것 없음)." % format(int(TOT.sum()), ","),
        "",
        "뭉치면 지워진다 — 옛 '그 밖 전환' 은 z +2.9 로 평평했지만,",
@@ -258,7 +257,7 @@ fig.text(0.812, 0.455, "\n".join(TXT), fontsize=8.4, ha="left", va="top", linesp
 
 fig.savefig(os.path.join(OUT, NAME + ".png"), dpi=150)
 fig.savefig(os.path.join(OUT, NAME + ".svg"))
-print("저장 %s" % os.path.join(OUT, NAME + ".png"))
+print("saved %s" % os.path.join(OUT, NAME + ".png"))
 
 # the deposited table(s) carry English column names and values (common/fig02_figS2/taben.py)
 import sys as _s, os as _o

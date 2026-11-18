@@ -2,7 +2,7 @@
 # ARRAY_ONLY actual placement, using only the gates set by validation
 #
 #  Gates (fixed in validation, no post hoc adjustment)
-#      K = 16  ·  Δ >= 10
+#      K = 16, Δ >= 10
 #      delta = (margin on own individual's map) - (margin on another individual's map)
 #    validation measured: retained 95.3%, correct 98.08%, other's map better 0.00%
 #

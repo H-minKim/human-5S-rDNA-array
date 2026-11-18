@@ -134,5 +134,5 @@ for (smp, slot, side), lst in sorted(BUF.items()):
         g.write(">%s|len=%d%s%s%s" % (rid, len(s), NL, s, NL))
     g.close()
     n += 1
-print("%s  flank read 묶음 %d 개 · read %d" % (socket.gethostname(), n,
+print("%s  flank read groups %d, reads %d" % (socket.gethostname(), n,
                                               sum(len(v) for v in BUF.values())))

@@ -87,5 +87,5 @@ if all(k in s41_plan for k in (_I, _J, _K)):
 io.open(os.path.join(SP, "frame_s41.json"), "w", encoding="utf8", newline=NL).write(
     json.dumps(s41_plan, ensure_ascii=False, indent=1))
 print()
-print("낸 것 : frame_main.json %d 칸 · frame_s41.json %d 칸"
+print("written: frame_main.json %d cells, frame_s41.json %d cells"
       % (len(main_plan), len(s41_plan)))

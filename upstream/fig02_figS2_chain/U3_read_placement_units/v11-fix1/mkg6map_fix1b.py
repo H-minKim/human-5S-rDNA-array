@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 # v11-fix1: G6 map coordinate correction for ARRAY_ONLY
 #
-#   Removing every G6 unit that overlaps the surgery window (HG00133 12, HG03270 9) is not done:
-#     for reads whose stored number range ends inside the window, the window (stored G6 range +-250bp) gets shorter and slips by 5-6 units in the tandem.
 #   Only the units that were actually lost are removed. Lost units = read unit DP events (old map numbers)
 #         HG00133 h2: old G8 units 122-125 (+ gap piece between 124/125)   HG03270 h1: old G8 unit 43
 #     For each G6 unit, check which unit (or gap) of the old G8 map (g8canonv10) its center coordinate falls in
@@ -33,7 +31,7 @@ def units(p):
 U8o, U8n = units(OLD8), units(NEW8)
 for k, (a, b) in DEL.items():
     chk = U8o[k][b + 1][0] + P[k]; new_first = U8n[k][a][0]
-    print("  검산 %s h%s : 옛 유닛 %d 시작 %d + delta %d = %d · 새 지도 유닛 %d 시작 %d · 차 %d bp" % (k[0], k[1], b + 1, U8o[k][b + 1][0], P[k], chk, a, new_first, chk - new_first))
+    print("  check %s h%s: existing unit %d start %d + delta %d = %d, new map unit %d start %d, diff %d bp" % (k[0], k[1], b + 1, U8o[k][b + 1][0], P[k], chk, a, new_first, chk - new_first))
 fm = io.open(G6F, encoding="utf8"); head = fm.readline()
 ci = dict((n, i) for i, n in enumerate(head.rstrip(NL).split(TAB)))
 O = io.open(OUTF, "w", encoding="utf8", newline=NL); O.write(head if head.endswith(NL) else head + NL)
@@ -59,4 +57,4 @@ for L in fm:
 O.close()
 for k in sorted(stat):
     c = stat[k]
-    print("  %s h%s : 앞 %d · 옮김 %d · 뺌 %d · 마지막 행 끝 %d" % (k[0], k[1], c["앞 그대로"], c["뒤 옮김"], c["뺌(없어진 유닛)"], c["_last"]))
+    print("  %s h%s: before %d, shifted %d, dropped %d, last row end %d" % (k[0], k[1], c["앞 그대로"], c["뒤 옮김"], c["뺌(없어진 유닛)"], c["_last"]))

@@ -40,14 +40,14 @@ def tsv(p):
 # ---------- ruler ----------
 U, _, _ = G.load("h1")
 VPU = sum(len(r[4]) for v in U.values() for r in v) / sum(len(v) for v in U.values())
-print("RULER var_per_unit = %.6f  (정본 6.866)" % VPU)
-if abs(VPU - 6.868174) >= 0.000001: raise AssertionError("자가 다르다 (541 값 6.868174) — 훅 확인")   # value for the 541 set (6.866 for the 557 set)
+print("RULER var_per_unit = %.6f  (canonical 6.866)" % VPU)
+if abs(VPU - 6.868174) >= 0.000001: raise AssertionError("ruler differs (541 value 6.868174): check the hook")   # value for the 541 set (6.866 for the 557 set)
 H1 = {("%s" % k[0], "%s" % k[1]) for k in U}
 TOKS = {}
 for k, rs in U.items():
     for r in rs:
         TOKS[("%s" % k[0], "%s" % k[1], r[6]["array_pos"])] = set(r[4])
-print("   H1 슬롯 %d · 개체 %d · 유닛 %d" % (len(H1), len({k[0] for k in H1}), len(TOKS)))
+print("   H1 slots %d, individuals %d, units %d" % (len(H1), len({k[0] for k in H1}), len(TOKS)))
 
 MU = collections.defaultdict(list)
 for f, Hx in G._rows(G.MAPF):
@@ -67,7 +67,7 @@ for r in Rb:
         if "_h" in rn:
             s, h = rn.rsplit("_h", 1)
             fa2slot[r[Hb["fasta"]]] = (s, h)
-# analysis slots that the 2026-10-07 FASTA map does not list (their reference sequence comes from the v11 curation).
+# analysis slots that the FASTA map does not list (their reference sequence comes from the v11 curation).
 #   Their file name comes from the reference node table. A file that is not in the tar is read from the curated reference folder
 #   (its whole sequence is the array, so it enters with flank5=0 and flank3=0) and is taken after the tar members, in slot order.
 _NODE = (__import__("os").environ["RDNA_DATA_ROOT"] + r"/for_paper/08_versions/v11-add2_trio/02_canonical/HAP_SEQ_NODE_v11+add1+add2.tsv")
@@ -119,7 +119,7 @@ def align_map(u):
             ins.append((ri, u[qi:qi + n]))
             qi += n
         else:
-            raise ValueError("미지의 CIGAR op %s" % op)
+            raise ValueError("unknown CIGAR op %s" % op)
     # left normalization, deletions
     if dele:
         runs = []
@@ -198,7 +198,7 @@ def to_tokens(sub, dele, ins):
     return t
 
 
-print("\n■ tar 한 패스 — 정렬 (parasail nw_trace · match %d mism %d open %d ext %d)" % (MATCH, MISM, GO, GE))
+print("\ntar single pass: alignment (parasail nw_trace, match %d mism %d open %d ext %d)" % (MATCH, MISM, GO, GE))
 DIFF = {}
 ori_ok = ori_n = 0
 qc_back = qc_back_n = 0
@@ -269,33 +269,33 @@ for stem, _get in _items():
         DIFF[(slot[0], slot[1], ap)] = (sub, dele, ins, len(u))
         done += 1
     if done and done % 10000 < len(MU[slot]):
-        print("   ... 유닛 %d · %.0fs" % (done, time.time() - t0), flush=True)
+        print("   ... units %d, %.0fs" % (done, time.time() - t0), flush=True)
 tf.close()
-print("\n■ 정렬 끝 : 유닛 %d · %.0fs · 건너뜀(길이/N) %d" % (len(DIFF), time.time() - t0, nlen_bad))
-print("\n■ QC 셋 (§2.4)")
-print("   ⒜ 역투영 복원 : %d / %d (%.6f)" % (qc_back, qc_back_n, qc_back / max(qc_back_n, 1)))
-print("   ⒝ 토큰 재현 : 전체 일치 %d / %d (%.5f) · 치환만 일치 %d / %d (%.5f)"
+print("\nalignment finished : units %d, %.0fs, skipped (length/N) %d" % (len(DIFF), time.time() - t0, nlen_bad))
+print("\nthree QC checks (§2.4)")
+print("   (a) back-projection recovery : %d / %d (%.6f)" % (qc_back, qc_back_n, qc_back / max(qc_back_n, 1)))
+print("   (b) token reproduction : full match %d / %d (%.5f), substitution-only match %d / %d (%.5f)"
       % (tok_exact, tok_n, tok_exact / max(tok_n, 1), tok_sub_only, tok_n, tok_sub_only / max(tok_n, 1)))
-print("      불일치 세부 : 정렬에만 %d · 토큰에만 %d" % (sub_mismatch_detail["got_only"], sub_mismatch_detail["want_only"]))
-print("   ⒞ 방향 : 정방향 우세 %d / %d (%.5f)" % (ori_ok, ori_n, ori_ok / max(ori_n, 1)))
+print("      mismatch detail : alignment only %d, tokens only %d" % (sub_mismatch_detail["got_only"], sub_mismatch_detail["want_only"]))
+print("   (c) orientation : forward dominant %d / %d (%.5f)" % (ori_ok, ori_n, ori_ok / max(ori_n, 1)))
 nsub = np.array([len(v[0]) for v in DIFF.values()])
 ndel = np.array([len(v[1]) for v in DIFF.values()])
 nins = np.array([sum(len(s) for _, s in v[2]) for v in DIFF.values()])
 ulen = np.array([v[3] for v in DIFF.values()])
-print("\n■ 정렬 요약 : 치환 median %d (평균 %.3f) · 결실 bp median %d (평균 %.3f) · 삽입 bp median %d (평균 %.3f)"
+print("\nalignment summary : substitutions median %d (mean %.3f), deletion bp median %d (mean %.3f), insertion bp median %d (mean %.3f)"
       % (np.median(nsub), nsub.mean(), np.median(ndel), ndel.mean(), np.median(nins), nins.mean()))
-print("   unit 길이 : median %d · 10/90 %d/%d · min %d max %d · 2,240 인 몫 %.4f"
+print("   unit length : median %d, 10/90 %d/%d, min %d max %d, share equal to 2,240 %.4f"
       % (np.median(ulen), *np.percentile(ulen, [10, 90]).astype(int), ulen.min(), ulen.max(), (ulen == LU).mean()))
-print("   검산 : 길이 = 2240 − 결실 + 삽입 ? 일치 %d / %d"
+print("   check : length = 2240 − deletion + insertion ? match %d / %d"
       % (int((ulen == LU - ndel + nins).sum()), len(ulen)))
 with open(os.path.join(OUT, "Q0_alignment.pkl"), "wb") as f:
     pickle.dump({"diff": DIFF, "params": dict(match=MATCH, mism=MISM, go=GO, ge=GE, seed=SEED,
                  aligner="parasail 1.3.4 nw_trace_striped_16", vpu=VPU)}, f, protocol=4)
 g = io.open(os.path.join(OUT, "Q0_align_qc.tsv"), "w", encoding="utf8", newline="\n")
-g.write("# P04 Q0 정렬 QC · parasail 1.3.4 nw_trace_striped_16 · match %d mism %d open %d ext %d · seed %d · 2026-10-10\n"
+g.write("# P04 Q0 alignment QC, parasail 1.3.4 nw_trace_striped_16, match %d mism %d open %d ext %d, seed %d\n"
         % (MATCH, MISM, GO, GE, SEED))
-g.write("# edlib 설치 실패 (Python 3.13.14 wheel 없음 · C 컴파일러 없음) ⇒ parasail (Daily 2016 BMC Bioinformatics 17:81)\n")
-g.write("# 좌파 정규화 적용 (결실·삽입 둘 다)\n")
+g.write("# parasail (Daily 2016 BMC Bioinformatics 17:81)\n")
+g.write("# left-aligned normalization applied (both deletions and insertions)\n")
 g.write("item\tvalue\n")
 for k_, v_ in (("var_per_unit", VPU), ("n_unit_aligned", len(DIFF)), ("n_unit_skipped", nlen_bad),
                ("qc_backproject_ok", qc_back), ("qc_backproject_n", qc_back_n),
@@ -306,4 +306,4 @@ for k_, v_ in (("var_per_unit", VPU), ("n_unit_aligned", len(DIFF)), ("n_unit_sk
                ("len_identity_check", int((ulen == LU - ndel + nins).sum()))):
     g.write("%s\t%s\n" % (k_, v_))
 g.close()
-print("\n산출 :", os.path.join(OUT, "Q0_alignment.pkl"), "·", os.path.join(OUT, "Q0_align_qc.tsv"))
+print("\noutput :", os.path.join(OUT, "Q0_alignment.pkl"), "·", os.path.join(OUT, "Q0_align_qc.tsv"))

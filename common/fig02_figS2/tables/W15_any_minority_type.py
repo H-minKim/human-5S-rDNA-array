@@ -56,8 +56,8 @@ for k in HK:
             cs["sets"].append((len(members), avail))
 g = io.open(os.path.join(OUT, "W15_minority_group_gaps.tsv"), "w", encoding="utf8", newline="\n")
 g.write("kind\tn_groups\tn_pairs\tgap\tfrac_obs\tfrac_null\tenrich\tp\n")
-print("=== 소수 유닛 '그룹' 의 자리 간격 (하플로타입 안 · 끝 15 유닛 · 자카드 %.2f) ===" % TH)
-print("  무리                 그룹   짝    간격1 관측/귀무 (배수)      간격2 관측/귀무      간격3 관측/귀무")
+print("=== position gaps of minority unit 'groups' (within haplotype, 15 end units, Jaccard %.2f) ===" % TH)
+print("  family               groups pairs gap1 observed/null (fold)   gap2 observed/null   gap3 observed/null")
 for tag in ("원위 말단형", "원위 그 밖의 소수형", "근위 소수형"):
     cs = cases[tag]; tot = sum(cs["obs"].values())
     if tot < 20: continue
@@ -95,8 +95,8 @@ for k in HK:
             cs["sets"].append((len(pos), avail))
 g = io.open(os.path.join(OUT, "W15_minority_variant_gaps.tsv"), "w", encoding="utf8", newline="\n")
 g.write("kind\tn_variant_instances\tn_pairs\tgap\tfrac_obs\tfrac_null\tenrich\tp\n")
-print("\n=== 같은 것을 '변이 토큰' 잣대로 (끝 15 유닛 중 2 개 이상·절반 이하가 가진 변이) ===")
-print("  무리               사례    짝     간격1 관측/귀무 (배수)      간격2               간격3")
+print("\n=== the same with the 'variant token' measure (variants carried by 2 or more and at most half of the 15 end units) ===")
+print("  family             cases   pairs  gap1 observed/null (fold)   gap2                gap3")
 for tag in ("원위 말단형 표지", "원위 그 밖", "근위"):
     cs = cases2[tag]; tot = sum(cs["obs"].values())
     if tot < 20: continue
@@ -118,7 +118,7 @@ for tag in ("원위 말단형 표지", "원위 그 밖", "근위"):
         out.append("%.3f/%.3f (%.2f배)" % (fo, fn, fo / max(fn, 1e-9)))
     print("  %-16s %6d %6d   %s  %s  %s" % (tag, len(cs["sets"]), tot, out[0], out[1], out[2]))
 g.close()
-print("\n저장 :", OUT)
+print("\nsaved :", OUT)
 
 # the deposited table(s) carry English column names and values (common/fig02_figS2/taben.py)
 import sys as _s, os as _o

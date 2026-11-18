@@ -21,7 +21,7 @@ $X/tools/bigWigInfo -chroms sub_pat.bw 2>&1 | awk 'NF==3{print $1"\t"$3}' > sub_
 for h in mat pat; do
   # Match bigwig chromosomes to GenBank sequences by length, accepting one-to-one matches only.
   awk -F'\t' 'NR==FNR{L[$2]=L[$2] (L[$2]?",":"") $1; next} {print $1"\t"$2"\t"(($2 in L)?L[$2]:"-")}' $X/asm/zfinch_v03_$h.fna.fai sub_${h}_chroms.tsv > len_match_$h.tsv
-  echo "$h : bigwig 염색체 $(wc -l < sub_${h}_chroms.tsv) · 길이 1:1 대응 $(awk -F'\t' '$3!="-" && $3 !~ /,/' len_match_$h.tsv | wc -l) · 대응 없음 $(awk -F'\t' '$3=="-"' len_match_$h.tsv | wc -l)"
+  echo "$h : bigwig chromosomes $(wc -l < sub_${h}_chroms.tsv), length 1:1 match $(awk -F'\t' '$3!="-" && $3 !~ /,/' len_match_$h.tsv | wc -l), no match $(awk -F'\t' '$3=="-"' len_match_$h.tsv | wc -l)"
 done > len_match_summary.txt
 for h in mat pat; do
   [ -s $X/cms/zfinch_v03_$h.tbl ] || cmsearch --cut_ga --cpu 4 --noali --tblout $X/cms/zfinch_v03_$h.tbl $X/rfam/RF00001.cm $X/asm/zfinch_v03_$h.fna > $X/cms/zfinch_v03_$h.log 2>&1

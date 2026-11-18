@@ -101,11 +101,11 @@ def call(x, ncall_med):
 
 
 P("=" * 104)
-P("read 단위 — 각 read 의 각 유닛 메틸 분포 : 종 · array 마다")
+P("read level: methylation distribution of each unit of each read, per species and array")
 P("=" * 104)
 P()
-P("  판정 기준(미리 고정) : 두 번째 봉우리가 0.30 이상 떨어져 있고, 골 <= 그 봉우리의 절반,")
-P("                        그쪽 분자 >= 2%% 이면 '이봉'")
+P("  verdict criterion (set in advance): the second peak is at least 0.30 away, trough <= half of that peak,")
+P("                        molecules on that side >= 2%%, then 'bimodal'")
 P()
 
 fs = sorted(glob.glob(R + "/*/*.read_unit.tsv*"))
@@ -138,7 +138,7 @@ for sl in rs.choice(H.sl.unique(), 20, replace=False):
     gg = H[H.sl == sl]
     rr, _, _ = call(gg.b_call.values, float(np.median(gg.n_canon)))
     hc.append(rr["call"])
-P("  [보정] 사람 하플로타입 20 개를 하나씩 : " +
+P("  [calibration] 20 human haplotypes one at a time: " +
   " · ".join("%s %d" % (k, v) for k, v in pd.Series(hc).value_counts().items()))
 P()
 
@@ -159,8 +159,8 @@ for (sp, aid), gdf in D.groupby(["종", "array_id"]):
 T = pd.DataFrame(ROWS)
 T.to_csv(OUT + "/tables/OTHERSP_READUNIT_PERARRAY.tsv", sep="\t", index=False, float_format="%.5f")
 
-P("   종          array                         유닛길이 유닛수  read-유닛   CpG  평균   OFF(<.35) 중간   "
-  "봉우리1 봉우리2  골비   소수쪽   판정")
+P("   species          array                         unit_len n_units  read-units   CpG  mean   OFF(<.35) mid   "
+  "peak1 peak2  trough_ratio   minor_side   verdict")
 for r in T.sort_values(["group", "종", "mean"]).itertuples(index=False):
     P("   %-10s %-30s %6s %5s %9s  %4.0f  %.3f   %.3f   %.3f   %.2f    %s   %s  %s   %s"
       % (r.종, r.array_id.split("__")[-1][:30],
@@ -171,7 +171,7 @@ for r in T.sort_values(["group", "종", "mean"]).itertuples(index=False):
          ("%.2f" % r.trough_ratio) if r.trough_ratio == r.trough_ratio else "  - ",
          ("%.3f" % r.minor_mass), r.call))
 P()
-P("  판정 집계")
+P("  verdict tally")
 for grp, gg in T.groupby("group"):
     P("   %-10s array %2d : %s" % (grp, len(gg), " · ".join("%s %d" % (k, v) for k, v in gg.call.value_counts().items())))
 P()
@@ -220,6 +220,6 @@ for page, grps in PAGES:
     fig.tight_layout(rect=[0, 0.02, 1, 0.97])
     fig.savefig(OUT + "/figures/Fig_readunit_perarray_%s.png" % page)
     plt.close(fig)
-    P("  저장 : 10_other_species/figures/Fig_readunit_perarray_%s.png (칸 %d)" % (page, len(keys)))
+    P("  saved: 10_other_species/figures/Fig_readunit_perarray_%s.png (panels %d)" % (page, len(keys)))
 LOG.close()
 print("done")

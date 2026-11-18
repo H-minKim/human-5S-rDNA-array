@@ -8,11 +8,10 @@
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=16G
 #SBATCH --time=11:00:00
-# NOTE (24 Oct 2026) the two paths below were absolute as run; they were made relative to take the
-# user account out of the deposit. #SBATCH directives are read by sbatch before any shell variable
+# #SBATCH directives are read by sbatch before any shell variable
 # exists, so RDNA_JX_WORK cannot be used here and there is no --chdir in this file: a relative path
 # resolves against the SUBMIT directory. Submit from the junction-scan working directory and make
-# sure logs/ exists there, or the array job will not start. Log destination only; no result changes.
+# sure logs/ exists there, or the array job will not start.
 #SBATCH --output=logs/jh_%A_%a.out
 #SBATCH --error=logs/jh_%A_%a.err
 # Test 2, the HiFi junction batch (5S rDNA)

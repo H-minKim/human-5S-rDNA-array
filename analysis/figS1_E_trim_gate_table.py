@@ -1,21 +1,19 @@
 # -*- coding: utf-8 -*-
 # Builds FIG_data_table.tsv and FIG_data_chain.tsv, the input tables for Supplementary Figure 1E.
 #
-#@DROP
 #
 #   A further stage builds T1_final.tsv and T2_final.tsv.
-#@DROP
 #     The computation below reads only column 0 of those two files, the sample name.
-#     The fourth column, done, was filled from node logs that no longer exist, but
+#     The fourth column, done, is filled from node logs that are not part of this deposit, and
 #     done does not affect which rows are included: for x in sorted(T) takes all of them.
 #     So the sample list comes out unchanged without those logs; only the done column is N throughout.
 #
 #   Inputs, all of which are present:
-#     v11  02_canonical/hap_seq_node_v8.tsv · 02_canonical/CANON_V10_PATCH.tsv
+#     v11  02_canonical/hap_seq_node_v8.tsv, 02_canonical/CANON_V10_PATCH.tsv
 #          03_maps/g8canonv10/CONSENSUS_MAP_G8_full.tsv
-#          09_tests/2026-09-29_tier_test/log\*goctrl*.log · *go45*.log
+#          09_tests/2026-09-29_tier_test/log\*goctrl*.log, *go45*.log
 #     03_result_tables/tier1_span.tsv
-#     FIG5_cut_test/rawdata/chainpick2.out · chainpick_nodes.out
+#     FIG5_cut_test/rawdata/chainpick2.out, chainpick_nodes.out
 import io, os, sys, glob, collections
 sys.stdout.reconfigure(encoding="utf-8")
 
@@ -50,7 +48,7 @@ for s, v in info.items():
     st = "+".join(sorted(v[sl][2] for sl in v))
     if all(x == "hiarr" for x in b): T1.append((s, "+".join(nd), st))
     elif all(x == "arr" for x in b): T2.append((s, "+".join(nd), st))
-print("T1 후보 %d · T2 후보 %d" % (len(T1), len(T2)))
+print("T1 candidates %d, T2 candidates %d" % (len(T1), len(T2)))
 
 # -- 2) --
 c = collections.Counter()
@@ -133,6 +131,6 @@ with io.open(os.path.join(OUTD, "FIG_data_table.tsv"), "w", encoding="utf8", new
 with io.open(os.path.join(OUTD, "FIG_data_chain.tsv"), "w", encoding="utf8", newline="\n") as g:
     g.write("sample\tA\tB\tjaccard\tkind\n")
     for p in sorted(pairs, key=lambda z: z[3]): g.write("\t".join(map(str, p)) + "\n")
-print("개체 %d · 하플로 %d · 조립 %d · 선택 %d · 쌍 %d · 사슬 있는 개체 %d"
+print("individuals %d, haplotypes %d, assemblies %d, selected %d, pairs %d, individuals with a chain %d"
       % (len(rows), sum(r["n_hap"] for r in rows), sum(r["n_avail"] for r in rows),
          sum(r["n_ok"] for r in rows), len(pairs), sum(r["chain"] for r in rows)))

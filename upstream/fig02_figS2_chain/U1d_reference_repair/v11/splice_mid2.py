@@ -137,7 +137,7 @@ OUT.write(TAB.join(["sample", "slot", "after_unit", "asm_bp", "cons_bp", "splice
                     "genes_asm", "genes_cons", "genes_splice",
                     "brk_asm", "brk_cons", "brk_splice", "verdict"]) + NL)
 print("%-9s %-3s %-8s %-6s %-6s %-6s %-9s %-7s %-11s %s"
-      % ("개체", "h", "앵커", "조립본", "합의", "수술식", "남는bp", "가운데", "유전자수", "끊김(조립/합의/수술)"))
+      % ("개체", "h", "앵커", "조립본", "합의", "surgical", "남는bp", "가운데", "gene count", "끊김(조립/합의/수술)"))
 for (smp, sl, ap) in SITES:
     A = canon(smp, sl)
     v = U[(smp, sl)]
@@ -152,7 +152,7 @@ for (smp, sl, ap) in SITES:
     h1 = hsps(u1, cons, "a1_%s%s%d" % (smp, sl, ap))
     h2 = hsps(u2, cons, "a2_%s%s%d" % (smp, sl, ap))
     if not h1 or not h2:
-        print("%-9s %-3s 앵커가 합의에 안 붙음 — 건너뜀" % (smp, sl))
+        print("%-9s %-3s anchor does not align to the consensus: skipped" % (smp, sl))
         continue
     b1 = min(h1, key=lambda x: x[1])          # first HSP = front anchor
     b2 = max(h2, key=lambda x: x[2])          # last HSP = rear anchor

@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 # Cut a fragment of up to 150 kb from the middle of the array, as the input for confirming the tandem repeat directly on the node by gapped alignment.
 #   The header records the original array coordinates and the fragment's start offset, so that it can be traced back.
-# MIT License · Copyright (c) 2026 Hungmin Kim
+# MIT License. Copyright (c) 2026 Hyungmin Kim
 import io
 import os
 import glob
 
 NL = chr(10)
-CAN = "$RDNA_OTHERSP_DIR/data_v2/01_canonical"
+CAN = os.environ["RDNA_OTHERSP_DIR"] + "/data_v2/01_canonical"
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "slices")
 WIN = 150000
 os.makedirs(OUT, exist_ok=True)
@@ -34,4 +34,4 @@ for p0 in sorted(glob.glob(os.path.join(CAN, "*", "*.fa"))):
             g.write(sub[i:i + 80] + NL)
     n += 1
     tot += len(sub)
-print("조각 %d 개 · 합 %.1f Mb" % (n, tot / 1e6))
+print("slices %d, total %.1f Mb" % (n, tot / 1e6))

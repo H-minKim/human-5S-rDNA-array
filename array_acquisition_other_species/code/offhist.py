@@ -3,7 +3,7 @@
 #   The base period and its multiple, the higher-order repeat, must be reported separately: taking whichever of the two carries more aligned length
 #                 records 1,520, that is 3 units, as the period of an array with a 500 bp unit.
 #   Output: OFFHIST.tsv, holding array_id, the fragment length, the HSP count and every "offset:aligned bp" pair, for offsets up to 30000 and at least 300 bp aligned.
-# MIT License · Copyright (c) 2026 Hungmin Kim
+# MIT License. Copyright (c) 2026 Hyungmin Kim
 import io
 import os
 import sys
@@ -40,7 +40,7 @@ for sfa in sorted(glob.glob(os.path.join(H, "slices", "*.arr.fa"))):
     hist = ",".join("%d:%d" % (k, off[k]) for k in sorted(off) if off[k] >= 300)
     w.write(TAB.join([aid, str(slen), str(n), hist]) + NL)
     w.flush()
-    print("%-52s HSP %6d · 옵셋칸 %4d" % (aid, n, len(hist.split(",")) if hist else 0))
+    print("%-52s HSP %6d, offset bins %4d" % (aid, n, len(hist.split(",")) if hist else 0))
     sys.stdout.flush()
 w.close()
-print("표 : ~/lit5s/OFFHIST.tsv")
+print("table : ~/lit5s/OFFHIST.tsv")

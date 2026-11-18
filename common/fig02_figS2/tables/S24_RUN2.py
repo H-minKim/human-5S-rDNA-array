@@ -12,7 +12,7 @@ bak = None
 if os.path.exists(OUTF):
     bak = OUTF + ".bak_s24run"
     shutil.copy2(OUTF, bak)
-    print("■ 거울 기존 산출 백업 ·", md5(OUTF)[:10])
+    print("backup of existing mirror outputs:", md5(OUTF)[:10])
 
 def zones(f, pen="1.0"):
     L = [l.rstrip("\n").split("\t") for l in io.open(f, encoding="utf8") if l.strip() and not l.startswith("#")]
@@ -43,9 +43,9 @@ for tag, nb in (("withbeta", "0"), ("nobeta", "1")):
 
 if bak:
     shutil.copy2(bak, OUTF); os.remove(bak)
-    print("\n■ 거울 산출 되돌림 ·", md5(OUTF)[:10])
+    print("\nmirror outputs restored:", md5(OUTF)[:10])
 
-print("\n■ 결과 (벌점 1.0)")
+print("\nresult (penalty 1.0)")
 for tag in ("withbeta", "nobeta"):
     if tag not in res: continue
     for side in ("prox", "dist"):

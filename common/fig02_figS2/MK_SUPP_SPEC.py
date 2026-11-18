@@ -306,7 +306,7 @@ ROWS = [ROWS[0],
         (lambda r_: (r_[0], r_[1], [c_ if c_[0] != "y" else _mod("y", axes=[0], sub=("one",)) for c_ in r_[2]]))(
             [r_ for r_ in ROWS if [c[0] for c in r_[2]] == ["m", "y"]][0])] + \
        [("MAIN", "z" + n_, _mod(n_, opt=_ZOPT.get(n_, _C[n_][8]))) for n_ in ("o", "q", "r", "v", "w", "x")]   # supplementary o q r v w x: sizes from the z* slots of cellstyle.ROWS
-assert [c[0] for r_ in ROWS if r_[0] != "MAIN" for c in r_[2]] == ["a", "b", "e", "l", "g", "m", "y"], "줄 다시 짜기"
+assert [c[0] for r_ in ROWS if r_[0] != "MAIN" for c in r_[2]] == ["a", "b", "e", "l", "g", "m", "y"], "re-layout of rows"
 
 
 def build(en):

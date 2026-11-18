@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Working name: lowmeth_changepoint.py. Data and output roots come from environment variables with no default (the script stops if one is unset).
-# WARNING — this script WRITES tables, into P11_TABLE_OUT_DIR (no default). Pointing it at the folder that holds the published
+# WARNING: this script WRITES tables, into P11_TABLE_OUT_DIR (no default). Pointing it at the folder that holds the published
 #   input tables (P11_TABLE_DIR) OVERWRITES them. To verify, set P11_TABLE_OUT_DIR to an empty temporary folder.
 import os as _os_need, sys as _sys_need
 def _need(k):
@@ -64,8 +64,8 @@ UK = pooled("RU_K562r.tsv.gz"); UG = pooled("RU_GM12878FS.tsv.gz")
 SETS = [("K562 hapA", UK, "1", 139), ("K562 hapB (98 틀)", UK, "2", 98),
         ("GM12878 hap1", UG, "1", 119), ("GM12878 hap2", UG, "2", 91)]
 OUT = [TAB.join(["집합", "끝", "k_hat(해당 틀)", "구간_lo", "구간_hi", "p_저", "p_고", "φ", "전체call", "값 있는 유닛", "110틀_k_hat", "110틀_구간"])]
-print("끝에서부터 저메틸 구간의 변화점 추정 (끝에서 1~%d 번 유닛 · 저→고 · 95%% 구간은 과분산 φ 로 넓힘)" % L)
-print("%-18s %-3s %6s %-10s %6s %6s %5s %6s %5s" % ("집합", "끝", "k̂", "95% 구간", "p저", "p고", "φ", "call", "유닛"))
+print("change-point estimate of the low-methylation run from the end (units 1~%d from the end, low to high, interval (95%%) widened by overdispersion φ)" % L)
+print("%-18s %-3s %6s %-10s %6s %6s %5s %6s %5s" % ("집합", "끝", "k̂", "95% 구간", "p low", "p고", "φ", "call", "유닛"))
 RES = {}
 for nm, U, sl, N in SETS:
     for end in ("근위", "원위"):
@@ -74,7 +74,7 @@ for nm, U, sl, N in SETS:
             ap = (N - i + 1) if end == "근위" else i
             d = U.get((sl, ap)); units.append((d[0], d[1]) if d else (0, 0))
         r = changepoint(units)
-        if r is None: print("%-18s %-3s 추정 불가" % (nm, end)); continue
+        if r is None: print("%-18s %-3s cannot be estimated" % (nm, end)); continue
         k0, (lo, hi), p1, p2, phi, tc, nu = r
         RES[(nm, end)] = r
         if "hapB" in nm:
@@ -82,10 +82,10 @@ for nm, U, sl, N in SETS:
             k110, i110 = k0 + sh, "%d–%d" % (lo + sh, hi + sh)
         else: k110, i110 = "", ""
         print("%-18s %-3s %6d %-10s %6.2f %6.2f %5.1f %6d %5d%s" % (nm, end, k0, "%d–%d" % (lo, hi), p1, p2, phi, tc, nu,
-              ("   → 110 틀 : %s (%s)" % (k110, i110)) if k110 != "" else ""))
+              ("   -> 110 frame : %s (%s)" % (k110, i110)) if k110 != "" else ""))
         OUT.append(TAB.join([nm, end, str(k0), str(lo), str(hi), "%.3f" % p1, "%.3f" % p2, "%.2f" % phi, str(tc), str(nu), str(k110), i110]))
 print()
-print("규칙 방식(첫 높음 앞까지) 결과 : K562 hapA 근위 14 · 원위 12 | GM12878 hap1 근위 1 · 원위 8 | hap2 근위 13 · 원위 6(MINN5)~10(MINN1)")
+print("rule-based result (up to the first high): K562 hapA proximal 14, distal 12 | GM12878 hap1 proximal 1, distal 8 | hap2 proximal 13, distal 6(MINN5)~10(MINN1)")
 TO = _need("P11_TABLE_OUT_DIR"); os.makedirs(TO, exist_ok=True)   # writes go here (no default)
 P = os.path.join(TO, "lowmeth_changepoint_4haplotypes_2026-10-12.tsv")
 io.open(P, "w", encoding="utf-8", newline="\n").write("\n".join(OUT) + "\n")

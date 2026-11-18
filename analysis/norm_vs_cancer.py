@@ -17,8 +17,8 @@ S = pd.read_csv(os.path.join(HERE, "ZSS_SAMPLE.tsv"), sep="\t")
 ZONES = ["Z1 근1-3", "Z2 근4-10", "Z3 근11-17", "ZI 내부", "Z4 원11-22", "Z5 원9-10", "Z6 원3-8", "Z7 원1-2"]
 CAN = ["암 세포주"]   # the 8 cancer cell lines
 S["덩어리"] = np.where(S.군.isin(CAN), "암", "정상")
-P("[군 합치기] 암 = 암 세포주(8) · 정상 = 정상 조직 + PBMC + LCL + 비암 세포주")
-P("   시료 수 : %s" % S.drop_duplicates("sample").덩어리.value_counts().to_dict())
+P("[group pooling] cancer = cancer cell lines (8), normal = normal tissue + PBMC + LCL + non-cancer cell lines")
+P("   number of samples: %s" % S.drop_duplicates("sample").덩어리.value_counts().to_dict())
 
 def bh(ps):
     ps = np.asarray(ps, float); ok = ~np.isnan(ps); q = np.full(len(ps), np.nan)
@@ -50,7 +50,7 @@ for state in ("고메틸", "저메틸"):
     for col, nm in (("sp", "스페이서 β"), ("gene", "유전자부 β"), ("gene_sp", "gene - sp")):
         P()
         P("=" * 92)
-        P("[%s 유닛 안 · %s]" % (state, nm))
+        P("[within %s units, %s]" % (state, nm))
         P("=" * 92)
         P("   %-11s %5s %6s %9s %9s %8s %8s %8s" % ("구역", "n암", "n정상", "암", "정상", "AUC", "p", "BH q"))
         for _, r in T[(T.상태 == state) & (T.지표 == col)].iterrows():
@@ -59,36 +59,36 @@ for state in ("고메틸", "저메틸"):
                  "%.4f" % r.암 if r.암 == r.암 else "-",
                  "%.4f" % r.정상 if r.정상 == r.정상 else "-",
                  "%.2f" % r.AUC if r.AUC == r.AUC else "-",
-                 "%.3f" % r.p if r.p == r.p else "불가",
+                 "%.3f" % r.p if r.p == r.p else "not possible",
                  "%.3f" % r.q if r.q == r.q else "-"))
 
 P()
 P("=" * 92)
-P("[한 줄 요약]")
+P("[one-line summary]")
 P("=" * 92)
 sig = T[T.p < 0.05].copy()
-P("   검정한 칸 %d · nominal p<0.05 %d · BH q<0.05 %d"
+P("   cells tested %d, nominal p<0.05 %d, BH q<0.05 %d"
   % (int(T.p.notna().sum()), len(sig), int((T.q < 0.05).sum())))
 P()
-P("   유의한 칸(nominal)")
+P("   significant cells (nominal)")
 for _, r in sig.sort_values("p").iterrows():
-    P("      %-6s %-9s %-11s 암 %+.4f vs 정상 %+.4f · AUC %.2f · p %.4f · q %.3f"
+    P("      %-6s %-9s %-11s cancer %+.4f vs normal %+.4f, AUC %.2f, p %.4f, q %.3f"
       % (r.상태, r.지표, r.구역, r.암, r.정상, r.AUC, r.p, r.q))
 P()
-P("   q<0.05 로 살아남는 칸")
+P("   cells that survive at q<0.05")
 sq = T[T.q < 0.05]
 if len(sq):
     for _, r in sq.sort_values("q").iterrows():
-        P("      %-6s %-9s %-11s 암 %+.4f vs 정상 %+.4f · AUC %.2f · q %.4f"
+        P("      %-6s %-9s %-11s cancer %+.4f vs normal %+.4f, AUC %.2f, q %.4f"
           % (r.상태, r.지표, r.구역, r.암, r.정상, r.AUC, r.q))
 else:
-    P("      없음")
+    P("      none")
 T.to_csv(os.path.join(HERE, "NORM_VS_CANCER.tsv"), sep="\t", index=False, float_format="%.5f")
 
 # the whole array, with no split by zone
 P()
 P("=" * 92)
-P("[구역을 안 가르고 array 전체로] 시료 단위")
+P("[whole array, not split by zone] per sample")
 P("=" * 92)
 A = pd.read_parquet(os.path.join(HERE, "CR_READUNIT.parquet"))
 B = pd.read_parquet(os.path.join(HERE, "CELL_READUNIT.parquet"))
@@ -120,7 +120,7 @@ for c, nm in (("전체b", "전체 β"), ("저메틸몫", "저메틸 유닛 몫")
          "" if u.pvalue < 0.05 else ""))
 R.to_csv(os.path.join(HERE, "NORM_VS_CANCER_SAMPLE.tsv"), sep="\t", index=False, float_format="%.5f")
 P()
-P("   ※ 전체 β 는 호출 척도(ML)를 타므로 결론에 쓰지 않는다(FigX15 B).")
+P("   note: overall β depends on the call scale (ML), so it is not used for conclusions (FigX15 B).")
 P()
-P("[저장] NORM_VS_CANCER.tsv · NORM_VS_CANCER_SAMPLE.tsv")
+P("[saved] NORM_VS_CANCER.tsv, NORM_VS_CANCER_SAMPLE.tsv")
 LOG.close()

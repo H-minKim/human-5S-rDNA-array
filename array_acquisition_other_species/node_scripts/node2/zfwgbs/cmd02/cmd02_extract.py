@@ -5,7 +5,7 @@
 #   Class: a CpG whose C lies inside a cmsearch gene interval is coding; anything else inside the array is spacer.
 #   Supplementary and secondary alignments are excluded; there is no mapq filter (mapq 0 is normal inside a tandem array) and mapq is kept as a column.
 #   Arguments: bam, sample, REGIONS.tsv, out.tsv.
-# MIT License · Copyright (c) 2026 Hungmin Kim
+# MIT License. Copyright (c) 2026 Hyungmin Kim
 import bisect
 import io
 import os
@@ -69,4 +69,4 @@ for aid, ch, a0, a1, gi in regs:
                 tot += 1
 o.close()
 b.close()
-print("%s 행 %d" % (LAB, tot))
+print("%s rows %d" % (LAB, tot))

@@ -43,7 +43,7 @@ def rd(p):
 INFO = {r["site"]: (r["chr"], int(r["start"])) for r in rd(os.path.join(R, "02_output_tables_coding_region", "DISP_SITES_TABLE.tsv"))}
 TONE = {r["sample"]: float(r["tone"]) for r in rd(os.path.join(N, "TONE_PERSAMPLE.tsv")) if r["tone"] != "NA"}
 q1, q2 = statistics.quantiles(sorted(TONE.values()), n=3)
-print("자리 %d · 개체 색조 %d · 경계 %.4f %.4f" % (len(INFO), len(TONE), q1, q2))
+print("positions %d, individual hues %d, boundaries %.4f %.4f" % (len(INFO), len(TONE), q1, q2))
 
 
 def grp_of(s):
@@ -127,13 +127,13 @@ def md5(p):
     return hashlib.md5(io.open(p, "rb").read()).hexdigest()
 
 
-print("① 재현 (dup ↔ 꾸러미)")
+print("(1) reproduction (dup vs bundle)")
 okall = True
 for f in NAMES:
     a, b, c = md5(os.path.join(OUT, "dup", f)), md5(os.path.join(PK, f)), md5(os.path.join(OUT, "dedup", f))
     okall &= a == b
-    print("   %-30s dup %s · 꾸러미 %s · 같음 %s · dedup %s" % (f, a[:12], b[:12], a == b, c[:12]))
-assert okall, "꾸러미 재현 실패"
+    print("   %-30s dup %s, bundle %s, equal %s, dedup %s" % (f, a[:12], b[:12], a == b, c[:12]))
+assert okall, "bundle reproduction failed"
 
 #  what changed, row by row, between the deduplicated and the duplicated run
 for f in NAMES[:2]:
@@ -145,11 +145,11 @@ for f in NAMES[:2]:
         for k in x:
             if x[k] != y[k]:
                 cnt[k] += 1
-    print("   %s 바뀐 칸 (열별) %s" % (f, dict(cnt)))
+    print("   %s changed cells (by column) %s" % (f, dict(cnt)))
 A = [r for r in rd(os.path.join(OUT, "dup", NAMES[0])) if r["ruler"] == "하드콜"]
 B = [r for r in rd(os.path.join(OUT, "dedup", NAMES[0])) if r["ruler"] == "하드콜"]
-print("   판정 바뀐 자리 :", [x["site"] for x, y in zip(A, B) if x["call_A4"] != y["call_A4"]],
-      "· 빠지는 세 자리 n :", [(y["site"], x["n_loci"], y["n_loci"]) for x, y in zip(A, B) if y["site"] in ("S0285", "S0107", "S0108")])
+print("   positions whose verdict changed:", [x["site"] for x, y in zip(A, B) if x["call_A4"] != y["call_A4"]],
+      "- n of the three positions that drop out:", [(y["site"], x["n_loci"], y["n_loci"]) for x, y in zip(A, B) if y["site"] in ("S0285", "S0107", "S0108")])
 
 #  3) the element-by-element comparison
 SITE = {}
@@ -185,7 +185,7 @@ for nm, ss in (("29 자리", S29), ("표 전체 자리", set(INFO))):
     dk = [k for k in keys if EL[k] != E2[k]]
     only_a = sum(sum((EL[k] - E2[k]).values()) for k in keys)
     only_b = sum(sum((E2[k] - EL[k]).values()) for k in keys)
-    print("③ %s : 키 %d · 다른 키 %d · 좌위 %s ↔ %s · S5 쪽에만 %d · 58 판 쪽에만 %d" % (
+    print("(3) %s: keys %d, differing keys %d, loci %s vs %s, only in S5 %d, only in version 58 %d" % (
         nm, len(keys), len(dk), format(sum(sum(EL[k].values()) for k in keys), ","),
         format(sum(sum(E2[k].values()) for k in keys), ","), only_a, only_b))
     for k in dk[:5]:

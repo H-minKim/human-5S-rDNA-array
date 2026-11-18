@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 # Builds FIG2_data_hifi.tsv, the input table for Supplementary Figure 1B.
 #
-#@DROP
-#@DROP
 #   The input and output locations come from environment variables.
 #
 #   One input: 03_result_tables/2026-09-07_map_test/JXHIFI_ALL.tsv.gz

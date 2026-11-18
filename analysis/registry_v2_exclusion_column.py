@@ -22,8 +22,7 @@ OUT = os.environ.get("REGISTRY_V2_OUT",
 
 # Items that are not excluded and are not put in `EXCL`
 _SUPERSEDED = {
-    ("NA18565", "2"): "관통 read 5개가 전부 37~38 유닛(정본 35) — 조립본 유닛 접힘"
-                      " · 2026-10-05 사용자 결정으로 되돌림(제외하지 않음)",
+    ("NA18565", "2"): "관통 read 5개가 전부 37~38 유닛(정본 35) — 조립본 유닛 접힘",
 }
 EXCL = {}
 
@@ -38,7 +37,7 @@ for r in R:
 with io.open(OUT, "w", encoding="utf8", newline="\n") as g:
     g.write("\t".join(h + ["excluded", "exclusion_reason"]) + "\n")
     g.write("\n".join("\t".join(r) for r in out) + "\n")
-print("-> %s · 열 %d · 행 %d · 제외 %d"
+print("-> %s, columns %d, rows %d, excluded %d"
       % (os.path.basename(OUT), len(h) + 2, len(out),
          sum(1 for r in out if r[-2] == "Y")))
 
@@ -59,7 +58,7 @@ F2 = [r for r in H if not ({"T1_single_spanning_read", "C2_read_consensus"} & fl
 D = [r for r in out if int(r[ix["meth_rows"]]) > 0]
 ok = lambda L2: [r for r in L2 if r[jx["excluded"]] == "N"]
 print()
-print("| 분모 | 전 (슬롯/개체/짝) | 후 |")
+print("| denominator | before (slot/individual/pair) | after |")
 print("|---|---|---|")
 for nm, L2 in (("B_HPRC정본", H), ("C_ONT출처", C), ("D_메틸있음", D),
                ("E_QC적격", E), ("F2_조립본만", F2)):

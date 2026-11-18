@@ -8,19 +8,11 @@
 #   (4) overlaps fixed
 #        - the 2122 and 2240 ticks overlapped and 2240 had dropped to a second line -> 2122 removed and the rest kept on one line
 #        - the table caption ran into the assembly bar (y197-206) -> the table moved down and the line spacing tightened
-#@DROP
-#@DROP
-#@DROP
-#@DROP
-#@DROP
-#@DROP
-#@DROP
 import fitz, os, sys
 sys.stdout.reconfigure(encoding="utf-8")
 
 # -- (repo) paths come from the environment --------------------------------
 #   The roots are required; the output and table directories fall back to this file's folder.
-#@DROP
 WORK_ROOT = os.environ["WORK_ROOT"]
 OUT_DIR = os.environ.get("OUT_DIR",
                          os.path.join(WORK_ROOT, "04_figures", "paper_figures_final_2026-10-07",
@@ -50,8 +42,8 @@ page.apply_redactions(images=fitz.PDF_REDACT_IMAGE_NONE,
                       text=fitz.PDF_REDACT_TEXT_NONE)
 _left = [d for d in page.get_drawings()
          if d["rect"].height > page.rect.height * 0.95 or d["rect"].width > page.rect.width * 0.95]
-print("안내선 지움 — 남은 판 가로지르는 선 : %d 개" % len(_left))
-assert not _left, "안내선이 남았다"
+print("guide lines deleted; lines still crossing the panel: %d" % len(_left))
+assert not _left, "guide lines remain"
 
 
 INK, GREY = (0.102, 0.102, 0.102), (0.36, 0.38, 0.41)
@@ -111,12 +103,11 @@ CHANGE = {
     ("\u2026", 376.0): ("...", 0.0, None, 8.0),
     ("\u2026", 297.7): ("...", 0.0, None, 8.0),
     ("Hifiasm -ont", 403.4): ("hifiasm --ont", 0.0, None, None),
-    ("array pos 1 \u2026 N", 269.0): (None, 0, None, None),   #@DROP
+    ("array pos 1 \u2026 N", 269.0): (None, 0, None, None),
     # the numbering order is reversed
     #   Measured: array_pos 1 is the distal end. Bridging through hg002 to the genome coordinates of another
     #   pipeline, the unit-length series matches when reversed (paternal 68/68, maternal 101/103).
     #   The figure convention that proximal is on the left is kept, and only the numbering starts from the right, the distal end.
-    #@DROP
     # A pair that must share a baseline is re-inserted together; inserting one alone offsets it by the descent.
     # The first label sat 3.03 pt right of the centre of its bar
     #   (bar 180.37..256.82, centre 218.60; text centre 221.63), so it is centred.
@@ -136,7 +127,7 @@ for (t, x, y), v in BEFORE.items():
     if (t, round(x, 1)) in CHANGE:
         tg[(t, round(x, 1))] = v
 miss = [k for k in CHANGE if k not in tg]
-assert not miss, "못 찾음 %s" % miss
+assert not miss, "not found %s" % miss
 
 for v in tg.values():
     page.add_redact_annot(v["rect"])
@@ -167,7 +158,7 @@ if gone:
         page.insert_text((v["rect"].x0, v["rect"].y1 - DESC * v["size"]), t,
                          fontname="hebo" if "Bold" in v["font"] else "helv",
                          fontsize=v["size"], color=rgb(v["color"]))
-print("되살린 글자 %d : %s" % (len(gone), [g[0][0] for g in gone]))
+print("restored characters %d: %s" % (len(gone), [g[0][0] for g in gone]))
 
 for k, (new, dy, rightx, newsz) in CHANGE.items():
     if new is None:
@@ -229,7 +220,7 @@ for nm, a, b, col in ELEM[1:]:
 BASE = (max(UY0 + 0.15 + 0.717 * 8.0, UY1 - 0.15 - 0.21 * 8.0)
         + min(UY1 - 0.15 - 0.21 * 8.0, UY0 + 0.15 + 0.717 * 8.0)) / 2.0
 assert UY0 <= BASE - 0.717 * 8.0 and BASE + 0.21 * 8.0 <= UY1, (
-    '구획 이름이 상자를 벗어난다 : 머리 %.2f (UY0 %.2f) · 꼬리 %.2f (UY1 %.2f)'
+    'segment name runs outside its box: head %.2f (UY0 %.2f), tail %.2f (UY1 %.2f)'
     % (BASE - 0.717 * 8.0, UY0, BASE + 0.21 * 8.0, UY1))
 for nm, a, b, col in ELEM:
     w = uxp(b + 1) - uxp(a)
@@ -252,7 +243,7 @@ for bp in (1, 319, 1179, 1552, 2240):
     x = uxp(bp) if bp != 2240 else UX1
     page.insert_text((min(x - tw / 2.0, UX1 - tw), TICKY), lab,
                      fontname="helv", fontsize=8.0, color=(0.36, 0.38, 0.41))
-print("유닛 모식도 : 6 구획으로 다시 그림 (우리 틀 2,240 · TSS 2122 · 5'-flanking 2,032-2,121)")
+print("unit schematic: redrawn with 6 segments (our frame 2,240, TSS 2122, 5'-flanking 2,032-2,121)")
 
 # -- The array-references table is not drawn here. It became panel c,
 #     produced by mk_Fig1_panelC_TABLE.py.
@@ -273,7 +264,7 @@ for y0, oldx in ((242.85, 257.58), (260.75, 259.25)):
                    color=None, fill=GREYB, radius=0.30)
     page.draw_rect(fitz.Rect(GX + OIN_L, y0 + OIN_T, GX + GW - OIN_R, y0 + OIN_T + OH),
                    color=None, fill=ORANGE, radius=0.32)
-print("주황 막대 정렬 : x0 257.58 / 259.25 -> %.2f (폭 %.2f 그대로)" % (GX, GW))
+print("orange bar alignment: x0 257.58 / 259.25 -> %.2f (width %.2f unchanged)" % (GX, GW))
 
 # -- move "5S rDNA arrays" so that it labels the group it describes --
 #   It sits at x 179.2-234.7, y 234.7, only 5 pt from the right edge of the table at 174.3, so it reads as attached to it.
@@ -287,7 +278,7 @@ page.apply_redactions(images=fitz.PDF_REDACT_IMAGE_NONE)
 _LX = GX - 6.0 - _LW                       # 6 pt clear of the left edge of the group
 page.insert_text((_LX, 250.4 + 8.0 * 0.5 - 0.299 * 8.0), _LB,
                  fontname="helv", fontsize=8.0, color=INK)
-print("라벨 '5S rDNA arrays' : x %.1f-%.1f y 250.4 (표 끝 174.3 에서 %.1f pt 띄움)"
+print("label '5S rDNA arrays': x %.1f-%.1f y 250.4 (table end 174.3, offset %.1f pt)"
       % (_LX, _LX + _LW, _LX - 174.3))
 
 # -- the zoom indication, from the orange bar down to the blue unit row --
@@ -303,7 +294,7 @@ ZCOL = (0.62, 0.68, 0.76)
 _ = (AX0, AX1, AY)          # measured values, used below when the wedge is redrawn
 page.draw_rect(fitz.Rect(ZX0 - 0.9, 260.75 - 0.9, ZX1 + 0.9, ZY + 0.9),
                color=ZCOL, width=0.7, radius=0.22)
-print("확대 표시 : 막대 x %.1f-%.1f -> 열 x %.1f-%.1f (선 2 + 테두리)" % (ZX0, ZX1, AX0, AX1))
+print("zoom marker: bar x %.1f-%.1f -> column x %.1f-%.1f (2 lines + border)" % (ZX0, ZX1, AX0, AX1))
 
 # -- 2) make the zoom region one pale blue shape --
 #   As two wedges (x 124.5-279.9 and 328.1-509.4, y 271.9-288.6) it reads
@@ -317,7 +308,7 @@ _sh = page.new_shape()
 _sh.draw_polyline(_zq + [_zq[0]])
 _sh.finish(color=None, fill=ZFILL, closePath=True)
 _sh.commit(overlay=False)                 # drawn beneath the text and bars
-print("확대 영역 : 사다리꼴 하나로 채움 (막대 256.8-344.1 -> 열 120.5-514.7)")
+print("zoom region: filled with one trapezoid (bar 256.8-344.1 -> column 120.5-514.7)")
 
 # -- 3) lengthen the reads that reach into the flank --
 #   Measured structure: grey on the flank side (9.6 pt), purple on the array side, and white ticks.
@@ -337,9 +328,7 @@ for _y, _old, _new in RIGHTR:
                    color=None, fill=(1, 1, 1))
     page.draw_line(fitz.Point(_new, _y), fitz.Point(509.4, _y), color=PUR, width=1.7)
 # The unit ticks (white lines) are redrawn at the width 2,240 bp occupies in the blue row.
-#   The ticks stopped short on the lengthened part.
-#   The earlier rule selected the interval by comparing the old and new extents, which stopped three rows of the left group at 174.1.
-#   Instead the ticks are drawn across the interval each read actually occupies (left 125.3 to _new, right _new to 509.4),
+#   The ticks are drawn across the interval each read actually occupies (left 125.3 to _new, right _new to 509.4),
 #     end to end, with the tick positions held on the array grid at 120.50 + k * _UW.
 _UW = (514.71 - 120.50) / 125.0           # the CHM13 array holds 125 units (measured)
 for _y, _old, _new in LEFTR + RIGHTR:
@@ -355,7 +344,7 @@ for _y, _old, _new in LEFTR + RIGHTR:
                        color=(1, 1, 1), width=0.55)
         _k += 1
         _n += 1
-    print("   눈금 y %.1f : %2d 개 (x %.1f ~ %.1f)" % (_y, _n, _a, _b))
+    print("   ticks y %.1f: %2d (x %.1f ~ %.1f)" % (_y, _n, _a, _b))
 # The label "Reads reaching into the flank" sits at the same height as the read band (y 314-335) and is lost in it.
 #   It is raised into the empty middle of the same line as "Partial unit" (y 298-311).
 _LAB = "Reads reaching into the flank"
@@ -364,10 +353,6 @@ if _lw:
     _r = _lw[0]
     page.add_redact_annot(fitz.Rect(_r.x0 - 1, _r.y0 - 1, _r.x1 + 1, _r.y1 + 1))
     # Without an explicit graphics argument the default also erases any artwork the box touches.
-    #   This label lay in the middle of the read band (y 314-335), so the white unit ticks drawn
-    #   just above touched its box and were erased with it, which is why the second and third rows
-    #   on the left were bare beyond x 174.1: the log recorded 21 and 26 ticks drawn
-    #   while only 17 survived in the output.
     #   So only the text is deleted.
     page.apply_redactions(images=fitz.PDF_REDACT_IMAGE_NONE,
                           graphics=fitz.PDF_REDACT_LINE_ART_NONE,
@@ -375,10 +360,10 @@ if _lw:
     _fs, _bw = 9.0, FB.text_length(_LAB, 9.0)
     page.insert_text(((120.50 + 514.71) / 2.0 - _bw / 2.0, 309.0 - 0.299 * _fs),
                      _LAB, fontname="hebo", fontsize=_fs, color=(0.42, 0.33, 0.55))
-    print("라벨 '%s' : y %.1f -> 309.0 · 가운데 정렬" % (_LAB, _r.y0))
+    print("label '%s': y %.1f -> 309.0, centered" % (_LAB, _r.y0))
 else:
     print("label not found; position left as it is")
-print("flank read : 보라 10 개를 길게 (왼쪽 143-174 -> 206-268 · 오른쪽 461-494 -> 344-404)")
+print("flank reads: 10 purple ones lengthened (left 143-174 -> 206-268, right 461-494 -> 344-404)")
 
 # -- scale the schematic to 423.5 pt --
 #   It spans 85.7-519.0 = 433.3 pt while panels c to f are already 423.5, so only the schematic is reduced.
@@ -396,7 +381,7 @@ page.show_pdf_page(fitz.Rect(_tx, _ty, _tx + _S * _W, _ty + _S * _H), _src, 0)
 _src.close()
 doc.close()
 doc = _nd
-print("모식도 축소 : 433.3 -> 423.5 pt (배율 %.6f)" % _S)
+print("schematic scaled down: 433.3 -> 423.5 pt (scale %.6f)" % _S)
 
 # -- normalise the type sizes in the schematic (panels a and b) --
 #   tick labels 4.7, axis titles 5.1, legend and annotation 4.5, panel letters 8.2 capitals
@@ -405,7 +390,6 @@ print("모식도 축소 : 433.3 -> 423.5 pt (배율 %.6f)" % _S)
 # Selecting by a list of sizes misses glyphs: page.get_text("dict") reports 8.495
 #   where page.get_texttrace() reports 8.02 for the same glyph, because they read the transform differently.
 #   So the selection is by range, not by a list.
-#@DROP
 def _specsz(v):
     return 8.2 if v >= 10.5 else (5.1 if v >= 8.8 else 4.7)
 _UP = {"a": "A", "b": "B"}
@@ -440,7 +424,7 @@ for _r, _t, _k, _c, _f in _todo:
         _x = (_r.x0 + _r.x1) / 2.0 - _F.text_length(_new, _nz) / 2.0
     page.insert_text((_x, _base), _new, fontname="hebo" if _bold else "helv",
                      fontsize=_nz, color=rgb(_c))
-print("모식도 글자 규격화 : %d 개" % len(_todo))
+print("schematic text normalized: %d" % len(_todo))
 
 # -- panels c and d: haplotype level only, on one row --
 #   Produced by mk_Fig1_panelCD.py, which must be run first.
@@ -459,10 +443,10 @@ if os.path.exists(_PT):
     page.show_pdf_page(fitz.Rect(85.9, _CT, 85.9 + _pwt, _CT + _pht), _st, 0)
     _st.close()
     _CTOP = _CT + _pht + 8.0
-    print("패널 c(표) 넣음 : y %.0f-%.0f (%.1f x %.1f pt)" % (_CT, _CT + _pht, _pwt, _pht))
+    print("panel c (table) inserted: y %.0f-%.0f (%.1f x %.1f pt)" % (_CT, _CT + _pht, _pwt, _pht))
 else:
     _CTOP = 378.0
-    print("패널 c 표 없음 — mk_Fig1_panelC_TABLE.py 를 먼저 돌리십시오")
+    print("no panel c table: run mk_Fig1_panelC_TABLE.py first")
 
 _PC = os.path.join(os.path.dirname(os.path.abspath(__file__)), "_Fig1_panelCD.pdf")
 if os.path.exists(_PC):
@@ -472,18 +456,13 @@ if os.path.exists(_PC):
     _TOP = _CTOP                    # below panel c, the table
     page.show_pdf_page(fitz.Rect(_X0, _TOP, _X0 + _pw, _TOP + _ph), _src, 0)
     _src.close()
-    print("패널 c+d 넣음 : y %.0f-%.0f (%.1f x %.1f pt)" % (_TOP, _TOP + _ph, _pw, _ph))
+    print("panel c+d inserted: y %.0f-%.0f (%.1f x %.1f pt)" % (_TOP, _TOP + _ph, _pw, _ph))
 else:
-    print("패널 c+d 파일 없음 — mk_Fig1_panelCD.py 를 먼저 돌리십시오")
-
-# The former panel e, a box-and-arrow drawing, was replaced by panel c,
-#   a table produced by mk_Fig1_panelC_TABLE.py.
-#   mk_Fig1_panelE_COHORT.py and _Fig1_panelE.pdf are kept rather than deleted.
+    print("no panel c+d file: run mk_Fig1_panelCD.py first")
 
 # Figure 1 is not rescaled.
 #   It was laid out by hand in Illustrator to the journal's width.
 #   The 180 mm page conversion applied to the other figures must not be applied here.
-#@DROP
 
 # -- crop to the content --
 #   Every other figure is 423.5 x N while Figure 1 alone is A4, so side by side
@@ -504,9 +483,9 @@ for _s in page.get_texttrace():
         _cx += [min(c[3][0] for c in _ch), max(c[3][2] for c in _ch)]
         _cy += [min(c[3][1] for c in _ch), max(c[3][3] for c in _ch)]
 _CX0, _CY0, _CY1 = min(_cx), min(_cy), max(_cy)
-assert abs((max(_cx) - _CX0) - 423.5) < 0.2, "내용 폭이 423.5 가 아니다 : %.2f" % (max(_cx) - _CX0)
+assert abs((max(_cx) - _CX0) - 423.5) < 0.2, "content width is not 423.5: %.2f" % (max(_cx) - _CX0)
 page.set_cropbox(fitz.Rect(_CX0, _CY0 - _CMAR, _CX0 + 423.5, _CY1 + _CMAR))
-print("내용 크기로 자름 : %.1f x %.1f pt  (내용 y %.1f~%.1f · 숨 %.1f)"
+print("cropped to content size: %.1f x %.1f pt  (content y %.1f~%.1f, padding %.1f)"
       % (page.rect.width, page.rect.height, _CY0, _CY1, _CMAR))
 
 # A viewer holding the file open blocks the overwrite, so it is written to a temporary file and swapped in.
@@ -514,4 +493,4 @@ _tmp = OUT + ".tmp"
 doc.save(_tmp, garbage=3, deflate=True)
 doc.close()
 os.replace(_tmp, OUT)
-print("저장 :", OUT)
+print("saved:", OUT)

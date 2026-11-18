@@ -81,7 +81,7 @@ with gzip.open(os.path.join(L.D, "a13_unit_state_gmm.tsv.gz"), "rt",
         except Exception:
             continue
         STATE[(smp, x[h["src"]], x[h["read_id"]], slot, ap)] = "L" if b <= CUT else "H"
-print("상태 %s · 슬롯 %s" % (format(len(STATE), ","), format(len(NMAX), ",")))
+print("states %s, slots %s" % (format(len(STATE), ","), format(len(NMAX), ",")))
 
 
 def slot_cell(ap, n):
@@ -106,12 +106,13 @@ for p in sorted(glob.glob(os.path.join(FH, "FHMM_UNITS_*.tsv"))):
             SEG[(x[h["sample"]], x[h["read_id"]][:30], x[h["slot"]])].append(
                 (x[h["array_pos"]], x[h["cls"]],
                  int(x[h["rel_start"]]), int(x[h["rel_end"]])))
-print("FHMM 묶음 %s" % format(len(SEG), ","))
+print("FHMM bundles %s" % format(len(SEG), ","))
 
 din_bp = collections.Counter(); lmsp_bp = collections.Counter()
 cov_bp = collections.Counter(); n_mol = collections.Counter()
 n_din = collections.Counter(); n_patch = collections.Counter()
 nunit_c = collections.Counter()
+cell_unit = collections.Counter()
 PAIRL = collections.defaultdict(lambda: {"L": [], "H": []})   # (plat,smp,rid) -> largeMSP
 PAIRO = collections.defaultdict(lambda: {"L": [], "H": []})   # (plat,smp,rid) -> occ
 ALLL = collections.defaultdict(list)       # (platform, state) -> largeMSP, raw
@@ -183,6 +184,9 @@ for smp, src, rid, slot, arr, lo, us in L.iter_reads(UNIT, 0, 0):
                     din_bp[(src, int(cc))] += 1
             for cc in set(int(c) for c in cells[m2]):
                 n_mol[(src, cc)] += 1
+            for cc, _ap in set((int(c), int(own[p]))
+                               for p, c in zip(idx[m2], cells[m2])):
+                cell_unit[(src, cc)] += 1
     # -- per unit
     for ap, _t in us:
         s_, e_, _t2 = UNIT[(smp, slot, str(ap))]
@@ -213,7 +217,7 @@ for smp, src, rid, slot, arr, lo, us in L.iter_reads(UNIT, 0, 0):
             if cv < 1:
                 continue
             RG[(plat, smp, st, nm)] += (float((big[i0:i1][mm] == 1).sum()), cv)
-print("read %s · FHMM 없어 건너뜀 %s · 유닛 %s"
+print("read %s, skipped for no FHMM %s, units %s"
       % (format(nread, ","), format(nohmm, ","), dict(nunit_c)))
 
 
@@ -250,8 +254,8 @@ if os.path.exists(SRCP):
         ZON[(x[hh["플랫폼"]], int(x[hh["칸번호"]]))] = x[hh["자리"]]
 O1 = os.path.join(R, "HMM_20261014_merged_profile.tsv")
 with io.open(O1, "w", encoding="utf8", newline=NL) as g:
-    g.write("# FiberHMM 2.16.8 판 — zg1 의 칸 규칙(E=20 절대 · NB=10 상대) 그대로" + NL)
-    g.write("# beta 는 CpG 라 호출기와 무관 — 원본 REF2_20261010c 에서 가져왔다" + NL)
+    g.write("# FiberHMM 2.16.8 version: same bin rule as zg1 (E=20 absolute, NB=10 relative)" + NL)
+    g.write("# beta is CpG and independent of the caller: taken from the source table REF2_20261010c" + NL)
     g.write(chr(9).join(["플랫폼", "자리", "칸번호", "dinuc_덮은%", "patch_덮은%",
                          "dinuc_개수_per_kb", "patch_개수_per_kb", "beta",
                          "분자수", "호출염기", "유닛수"]) + NL)
@@ -268,13 +272,13 @@ with io.open(O1, "w", encoding="utf8", newline=NL) as g:
                 "%.4f" % (n_din.get((src, c), 0) / kb),
                 "%.4f" % (n_patch.get((src, c), 0) / kb),
                 BETA.get((plat, c), "-"), str(n_mol.get((src, c), 0)),
-                str(cv), str(n_mol.get((src, c), 0))]) + NL)
-print("① 적었다 ->", os.path.basename(O1))
+                str(cv), str(cell_unit.get((src, c), 0))]) + NL)
+print("(1) written ->", os.path.basename(O1))
 
 # == 2) main panel f, the large MSP pairing
 O2 = os.path.join(R, "HMM_20261014_largeMSP_pair_comparison.tsv")
 with io.open(O2, "w", encoding="utf8", newline=NL) as g:
-    g.write("# FiberHMM 판 — large MSP(>150bp) 덮은 염기 / 호출 염기 · 같은 분자 안 짝" + NL)
+    g.write("# FiberHMM version: bases covered by large MSP(>150bp) / called bases, pairs within the same molecule" + NL)
     g.write(chr(9).join(["플랫폼", "짝read", "짝_저메틸", "ci95_저", "짝_고메틸",
                          "ci95_고", "짝차이", "wilcoxon_p", "유닛수_저",
                          "유닛평균_저", "유닛수_고", "유닛평균_고"]) + NL)
@@ -292,30 +296,30 @@ with io.open(O2, "w", encoding="utf8", newline=NL) as g:
                              "%.6f" % (dl - dh).mean(), "%.3e" % p,
                              str(len(uL)), "%.6f" % uL.mean(),
                              str(len(uH)), "%.6f" % uH.mean()]) + NL)
-print("② 적었다 ->", os.path.basename(O2))
+print("(2) written ->", os.path.basename(O2))
 
 # == 3) main panels g and h, one point per read as (low, high)
 O3 = os.path.join(R, "HMM_20261014_occupancy_pair_points.tsv")
 with io.open(O3, "w", encoding="utf8", newline=NL) as g:
-    g.write("# FiberHMM 판 — read 마다 저메틸 유닛 점유 평균 · 고메틸 유닛 점유 평균" + NL)
-    g.write("# 점유 = nuc_bp/(nuc_bp+msp_bp) · 유닛 여과 호출염기 >= 1800 · beta <= 0.508" + NL)
+    g.write("# FiberHMM version: per read, mean occupancy of low-methylation units and mean occupancy of high-methylation units" + NL)
+    g.write("# occupancy = nuc_bp/(nuc_bp+msp_bp), unit filter called bases >= 1800, beta <= 0.508" + NL)
     g.write(chr(9).join(["플랫폼", "개체", "read", "저메틸", "고메틸"]) + NL)
     for plat in ("ONT", "PacBio"):
         r = pair(PAIRO, plat)
         if r is None:
             continue
         dl, dh, p, keys = r
-        print("   %-8s 짝 read %s · 저 %.4f · 고 %.4f · 차 %+.4f · p %.2e"
+        print("   %-8s paired read %s, low %.4f, high %.4f, diff %+.4f, p %.2e"
               % (plat, format(len(dl), ","), dl.mean(), dh.mean(),
                  (dl - dh).mean(), p))
         for (pl, smp, rid), vl, vh in zip(keys, dl, dh):
             g.write(chr(9).join([pl, smp, rid, "%.6f" % vl, "%.6f" % vh]) + NL)
-print("③ 적었다 ->", os.path.basename(O3))
+print("(3) written ->", os.path.basename(O3))
 
 # == 4) supplementary panel c, raw against paired
 O4 = os.path.join(R, "HMM_20261014_raw_vs_paired.tsv")
 with io.open(O4, "w", encoding="utf8", newline=NL) as g:
-    g.write("# FiberHMM 판 — 점유 저메틸-고메틸 · 짝 안 지은 판 vs 짝 지은 판" + NL)
+    g.write("# FiberHMM version: occupancy low-methylation minus high-methylation, unpaired vs paired" + NL)
     g.write(chr(9).join(["플랫폼", "날것", "짝", "짝read", "유닛_저", "유닛_고",
                          "wilcoxon_p"]) + NL)
     for plat in ("ONT", "PacBio"):
@@ -327,13 +331,13 @@ with io.open(O4, "w", encoding="utf8", newline=NL) as g:
         g.write(chr(9).join([plat, "%.6f" % (aL.mean() - aH.mean()),
                              "%.6f" % (dl - dh).mean(), str(len(dl)),
                              str(len(aL)), str(len(aH)), "%.3e" % p]) + NL)
-print("④ 적었다 ->", os.path.basename(O4))
+print("(4) written ->", os.path.basename(O4))
 
 # == 5) supplementary panel d, per zone, with a Wilcoxon over individuals
 O5 = os.path.join(R, "HMM_20261014_by_zone.tsv")
 with io.open(O5, "w", encoding="utf8", newline=NL) as g:
-    g.write("# FiberHMM 판 — 구역별 large MSP(>150bp) 덮은 염기 · 개체 단위 Wilcoxon" + NL)
-    g.write("# 구역·여과는 zn1b 와 같다 (구역마다 상태마다 호출 염기 >= 500)" + NL)
+    g.write("# FiberHMM version: bases covered by large MSP(>150bp) per region, individual-level Wilcoxon" + NL)
+    g.write("# regions and filter same as zn1b (called bases >= 500 per region per state)" + NL)
     g.write(chr(9).join(["kind", "platform", "key", "n", "v_L", "v_H",
                          "diff", "p"]) + NL)
     for plat in ("ONT", "PacBio"):
@@ -353,7 +357,7 @@ with io.open(O5, "w", encoding="utf8", newline=NL) as g:
                                  "%.5f" % aL.mean(), "%.5f" % aH.mean(),
                                  "%.5f" % (aL.mean() - aH.mean()),
                                  "%.3g" % p]) + NL)
-            print("   %-8s %-5s n %2d · 저 %.5f · 고 %.5f · 차 %+.5f · p %.2e"
+            print("   %-8s %-5s n %2d, low %.5f, high %.5f, diff %+.5f, p %.2e"
                   % (plat, nm, len(aL), aL.mean(), aH.mean(),
                      aL.mean() - aH.mean(), p))
-print("⑤ 적었다 ->", os.path.basename(O5))
+print("(5) written ->", os.path.basename(O5))

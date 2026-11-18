@@ -86,10 +86,10 @@ def zone_of(ap, ad):
 
 
 Z0, NOV = zone_of(AP, AD)
-print("유닛 %d · 하플로타입 %d · 두 구역에 다 걸리는 유닛 %d (%.2f%%) -> 더 얕은 쪽"
+print("units %d, haplotypes %d, units falling in both zones %d (%.2f%%) -> the shallower one"
       % (len(VEC), NH, NOV, 100 * NOV / len(VEC)))
 for i, z in enumerate(ZN):
-    print("   %-10s 유닛 %6d" % (z, int((Z0 == i).sum())))
+    print("   %-10s units %6d" % (z, int((Z0 == i).sum())))
 
 
 def zmeans(zz):
@@ -138,7 +138,7 @@ for t in TY:
                OBS[k, j] - mid, zz[kz], ZN[kz]))
 g.close()
 
-print("\n■ 구역 사이에서 가장 많이 변하는 유형 (|귀무 z| 로 정렬)")
+print("\ntypes that change most between zones (sorted by |null z|)")
 if 0:
     print("x"
       % (["유형"] + ZN + ["최대 log2비", "최대 절대차", "어느 구역"])[0],
@@ -149,8 +149,8 @@ print("   %-20s %8s %8s %8s %8s | %9s %9s %s"
 for r in sorted(rank, key=lambda r: -abs(r[4]) if np.isfinite(r[4]) else 0):
     print("   %-20s %8.4f %8.4f %8.4f %8.4f | %9.2f %9.1f %s"
           % (r[0], r[1][0], r[1][1], r[1][2], r[1][3], r[2], r[4], r[5]))
-print("\n   하플로타입 수 : " + " · ".join("%s %d" % (z, n) for z, n in zip(ZN, NHZ)))
-print("저장 %s/VTZONE_zones.tsv" % OUT)
+print("\n   number of haplotypes : " + " · ".join("%s %d" % (z, n) for z, n in zip(ZN, NHZ)))
+print("saved %s/VTZONE_zones.tsv" % OUT)
 
 # the deposited table(s) carry English column names and values (common/fig02_figS2/taben.py)
 import sys as _s, os as _o

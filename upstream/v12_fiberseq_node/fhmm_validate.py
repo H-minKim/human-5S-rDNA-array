@@ -97,14 +97,14 @@ with gzip.open(H("~/pbmeth_v12d/M6A_READUNIT_ip-172-31-58-58.tsv.gz"),
                         nM[cls] += h
                         break
 
-print("맞춘 read x 유닛(가닥 줄) %d" % rows)
-print("  %-5s %10s %10s %8s" % ("구간", "A 자리", "m6A", "비율"))
+print("matched read x unit (strand rows) %d" % rows)
+print("  %-5s %10s %10s %8s" % ("region", "A 자리", "m6A", "비율"))
 for cls in ("tf", "nuc", "msp"):
     a, m = nA[cls], nM[cls]
     print("  %-5s %10d %10d %8.4f" % (cls, a, m, (m / a) if a else 0))
 if nA["msp"] and nA["nuc"]:
     print()
-    print("  MSP / nuc 비율 = %.2f 배 (귀속이 맞으면 크게 나와야 한다)"
+    print("  MSP / nuc ratio = %.2f-fold (should be large if the assignment is right)"
           % ((nM["msp"] / nA["msp"]) / max(nM["nuc"] / nA["nuc"], 1e-9)))
-    print("  MSP / tf  비율 = %.2f 배"
+    print("  MSP / tf  ratio = %.2f-fold"
           % ((nM["msp"] / nA["msp"]) / max(nM["tf"] / max(nA["tf"], 1), 1e-9)))

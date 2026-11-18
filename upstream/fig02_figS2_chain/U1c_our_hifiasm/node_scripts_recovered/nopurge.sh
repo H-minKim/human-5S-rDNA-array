@@ -18,9 +18,9 @@ for S in $(tr -d '\r' < ~/nopurge_list.txt); do
   Q=""
   for p in ~/s5s_ont/hits/$S.hits.fastq.gz ~/giab_hits/$S.hits.fastq.gz ~/s5s_new/hits/$S.hits.fastq.gz; do
     [ -f "$p" ] && { Q=$p; break; }; done
-  [ -n "$Q" ] || { echo "  $S read 없음"; continue; }
+  [ -n "$Q" ] || { echo "  $S no reads"; continue; }
   W="$D/w_$S"; rm -rf "$W"; mkdir -p "$W"
-  echo "[$(date +%T)] $S : -l 0 (purge 끔)"
+  echo "[$(date +%T)] $S : -l 0 (purge off)"
   ( cd "$W" && timeout 10800 ~/hifiasm --ont -l 0 -o "$S" -t "$TH" "$Q" > log 2>&1 )
   RC=$?
   R=$("$PY" ~/hiarr.py "${S}_l0" "$W" "$D" 2>/dev/null)

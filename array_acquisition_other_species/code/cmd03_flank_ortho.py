@@ -4,7 +4,7 @@
 #   flank5 is therefore the array_pos 1 side, as confirmed by canon_start in 06_units_from_canonical, where position 1 lies at about 22 kb.
 #   The test: the k-mer set of a species' flank5 is compared against the human flank5 and flank3 sets, on both strands, by Jaccard and by hit count.
 # A call needs one side clearly larger than the other; otherwise it is recorded as unknown.
-# MIT License · Copyright (c) 2026 Hungmin Kim
+# MIT License. Copyright (c) 2026 Hyungmin Kim
 import glob
 import io
 import os

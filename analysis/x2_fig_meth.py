@@ -2,10 +2,10 @@
 # Methylation of the 5S arrays in the other species: the figure.
 #
 # Reading rules
-#   · The absolute level must not be compared between species, because the samples and the basecaller releases differ; the bonobo's own internal control differs by 0.13.
-#   · The valid axis is the array minus its own flank, a contrast within the same sample and the same basecaller.
-#   · For Arabidopsis the flank lies outside the bedmethyl range, so no delta can be computed.
-#   · The rhesus has no reads, only public per-position methylation at 1-7% coverage, which makes it a different kind of data.
+#   - The absolute level must not be compared between species, because the samples and the basecaller releases differ; the bonobo's own internal control differs by 0.13.
+#   - The valid axis is the array minus its own flank, a contrast within the same sample and the same basecaller.
+#   - For Arabidopsis the flank lies outside the bedmethyl range, so no delta can be computed.
+#   - The rhesus has no reads, only public per-position methylation at 1-7% coverage, which makes it a different kind of data.
 #
 #  ASCII only in the figure text.
 import io, os
@@ -48,7 +48,7 @@ def P(s=""):
 
 T = pd.read_csv(OUT + "/tables/OTHERSP_ARRAY_METH.tsv", sep="\t")
 P("=" * 100)
-P("타 생물종 5S array 메틸 — array %d · 종 %d" % (len(T), T.species_key.nunique()))
+P("5S array methylation in other species: arrays %d, species %d" % (len(T), T.species_key.nunique()))
 P("=" * 100)
 P()
 
@@ -65,9 +65,9 @@ CMP = {"침팬지": "guppy6.3.8", "고릴라": "guppy6.3.8", "보르네오오랑
        "제브라피시": "guppy6.4.2", "금화조": "dorado2.1.2", "애기장대": "dorado2.1.2",
        "생쥐": "dorado v5.2r1", "붉은털원숭이": "read 없음"}
 
-P("  저메틸 array (meth < 0.35) — 전부 나열")
+P("  low-methylation arrays (meth < 0.35): all listed")
 lowT = T[T.meth < 0.35].sort_values("meth")
-P("   종            염색체        길이(bp)   유닛     메틸     flank    Δ")
+P("   species            chromosome        length(bp)   units     methylation     flank    Δ")
 for r in lowT.itertuples(index=False):
     P("   %-12s %-12s %8s   %5s   %.3f   %s   %s"
       % (r.종, str(r.chrom), format(int(r.array_len), ","),
@@ -135,19 +135,19 @@ ax.set_yticklabels(ORDER[::-1], fontsize=8.5)
 ax.set_xlabel("array - 제 flank (100 kb)")
 ax.set_title("(b) 진짜 비교축 — 같은 시료·같은 호출기 안의 대비\n"
              "(애기장대는 flank 자료가 없어 빠짐)", fontsize=10.5)
-P("  [b] 종별 Δ(array - flank)")
+P("  [b] Δ(array - flank) by species")
 for s in ORDER:
     g = D[D["종"] == s]
     if not len(g):
-        P("   %-12s (Δ 없음)" % s)
+        P("   %-12s (no Δ)" % s)
         continue
-    P("   %-12s array %2d · Δ 중앙 %+.3f · 범위 %+.3f ~ %+.3f"
+    P("   %-12s arrays %2d, Δ median %+.3f, range %+.3f ~ %+.3f"
       % (s, len(g), g.delta.median(), g.delta.min(), g.delta.max()))
 P()
 
 # ---------------------------------------------------------------- (c) size against methylation
 ax = fig.add_subplot(gs[1, 1])
-P("  [c] array 크기와 메틸 — 종 안에서 상관 (array 3 개 이상인 종만)")
+P("  [c] array size and methylation: correlation within species (only species with 3 or more arrays)")
 COL = {"제브라피시": "#2e7d32", "금화조": "#c0392b", "애기장대": "#7e57c2",
        "붉은털원숭이": "#ef6c00"}
 for s, g in T.groupby("종"):
@@ -156,7 +156,7 @@ for s, g in T.groupby("종"):
     ax.scatter(g.array_len, g.meth, s=30, color=COL.get(s, "#888"),
                edgecolor="k", lw=0.4, label="%s (n=%d)" % (s, len(g)))
     rr = stats.spearmanr(np.log10(g.array_len), g.meth, nan_policy="omit")
-    P("   %-12s n=%2d · rho(log 길이, 메틸) = %+.3f (p=%.3f)"
+    P("   %-12s n=%2d, rho(log length, methylation) = %+.3f (p=%.3f)"
       % (s, len(g), rr.statistic, rr.pvalue))
 ax.set_xscale("log")
 ax.xaxis.set_major_formatter(matplotlib.ticker.FuncFormatter(
@@ -178,6 +178,6 @@ fig.text(0.105, 0.012,
          "생쥐만 뇌 조직, 유인원은 세포주, 제브라피시는 성체 뇌다.", fontsize=8.6, color="#444")
 fig.savefig(OUT + "/figures/Fig_othersp_array_meth.png")
 plt.close(fig)
-P("  저장 : 10_other_species/figures/Fig_othersp_array_meth.png")
+P("  saved: 10_other_species/figures/Fig_othersp_array_meth.png")
 LOG.close()
 print("done")

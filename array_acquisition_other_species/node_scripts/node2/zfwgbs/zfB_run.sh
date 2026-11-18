@@ -9,14 +9,14 @@ mkdir -p logs bam tmp
 
 guard () {
   F=$(df --output=avail -BG / | tail -1 | tr -dc '0-9')
-  if [ "$F" -lt 25 ]; then echo "STOP — 디스크 여유 ${F}G"; exit 1; fi
+  if [ "$F" -lt 25 ]; then echo "STOP: free disk ${F}G"; exit 1; fi
 }
 
 guard
 if [ ! -d ref/Bisulfite_Genome ]; then
-  echo "색인 시작 $(date -u +%H:%M)"
+  echo "indexing start $(date -u +%H:%M)"
   bismark_genome_preparation --parallel 6 --bowtie2 ref > logs/prep.log 2>&1
-  echo "색인 끝 $(date -u +%H:%M) exit=$?"
+  echo "indexing finished $(date -u +%H:%M) exit=$?"
 fi
 ls ref/Bisulfite_Genome || { echo PREP_FAIL; exit 1; }
 df -h / | tail -1
@@ -24,7 +24,7 @@ df -h / | tail -1
 for S in SRR14703401 SRR14703403; do
   guard
   [ -f bam/${S}_done ] && { echo "SKIP $S"; continue; }
-  echo "정렬 시작 $S $(date -u +%H:%M)"
+  echo "alignment start $S $(date -u +%H:%M)"
   bismark --genome ref --parallel 2 -p 3 --bam --temp_dir tmp \
     -o bam -1 sra/${S}_1.fastq.gz -2 sra/${S}_2.fastq.gz > logs/${S}.align.log 2>&1
   B=$(ls bam/${S}_1*bismark*pe.bam 2>/dev/null | head -1)

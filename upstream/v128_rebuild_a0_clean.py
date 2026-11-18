@@ -105,48 +105,48 @@ def one(f):
     return pd.DataFrame([dict(sample=k[0], slot=k[1], side=k[2], win=k[3], n_call=v[0], beta=v[1] / max(v[0], 1), n_read=len(v[2]))
                          for k, v in acc.items()])
 
-P("[0] 깨끗한 사본 확인")
+P("[0] verify the clean copy")
 rows = []
 for smp, want in BAD.items():
     f = os.path.join(CLEAN, "%s.placed50k.final.sam" % smp)
     got = md5(f)
-    P("   %s : %s (기록 %s) → %s" % (smp, got[:8], want[:8], "일치" if got == want else "불일치"))
+    P("   %s : %s (recorded %s) -> %s" % (smp, got[:8], want[:8], "일치" if got == want else "불일치"))
     assert got == want, smp
     d = one(f); d["src"] = smp
     rows.append(d)
-    P("      다시 계산 : 행 %d · 원위 0-2k n_call %s" % (len(d), d[(d.side == "원위") & (d.win == "0-2k")].n_call.tolist()))
+    P("      recomputed : rows %d, distal 0-2k n_call %s" % (len(d), d[(d.side == "원위") & (d.win == "0-2k")].n_call.tolist()))
 NEW = pd.concat(rows, ignore_index=True)
 
 P()
-P("[1] v118 중간 결과에서 손상분을 빼고 깨끗한 값으로 바꿔 표 재구성")
+P("[1] rebuild the table from the v118 intermediate results, with the corrupted part replaced by clean values")
 parts = sorted(glob.glob(PART + "/*.tsv"))
-P("   중간 파일 %d 개" % len(parts))
+P("   intermediate files %d" % len(parts))
 keep = []
 for p in parts:
     b = os.path.basename(p)
     if b.split("_")[0] in BAD:
-        P("   제외(손상 SAM 기반) : %s" % b); continue
+        P("   excluded (based on the corrupted SAM) : %s" % b); continue
     keep.append(pd.read_csv(p, sep="\t", dtype={"slot": str}))
 F = pd.concat(keep + [NEW.drop(columns=["src"])], ignore_index=True)
 F = F.groupby(["sample", "slot", "side", "win"], as_index=False).agg(
     n_call=("n_call", "sum"), n_read=("n_read", "sum"), beta=("beta", "mean"))
 F.to_csv(T + "/FLANK_METH_HAP_A0_CLEAN.tsv", sep="\t", index=False, float_format="%.4f")
-P("   저장 02_tables/FLANK_METH_HAP_A0_CLEAN.tsv · 행 %d · 하플로 %d" % (len(F), F.groupby(["sample", "slot"]).ngroups))
+P("   saved 02_tables/FLANK_METH_HAP_A0_CLEAN.tsv, rows %d, haplotypes %d" % (len(F), F.groupby(["sample", "slot"]).ngroups))
 
 P()
-P("[2] 참고판(mirror_fix)과 대조")
+P("[2] compare with the reference version (mirror_fix)")
 M = pd.read_csv(__import__("os").environ["REGISTRY_DIR"] + "/verify/flank_orientation/mirror_fix/02_tables/FLANK_METH_HAP.tsv", sep="\t", dtype={"slot": str})
 K = ["sample", "slot", "side", "win"]
 J = F.merge(M, on=K, how="outer", suffixes=("_a", "_b"), indicator=True)
-P("   행 이 판 %d · 참고판 %d · 양쪽 %d · 한쪽만 %d" % (len(F), len(M), (J._merge == "both").sum(), (J._merge != "both").sum()))
-P("   β 최대차 %.8f · n_call 최대차 %s · n_read 최대차 %s"
+P("   rows: this version %d, reference version %d, both %d, one side only %d" % (len(F), len(M), (J._merge == "both").sum(), (J._merge != "both").sum()))
+P("   β max difference %.8f, n_call max difference %s, n_read max difference %s"
   % ((J.beta_a - J.beta_b).abs().max(), (J.n_call_a - J.n_call_b).abs().max(), (J.n_read_a - J.n_read_b).abs().max()))
 d = J[(J.beta_a - J.beta_b).abs() > 1e-9]
-P("   다른 행 %d %s" % (len(d), sorted(set(d["sample"])) if len(d) else ""))
+P("   differing rows %d %s" % (len(d), sorted(set(d["sample"])) if len(d) else ""))
 P()
-P("[3] 손상 SAM 으로 만든 v118 표와의 차이(참고)")
+P("[3] difference from the v118 table built from the corrupted SAM (for reference)")
 A = pd.read_csv(T + "/FLANK_METH_HAP_A0.tsv", sep="\t", dtype={"slot": str})
 J2 = F.merge(A, on=K, suffixes=("_c", "_d"))
 d2 = J2[(J2.beta_c - J2.beta_d).abs() > 1e-9]
-P("   다른 행 %d · 시료 %s" % (len(d2), sorted(set(d2["sample"]))))
+P("   differing rows %d, samples %s" % (len(d2), sorted(set(d2["sample"]))))
 LOG.close()

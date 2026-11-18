@@ -4,7 +4,7 @@
 #   the gap between the starts of successive occurrences, which is the period and is unaffected by indels, and the identity between units.
 #   For the lineages with a published repeat unit, the same measurement is made with that unit and compared with ours.
 #   Output: TILE_CHECK.tsv
-# MIT License · Copyright (c) 2026 Hungmin Kim
+# MIT License. Copyright (c) 2026 Hyungmin Kim
 import io
 import os
 import sys
@@ -72,7 +72,7 @@ w = io.open(os.path.join(H, "TILE_CHECK.tsv"), "w", encoding="utf8", newline=NL)
 w.write(TAB.join(["array_id", "span", "slice_len", "my_unit_len",
                   "U_copies", "U_cov", "U_spacing_med", "U_spacing_p10", "U_spacing_p90", "U_pident_med",
                   "ruler", "R_copies", "R_cov", "R_spacing_med", "R_pident_med", "verdict"]) + NL)
-print("%-50s %6s %5s %6s %5s %8s %6s %6s  %s" % ("array_id", "unit", "copy", "덮힘", "주기", "p10-p90", "일치", "R주기", "판정"))
+print("%-50s %6s %5s %6s %5s %8s %6s %6s  %s" % ("array_id", "unit", "copy", "coverage", "주기", "p10-p90", "일치", "R주기", "판정"))
 for sfa in sorted(glob.glob(os.path.join(H, "slices", "*.arr.fa"))):
     aid = os.path.basename(sfa).replace(".arr.fa", "")
     hd = io.open(sfa, encoding="utf8").readline()
@@ -115,4 +115,4 @@ for sfa in sorted(glob.glob(os.path.join(H, "slices", "*.arr.fa"))):
                       "%.1f" % pid, rn, str(rc), "%.3f" % rcov, str(rg), "%.1f" % rpid, v]) + NL)
     sys.stdout.flush()
 w.close()
-print("표 : ~/lit5s/TILE_CHECK.tsv")
+print("table : ~/lit5s/TILE_CHECK.tsv")

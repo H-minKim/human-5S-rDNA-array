@@ -78,21 +78,21 @@ for k, (lo, hi) in COV.items():
     if ok:
         nref += 1
 
-print("read x 유닛 %d · 레퍼런스 창 양성 %d (%.2f%%)" % (ntot, nref, 100.0 * nref / max(ntot, 1)))
+print("read x unit %d, reference-window positive %d (%.2f%%)" % (ntot, nref, 100.0 * nref / max(ntot, 1)))
 hs = np.array(hit_sz)
 hc = np.array(hit_cen)
 if len(hs):
     print()
-    print("== 창을 채운 footprint 가 무엇인가 (n=%d) ==" % len(hs))
-    print("  크기  중앙 %.0f  (25~75%% %.0f~%.0f)  최소 %d  최대 %d"
+    print("== what are the footprints filling the window (n=%d) ==" % len(hs))
+    print("  size      median %.0f  (25~75%% %.0f~%.0f)  min %d  max %d"
           % (np.median(hs), *np.percentile(hs, [25, 75]), hs.min(), hs.max()))
-    print("  중심  중앙 %+.0f (25~75%% %+.0f~%+.0f)" % (np.median(hc), *np.percentile(hc, [25, 75])))
-    print("  경계  시작 %d · 끝 %d" % (hit_side["시작"], hit_side["끝"]))
-    print("  크기무리 " + " · ".join("%s=%d" % (k, v) for k, v in sorted(hit_cls.items())))
+    print("  center    median %+.0f (25~75%% %+.0f~%+.0f)" % (np.median(hc), *np.percentile(hc, [25, 75])))
+    print("  boundary  start %d, end %d" % (hit_side["시작"], hit_side["끝"]))
+    print("  size groups " + " · ".join("%s=%d" % (k, v) for k, v in sorted(hit_cls.items())))
 
 print()
-print("== 자리별 경계 밀도 (20 bp 칸 · 섬유당) — 시작 / 끝 ==")
-print("  %-14s" % "자리" + "".join("%18s" % c[2] for c in CLS))
+print("== boundary density by position (20 bp bins, per fiber): start / end ==")
+print("  %-14s" % "position" + "".join("%18s" % c[2] for c in CLS))
 for a in range(-160, 160, 20):
     i0, i1 = a - TLO, a + 20 - TLO
     c = NCO[i0:i1].mean()

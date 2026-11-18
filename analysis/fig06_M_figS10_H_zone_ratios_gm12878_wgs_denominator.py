@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Working name: fig6v5_step1_gmwgs.py. Data and output roots come from environment variables with no default (the script stops if one is unset).
-# WARNING — this script WRITES tables, into P11_TABLE_OUT_DIR (no default). Pointing it at the folder that holds the published
+# WARNING: this script WRITES tables, into P11_TABLE_OUT_DIR (no default). Pointing it at the folder that holds the published
 #   input tables (P11_TABLE_DIR) OVERWRITES them. To verify, set P11_TABLE_OUT_DIR to an empty temporary folder.
 import os as _os_need, sys as _sys_need
 def _need(k):
@@ -64,7 +64,7 @@ M = {c: {v: r["zone"] for v, r in L.build_markers(c, "new").items()} for c in ("
 DK = read_k562_pre("K562_QUALGATE_MIX.tsv"); DG = read_gm("READLEVEL_GM_MIX.tsv")
 DG["WGS_ERR3239334"] = {r["variant"]: (int(r["alt_n"]), int(r["depth"])) for r in L.rd(os.path.join("denominator_comparison_2026-10-14", "denom_GM_WGS_ERR3239334.tsv"))}
 miss = [v for v in M["GM12878"] if v not in DG["WGS_ERR3239334"] or DG["WGS_ERR3239334"][v][1] == 0]
-print("GM 표지 %d · WGS 분모 없는 표지 %s" % (len(M["GM12878"]), miss or "없음"))
+print("GM markers %d, markers without a WGS denominator %s" % (len(M["GM12878"]), miss or "없음"))
 R = rt_loop([("K562", DK, M["K562"], "WGSNAT", ["TBP", "POLR3A", "GTF3C2", "ATAC", "SNAPC5"]),
              ("GM12878", DG, M["GM12878"], "WGS_ERR3239334", ["TBP", "POLR3G", "ATAC", "DNase", "INPUT"])])
 OLD = pd.read_csv(os.path.join(T, "P11_percellline_NEWZONE_bootstrap_2026-10-13.tsv"), sep=TAB)
@@ -73,9 +73,9 @@ def eq(a, b):
     try: return abs(float(a) - float(b)) < 1e-9
     except ValueError: return str(a) == str(b)
 bad = [(c, i, a, b) for c in ("target", "zone", "n_marker", "sum_alt", "ratio", "boot_lo", "boot_hi") for i, (a, b) in enumerate(zip(k_new[c], k_old[c])) if not eq(a, b)]
-print("   어긋난 칸", bad[:6])
+print("   mismatched cells", bad[:6])
 same = len(k_new) == len(k_old) and not bad
-print("검산 K562 행 = 기존 NEWZONE 표 :", "같음 (%d 행)" % len(k_new) if same else "다름")
+print("check K562 rows = existing NEWZONE table:", "same (%d rows)" % len(k_new) if same else "다름")
 assert same
 fn = "P11_percellline_NEWZONE_GMWGS_bootstrap_2026-10-14.tsv"
 R.to_csv(os.path.join(TO, fn), sep=TAB, index=False, encoding="utf-8"); print("→", fn)

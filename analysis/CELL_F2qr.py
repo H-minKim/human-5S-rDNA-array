@@ -44,7 +44,7 @@ obs = [float(r[H["obs_frac"]]) for r in R]
 nf = [float(r[H["null_free"]]) for r in R]
 n2 = [float(r[H["null_min2"]]) for r in R]
 for r in R:
-    rec("A", "간격 %s" % r[H["gap"]], "관측 %s (%s 건) · 귀무자유 %s · 귀무최소2 %s"
+    rec("A", "gap %s" % r[H["gap"]], "observed %s (%s cases), null free %s, null min2 %s"
         % (r[H["obs_frac"]], r[H["obs"]], r[H["null_free"]], r[H["null_min2"]]), "ZP_gap_shape.tsv")
 fig, ax = CS.cell_at("q")   # margins and size come from the single cellstyle.ROWS table (aligned plot frames)
 W = 0.27; x = np.arange(len(gg))
@@ -54,7 +54,7 @@ ax.bar(x + W, n2, W, color="none", edgecolor="#566573", lw=0.5, label=CS.L("귀�
 # no value text above the bars (values are in the value table)
 i1 = gg.index(1)
 # The arrow annotation 'gap 1 has only %s cases (%.4f)' is not drawn on the figure; it is in the legend
-rec("A", "간격 1 (그림에서 뺀 주석 · Legend 로)", "간격 1 은 %s 건뿐 (%.4f)" % (R[i1][H["obs"]], obs[i1]), "ZP_gap_shape.tsv")
+rec("A", "gap 1 (annotation left out of the figure, to Legend)", "gap 1: only %s cases (%.4f)" % (R[i1][H["obs"]], obs[i1]), "ZP_gap_shape.tsv")
 ax.set_xticks(x); ax.set_xticklabels([str(v) for v in gg])
 ax.set_xlabel(CS.L("말단형 사이 간격 (유닛)", "Terminal-unit gap")); ax.set_ylabel(CS.L("간격 몫", "Fraction of gaps"))   # axis label on one line
 ax.set_yticks([0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7])          # fixed ticks (the range is set below)
@@ -79,7 +79,7 @@ for ki, k in enumerate(KS):
     if r is None:
         continue
     v = float(r[H["자카드평균"]])
-    rec("B", "%s · 간격 ≤2" % k, "자카드 %s [%s,%s] · 짝 %s · 하플로 %s · 공유자리 %s"
+    rec("B", "%s, gap ≤2" % k, "자카드 %s [%s,%s] · 짝 %s · 하플로 %s · 공유자리 %s"
         % (r[H["자카드평균"]], r[H["ci_lo"]], r[H["ci_hi"]], r[H["짝수"]], r[H["하플로수"]],
            r[H["공유자리평균"]]), "F8X2_pairs.tsv")
     ax.bar([ki], [v], 0.56, color=KC[k], zorder=3)
@@ -100,13 +100,13 @@ _keep = sum(1 for r in Rs2 if r[Hs2["채택"]] == "1")
 _DIAG = {"D1096:1", "635CT", "1164GA", "740GA", "DB43:2", "DB16:17", "488GC",
          "DB46:10", "DB58:1", "R1752CG", "R405CG", "R347CG"}
 _dk = sum(1 for r in Rs2 if r[Hs2["토큰"]] in _DIAG and r[Hs2["채택"]] == "1")
-rec("B", "자리 고르기", "전체 %d 자리 → 양쪽 다형성 %d 자리" % (_tot, _keep), "F8X2_sites.tsv")
-rec("B", "옛 진단 12 개 중 남은 것", "%d / %d" % (_dk, len(_DIAG)), "F8X2_sites.tsv")
+rec("B", "position selection", "all %d positions -> polymorphic on both sides %d positions" % (_tot, _keep), "F8X2_sites.tsv")
+rec("B", "remaining of the 12 diagnostics", "%d / %d" % (_dk, len(_DIAG)), "F8X2_sites.tsv")
 _r1 = V.get(("말단형-비말단형", 1)); _r2 = V.get(("말단형-비말단형", 2))
 if _r1 and _r2:
-    rec("B", "말단형-비말단형 간격별", "간격1 %s (짝 %s) · 간격2 %s (짝 %s)"
+    rec("B", "terminal type to non-terminal type, by gap", "gap1 %s (pairs %s), gap2 %s (pairs %s)"
         % (_r1[H["자카드평균"]], _r1[H["짝수"]], _r2[H["자카드평균"]], _r2[H["짝수"]]), "F8X2_pairs.tsv")
 # The top note 'pairs within gap 2 (neighbours) were counted together' is not drawn on the figure; it is in the legend
 SRC.close()
 CS.save(fig, OUT, "cellF2_r_exchange")
-print("A 간격 1 %s · B 자리 %d → %d" % (obs[i1], _tot, _keep))
+print("A gap 1 %s, B positions %d -> %d" % (obs[i1], _tot, _keep))

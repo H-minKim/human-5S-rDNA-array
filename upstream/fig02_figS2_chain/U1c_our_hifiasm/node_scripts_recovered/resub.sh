@@ -20,9 +20,9 @@ D=~/resub
 mkdir -p "$D"
 for S in "$@"; do
   Q=~/s5s_ont/hits/$S.hits.fastq.gz
-  [ -f "$Q" ] || { echo "  $S read 없음"; continue; }
+  [ -f "$Q" ] || { echo "  $S no reads"; continue; }
   TOT=$(zcat "$Q" | awk 'NR%4==2{t+=length($0)} END{printf "%d", t/1000000}')
-  echo "  $S 원본 ${TOT} Mb"
+  echo "  $S source ${TOT} Mb"
   # Uniform downsampling to a target of ~250 Mb (pick by read order to avoid length bias)
   for TGT in 250; do
     F=$(( (TOT + TGT - 1) / TGT ))
@@ -30,11 +30,11 @@ for S in "$@"; do
     O="$D/${S}_sub${TGT}.fq.gz"
     zcat "$Q" | awk -v f="$F" 'NR%4==1{h=$0} NR%4==2{s=$0} NR%4==3{p=$0} NR%4==0{c++; if(c%f==0) print h"\n"s"\n"p"\n"$0}' | gzip > "$O"
     N=$(zcat "$O" | awk 'NR%4==2{n++;t+=length($0)} END{printf "read %d · %.0f Mb", n, t/1e6}')
-    echo "    1/$F 추림 -> $N"
+    echo "    1/$F subsample -> $N"
     W="$D/${S}_$TGT"
     rm -rf "$W"; mkdir -p "$W"
     ( cd "$W" && timeout 7200 ~/hifiasm --ont -o "$S" -t 12 "$O" > log 2>&1 )
-    echo "    조립 rc=$?"
+    echo "    assembly rc=$?"
     PY=""
     for c in ~/miniconda3/bin/python python3; do
       p=$(command -v "$c" 2>/dev/null) || continue

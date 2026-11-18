@@ -2,7 +2,7 @@
 # Figure 3: every spacer type in each species, the internal structure of each type, and the result of the comparison with the literature.
 #   Inputs: lit/SPACER_TYPES.tsv and lit/UNIT_VERDICT.tsv
 #   Ruler: linear from 0 to 2,400 bp. A unit longer than that is broken off with a jagged edge and its real length written in.
-# MIT License · Copyright (c) 2026 Hungmin Kim
+# MIT License. Copyright (c) 2026 Hyungmin Kim
 import io
 import os
 import collections
@@ -110,4 +110,4 @@ for r in rows:
 o.append('<text x="24" y="%d" font-size="10.5" fill="%s">붉은털원숭이 종류 4·5 와 제브라피시 긴 종류들은 유닛 하나가 아니라 유전자 사이가 실제로 수 kb 인 것이다 — 06_aux/lit_reference/README.md 참조.</text>' % (H - 12, MUT))
 o.append('</svg>')
 io.open(os.path.join(B, "fig3.svg"), "w", encoding="utf8", newline=NL).write(NL.join(o))
-print("fig3.svg · 행 %d" % len(rows))
+print("fig3.svg, rows %d" % len(rows))

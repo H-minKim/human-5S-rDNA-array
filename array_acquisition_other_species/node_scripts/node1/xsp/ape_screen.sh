@@ -5,17 +5,17 @@
 #   The k-mers are built from that species' own array units in the assembly (the 119 bp gene of the first unit in struct/<species>.units.fa).
 #   Arguments: GenomeArk path (e.g. Pan_troglodytes/mPanTro3), k-mer file, output folder, number of concurrent streams.
 #   Outputs: <flowcell>.hit.sam (tags kept) and <flowcell>.done (read count, reads with MM, pipe exit code, seconds).
-# MIT License · Copyright (c) 2026 Hungmin Kim
+# MIT License. Copyright (c) 2026 Hyungmin Kim
 set -u
-SPP="${1:?GenomeArk 경로}"
-KF="${2:?k-mer 파일}"
-export O="${3:?출력폴더}"
+SPP="${1:?GenomeArk path}"
+KF="${2:?k-mer file}"
+export O="${3:?output folder}"
 P="${4:-2}"
 mkdir -p "$O"
 export KF
 aws s3 ls --no-sign-request --region us-east-1 --recursive "s3://genomeark/species/$SPP/genomic_data/ont/" \
   | awk '$4 ~ /[.]bam$/ {print $4}' > "$O/bams.txt"
-echo "BAM $(wc -l < "$O/bams.txt") 개"
+echo "BAM $(wc -l < "$O/bams.txt")"
 one() {
   key="$1"
   b=$(basename "$key" .bam)
@@ -29,5 +29,5 @@ one() {
 }
 export -f one
 xargs -a "$O/bams.txt" -P "$P" -I{} bash -c 'one "$1"' _ {}
-echo "선별 끝 $(date -u +%H:%M) UTC"
+echo "screening done $(date -u +%H:%M) UTC"
 cat "$O"/*.done

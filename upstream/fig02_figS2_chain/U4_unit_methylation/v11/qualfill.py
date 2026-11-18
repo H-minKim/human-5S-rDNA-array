@@ -47,4 +47,4 @@ for L in io.open(sam, encoding="utf8"):
         filled += 1
     o.write(TAB.join(f) + NL)
 o.close()
-print("%s 기록 %d · QUAL 채움 %d · fastq 에서 찾은 read %d/%d" % (sam.split("/")[-1], n, filled, len(Q), len(need)))
+print("%s records %d, QUAL filled %d, read found in fastq %d/%d" % (sam.split("/")[-1], n, filled, len(Q), len(need)))

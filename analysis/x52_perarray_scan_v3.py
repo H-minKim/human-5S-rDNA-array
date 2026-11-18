@@ -31,7 +31,7 @@ try:
 except Exception:
     pass
 LOG = io.open(NEW + "/logs/X42_PERARRAY_V2.txt", "w", encoding="utf8", newline="\n")
-REASON = "array 마다 v3 — 순위 기준 상/하위 25%(동점 처리) · mat/pat 합침 · 시아망 포함(2026-10-01)"
+REASON = "array 마다 v3 — 순위 기준 상/하위 25%(동점 처리) · mat/pat 합침 · 시아망 포함"
 CUT = 128
 
 
@@ -134,7 +134,7 @@ for ko, sp in SPK:
     for aid, (key, a0, a1, lab) in grp_of.items():
         groups[key].append(aid)
     if sp != "zfinch_v03_dip":
-        assert all(len(v) == 1 for v in groups.values()), "이름표가 아직 겹친다 : %s" % [k for k, v in groups.items() if len(v) > 1]
+        assert all(len(v) == 1 for v in groups.values()), "labels still overlap: %s" % [k for k, v in groups.items() if len(v) > 1]
     # ---- the quartiles, per locus
     cut, CLS, TIE = {}, {}, {}
     rngq = np.random.default_rng(0)
@@ -291,7 +291,7 @@ for ko, sp in SPK:
                         유전자시작=(float(np.median([x[0] for x in gw])) if gw else np.nan),
                         유전자끝=(float(np.median([x[1] for x in gw])) if gw else np.nan),
                         호출기=("dorado 0.9.1(다름)" if sp == "siamang_mSymSyn1" else "")))
-    P("%-10s 묶음 %2d · read-유닛 %s" % (ko, len(groups), format(sum(ACC[k]["cnt"]["ALL"] for k in groups), ",")))
+    P("%-10s groups %2d, read-units %s" % (ko, len(groups), format(sum(ACC[k]["cnt"]["ALL"] for k in groups), ",")))
 
 W = pd.DataFrame(WU, columns=["종", "묶음", "등급", "유닛길이", "칸폭", "위치", "호출수", "메틸호출수", "beta"])
 MT = pd.DataFrame(MET)
@@ -306,5 +306,5 @@ for f, rel in ((TMP + "/PERARRAY_WITHIN_UNIT_v3.tsv.gz", "tables/PERARRAY_WITHIN
                (TMP + "/PERARRAY_UNIT_BETA_v3.tsv.gz", "tables/PERARRAY_UNIT_BETA_v3.tsv.gz")):
     arch.put(f, rel, REASON)
 P("")
-P("묶음 %d · 유닛안 %s 행" % (len(MT), format(len(W), ",")))
+P("groups %d, within-unit %s rows" % (len(MT), format(len(W), ",")))
 LOG.close()

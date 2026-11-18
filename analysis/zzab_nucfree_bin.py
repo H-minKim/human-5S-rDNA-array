@@ -145,12 +145,12 @@ np.savez_compressed(os.path.join(DD, "fhmm_peaks_bin10.npz"),
 np.savez_compressed(os.path.join(DD, "nucfree_bin.npz"),
                     ncov=NCOV, nnonuc=NNONUC, ntf=NTF, ntfnn=NTFNN,
                     lo=LO, hi=HI, cut=CUT, nmol=NMOL)
-print("분자 : 저 %s · 고 %s (컷 %.3f)"
+print("molecules : low %s, high %s (cut %.3f)"
       % (format(int(NMOL[0]), ","), format(int(NMOL[1]), ","), CUT))
 
 print()
-print("## 자리별 — 생판 ↔ 뉴클레오솜 제거 (zzb 정의)")
-print("  %-8s %-4s %8s %9s %10s %12s" % ("site", "stratum", "n", "점유%", "n_nucleosome_free", "뉴클제거 점유%"))
+print("## per position: raw vs nucleosome-removed (zzb definition)")
+print("  %-8s %-4s %8s %9s %10s %12s" % ("site", "stratum", "n", "occupancy%", "n_nucleosome_free", "뉴클제거 점유%"))
 ROWS = []
 for nm in ("TFIIIB", "ICR"):
     r = []
@@ -163,17 +163,16 @@ for nm in ("TFIIIB", "ICR"):
     raw = (r[0][1] / r[0][0]) / max(r[1][1] / r[1][0], 1e-12)
     nf = (r[0][3] / max(r[0][2], 1)) / max(r[1][3] / max(r[1][2], 1), 1e-12)
     op = (r[0][2] / r[0][0]) / max(r[1][2] / r[1][0], 1e-12)
-    print("    -> 저÷고 생판 %.2f · 뉴클 제거 %.2f · 열린비율 차 %.2f 배" % (raw, nf, op))
+    print("    -> low÷high raw %.2f, nucleosome-removed %.2f, open-fraction difference %.2f-fold" % (raw, nf, op))
     ROWS.append((nm, r, raw, nf, op))
 
 os.makedirs(OUTD, exist_ok=True)
 out = os.path.join(OUTD, "TableS7_nucleosome_removed_occupancy.tsv")
 with io.open(out, "w", encoding="utf8", newline=NL) as g:
-    g.write("# 표S7 · 뉴클레오솜 가림을 걷어낸 점유 · 메틸 양분 (β %.3f)" % CUT + NL)
-    g.write("# 자리 정의 : TF 콜의 중심이 창 안 + 크기 범위 안" + NL)
-    g.write("#   TFIIIB 중심 -28..-10 · 크기 30~59   /   ICR 중심 +57..+68 · 크기 20~49" + NL)
-    g.write("# 뉴클레오솜 없음 : 그 창에 겹치는 nuc 구간이 없는 분자" + NL)
-    g.write("# 옛 기록 19.1 은 재현되지 않았다 - '뉴클레오솜 없음' 정의가 달랐던 것으로 보인다." + NL)
+    g.write("# Table S7, occupancy with nucleosome occlusion removed, binary methylation split (β %.3f)" % CUT + NL)
+    g.write("# position definition : TF call center inside the window + size inside the range" + NL)
+    g.write("#   TFIIIB center -28..-10, size 30~59   /   ICR center +57..+68, size 20~49" + NL)
+    g.write("# nucleosome-free : molecules with no nuc interval overlapping that window" + NL)
     g.write(TB.join(["site", "stratum", "n_molecules", "n_tf_calls", "occupancy", "n_nucleosome_free", "n_tf_calls_nucleosome_free",
                      "occupancy_nucleosome_free"]) + NL)
     for nm, r, raw, nf, op in ROWS:
@@ -185,5 +184,5 @@ with io.open(out, "w", encoding="utf8", newline=NL) as g:
     for nm, r, raw, nf, op in ROWS:
         g.write(TB.join([nm, "%.4f" % raw, "%.4f" % nf, "%.4f" % op]) + NL)
 print()
-print("적었다 ->", out)
-print("저장 -> fhmm_peaks_bin10.npz · nucfree_bin.npz")
+print("written ->", out)
+print("saved -> fhmm_peaks_bin10.npz, nucfree_bin.npz")

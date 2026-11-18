@@ -9,7 +9,7 @@ for nm in arabidopsis_ColCC zebrafish_GRCz12tu zfinch_bTaeGut7_mat zfinch_bTaeGu
   [ "$nm" = zebrafish_GRCz11_ens ] && f=$X/asm/$nm.fa
   while [ ! -s "$f.fai" ]; do
     if [ -f $X/log/SETUP_DONE ] && [ ! -s "$f.fai" ]; then
-      echo "[$(date -u +%H:%M)] $nm 어셈블리 없음 - 건너뜀" >> $X/cms/progress.log
+      echo "[$(date -u +%H:%M)] $nm no assembly - skipped" >> $X/cms/progress.log
       continue 2
     fi
     sleep 30

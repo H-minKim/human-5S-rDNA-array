@@ -54,7 +54,7 @@ for v in best.values():
     g[(v[2], v[3], v[4])].append(v[1])
 unit_mean = np.array([float(np.mean(x)) for x in g.values()])
 unit_med = np.array([float(np.median(x)) for x in g.values()])
-print("read-유닛 %s · 유닛(자리) %s" % (format(len(readunit), ","), format(len(unit_mean), ",")))
+print("read-units %s, units (positions) %s" % (format(len(readunit), ","), format(len(unit_mean), ",")))
 print()
 
 
@@ -73,24 +73,24 @@ def valley(b, bw=0.005, sm=5, lo=0.20, hi=0.80):
     return v, dmin, peak, (float(flat.min()), float(flat.max()))
 
 
-print("그쪽 조리법 그대로 : 칸 0.005 · 이동평균 5 · 탐색 0.20-0.80")
-print("%-18s %10s %10s %12s %s" % ("집계 단위", "골", "0.508 차", "골/최고", "평평한 구간"))
+print("reference recipe as is: bin 0.005, moving average 5, search 0.20-0.80")
+print("%-18s %10s %10s %12s %s" % ("aggregation unit", "골", "0.508 차", "trough/max", "평평한 구간"))
 for nm, b in (("read-유닛", readunit), ("유닛 평균", unit_mean), ("유닛 중앙", unit_med)):
     v, dmin, peak, fl = valley(b)
     print("%-18s %10.4f %10.4f %12.4f %.3f - %.3f"
           % (nm, v, v - 0.508, dmin / peak, fl[0], fl[1]))
 print()
-print("평활 칸수를 바꿔 보면 (칸 0.005 · read-유닛)")
+print("varying the number of smoothing bins (bin 0.005, read-units)")
 for sm in (1, 3, 5, 7, 9, 11):
     v, dmin, peak, fl = valley(readunit, sm=sm)
-    print("   평활 %2d 칸 : 골 %.4f (0.508 차 %+.4f) · 골/최고 %.4f" % (sm, v, v - 0.508, dmin / peak))
+    print("   smoothing %2d bins: trough %.4f (difference from 0.508 %+.4f), trough/peak %.4f" % (sm, v, v - 0.508, dmin / peak))
 print()
-print("평활 칸수를 바꿔 보면 (칸 0.005 · 유닛 평균)")
+print("varying the number of smoothing bins (bin 0.005, unit mean)")
 for sm in (1, 3, 5, 7, 9, 11):
     v, dmin, peak, fl = valley(unit_mean, sm=sm)
-    print("   평활 %2d 칸 : 골 %.4f (0.508 차 %+.4f) · 골/최고 %.4f" % (sm, v, v - 0.508, dmin / peak))
+    print("   smoothing %2d bins: trough %.4f (difference from 0.508 %+.4f), trough/peak %.4f" % (sm, v, v - 0.508, dmin / peak))
 print()
-print("컷을 옮기면 꺼진 몫이 얼마나 (유닛 평균 기준)")
+print("how much the off share changes when the cut moves (by unit mean)")
 for cut in (0.45, 0.495, 0.508, 0.538):
-    print("   컷 %.3f : read-유닛 %.2f%% · 유닛 평균 %.2f%%"
+    print("   cut %.3f: read-units %.2f%%, unit mean %.2f%%"
           % (cut, 100 * (readunit <= cut).mean(), 100 * (unit_mean <= cut).mean()))

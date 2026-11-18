@@ -1,4 +1,4 @@
-# P08 X1 population control, ruler majref 6.868174, seed 20261010, B 2000, N_perm 999, 2026-10-10
+# P08 X1 population control, ruler majref 6.868174, seed 20261010, B 2000, N_perm 999
 [A]	stratum	phi	num	den	ratio_hom_over
 	homologous (same individual)	0.00438498	7557	1723384	1.000000
 	unrelated, same subpopulation	0.00420385	187927	44703499	1.043085

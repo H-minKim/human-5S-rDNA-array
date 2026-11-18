@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # ARRAY_ONLY G8v3 final unit table (stage before deletion marking), local, only merges tables
 #   base = 3rd-round cut (window alignment transfers canonical G8v3 boundaries onto the read, same as for junction), number = alignment position
-#     - the 20 relabeled reads are reverted (the number is the real position. Forcing stored values is wrong, 66-sample measurement 48 vs 19)
+#     - the 20 relabeled reads are reverted (the number is the real position)
 #   supplement = blastn cut pieces that do not overlap 3rd-round pieces: numbered by the number difference to the nearest paired piece in the read,
 #          and included if within the 3rd-round number range of that read (bnd = BLASTN). Read-end pieces outside the range are set aside
 #   flag = reads where 3rd-round and blastn numbers disagree -> numbering column after the 17 columns 'UNCERTAIN' (others 'OK')

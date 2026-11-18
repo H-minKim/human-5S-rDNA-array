@@ -60,7 +60,7 @@ for k, rs in U.items():
             v = G.to_v4(t)
             if v is not None: raws[v][t] += 1
 NHAP = len(U)
-print("유닛 %d · 하플로타입 %d · 고유 변이 %d" % (TOT, NHAP, len(nu)))
+print("units %d, haplotypes %d, unique variants %d" % (TOT, NHAP, len(nu)))
 
 p1 = os.path.join(OUTD, "V11_VARIANT_GROUPS.tsv")
 g = io.open(p1, "w", encoding="utf8", newline="\n")
@@ -90,7 +90,7 @@ for x in sorted(nu, key=lambda z: -nu[z]):
         "%.4f" % (a <= 8).mean(), "%.4f" % (b <= 8).mean(),
         "%.4f" % ((a > 30) & (b > 30)).mean()]) + "\n")
 g.close()
-print("저장:", p1)
+print("saved:", p1)
 
 p2 = os.path.join(OUTD, "V11_REPEAT_BLOCKS.tsv")
 g = io.open(p2, "w", encoding="utf8", newline="\n")
@@ -98,7 +98,7 @@ g.write("block_id\tstart\tend\tlength\tsequence\telement\n")
 for i, (a, b) in enumerate(G.BLOCKS, 1):
     g.write("%d\t%d\t%d\t%d\t%s\t%s\n" % (i, a, b, b - a + 1, G.CAN[a - 1:b], FC.element(a)))
 g.close()
-print("저장: %s  (블록 %d 개 · %d bp)" % (p2, len(G.BLOCKS), sum(b - a + 1 for a, b in G.BLOCKS)))
+print("saved: %s  (blocks %d, %d bp)" % (p2, len(G.BLOCKS), sum(b - a + 1 for a, b in G.BLOCKS)))
 
 p3 = os.path.join(OUTD, "V11_GROUP_MEMBERS.tsv")
 g = io.open(p3, "w", encoding="utf8", newline="\n")
@@ -109,6 +109,6 @@ for (ax, gr) in sorted(GM):
     g.write("%s\t%s\t%d\t%d\t%d\t%s\n" % (ax, gr, len(mem), len(ge3), sum(nu[x] for x in mem),
                                           ",".join(sorted(mem, key=lambda z: -nu[z])[:200])))
 g.close()
-print("저장: %s  (축 %d · 그룹 %d)" % (p3, len(set(a for a, _ in GM)), len(GM)))
+print("saved: %s  (axes %d, groups %d)" % (p3, len(set(a for a, _ in GM)), len(GM)))
 print("")
-print("축별 그룹 수 :", dict(collections.Counter(a for a, _ in GM)))
+print("groups per axis :", dict(collections.Counter(a for a, _ in GM)))

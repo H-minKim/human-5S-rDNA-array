@@ -4,9 +4,9 @@
 #   The representative unit is an interior unit of units.fa from array_struct.py, in the frame where 1-119 is the 5S gene and the spacer follows.
 #   Arguments: species key, and optionally the array name prefix (default arr0).
 #   Output: struct/win_<species>.tsv (window start, window end, alignments, alignments outside any array).
-# MIT License · Copyright (c) 2026 Hungmin Kim
+# MIT License. Copyright (c) 2026 Hyungmin Kim
 set -u
-SP="${1:?종키}"
+SP="${1:?species key}"
 ARR="${2:-arr0}"
 X=~/xsp
 U=$X/struct/$SP.units.fa
@@ -37,9 +37,9 @@ for s in range(0, max(1, len(u) - w + 1), step):
     o.write(">w_%d_%d%s%s%s" % (s + 1, s + len(seq), chr(10), seq, chr(10)))
     n += 1
 o.close()
-print("유닛 %d bp · 창 %d 개" % (len(u), n))
+print("unit %d bp, windows %d" % (len(u), n))
 PYEOF
 minimap2 -x sr -N 2000 -p 0.6 -t 8 "$FAS" "/tmp/win_$SP.fa" 2> /dev/null \
   | awk -F'\t' -v OFS='\t' '{split($1,a,"_"); c[$1]++} END{for(k in c) print k, c[k]}' | sort -t_ -k2,2n > "$X/struct/win_$SP.tsv"
-echo "== $SP 창별 게놈 내 정렬 수 (창 = 유닛 안 좌표 · 1-119 가 5S 유전자)"
+echo "== $SP alignments in the genome per window (window = coordinate within the unit, 1-119 is the 5S gene)"
 cat "$X/struct/win_$SP.tsv"

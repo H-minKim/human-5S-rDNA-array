@@ -16,4 +16,4 @@ for lab, ds in (("K562all", "K562all"), ("GM12878all", "GM12878all")):
         o.write("unit_key" + TB + "label" + NL)
         for k, v in g.items():
             o.write(k + TB + v + NL)
-    print(lab, "유전자부 층", dict(collections.Counter(g.values())))
+    print(lab, "gene region stratum", dict(collections.Counter(g.values())))

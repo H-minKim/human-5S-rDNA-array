@@ -70,4 +70,4 @@ ax.set_ylim(0, 660)
 # no horizontal grid lines, the dashed no-exchange floor is data and is drawn
 ax.set_axisbelow(True)
 CS.save(fig, OUT, "cellF2_d_tract")
-print("패치 길이 거리 1 %.1f · 바닥 %s" % (pm[0], flo))
+print("patch length distance 1 %.1f, floor %s" % (pm[0], flo))

@@ -37,14 +37,14 @@ def P(s=""):
 
 
 P("=" * 112)
-P("n 대 n 전수 주사 — 하플로타입의 모든 항목 x 모든 항목")
+P("n-by-n exhaustive scan: every haplotype feature x every feature")
 P("=" * 112)
 P()
 
 D = pd.read_parquet(os.path.join(T, "L2_HAP_UNIT.parquet"))
 D = D[D.n_read >= 5].copy()
 D["sl"] = D["sample"].astype(str) + "_" + D.slot.astype(str)
-P("  L2 자리 %s · 슬롯 %d · 개체 %d"
+P("  L2 positions %s, slots %d, individuals %d"
   % (format(len(D), ","), D.sl.nunique(), D["sample"].nunique()))
 P()
 
@@ -82,7 +82,7 @@ for wn, m in WIN:
         mu = g[v].mean().reindex(slots)
         mu[~mu.index.isin(keep)] = np.nan
         F["%s|%s" % (wn, v)] = mu.values
-P("  [A] 자리창 %d x 변수 %d = %d 열" % (len(WIN), len(VARS), len(WIN) * len(VARS)))
+P("  [A] position windows %d x variables %d = %d columns" % (len(WIN), len(VARS), len(WIN) * len(VARS)))
 
 # ---------------------------------------------------------------- specific variant carrier fraction
 VW = [("근1_3", (D.ap <= 3)), ("근4_7", (D.ap >= 4) & (D.ap <= 7)),
@@ -102,7 +102,7 @@ for tl in tok_lists:
         if t and t != "-":
             cnt_all[t] += 1
 cand = [t for t, c in cnt_all.items() if 0.02 * len(D) <= c <= 0.98 * len(D)]
-P("  후보 변이 토큰(유닛 보유율 2-98%%) %d 개" % len(cand))
+P("  candidate variant tokens (unit carrier rate 2-98%%) %d" % len(cand))
 
 TOKM = pd.DataFrame({t: tok_lists.map(lambda L, t=t: 1.0 if t in L else 0.0).values
                      for t in cand}, index=D.index)
@@ -110,7 +110,7 @@ TOKM = pd.DataFrame({t: tok_lists.map(lambda L, t=t: 1.0 if t in L else 0.0).val
 slot_mean = TOKM.groupby(D.sl.values).mean()
 sd = slot_mean.std()
 TOP = sd.sort_values(ascending=False).head(40).index.tolist()
-P("  하플로타입 사이 변동이 가장 큰 변이 토큰 40 개를 쓴다")
+P("  the 40 variant tokens that vary most between haplotypes are used")
 P("    " + " ".join(TOP[:20]))
 P("    " + " ".join(TOP[20:]))
 for wn, m in VW:
@@ -123,7 +123,7 @@ for wn, m in VW:
     mu.loc[~mu.index.isin(keep), :] = np.nan
     for t in TOP:
         F["%s|VAR_%s" % (wn, t)] = mu[t].values
-P("  변이 창 %d x 토큰 %d = %d 열" % (len(VW), len(TOP), len(VW) * len(TOP)))
+P("  variant windows %d x tokens %d = %d columns" % (len(VW), len(TOP), len(VW) * len(TOP)))
 
 # ---------------------------------------------------------------- haplotype constants
 HC = (D.drop_duplicates("sl").set_index("sl")
@@ -131,14 +131,14 @@ HC = (D.drop_duplicates("sl").set_index("sl")
         "n_read_slot", "N_other", "dN", "n_break"]].reindex(slots))
 for c in HC.columns:
     F["HAP|" + c] = HC[c].values
-P("  하플로타입 상수 %d 열" % HC.shape[1])
+P("  haplotype constants %d columns" % HC.shape[1])
 
 ok = F.notna().sum()
 F = F.loc[:, ok >= 300]
 F = F.loc[:, F.std() > 0]
-P("  관측 300 슬롯 이상 · 분산>0 인 열만 남김 : %d 열" % F.shape[1])
+P("  kept only columns observed in 300 or more slots with variance>0 : %d columns" % F.shape[1])
 F.to_parquet(os.path.join(T, "HAPFEAT.parquet"))
-P("  저장 : 02_tables/HAPFEAT.parquet  (%d 슬롯 x %d 열)" % F.shape)
+P("  saved : 02_tables/HAPFEAT.parquet  (%d slots x %d columns)" % F.shape)
 P()
 
 # ---------------------------------------------------------------- [B] exhaustive pairs
@@ -167,12 +167,12 @@ def pair_spearman(Fx):
 
 
 P("=" * 112)
-P("[B] 전수 쌍 Spearman — %d 열 -> %s 쌍"
+P("[B] all-pairs Spearman: %d columns -> %s pairs"
   % (F.shape[1], format(F.shape[1] * (F.shape[1] - 1) // 2, ",")))
 P("=" * 112)
 P()
-P("  열마다 관측값 안에서 한 번 순위화한 뒤 쌍별 결측 제외 Pearson 을 쓴다")
-P("    (쌍마다 다시 순위를 매기는 것과 미세하게 다르지만 표준 방식이다)")
+P("  each column is ranked once within its observed values, then pairwise-complete Pearson is used")
+P("    (differs slightly from re-ranking for each pair, but it is the standard approach)")
 P()
 cols, R, NN = pair_spearman(F)
 iu = np.triu_indices(len(cols), 1)
@@ -206,10 +206,10 @@ PR = pd.DataFrame({"A": A, "B": B, "winA": wa, "varA": va, "winB": wb, "varB": v
 PR = PR[good]
 PR["same_var"] = (PR.varA == PR.varB)
 PR["same_win"] = (PR.winA == PR.winB)
-P("  검정한 쌍 %s · FDR 5%% 통과 %s (%.3f)"
+P("  pairs tested %s, passing FDR 5%% %s (%.3f)"
   % (format(len(PR), ","), format(int((PR.q < 0.05).sum()), ","),
      (PR.q < 0.05).mean()))
-P("  그중 같은 변수의 다른 창(뻔함) %s · 같은 창 안(뻔함) %s"
+P("  of these, same variable in another window (trivial) %s, within the same window (trivial) %s"
   % (format(int(((PR.q < 0.05) & PR.same_var).sum()), ","),
      format(int(((PR.q < 0.05) & PR.same_win).sum()), ",")))
 P()
@@ -221,14 +221,14 @@ F1 = F.loc[[s for s in one if s in F.index]]
 _, R1, N1 = pair_spearman(F1)
 r1 = R1[iu]
 PR["r_1slot"] = r1[good]
-P("  개체당 한 슬롯만(n=%d) 으로 다시 재면 r 이 얼마나 유지되나 : "
-  "전체 쌍 상관 %.4f" % (len(F1), np.corrcoef(PR.r[np.isfinite(PR.r_1slot)],
+P("  how well r holds when measured with one slot per individual (n=%d) : "
+  "correlation over all pairs %.4f" % (len(F1), np.corrcoef(PR.r[np.isfinite(PR.r_1slot)],
                                               PR.r_1slot[np.isfinite(PR.r_1slot)])[0, 1]))
 P()
 
 PR.sort_values("q").to_csv(os.path.join(T, "NXN_PAIRS.tsv"), sep="\t", index=False,
                            float_format="%.5g")
-P("  저장 : 02_tables/NXN_PAIRS.tsv (모든 쌍)")
+P("  saved : 02_tables/NXN_PAIRS.tsv (all pairs)")
 P()
 
 
@@ -241,10 +241,10 @@ def show(title, sel, k=14, note=""):
     s = sel.reindex(sel.r.abs().sort_values(ascending=False).index)
     s = s[s.q < 0.05].head(k)
     if not len(s):
-        P("   (FDR 5% 를 넘는 쌍 없음)")
+        P("   (no pair passes FDR 5%)")
         P()
         return
-    P("   %-26s %-26s %7s %6s %9s %8s" % ("항목 A", "항목 B", "r", "n", "q", "1슬롯r"))
+    P("   %-26s %-26s %7s %6s %9s %8s" % ("item A", "항목 B", "r", "n", "q", "1슬롯r"))
     for t in s.itertuples(index=False):
         P("   %-26s %-26s %+.3f %6d %9.2e %+8.3f"
           % (t.A, t.B, t.r, t.n, t.q, t.r_1slot))
@@ -259,40 +259,40 @@ METH = {"f_hi", "b_lo_mean", "b_hi_mean", "b_var_true", "p_switch", "b_gene_mean
 TECH = {"depth", "gate_rate", "cov_frac", "n_read_slot", "n_break"}
 
 P("=" * 112)
-P("[C] 무엇이 무엇과 붙어 있나 — 뻔한 쌍을 걷어내고 갈래별로")
+P("[C] what goes with what: by category, after setting aside the trivial pairs")
 P("=" * 112)
 P()
 
 isHAP = (PR.winA == "HAP") | (PR.winB == "HAP")
-show("(1) array 길이 N x 특정 자리의 특정 변이  (물어보신 바로 그 조합)",
+show("(1) array length N x a given variant at a given position",
      PR[((PR.varA == "N") & (PR.varB == "VAR")) |
         ((PR.varB == "N") & (PR.varA == "VAR"))],
-     note="한쪽은 하플로타입 길이, 다른 쪽은 그 창 유닛들의 그 변이 보유율")
+     note="one side is haplotype length, the other is the carrier rate of that variant among the units of that window")
 
-show("(2) 특정 변이 x 같은 창의 메틸",
+show("(2) a given variant x methylation in the same window",
      PR[(~PR.same_win) & (False) |
         (PR.same_win & (((PR.varA == "VAR") & PR.varB.isin(METH)) |
                         ((PR.varB == "VAR") & PR.varA.isin(METH))))],
-     note="같은 자리창 안에서 변이 보유율과 메틸이 같이 움직이나")
+     note="within the same position window, do variant carrier rate and methylation move together")
 
-show("(3) 변이 요약(희귀 변이 수·CpG 변이 등) x 메틸 — 같은 창",
+show("(3) variant summary (rare variant count, CpG variants, etc.) x methylation, same window",
      PR[PR.same_win & (((PR.varA in NONMETH if False else PR.varA.isin(NONMETH)) &
                         PR.varB.isin(METH)) |
                        (PR.varB.isin(NONMETH) & PR.varA.isin(METH)))])
 
-show("(4) 멀리 떨어진 두 창 사이 — 한쪽 끝 값이 반대쪽 끝을 아나",
+show("(4) between two distant windows: does the value at one end predict the other end",
      PR[(~PR.same_win) & (PR.winA != "HAP") & (PR.winB != "HAP") &
         (~PR.same_var) & PR.varA.isin(METH) & PR.varB.isin(METH)])
 
-show("(5) 하플로타입 상수(길이·경계) x 자리별 항목",
+show("(5) haplotype constants (length, boundaries) x per-position features",
      PR[isHAP & (~PR.same_var) &
         ((PR.varA.isin({"N", "Bp", "Bd", "n_low", "f_hap", "dN", "N_other"})) |
          (PR.varB.isin({"N", "Bp", "Bd", "n_low", "f_hap", "dN", "N_other"})))],
      k=16)
 
-show("(6) 기술 지표 x 무엇이든 — 크면 인공물 의심",
+show("(6) technical metrics x anything: a large value suggests an artifact",
      PR[PR.varA.isin(TECH) | PR.varB.isin(TECH)], k=12,
-     note="깊이·관문 통과율 같은 것이 생물학 항목과 붙으면 그 항목은 의심해야 한다")
+     note="if something like depth or gate pass rate associates with a biological item, that item must be doubted")
 
 LOG.close()
 print("done")

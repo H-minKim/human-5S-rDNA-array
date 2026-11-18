@@ -84,7 +84,7 @@ for r in rows:
     o.write(TAB.join(r) + NL)
 o.close()
 tot = sum(len(v) for v in H.values())
-print("%s %s : cmsearch hit %d · array(≥%d copy) %d · array 안 copy %d · 흩어진 hit %d"
+print("%s %s : cmsearch hit %d, array(≥%d copy) %d, copy in arrays %d, scattered hit %d"
       % (sp, asm, tot, MINCOPY, len(rows), sum(int(r[6]) for r in rows), tot - sum(int(r[6]) for r in rows)))
 for r in rows[:8]:
-    print("  %s:%s-%s  %s bp · copy %s · 주기 %s · %s · N안 %s · ±100kb N %s · %s %s" % (r[2], r[3], r[4], r[5], r[6], r[7], r[8], r[9], r[10], r[12], r[11]))
+    print("  %s:%s-%s  %s bp, copy %s, period %s, %s, N inside %s, ±100kb N %s, %s %s" % (r[2], r[3], r[4], r[5], r[6], r[7], r[8], r[9], r[10], r[12], r[11]))

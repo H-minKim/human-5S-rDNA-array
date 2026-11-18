@@ -34,7 +34,7 @@ if FPRESET == PRESET:
 else:
     UF, _, _ = G.load(FPRESET, verbose=False)
     hapf, kcnt, NS, _ = OF.build(UF, sorted(UF))
-print("[VTSTRAT] 판 코호트 %s 슬롯 %d · f 코호트 %s (NS %d)" % (PRESET, NH, FPRESET, NS))
+print("[VTSTRAT] panel cohort %s slots %d, f cohort %s (NS %d)" % (PRESET, NH, FPRESET, NS))
 OKC = {"전부": {"다개체 공유형", "배열내 다중형", "단일유닛형"},
        "공유형 뺌": {"배열내 다중형", "단일유닛형"},
        "단일유닛형만": {"단일유닛형"}}
@@ -53,7 +53,7 @@ for lay, f in SRC.items():
 g = io.open(os.path.join(OUT, "VTSTRAT_z.tsv"), "w", encoding="utf8", newline="\n")
 g.write("무리\t" + "\t".join("z_" + l for l in LAYERS) + "\t"
         + "\t".join("구역_" + l for l in LAYERS) + "\t판정\n")
-print("■ 1. 층마다 귀무 z 와 가장 먼 구역 — 계통형인가 자리형인가")
+print("1. null z and the most distant zone per stratum: lineage type or position type")
 print("   %-12s %18s %18s %18s  %s" % ("무리", LAYERS[0], LAYERS[1], LAYERS[2], "판정"))
 rows = []
 for t in GROUPS:
@@ -120,7 +120,7 @@ for r in REG:
                "\t".join("%.5f" % M[l][i, j] for l in LAYERS for j in range(len(KEYS)))))
 g.close()
 
-print("\n■ 2. CpG 와 비CpG 를 함께 — 공유형 뺀 층 (유닛당)")
+print("\n2. CpG and non-CpG together: stratum without the shared type (per unit)")
 print("   %-8s %9s %9s %9s %9s %9s" % ("자리", "메틸β", "C>T|CpG", "C>T|비CpG", "CpG/비CpG", "G>A|CpG"))
 for r in ("P1", "P3", "P10", "P20", "MID", "D20", "D10", "D5", "D3", "D1"):
     i = RI[r]
@@ -128,7 +128,7 @@ for r in ("P1", "P3", "P10", "P20", "MID", "D20", "D10", "D5", "D3", "D1"):
     b = M["공유형 뺌"][i, KEYS.index("C>T|비CpG")]
     c = M["공유형 뺌"][i, KEYS.index("G>A|CpG")]
     print("   %-8s %9.3f %9.4f %9.4f %9.3f %9.4f" % (r, BETA[i], a, b, (a / b) if b else np.nan, c))
-print("\n저장 %s/VTSTRAT_z.tsv · VTSTRAT_cpg_profile.tsv" % OUT)
+print("\nsaved %s/VTSTRAT_z.tsv, VTSTRAT_cpg_profile.tsv" % OUT)
 
 # the deposited table(s) carry English column names and values (common/fig02_figS2/taben.py)
 import sys as _s, os as _o

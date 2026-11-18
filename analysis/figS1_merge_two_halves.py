@@ -7,7 +7,6 @@ import os, sys, hashlib, fitz
 sys.stdout.reconfigure(encoding="utf-8")
 # -- (repo) paths come from the environment --------------------------------
 #   The roots are required; the output and table directories fall back to this file's folder.
-#@DROP
 WORK_ROOT = os.environ["WORK_ROOT"]
 OUT_DIR = os.environ.get("OUT_DIR",
                          os.path.join(WORK_ROOT, "04_figures", "paper_figures_final_2026-10-07",
@@ -19,7 +18,7 @@ for lang in ("EN", "KO"):
     p1 = os.path.join(D, "SFig1_p1_%s.pdf" % lang)
     p2 = os.path.join(D, "SFig1_p2_%s.pdf" % lang)
     if not (os.path.exists(p1) and os.path.exists(p2)):
-        print("%s : 쪽 파일이 없다" % lang)
+        print("%s: page file not found" % lang)
         continue
     s1, s2 = fitz.open(p1), fitz.open(p2)
     r1, r2 = s1[0].rect, s2[0].rect
@@ -43,7 +42,7 @@ for lang in ("EN", "KO"):
                  and sp["text"].strip().islower() and sp["size"] > 10.5})
     small = sum(1 for bl in d[0].get_text("dict")["blocks"] for ln in bl.get("lines", [])
                 for sp in ln.get("spans", []) if sp["text"].strip() and sp["size"] < 7.95)
-    print("SFig1_%s.pdf  %.1f x %.1f pt · 쪽 %d · 패널 %s · 8pt미만 %d · md5 %s"
+    print("SFig1_%s.pdf  %.1f x %.1f pt, pages %d, panels %s, below 8pt %d, md5 %s"
           % (lang, W, H, d.page_count, " ".join(ls), small,
              hashlib.md5(open(O, "rb").read()).hexdigest()[:12]))
     # horizontal overlap within a row
@@ -58,7 +57,7 @@ for lang in ("EN", "KO"):
                 continue
             ov = min(a[0].x1, b[0].x1) - max(a[0].x0, b[0].x0)
             if ov > 0.5:
-                print("   겹침 %.1f : %-26s <-> %s" % (ov, a[1][:26], b[1][:26]))
+                print("   overlap %.1f : %-26s <-> %s" % (ov, a[1][:26], b[1][:26]))
                 hit += 1
-    print("   글자 %d · 같은 줄 겹침 %d" % (len(sp), hit))
+    print("   characters %d, same-line overlaps %d" % (len(sp), hit))
     d.close()

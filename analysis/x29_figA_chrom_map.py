@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 # Figure 2 for topic A: where the 5S arrays sit on the chromosome in each species, with a schematic of the repeat unit showing only its length and its gene.
 #   Data, all read-only, under the other-species root:
-#     · chromosome or contig length and array coordinates: 00_catalog/5S_array_structure.tsv (contig_len, array_start and array_end, period_med, gene_len_med);
-#     · the full array catalogue including those not analysed: 00_catalog/5S_array_catalog.tsv;
-#     · chromosome names: for zebrafish 00_catalog/ZEBRAFISH_ALL_ARRAYS.tsv (chrom_name), for zebra finch 06_aux/zfinch_5S_array_meth_summary.tsv (chrom_bigwig).
+#     - chromosome or contig length and array coordinates: 00_catalog/5S_array_structure.tsv (contig_len, array_start and array_end, period_med, gene_len_med);
+#     - the full array catalogue including those not analysed: 00_catalog/5S_array_catalog.tsv;
+#     - chromosome names: for zebrafish 00_catalog/ZEBRAFISH_ALL_ARRAYS.tsv (chrom_name), for zebra finch 06_aux/zfinch_5S_array_meth_summary.tsv (chrom_bigwig).
 #       For the great apes and Arabidopsis no name data exists, so the accession is written as it is and nothing is inferred.
-# · arrays used = tables/FIGDATA_A_array_summary.tsv (53, siamang excluded)
+# - arrays used = tables/FIGDATA_A_array_summary.tsv (53, siamang excluded)
 #   Not drawn: the centromere, whose position is not in this data.
 #   Outputs: figures/FigA1_array_chromosome_map.{png,svg,pdf} and tables/FIGDATA_A1_chrom_map.tsv
 import io, os, sys
@@ -44,7 +44,7 @@ rcParams["figure.dpi"] = 120
 rcParams["svg.fonttype"] = "none"
 rcParams["pdf.fonttype"] = 42
 LOG = io.open(NEW + "/logs/X29_CHROMMAP.txt", "w", encoding="utf8", newline="\n")
-REASON = "대주제 A — array 염색체 위치 지도 새로 만듦(2026-10-01)"
+REASON = "대주제 A — array 염색체 위치 지도 새로 만듦"
 
 
 def P(s=""):
@@ -88,10 +88,10 @@ for ko, sp in SP:
                          사본수=int(t.copies), 유닛길이=int(t.period_med), 유전자길이=int(t.gene_len_med),
                          분석에씀=("Y" if t.array_id in USED else "N")))
 M = pd.DataFrame(rows)
-P("array %d (분석 %d · 미분석 %d) · 종 %d" % (len(M), (M.분석에씀 == "Y").sum(), (M.분석에씀 == "N").sum(), M.종.nunique()))
+P("arrays %d (analysed %d, not analysed %d), species %d" % (len(M), (M.분석에씀 == "Y").sum(), (M.분석에씀 == "N").sum(), M.종.nunique()))
 for ko in M.종.unique():
     g = M[M.종 == ko]
-    P("  %-10s 염색체 %d · array %d(분석 %d) · 유닛 %s bp · 유전자 %s bp · 가장 긴 염색체 %.1f Mb"
+    P("  %-10s chromosomes %d, arrays %d (analysed %d), unit %s bp, gene %s bp, longest chromosome %.1f Mb"
       % (ko, g.염색체.nunique(), len(g), (g.분석에씀 == "Y").sum(),
          "/".join(map(str, sorted(g.유닛길이.unique()))), "/".join(map(str, sorted(g.유전자길이.unique()))),
          g.염색체길이.max() / 1e6))
@@ -175,7 +175,7 @@ for i, (ko, sp) in enumerate(SP):
         ax2.plot([0, 500], [-1.0 * min(len(ul), 2) - 0.18] * 2, "-", color="#333", lw=1.4)
         ax2.text(250, -1.0 * min(len(ul), 2) - 0.10, "500 bp", fontsize=7.6, ha="center", color="#333")
 
-fig.suptitle("대주제 A · 종마다 5S array 의 염색체 위치와 반복 유닛 (시아망 제외 · 2026-10-01)", fontsize=13.5, y=0.985)
+fig.suptitle("대주제 A · 종마다 5S array 의 염색체 위치와 반복 유닛 (시아망 제외)", fontsize=13.5, y=0.985)
 fig.text(0.085, 0.016,
          "염색체 막대 = 그 염색체(콘티그) 전체 길이 · 세로줄 = 5S array 위치(가운데 좌표) · 색 = 이 분석에 쓴 array · 회색 = 목록에는 있으나 안 쓴 array\n"
          "중심절(센트로미어)은 이 자료에 위치가 없어 그리지 않았다 · 염색체 이름은 제브라피시·금화조만 자료에 있고, 유인원·애기장대는 접근번호 그대로다(추정하지 않음)\n"
@@ -192,5 +192,5 @@ if os.path.isdir(SVGDIR):
     import shutil
     shutil.copy2(NEW + "/figures/%s.svg" % base, SVGDIR + "/%s.svg" % base)
 P("")
-P("그림 : latest/figures/%s.{png,svg,pdf}" % base)
+P("figure: latest/figures/%s.{png,svg,pdf}" % base)
 LOG.close()

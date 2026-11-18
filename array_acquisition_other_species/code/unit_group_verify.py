@@ -15,7 +15,7 @@
 #
 #   On failure the array reverts to a single type: the group references are moved to groups_dropped/ and only the array reference is used.
 #   Arguments: the 00_catalog folder, the folder of per-unit call tables.
-# MIT License · Copyright (c) 2026 Hungmin Kim
+# MIT License. Copyright (c) 2026 Hyungmin Kim
 import io
 import os
 import sys
@@ -86,8 +86,8 @@ for r in sorted(rows, key=lambda x: (x["species_key"], x["array_id"])):
         show.append((r, d, s))
     out.write(TAB.join(str(d.get(k, "-")) for k in HDR) + NL)
 out.close()
-print("2 단계 통과 array %d / %d" % (keepn, len(show)))
-print("%-24s %5s %8s %8s %8s %8s  %s" % ("종", "유닛", "일치율", "불일치", "미정", "0빈칸", "결과"))
+print("arrays passing stage 2 %d / %d" % (keepn, len(show)))
+print("%-24s %5s %8s %8s %8s %8s  %s" % ("종", "유닛", "일치율", "불일치", "미정", "gap at 0", "결과"))
 for r, d, s in show:
     print("%-24s %5d %7.1f%% %8d %8d %8.3f  %s %s"
           % (r["species_key"][:24], s["n"], s["agree_pct"], s["n_conflict"], s["n_undecided"], s["gap"],

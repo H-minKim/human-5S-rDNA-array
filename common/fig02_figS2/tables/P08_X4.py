@@ -22,7 +22,7 @@ CAN = G.CAN
 LU = len(CAN)
 U, _, _ = G.load("h1")
 VPU = sum(len(t[4]) for v in U.values() for t in v) / sum(len(v) for v in U.values())
-print("§0 자 : var_per_unit = %.6f" % VPU)
+print("§0 ruler : var_per_unit = %.6f" % VPU)
 assert abs(VPU - 6.866) < 0.01
 NCOPY = {("%s" % k[0], "%s" % k[1]): len(v) for k, v in U.items()}
 with open(os.path.join(HERE, "OUT_P04", "Q0_alignment.pkl"), "rb") as f:
@@ -56,7 +56,7 @@ for s in sorted(MATS):
     M = MATS[s][np.ix_(ii, ii)].astype(np.int64)
     kk = [(s[0], s[1], aps[i]) for i in sel]
     PACK.append((s, M, kk, len(sel)))
-print("가운데 창 haplotype %d · 유닛 %d" % (len(PACK), sum(x[3] for x in PACK)))
+print("interior window haplotype %d, units %d" % (len(PACK), sum(x[3] for x in PACK)))
 KM = 6
 
 
@@ -78,9 +78,9 @@ def curve(mask_fn=None):
 
 
 print("\n" + "=" * 78)
-print("[⒜] lag1 > lag2 현상")
+print("[a] lag1 > lag2 effect")
 base, bn = curve()
-print("    전체        : " + " · ".join("lag%d %.4f" % (k + 1, base[k]) for k in range(KM))
+print("    all         : " + " · ".join("lag%d %.4f" % (k + 1, base[k]) for k in range(KM))
       + "   (lag1-lag2 = %+.4f)" % (base[0] - base[1]))
 
 # (1) sign per haplotype
@@ -91,7 +91,7 @@ for s, M, kk, n in PACK:
     sgn.append(a1 - a2)
 sgn = np.array(sgn)
 bt = stats.binomtest(int((sgn > 0).sum()), len(sgn), 0.5)
-print("    ① haplotype 별 lag1-lag2 : 양수 %d / %d = %.4f · median %+.4f · 부호검정 p = %.4g"
+print("    (1) lag1-lag2 per haplotype : positive %d / %d = %.4f, median %+.4f, sign test p = %.4g"
       % (int((sgn > 0).sum()), len(sgn), (sgn > 0).mean(), np.median(sgn), bt.pvalue))
 
 # (2) single interleaved units
@@ -104,24 +104,24 @@ for s, M, kk, n in PACK:
             o[i] = True
     ODD[s] = o
     nodd += int(o.sum())
-print("    ② 낱개 끼어든 유닛 = 양 이웃보다 '이웃끼리' 가 더 닮은 자리 : %d / %d = %.4f"
+print("    (2) singly inserted units = positions where the two neighbors are more similar 'to each other' than to the unit : %d / %d = %.4f"
       % (nodd, sum(x[3] for x in PACK), nodd / sum(x[3] for x in PACK)))
 c2, d2 = curve(lambda s, kk, i: not ODD[s][i])
-print("       뺀 뒤   : " + " · ".join("lag%d %.4f" % (k + 1, c2[k]) for k in range(KM))
+print("       excluded : " + " · ".join("lag%d %.4f" % (k + 1, c2[k]) for k in range(KM))
       + "   (lag1-lag2 = %+.4f)" % (c2[0] - c2[1]))
-print("       ⇒ lag1-lag2 가 %+.4f → %+.4f  (%.1f%% 설명)"
+print("       -> lag1-lag2 from %+.4f to %+.4f  (explains %.1f%%)"
       % (base[0] - base[1], c2[0] - c2[1],
          100 * (1 - (c2[0] - c2[1]) / (base[0] - base[1])) if (base[0] - base[1]) != 0 else np.nan))
 
 # (3) units carrying the proximal marker 2205C
 c3, d3 = curve(lambda s, kk, i: A_OF[kk[i]].get(2205) != "C")
 n2205 = sum(1 for s, M, kk, n in PACK for i in range(n) if A_OF[kk[i]].get(2205) == "C")
-print("    ③ 근위 표지 2205C 보유 유닛 %d (%.4f) 를 뺀 뒤 : lag1 %.4f · lag2 %.4f (차 %+.4f)"
+print("    (3) after excluding the %d units (%.4f) carrying the proximal marker 2205C : lag1 %.4f, lag2 %.4f (difference %+.4f)"
       % (n2205, n2205 / sum(x[3] for x in PACK), c3[0], c3[1], c3[0] - c3[1]))
 
 # (4) only haplotypes with no single units at all
 keep = [s for s, M, kk, n in PACK if ODD[s].sum() == 0]
-print("    ④ 낱개 유닛이 0 인 haplotype : %d 개" % len(keep))
+print("    (4) haplotypes with 0 singleton units : %d" % len(keep))
 
 # (5) is it a period-2 alternation, spacing distribution of single units
 gaps = []
@@ -131,9 +131,9 @@ for s, M, kk, n in PACK:
         gaps.extend(np.diff(w).tolist())
 gaps = np.array(gaps)
 if len(gaps):
-    print("    ⑤ 낱개 유닛 사이 간격 : median %.1f · 간격 1 인 몫 %.4f · 간격 2 인 몫 %.4f"
+    print("    (5) gaps between singleton units : median %.1f, share with gap 1 %.4f, share with gap 2 %.4f"
           % (np.median(gaps), (gaps == 1).mean(), (gaps == 2).mean()))
-    print("       (주기 2 교대라면 간격 2 가 압도해야 한다)")
+    print("       (with period-2 alternation, gap 2 should dominate)")
 
 # pairs that include a single unit vs pairs that do not
 inn, out = [], []
@@ -144,12 +144,12 @@ for s, M, kk, n in PACK:
     m = o[i] | o[i + 1]
     inn.extend(v[m].tolist())
     out.extend(v[~m].tolist())
-print("    lag1 쌍 : 낱개 유닛 포함 %d 쌍 평균 %.4f ↔ 미포함 %d 쌍 평균 %.4f (차 %+.4f)"
+print("    lag1 pairs : %d pairs with a singleton unit, mean %.4f vs %d pairs without, mean %.4f (difference %+.4f)"
       % (len(inn), np.mean(inn), len(out), np.mean(out), np.mean(inn) - np.mean(out)))
 
 # ---------------- (b) Mansai patch length ----------------
 print("\n" + "=" * 78)
-print("[⒝] 동질화 패치 길이 = Mansai 2011 구간검열 ML (array 내부만 · Model 3 지수 · Model 2 gamma2)")
+print("[b] homogenization patch length = Mansai 2011 interval-censored ML (array interior only, Model 3 exponential, Model 2 gamma2)")
 bySlot = collections.defaultdict(list)
 for k in keys:
     bySlot[(k[0], k[1])].append(k[2])
@@ -237,11 +237,11 @@ for lag in LAGS:
     rows.append((lag, len(pl), len(ev), float(T3), float(l3), float(h3), float(T2), float(l2), float(h2),
                  float(cen.mean())))
 r_ = stats.spearmanr(LAGS, [x[3] for x in rows])
-print("    lag ↔ 패치 길이 : Spearman rho = %+.4f  p = %.4g   (%.0fs)" % (r_.statistic, r_.pvalue, time.time() - t0))
-print("    패치 길이 / unit 길이 : lag1 %.4f · lag25 %.4f" % (rows[0][3] / LU, rows[-1][3] / LU))
+print("    lag vs patch length : Spearman rho = %+.4f  p = %.4g   (%.0fs)" % (r_.statistic, r_.pvalue, time.time() - t0))
+print("    patch length / unit length : lag1 %.4f, lag25 %.4f" % (rows[0][3] / LU, rows[-1][3] / LU))
 
 g = io.open(os.path.join(OUT, "X4_lag2_and_patch.tsv"), "w", encoding="utf8", newline="\n")
-g.write("# P08 X4 · ruler majref %.6f · seed %d · 2026-10-10\n" % (VPU, SEED))
+g.write("# P08 X4 · ruler majref %.6f · seed %d\n" % (VPU, SEED))
 g.write("[A]\tset\t%s\n" % "\t".join("lag%d" % (k + 1) for k in range(KM)))
 g.write("\tall\t%s\n" % "\t".join("%.6f" % v for v in base))
 g.write("\tdrop_odd\t%s\n" % "\t".join("%.6f" % v for v in c2))
@@ -258,4 +258,4 @@ for r in rows:
     g.write("\t%d\t%d\t%d\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.6f\n" % r)
 g.write("\tspearman\t%.6f\tp\t%.6g\n" % (r_.statistic, r_.pvalue))
 g.close()
-print("\n산출 :", os.path.join(OUT, "X4_lag2_and_patch.tsv"))
+print("\noutputs :", os.path.join(OUT, "X4_lag2_and_patch.tsv"))

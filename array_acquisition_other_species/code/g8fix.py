@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 # Build a G8v4-rule unit map from the canonical fasta alone, with no genome file needed, and support units holding k genes.
 #   The rules follow species_g8map.py:
-#     · the unit boundary runs from gene end + 1 to the end of the gene k positions later, with the gene HSP extended to its full length using the query coordinates;
-#     · cut with PAD bp of slack on each side; the alignment target is [last CTX bp of the reference unit][reference unit][first CTX bp of the reference unit]
-#     · no filling: variants come from the alignment, cs or BTOP, alone, and a middle unit not fully covered is NO_FULL.
-#     · if the gap falls outside LO..HI, no unit is made and a break is recorded (n_break)
+#     - the unit boundary runs from gene end + 1 to the end of the gene k positions later, with the gene HSP extended to its full length using the query coordinates;
+#     - cut with PAD bp of slack on each side; the alignment target is [last CTX bp of the reference unit][reference unit][first CTX bp of the reference unit]
+#     - no filling: variants come from the alignment, cs or BTOP, alone, and a middle unit not fully covered is NO_FULL.
+#     - if the gap falls outside LO..HI, no unit is made and a break is recorded (n_break)
 #   What differs: the reference unit is chosen by median length rather than modal length, which avoids an arbitrary choice in a dispersed array.
 #   Arguments: canonical fa, cms_tbl, k, output folder.
 #   Outputs: <out>/<array_id>.g8map.tsv, .unit.fa, .gene.fa and PARAMS.tsv, appended to.
-# MIT License · Copyright (c) 2026 Hungmin Kim
+# MIT License. Copyright (c) 2026 Hyungmin Kim
 import io
 import os
 import sys
@@ -155,7 +155,7 @@ for L in io.open(TBL, encoding="utf8"):
     g = wseq[w1 - 1:w2]
     gs.append(g if ff[9] == strand else rc(g))
 if len(gs) < 3:
-    sys.exit("유전자 3 개 미만 : " + aid)
+    sys.exit("fewer than 3 genes : " + aid)
 gl = collections.Counter(len(x) for x in gs).most_common(1)[0][0]
 same = [x for x in gs if len(x) == gl]
 gene = "".join(collections.Counter(x[i] for x in same).most_common(1)[0][0] for i in range(gl))
@@ -186,10 +186,10 @@ for (a, b, st) in G:
         keep.append((a, b, st))
         last = b
 major = collections.Counter(x[2] for x in keep).most_common(1)[0][0] if keep else "+"
-print("   유전자 HSP %d 개 · 조각(덮힘<%.2f) %d 개 버림" % (len(G), MINCOV, ndrop))
+print("   gene HSP %d, fragments (coverage<%.2f) %d discarded" % (len(G), MINCOV, ndrop))
 gg = sorted([(a, b) for (a, b, st) in keep if st == major])
 if len(gg) < 3:
-    sys.exit("유전자 HSP 부족 : " + aid)
+    sys.exit("not enough gene HSP : " + aid)
 # 3) the period over k units, and the parameters
 per = sorted([gg[i + K][1] - gg[i][1] for i in range(len(gg) - K)])
 pm = per[len(per) // 2]
@@ -216,7 +216,7 @@ def walk():
 cuts0, brk0 = walk()
 raw = [wseq[a - 1:b] for (a, b) in cuts0]
 if not raw:
-    sys.exit("범위 안 유닛 없음 : " + aid)
+    sys.exit("no unit within range : " + aid)
 lens = sorted(len(u) for u in raw)
 med = statistics.median(lens)
 tgt = min(lens, key=lambda x: (abs(x - med), x))
@@ -250,7 +250,7 @@ if REFMODE == "medoid":
         bestq = max(sc, key=lambda k2: sc[k2])
         ref = cand[int(bestq[1:])]
         medp = sorted(pid[bestq])
-        print("   medoid 참조 : %s · 다른 유닛과 일치도 중앙 %.2f%%" % (bestq, medp[len(medp) // 2]))
+        print("   medoid reference : %s, median identity to other units %.2f%%" % (bestq, medp[len(medp) // 2]))
     else:
         ref = cand[0]
     try:
@@ -350,7 +350,7 @@ with io.open(pf, "a", encoding="utf8", newline=NL) as g3:
                        str(PAD), str(CTX), str(U), str(gl), str(N), str(brk), str(cnt["OK"]),
                        str(cnt["NO_FULL"]), str(cnt["NOALN"]), str(sum(nv)), str(nvg), str(len(allv)),
                        str(nv[len(nv) // 2]) if nv else "NA"]) + NL)
-print("%s : k %d · 유전자HSP %d · 주기 %d · 참조 %d bp · 유닛 %d (끊김 %d) · OK %d · NO_FULL %d · NOALN %d · 변이자리 %d"
+print("%s : k %d, gene HSP %d, period %d, reference %d bp, units %d (broken %d), OK %d, NO_FULL %d, NOALN %d, variant positions %d"
       % (aid, K, len(gg), pm, U, N, brk, cnt["OK"], cnt["NO_FULL"], cnt["NOALN"], len(allv)))
 for x in (rp, qp, ctxp):
     try:

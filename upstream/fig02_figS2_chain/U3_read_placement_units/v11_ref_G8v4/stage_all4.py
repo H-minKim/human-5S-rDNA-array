@@ -142,22 +142,22 @@ for x in rows:
 o.close()
 
 CO = ["HPRC", "new44", "GIAB", "암"]
-print("개체 %d · 하플로타입 %d · 지도 유닛 합 %d" % (len(SMP), len(rows), sum(x[3] for x in rows)))
-print("== 하플로타입 판정 (union · 깊이3 정의)")
-print("  %-22s %s    계" % ("", " ".join("%6s" % c for c in CO)))
+print("individuals %d, haplotypes %d, map unit total %d" % (len(SMP), len(rows), sum(x[3] for x in rows)))
+print("== haplotype stage call (union, depth3 definition)")
+print("  %-22s %s    total" % ("", " ".join("%6s" % c for c in CO)))
 for s in sorted(set(x[11] for x in rows)):
     c = collections.Counter(x[1] for x in rows if x[11] == s)
     print("  %-22s %s  %4d" % (s, " ".join("%6d" % c[q] for q in CO), sum(c.values())))
-print("== 대표출처판(rep) 판정")
+print("== representative-source (rep) stage call")
 for s in sorted(set(x[18] for x in rows)):
     c = collections.Counter(x[1] for x in rows if x[18] == s)
     print("  %-22s %s  %4d" % (s, " ".join("%6d" % c[q] for q in CO), sum(c.values())))
 d = [x for x in rows if x[14] > 1]
-print("== 출처 2개인 하플로타입 %d : union 과 rep 판정이 다른 것 %d"
+print("== haplotypes with 2 sources %d: union and rep calls differ %d"
       % (len(d), sum(1 for x in d if x[11] != x[18])))
 for x in d:
     if x[11] != x[18]:
-        print("   %s_%s : union %s (피복 %.1f · 일치 %.2f) / rep %s %s (피복 %.1f · 일치 %.2f)"
+        print("   %s_%s: union %s (coverage %.1f, agreement %.2f) / rep %s %s (coverage %.1f, agreement %.2f)"
               % (x[0][0], x[0][1], x[11], x[7], x[8], x[15], x[18], x[16], x[17]))
 
 # -- CLASS313 (on union, only the decision part of class313.py, unchanged)
@@ -181,13 +181,13 @@ for r in cls:
     o.write(TAB.join(r) + NL)
 o.close()
 CT = ["양쪽 신뢰", "한쪽만 신뢰", "둘다 신뢰불가"]
-print("== 개체 분류 (union · 깊이3)")
+print("== individual classification (union, depth3)")
 for c in CO:
     rs = [r for r in cls if r[1] == c]
     if not rs:
         continue
     a = collections.Counter(r[3] for r in rs)
-    print("  %-8s %3d 개체 : %s" % (c, len(rs), " · ".join("%s %d" % (t, a[t]) for t in CT)))
+    print("  %-8s %3d individuals: %s" % (c, len(rs), " · ".join("%s %d" % (t, a[t]) for t in CT)))
 a = collections.Counter(r[3] for r in cls)
-print("  %-8s %3d 개체 : %s" % ("합계", len(cls), " · ".join("%s %d" % (t, a[t]) for t in CT)))
-print("  정본 슬롯 1 개 개체 %d" % sum(1 for r in cls if r[2] == "1"))
+print("  %-8s %3d individuals: %s" % ("합계", len(cls), " · ".join("%s %d" % (t, a[t]) for t in CT)))
+print("  individuals with 1 canonical slot %d" % sum(1 for r in cls if r[2] == "1"))

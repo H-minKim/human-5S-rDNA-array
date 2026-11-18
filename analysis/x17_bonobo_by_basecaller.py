@@ -131,9 +131,9 @@ for refs, r in G["bam_records"](BAM):
             for gname in (grp, "혼합"):
                 cnt[(gname, reg)] += np.array([w.sum(), (mv[w] >= 128).sum()])
 
-P("보노보 BAM read 판본 : " + " · ".join("%s %d" % kv for kv in collections.Counter(sig.values()).items()))
+P("bonobo BAM read versions: " + " · ".join("%s %d" % kv for kv in collections.Counter(sig.values()).items()))
 P()
-P("A1 검산 — 혼합판이 AVF.tsv 를 재현하나")
+P("A1 check: does the mixed set reproduce AVF.tsv")
 for reg, c, lo, hi, n_c, n_m in REG:
     n, m = cnt[("혼합", reg)]
     P("   %-18s AVF n_c %9d n_5mC %9d | BAM %9d %9d | %s" % (reg, n_c, n_m, n, m, "같음" if (n == n_c and m == n_m) else "다름"))
@@ -149,7 +149,7 @@ RU = pd.read_csv(B + "/03_reads/%s/%s__%s.read_unit.tsv" % (SP, SP, SP), sep="\t
 RU = RU[RU.context == "CG"].drop_duplicates(["read_id", "array_id", "array_pos"]).copy()
 RU["grp"] = RU.read_id.map(sig).fillna("BAM에없음")
 P()
-P("read_unit read 판본 : " + " · ".join("%s %d read" % (k, v) for k, v in RU.groupby("grp").read_id.nunique().items()))
+P("read_unit read versions: " + " · ".join("%s %d read" % (k, v) for k, v in RU.groupby("grp").read_id.nunique().items()))
 allcall = RU.copy()
 med = RU.n_calls.median()
 RU = RU[RU.n_calls >= 0.5 * med].copy()
@@ -213,13 +213,13 @@ Nn = D.groupby("array_id").array_pos.transform("max")
 D["p_end"] = np.minimum(D.array_pos, Nn - D.array_pos + 1)
 E = []
 P()
-P("§5-C 끝 섞임비율 (코드판 · 원 인라인 계산과 같은 정의)")
+P("§5-C end mixing ratio (script version, same definition as the inline calculation)")
 for k, nm in NM.items():
     g = D[D.species_key == k]
     e, i = g[g.p_end <= 5], g[g.p_end >= 21]
     lo_e, lo_i = (e.b < 0.35).mean(), (i.b < 0.35).mean()
     E.append(dict(species=nm, off_end1_5=lo_e, off_in21=lo_i, fold=lo_e / max(lo_i, 1e-9),
                   on_beta_end=e.b[e.b > 0.65].mean(), on_beta_in=i.b[i.b > 0.65].mean()))
-    P("   %-8s 끝1-5 %.3f vs 안쪽21+ %.3f (%.1f배) · 고메틸 β 끝 %.3f vs 안쪽 %.3f" % (nm, lo_e, lo_i, lo_e / max(lo_i, 1e-9), E[-1]["on_beta_end"], E[-1]["on_beta_in"]))
+    P("   %-8s end1-5 %.3f vs interior21+ %.3f (%.1f-fold), high-methylation β end %.3f vs interior %.3f" % (nm, lo_e, lo_i, lo_e / max(lo_i, 1e-9), E[-1]["on_beta_end"], E[-1]["on_beta_in"]))
 pd.DataFrame(E).to_csv(OUT + "/tables/APE_END_MIXING.tsv", sep="\t", index=False, float_format="%.5f")
 LOG.close()

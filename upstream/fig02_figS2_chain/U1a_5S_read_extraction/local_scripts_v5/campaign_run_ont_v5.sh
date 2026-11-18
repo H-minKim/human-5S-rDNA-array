@@ -22,25 +22,25 @@ for t in blastn samtools minimap2 s5cmd java pigz; do
 done
 for f in 5S_gene_query.fa gene_db.nin 5S_unit_discseg.fa tandem40.fa \
          campaign_extract_v5.py summarize4.py manifest.tsv; do
-  [ -s "$f" ] || { echo "FATAL: $f 없음/빈파일"; exit 9; }
+  [ -s "$f" ] || { echo "FATAL: $f missing/empty file"; exit 9; }
 done
 BB=~/opt/bbmap/bbduk.sh; [ -x "$BB" ] || BB=~/s5s/opt/bbmap/bbduk.sh
-[ -x "$BB" ] || { echo "FATAL: bbduk.sh 없음"; exit 9; }
+[ -x "$BB" ] || { echo "FATAL: no bbduk.sh"; exit 9; }
 THR=${THR:-6}; CHUNK=${CHUNK:-16000}; MINFREE=${MINFREE:-30}; PIGZ_T=${PIGZ_T:-4}
 
-echo "[$(date -u +%H:%M:%S)] v5 시작 개체=$(wc -l < "$LIST") THR=$THR"
+echo "[$(date -u +%H:%M:%S)] v5 start individuals=$(wc -l < "$LIST") THR=$THR"
 
 while read -r S; do
   [ -n "$S" ] || continue
   [ -f "done/${S}.done" ] && continue
   while [ "$(df -BG / | tail -1 | awk '{print $4}' | tr -d G)" -lt "$MINFREE" ]; do
-    echo "  [$(date -u +%H:%M:%S)] 디스크 부족 — 대기"; sleep 300
+    echo "  [$(date -u +%H:%M:%S)] disk low: waiting"; sleep 300
   done
   t0=$(date +%s)
   rm -f "tmp/${S}"*
   grep -P "^${S}\t" manifest.tsv | cut -f3 > "tmp/${S}.bams"
   nb=$(wc -l < "tmp/${S}.bams")
-  [ "$nb" -gt 0 ] || { echo "  $S BAM 없음"; echo "$S" >> log/no_bam.txt; continue; }
+  [ "$nb" -gt 0 ] || { echo "  $S no BAM"; echo "$S" >> log/no_bam.txt; continue; }
 
   ok=1; : > "tmp/${S}.hits.fastq"; : > "tmp/${S}.5s.tsv"
   for i in $(seq 1 "$nb"); do
@@ -56,7 +56,7 @@ while read -r S; do
     bad=""
     for j in "${!st[@]}"; do [ "${st[$j]}" -ne 0 ] && bad="$bad stage$j=${st[$j]}"; done
     if [ -n "$bad" ]; then
-      echo "  $S BAM$i 파이프 실패:$bad"; echo "$S BAM$i$bad" >> log/pipe_failed.txt
+      echo "  $S BAM$i pipe failed:$bad"; echo "$S BAM$i$bad" >> log/pipe_failed.txt
       ok=0; break
     fi
     cat "tmp/${S}_${i}.hits.fastq" >> "tmp/${S}.hits.fastq"
@@ -64,36 +64,36 @@ while read -r S; do
     rm -f "tmp/${S}_${i}.hits.fastq" "tmp/${S}_${i}.5s.tsv"
     fr=$(df -BG / | tail -1 | awk '{print $4}' | tr -d G)
     if [ "$fr" -lt 10 ]; then
-      echo "  $S 디스크 $fr GB — 중단"; echo "$S" >> log/disk_abort.txt
+      echo "  $S disk $fr GB: aborting"; echo "$S" >> log/disk_abort.txt
       rm -f "tmp/${S}"*; ok=0; break
     fi
   done
   [ $ok -eq 1 ] || { echo "$S" >> log/failed.txt; continue; }
 
   nr=$(( $(wc -l < "tmp/${S}.hits.fastq") / 4 ))
-  [ "$nr" -gt 0 ] || { echo "  $S 히트 0"; echo "$S" >> log/zero_hits.txt; continue; }
+  [ "$nr" -gt 0 ] || { echo "  $S hits 0"; echo "$S" >> log/zero_hits.txt; continue; }
   { echo -e "read_id\tread_len\tn_hsp\tn_gene\tbest_pid\tspacings\thas_MM"; cat "tmp/${S}.5s.body"; } > "tmp/${S}.5s.tsv"
 
   # tandem map alignment, the reference is 90kb so no lock or slot is needed
   awk 'NR%4==1{sub(/^@/,">"); print $1} NR%4==2{print}' "tmp/${S}.hits.fastq" > "tmp/${S}.fa"
   minimap2 -x map-ont -t "$THR" -c --secondary=no tandem40.fa "tmp/${S}.fa" > "tmp/${S}.paf" 2>/dev/null
-  [ -s "tmp/${S}.paf" ] || { echo "  $S PAF 빈파일"; echo "$S" >> log/empty_paf.txt; continue; }
+  [ -s "tmp/${S}.paf" ] || { echo "  $S PAF empty file"; echo "$S" >> log/empty_paf.txt; continue; }
 
   python3 summarize4.py --sample "$S" --tech ont --hits "tmp/${S}.5s.tsv" \
       --paf "tmp/${S}.paf" --fastq "tmp/${S}.hits.fastq" --nts 5S_unit_discseg.fa \
       --out "sum/${S}" --array "array/${S}.array.fastq.gz" --threads "$THR" \
       > "log/${S}.sum.log" 2>&1
-  [ $? -eq 0 ] && [ -s "sum/${S}.summary.tsv" ] || { echo "  $S 요약 실패"; echo "$S" >> log/sum_failed.txt; continue; }
+  [ $? -eq 0 ] && [ -s "sum/${S}.summary.tsv" ] || { echo "  $S summary failed"; echo "$S" >> log/sum_failed.txt; continue; }
 
   # keep all hit reads (feasible because v5 keeps only 0.036%)
   pigz -p "$PIGZ_T" -c "tmp/${S}.hits.fastq" > "hits/${S}.hits.fastq.gz"
   hz=$(stat -c%s "hits/${S}.hits.fastq.gz" 2>/dev/null || echo 0)
   arr=$(stat -c%s "array/${S}.array.fastq.gz" 2>/dev/null || echo 0)
-  [ "$hz" -gt 0 ] || { echo "  $S hits 보관 실패"; echo "$S" >> log/no_hits.txt; continue; }
+  [ "$hz" -gt 0 ] || { echo "  $S hits archiving failed"; echo "$S" >> log/no_hits.txt; continue; }
 
   rm -f "tmp/${S}"*
   t1=$(date +%s)
   echo "$S ok v5 reads=$nr hits_gz=$hz array=$arr sec=$((t1-t0))" > "done/${S}.done"
-  echo "  [$(date -u +%H:%M:%S)] $S 완료 read=$nr hits=$((hz/1048576))MB array=$((arr/1048576))MB $((t1-t0))s"
+  echo "  [$(date -u +%H:%M:%S)] $S done read=$nr hits=$((hz/1048576))MB array=$((arr/1048576))MB $((t1-t0))s"
 done < "$LIST"
-echo "[$(date -u +%H:%M:%S)] V5_DONE 완료=$(ls done | wc -l)"
+echo "[$(date -u +%H:%M:%S)] V5_DONE done=$(ls done | wc -l)"

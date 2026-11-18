@@ -11,7 +11,7 @@
 #     and it appears only in the three result tables PERARRAY_META, CHROM_NAMES and UNITBETA_PERARRAY_v13.
 #
 #   Inputs: tables/ATH_READUNIT_CONTEXT.tsv.gz and tables/ATH_CONTEXT_PERARRAY.tsv, both from x13_ath_context.py.
-#           tables/UNITBETA_PERARRAY_v13.tsv.gz (`x9D`) · tables/PERARRAY_META.tsv (`x34`) · tables/CHROM_NAMES.tsv (`x9Q`)
+#           tables/UNITBETA_PERARRAY_v13.tsv.gz (`x9D`), tables/PERARRAY_META.tsv (`x34`), tables/CHROM_NAMES.tsv (`x9Q`)
 #   Output: tables/FIGDATA_SUPP4_ATH_CONTEXT.tsv
 import os as _os_need, sys as _sys_need
 
@@ -73,7 +73,7 @@ T.to_csv(TMP + "/FIGDATA_SUPP4_ATH_CONTEXT.tsv", sep="\t", index=False, encoding
 arch.put(TMP + "/FIGDATA_SUPP4_ATH_CONTEXT.tsv", "tables/FIGDATA_SUPP4_ATH_CONTEXT.tsv", REASON)
 
 mu = T.groupby("문맥").평균β.mean()
-print("array %d 개 · 줄 %d" % (T.array_id.nunique(), len(T)))
-print("array 평균 β (호출가중) : %s"
+print("arrays %d, rows %d" % (T.array_id.nunique(), len(T)))
+print("array mean β (call-weighted): %s"
       % " · ".join("%s %.3f" % (k, mu[k]) for k in CTX if k in mu))
-print("   이 세 수가 원고 본문과 Supp 7-1C legend 에 실린다.")
+print("   These three numbers appear in the manuscript text and the Supp 7-1C legend.")

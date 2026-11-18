@@ -5,7 +5,7 @@
 #      If there is no full match, a prefix of at least 5 bp running off the end of the read is also trimmed.
 #   3) Discard reads shorter than 30 bp.
 #   Arguments: in.fastq.gz out.fastq.gz
-# MIT License · Copyright (c) 2026 Hungmin Kim
+# MIT License. Copyright (c) 2026 Hyungmin Kim
 import gzip
 import sys
 

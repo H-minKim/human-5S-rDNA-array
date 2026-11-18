@@ -17,9 +17,9 @@ mkdir -p "$D"
 OUT=~/resub2_summary.tsv
 for S in "$@"; do
   Q=~/s5s_ont/hits/$S.hits.fastq.gz
-  [ -f "$Q" ] || { echo "  $S read 없음"; continue; }
+  [ -f "$Q" ] || { echo "  $S no reads"; continue; }
   TOT=$(zcat "$Q" | awk 'NR%4==2{t+=length($0)} END{printf "%d", t/1000000}')
-  echo "== $S 원본 ${TOT} Mb =="
+  echo "== $S original ${TOT} Mb =="
   for F in 2 3 4 5 6; do
     MB=$(( TOT / F ))
     [ "$MB" -lt 60 ] && continue

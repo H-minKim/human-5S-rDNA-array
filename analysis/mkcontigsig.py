@@ -34,7 +34,7 @@ for src, path in FQ.items():
             f.readline(); f.readline(); qq = f.readline().rstrip("\n")
             nm = h[1:].split()[0]
             if nm in need[src]: QUAL[(src, nm)] = qq
-log("품질 읽음", {s: sum(1 for k in QUAL if k[0] == s) for s in FQ})
+log("quality values read", {s: sum(1 for k in QUAL if k[0] == s) for s in FQ})
 def base_q(q, r, u, tpos):
     """Q of the base at canonical coordinate tpos in unit u of read q (None if absent)"""
     rec = PIDX.get((q, u["qs"], u["qe"]))

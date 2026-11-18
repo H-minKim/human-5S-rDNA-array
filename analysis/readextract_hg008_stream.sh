@@ -7,13 +7,13 @@
 #   N-P: three unaligned BAMs, 46-50 GB.
 set -u
 LOG=~/hg008_queue.log
-echo "[$(date -u +%F\ %H:%M)] v2 대기 시작 — 전량 스트리밍 통일" >> "$LOG"
+echo "[$(date -u +%F\ %H:%M)] v2 wait start: everything by streaming" >> "$LOG"
 while :; do
   n=$(ls ~/s5s_ont/done 2>/dev/null | wc -l)
   r=$(pgrep -f "campaign_run_ont_v[5]" 2>/dev/null | wc -l)
   g=$(pgrep -f "giab_queu[e]" 2>/dev/null | wc -l)
   if { [ "$n" -ge 264 ] || { [ "$r" -eq 0 ] && [ "$n" -ge 100 ]; }; } && [ "$g" -le 1 ]; then
-    echo "[$(date -u +%F\ %H:%M)] 시작 (HPRC $n · 스트림 $r)" >> "$LOG"; break
+    echo "[$(date -u +%F\ %H:%M)] start (HPRC $n, streams $r)" >> "$LOG"; break
   fi
   sleep 600
 done
@@ -38,7 +38,7 @@ one(){ # $1=label $2=URL
   bad=""; for j in "${!st[@]}"; do [ "${st[$j]}" -ne 0 ] && bad="$bad s$j=${st[$j]}"; done
   t1=$(date +%s)
   nr=$(( $(wc -l < "out/${L}.hits.fastq" 2>/dev/null || echo 0) / 4 ))
-  if [ -n "$bad" ]; then echo "[$(date -u +%H:%M)] ${L} 실패:$bad" >> "$LOG"
+  if [ -n "$bad" ]; then echo "[$(date -u +%H:%M)] ${L} failed:$bad" >> "$LOG"
   else
     pigz -p4 -f "out/${L}.hits.fastq"
     echo "${L} ok reads=$nr sec=$((t1-t0))" > "done/${L}.done"
@@ -52,4 +52,4 @@ for k in HG008-N-D HG008-N-P; do
     i=$((i+1)); one "${k}_${i}" "$BASE/${DIR}/${k}_ubams/${f}"
   done
 done
-echo "[$(date -u +%F\ %H:%M)] HG008_DONE 산출 $(ls out/*.gz 2>/dev/null | wc -l)" >> "$LOG"
+echo "[$(date -u +%F\ %H:%M)] HG008_DONE outputs $(ls out/*.gz 2>/dev/null | wc -l)" >> "$LOG"

@@ -151,4 +151,4 @@ for p in sorted(glob.glob(os.path.join(D, "*.?.fa"))):
     LOG.write(TAB.join([smp, slot, side, str(len(cut)), str(len(bb)), str(len(cons)), str(used)]) + NL)
     n_ok += 1
 LOG.close()
-print("%s  합의 %d · 단일read %d" % (socket.gethostname(), n_ok, n_skip))
+print("%s  consensus %d, single read %d" % (socket.gethostname(), n_ok, n_skip))
