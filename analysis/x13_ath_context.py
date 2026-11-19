@@ -192,7 +192,7 @@ NU = dict(zip(ST.array_id, ST.n_unit))
 D["n_sp"] = D.n_calls - D.n_calls_gene
 ROWS, PANEL = [], {}
 for (aid, c), g in D.groupby(["array_id", "context"]):
-    for part, ncol_, mcol_ in [("전체", "n_calls", "n_5mC"), ("coding", "n_calls_gene", "n_5mC_gene")]:
+    for part, ncol_, mcol_ in [("whole", "n_calls", "n_5mC"), ("coding", "n_calls_gene", "n_5mC_gene")]:
         gg = g[g[ncol_] > 0]
         med = gg[ncol_].median()
         gg = gg[gg[ncol_] >= max(3, 0.5 * med)]
@@ -229,7 +229,7 @@ for (c, part), gg in T.groupby(["context", "part"]):
 
 # ---- figure: one page per interval, whole unit and coding, with arrays as rows and contexts as columns
 COLC = {"CG": "#7e57c2", "CHG": "#26a69a", "CHH": "#ef6c00"}
-for part in ["전체", "coding"]:
+for part in ["whole", "coding"]:
     nr = len(order)
     fig, axs = plt.subplots(nr, 3, figsize=(13, 2.35 * nr + 0.9), squeeze=False)
     for i, aid in enumerate(order):
@@ -251,7 +251,7 @@ for part in ["전체", "coding"]:
             if i == nr - 1:
                 ax.set_xlabel("read 안 유닛 β (%s)" % c, fontsize=8)
     fig.suptitle("애기장대 5S — CG / CHG / CHH 각 read 의 각 유닛 메틸 분포 · %s · 행 = array (점선 = 평균)"
-                 % ("유닛 전체" if part == "전체" else "coding(5S 유전자)만"), fontsize=12)
+                 % ("유닛 전체" if part == "whole" else "coding(5S 유전자)만"), fontsize=12)
     fig.tight_layout(rect=[0, 0.01, 1, 0.975])
     fig.savefig(OUT + "/figures/Fig_ath_context_%s.png" % part)
     plt.close(fig)

@@ -347,7 +347,7 @@ sheet("FigS11B_unit_beta_distribution", HIST_H, hist_rows(REST),
 # ── FigS11C : the three sequence contexts of A. thaliana ──────────────────────
 CTX = ["CG", "CHG", "CHH"]
 rows = []
-CXMa = CXM[CXM.part == "전체"]
+CXMa = CXM[CXM.part == "whole"]
 A_IDS = [a for a in CXMa.array_id.unique()]
 A_IDS.sort(key=lambda a: _ORD.get(GRP.get(a, ""), (999, 0.0)))
 for aid in A_IDS:

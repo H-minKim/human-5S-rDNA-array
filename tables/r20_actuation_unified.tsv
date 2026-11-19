@@ -7,10 +7,10 @@ region	PacBio	far	48	0.23603	0.2118	0.02422	4.19e-05
 region	PacBio	mid	48	0.27159	0.18455	0.08705	4.97e-14
 region	PacBio	up	48	0.34471	0.23227	0.11244	1.42e-14
 region	PacBio	gene	48	0.41228	0.26419	0.14809	7.11e-15
-window	ONT	구역 창	52	0.22024	0.09159	0.12864	3.5e-10
-window	ONT	유닛 전체	52	0.19907	0.09266	0.10641	3.5e-10
-window	PacBio	구역 창	48	0.29257	0.21096	0.08162	9.95e-14
-window	PacBio	유닛 전체	48	0.27081	0.20686	0.06395	9.73e-13
+window	ONT	zone window	52	0.22024	0.09159	0.12864	3.5e-10
+window	ONT	whole unit	52	0.19907	0.09266	0.10641	3.5e-10
+window	PacBio	zone window	48	0.29257	0.21096	0.08162	9.95e-14
+window	PacBio	whole unit	48	0.27081	0.20686	0.06395	9.73e-13
 by_cov	ONT	500-	2241	0.19431	0.09205	0.10226	
 by_cov	PacBio	500-	2241	0.26951	0.2064	0.06311	
 qual	ONT	matched	0	0.10223	0.07174	70.2	

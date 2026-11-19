@@ -233,7 +233,7 @@ print("(2) window dependence: zone window vs whole unit")
 print("%-7s %-12s %6s %11s %11s" % ("src", "창", "개체", "L-H", "p"))
 for src, s6 in SRCS:
     smps = sorted({k[1] for k in P_SMP if k[0] == src})
-    for wn, a0, b0 in (("구역 창", OFF - 1500, OFF + 119), ("유닛 전체", 1, ULEN + 1)):
+    for wn, a0, b0 in (("zone window", OFF - 1500, OFF + 119), ("whole unit", 1, ULEN + 1)):
         dL, dH = [], []
         for smp in smps:
             AL = P_SMP.get((src, smp, "L")); AH = P_SMP.get((src, smp, "H"))

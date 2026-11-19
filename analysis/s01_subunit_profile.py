@@ -136,8 +136,8 @@ with io.open(os.path.join(OUT, "s01_subunit_profile.tsv"), "w", encoding="utf8",
 # the segment boundaries, in within-unit coordinates converted to the transcription frame, as medians
 tss_med = int(np.median([v[0] for v in TSSU.values()]))
 bounds = [("AluY", 1, 318), ("NTS1", 319, 1178), ("GA", 1179, tss_med - 571),
-          ("NTS2", tss_med - 570, tss_med - 91), ("상류90", tss_med - 90, tss_med - 1),
-          ("유전자", tss_med, tss_med + 118)]
+          ("NTS2", tss_med - 570, tss_med - 91), ("upstream90", tss_med - 90, tss_med - 1),
+          ("gene", tss_med, tss_med + 118)]
 with io.open(os.path.join(OUT, "s01_element_bounds.tsv"), "w", encoding="utf8", newline="\n") as g:
     g.write("element\tunit_start\tunit_end\ttx_start\ttx_end\ttss_u_median\n")
     for e, a, b in bounds:

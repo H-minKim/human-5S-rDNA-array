@@ -169,7 +169,7 @@ or the manifests of this repository read or name.
 
 | file | md5 | bytes |
 |---|---|--:|
-| `ATH_CONTEXT_PERARRAY.tsv` | `a4e9ff17195a` | 9543 |
+| `ATH_CONTEXT_PERARRAY.tsv` | `b73caa814e75` | 9516 |
 | `ATH_READUNIT_CONTEXT.tsv.gz` | `0c38f2edab05` | 5672358 |
 | `CENTROMERE.tsv` | `d852cada38d4` | 3523 |
 | `CHROM_NAMES.tsv` | `073216067cba` | 1165 |
@@ -237,9 +237,9 @@ or the manifests of this repository read or name.
 | `nucfree_flankcore_span.npz` | `33daa5dbe840` | 9097 |
 | `occlusion_bin.npz` | `631b18a6aaf6` | 3449 |
 | `r20_actuation_profile_REF.tsv` | `0c09bff49e3e` | 230917 |
-| `r20_actuation_unified.tsv` | `74e195d6694d` | 869 |
+| `r20_actuation_unified.tsv` | `170fa7dc5ddf` | 865 |
 | `ru_v11.parquet` | `1995b1901373` | 25732589 |
-| `s01_element_bounds.tsv` | `b8ad392d397d` | 234 |
+| `s01_element_bounds.tsv` | `e52a6eab40b7` | 231 |
 | `scan_maps_v2.npz` | `d8f6ffe89e40` | 62634 |
 | `singlemol_fhmm_bin.npz` | `fb6af6b5e357` | 13374 |
 | `site_confirm_callerfree.npz` | `c41a70751cb7` | 30584 |

@@ -45,7 +45,7 @@ CTX = ["CG", "CHG", "CHH"]
 
 CX = pd.read_csv(NEW + "/tables/ATH_READUNIT_CONTEXT.tsv.gz", sep="\t")
 CXM = pd.read_csv(NEW + "/tables/ATH_CONTEXT_PERARRAY.tsv", sep="\t")
-CXM = CXM[CXM.part == "전체"]
+CXM = CXM[CXM.part == "whole"]
 G = pd.read_csv(NEW + "/tables/UNITBETA_PERARRAY_v13.tsv.gz", sep="\t",
                 usecols=["array_id", "묶음"]).drop_duplicates()
 GRP = dict(zip(G.array_id, G.묶음))
