@@ -33,7 +33,7 @@ NEW = _need("RDNA_OUT_DIR")
 B = _need("RDNA_DATA_ROOT")
 SVGDIR = _need("RDNA_SVG_DIR")
 sys.path.insert(0, NEW + "/code")
-import arch  # noqa
+import arch, tab_en  # noqa
 try:
     sys.stdout.reconfigure(encoding="utf-8")
 except Exception:
@@ -185,7 +185,7 @@ base = "FigA1_array_chromosome_map"
 for ext in ("png", "svg", "pdf"):
     fig.savefig(TMP + "/%s.%s" % (base, ext))
 plt.close(fig)
-arch.put(TMP + "/FIGDATA_A1_chrom_map.tsv", "tables/FIGDATA_A1_chrom_map.tsv", REASON)
+arch.put(tab_en.to_en_file(TMP + "/FIGDATA_A1_chrom_map.tsv"), "tables/FIGDATA_A1_chrom_map.tsv", REASON)
 for ext in ("png", "svg", "pdf"):
     arch.put(TMP + "/%s.%s" % (base, ext), "figures/%s.%s" % (base, ext), REASON)
 if os.path.isdir(SVGDIR):

@@ -42,6 +42,7 @@ import betabins      # noqa: E402
 import prof_smooth   # noqa: E402
 import landsc        # noqa: E402
 import figorder      # noqa: E402
+import tab_en        # noqa: E402
 
 try:
     sys.stdout.reconfigure(encoding="utf-8")
@@ -115,13 +116,13 @@ def lab_of(mt):
     return str(POS.get(mt.array_id, mt.이름표)).replace(" · ", " - ").replace("·", "-")
 
 # ── tables ────────────────────────────────────────────────────────────────────
-A1 = pd.read_csv(T + "FIGDATA_A1_chrom_map.tsv", sep="\t")
-CN = pd.read_csv(T + "CHROM_NAMES.tsv", sep="\t")
-CEN = pd.read_csv(T + "CENTROMERE.tsv", sep="\t")
-PM = pd.read_csv(T + "PERARRAY_META.tsv", sep="\t")
-PR = pd.read_csv(T + "PROFILE_META_v13.tsv", sep="\t")
-UB = pd.read_csv(T + "UNITBETA_PERARRAY_v13.tsv.gz", sep="\t")
-BP = pd.read_csv(T + "PROFILE_BP_v13.tsv.gz", sep="\t")
+A1 = pd.read_csv(tab_en.open_ko(T + "FIGDATA_A1_chrom_map.tsv"), sep="\t")
+CN = pd.read_csv(tab_en.open_ko(T + "CHROM_NAMES.tsv"), sep="\t")
+CEN = pd.read_csv(tab_en.open_ko(T + "CENTROMERE.tsv"), sep="\t")
+PM = pd.read_csv(tab_en.open_ko(T + "PERARRAY_META.tsv"), sep="\t")
+PR = pd.read_csv(tab_en.open_ko(T + "PROFILE_META_v13.tsv"), sep="\t")
+UB = pd.read_csv(tab_en.open_ko(T + "UNITBETA_PERARRAY_v13.tsv.gz"), sep="\t")
+BP = pd.read_csv(tab_en.open_ko(T + "PROFILE_BP_v13.tsv.gz"), sep="\t")
 CX = pd.read_csv(T + "ATH_READUNIT_CONTEXT.tsv.gz", sep="\t")
 CXM = pd.read_csv(T + "ATH_CONTEXT_PERARRAY.tsv", sep="\t")
 LAND = landsc.load(NEW)

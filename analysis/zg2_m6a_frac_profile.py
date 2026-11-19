@@ -103,17 +103,17 @@ print("rows read %d, position bins %d" % (rows_read, len(nn)))
 
 def lab(c):
     if c < E:
-        return "원위%d" % (c + 1)
+        return "distal%d" % (c + 1)
     if c < E + NB:
-        return "가운데 %d/%d" % (c - E + 1, NB)
-    return "근위%d" % (2 * E + NB - c)
+        return "interior %d/%d" % (c - E + 1, NB)
+    return "proximal%d" % (2 * E + NB - c)
 
 
 with io.open(O1, "w", encoding="utf8", newline=chr(10)) as g:
     g.write("# metric (1): fraction of molecules with m6A at that base (denominator = depth), the reference definition" + chr(10))
     g.write("# pooled: sum(n_m6a) / sum(n), distal absolute %d, interior relative %d, proximal absolute %d"
             % (E, NB, E) + chr(10))
-    g.write(chr(9).join(["플랫폼", "자리", "칸번호", "m6a_분자비율_%", "합_n_m6a", "합_n"]) + chr(10))
+    g.write(chr(9).join(["platform", "position", "bin_index", "m6a_molecule_fraction_pct", "sum_n_m6a", "sum_n"]) + chr(10))
     for plat in ("ONT", "PacBio"):
         for c in range(NCELL):
             if nn[(plat, c)] < 1000:

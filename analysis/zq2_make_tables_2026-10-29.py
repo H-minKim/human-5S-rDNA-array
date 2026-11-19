@@ -233,8 +233,8 @@ with io.open(O3, "w", encoding="utf8", newline=NL) as g:
     for plat in ("ONT", "PacBio"):
         o = {}
         for st in ("L", "H"):
-            v = [(float(r[hdr3["m6a_분자비율_%"]]), float(r[hdr3["깊이"]]))
-                 for r in rows3 if r[hdr3["플랫폼"]] == plat and r[hdr3["상태"]] == st]
+            v = [(float(r[hdr3["m6a_molecule_fraction_pct"]]), float(r[hdr3["depth"]]))
+                 for r in rows3 if r[hdr3["platform"]] == plat and r[hdr3["state"]] == st]
             a = np.array([x for x, _ in v])
             w = np.array([y for _, y in v])
             o[st] = (float(np.average(a, weights=w)), len(a))

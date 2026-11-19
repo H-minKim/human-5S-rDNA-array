@@ -16,6 +16,7 @@
 #                tables/UNITBETA_PERARRAY_v13.tsv.gz, tables/CHROM_NAMES.tsv
 import numpy as np
 import pandas as pd
+import tab_en
 
 NED, MIDB, FLMAX, OFFCUT = 20, 12, 20000, 0.35
 BRK_F, SQ = 2000.0, 4.0
@@ -96,10 +97,10 @@ def slide_unit(dd, unit, step_frac=0.25, lo=0.0, hi=None):
 
 def load(NEW):
     """The table is read once and kept."""
-    LS = pd.read_csv(NEW + "/tables/PERARRAY_LANDSCAPE.tsv.gz", sep="\t")
-    M = pd.read_csv(NEW + "/tables/PERARRAY_META.tsv", sep="\t")
-    O = pd.read_csv(NEW + "/tables/ORIENTATION.tsv", sep="\t").set_index("array_id")
-    UB = pd.read_csv(NEW + "/tables/UNITBETA_PERARRAY_v13.tsv.gz", sep="\t",
+    LS = pd.read_csv(tab_en.open_ko(NEW + "/tables/PERARRAY_LANDSCAPE.tsv.gz"), sep="\t")
+    M = pd.read_csv(tab_en.open_ko(NEW + "/tables/PERARRAY_META.tsv"), sep="\t")
+    O = pd.read_csv(tab_en.open_ko(NEW + "/tables/ORIENTATION.tsv"), sep="\t").set_index("array_id")
+    UB = pd.read_csv(tab_en.open_ko(NEW + "/tables/UNITBETA_PERARRAY_v13.tsv.gz"), sep="\t",
                      usecols=["묶음", "array_id", "유닛번호", "n_cpg", "n_meth"])
     GRP = dict(zip(UB.array_id, UB.묶음))
     IDS = {}
@@ -121,7 +122,7 @@ def load(NEW):
     #   Transcription does not run in one direction throughout: the gorilla alone is on the minus strand.
     #   The axis is fixed on one ruler, increasing coordinate, and P1 and D1 are attached per panel from measurement, in panel() below.
     LEFT = {a: "낮은 좌표" for a in M.array_id}
-    _CN = pd.read_csv(NEW + "/tables/CHROM_NAMES.tsv", sep="\t")
+    _CN = pd.read_csv(tab_en.open_ko(NEW + "/tables/CHROM_NAMES.tsv"), sep="\t")
     _CH = dict(zip(_CN.접근번호.astype(str), _CN.염색체번호.astype(str)))
     POS = {}
     for _t in M.itertuples(index=False):

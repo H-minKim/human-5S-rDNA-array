@@ -25,7 +25,7 @@ NEW = _need("RDNA_OUT_DIR")
 B = _need("RDNA_DATA_ROOT")
 OLD = _need("RDNA_PREV_OUT_DIR")
 sys.path.insert(0, NEW + "/code")
-import arch  # noqa
+import arch, tab_en  # noqa
 try:
     sys.stdout.reconfigure(encoding="utf-8")
 except Exception:
@@ -54,7 +54,7 @@ ZF = pd.read_csv(B + "/00_catalog/ZEBRAFISH_ALL_ARRAYS.tsv", sep="\t")
 ZNAME = dict(zip(ZF.array_id, ZF.chrom_name))
 FN = pd.read_csv(B + "/06_aux/zfinch_5S_array_meth_summary.tsv", sep="\t")
 FNAME = {(t.chrom_genbank, int(t.array_start), int(t.array_end)): t.chrom_bigwig for t in FN.itertuples(index=False)}
-ORI = pd.read_csv(NEW + "/tables/ORIENTATION.tsv", sep="\t").set_index("array_id")
+ORI = pd.read_csv(tab_en.open_ko(NEW + "/tables/ORIENTATION.tsv"), sep="\t").set_index("array_id")
 SPK = [("고릴라", "gorilla_mGorGor1"), ("보노보", "bonobo_mPanPan1"), ("침팬지", "chimp_mPanTro3"),
        ("보르네오오랑우탄", "orang_bornean_mPonPyg2"), ("수마트라오랑우탄", "orang_sumatran_mPonAbe1"),
        ("시아망", "siamang_mSymSyn1"), ("애기장대", "arabidopsis_ColCC"),

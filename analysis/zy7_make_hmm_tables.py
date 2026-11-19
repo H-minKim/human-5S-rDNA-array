@@ -250,15 +250,15 @@ if os.path.exists(SRCP):
         if hh is None:
             hh = {k: i for i, k in enumerate(x)}
             continue
-        BETA[(x[hh["플랫폼"]], int(x[hh["칸번호"]]))] = x[hh["beta"]]
-        ZON[(x[hh["플랫폼"]], int(x[hh["칸번호"]]))] = x[hh["자리"]]
+        BETA[(x[hh["platform"]], int(x[hh["bin_index"]]))] = x[hh["beta"]]
+        ZON[(x[hh["platform"]], int(x[hh["bin_index"]]))] = x[hh["position"]]
 O1 = os.path.join(R, "HMM_20261014_merged_profile.tsv")
 with io.open(O1, "w", encoding="utf8", newline=NL) as g:
     g.write("# FiberHMM 2.16.8 version: same bin rule as zg1 (E=20 absolute, NB=10 relative)" + NL)
     g.write("# beta is CpG and independent of the caller: taken from the source table REF2_20261010c" + NL)
-    g.write(chr(9).join(["플랫폼", "자리", "칸번호", "dinuc_덮은%", "patch_덮은%",
-                         "dinuc_개수_per_kb", "patch_개수_per_kb", "beta",
-                         "분자수", "호출염기", "유닛수"]) + NL)
+    g.write(chr(9).join(["platform", "position", "bin_index", "dinuc_covered_pct", "patch_covered_pct",
+                         "dinuc_count_per_kb", "patch_count_per_kb", "beta",
+                         "n_molecules", "called_bases", "n_units"]) + NL)
     for src, plat in (("UCSC_ONT_FIBERSEQ", "ONT"), ("PACBIO_FIBERSEQ", "PacBio")):
         for c in range(NCELL):
             cv = cov_bp.get((src, c), 0)
@@ -279,9 +279,9 @@ print("(1) written ->", os.path.basename(O1))
 O2 = os.path.join(R, "HMM_20261014_largeMSP_pair_comparison.tsv")
 with io.open(O2, "w", encoding="utf8", newline=NL) as g:
     g.write("# FiberHMM version: bases covered by large MSP(>150bp) / called bases, pairs within the same molecule" + NL)
-    g.write(chr(9).join(["플랫폼", "짝read", "짝_저메틸", "ci95_저", "짝_고메틸",
-                         "ci95_고", "짝차이", "wilcoxon_p", "유닛수_저",
-                         "유닛평균_저", "유닛수_고", "유닛평균_고"]) + NL)
+    g.write(chr(9).join(["platform", "paired_reads", "paired_low_meth", "ci95_low", "paired_high_meth",
+                         "ci95_high", "paired_diff", "wilcoxon_p", "n_units_low",
+                         "unit_mean_low", "n_units_high", "unit_mean_high"]) + NL)
     for plat in ("ONT", "PacBio"):
         r = pair(PAIRL, plat)
         if r is None:
@@ -303,7 +303,7 @@ O3 = os.path.join(R, "HMM_20261014_occupancy_pair_points.tsv")
 with io.open(O3, "w", encoding="utf8", newline=NL) as g:
     g.write("# FiberHMM version: per read, mean occupancy of low-methylation units and mean occupancy of high-methylation units" + NL)
     g.write("# occupancy = nuc_bp/(nuc_bp+msp_bp), unit filter called bases >= 1800, beta <= 0.508" + NL)
-    g.write(chr(9).join(["플랫폼", "개체", "read", "저메틸", "고메틸"]) + NL)
+    g.write(chr(9).join(["platform", "individual", "read", "low_meth", "high_meth"]) + NL)
     for plat in ("ONT", "PacBio"):
         r = pair(PAIRO, plat)
         if r is None:
@@ -320,7 +320,7 @@ print("(3) written ->", os.path.basename(O3))
 O4 = os.path.join(R, "HMM_20261014_raw_vs_paired.tsv")
 with io.open(O4, "w", encoding="utf8", newline=NL) as g:
     g.write("# FiberHMM version: occupancy low-methylation minus high-methylation, unpaired vs paired" + NL)
-    g.write(chr(9).join(["플랫폼", "날것", "짝", "짝read", "유닛_저", "유닛_고",
+    g.write(chr(9).join(["platform", "unpaired", "paired", "paired_reads", "units_low", "units_high",
                          "wilcoxon_p"]) + NL)
     for plat in ("ONT", "PacBio"):
         r = pair(PAIRO, plat)

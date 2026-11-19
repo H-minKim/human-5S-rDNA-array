@@ -116,7 +116,7 @@ stops with a message naming the variable it needs.
 | `RDNA_V11_FIX4_DIR` | the v11-fix4 working tree the unit-methylation run used |
 | `NODE_HOME` | the home directory of the compute node, for the `upstream/` stages that ran there. The node scripts build every path under it, so it has no default and a script stops without it |
 | `NODE_WORK_DIR` | the working directory of the compute node, for the cross-species scripts in `array_acquisition_other_species/code/` that read and write their tables there |
-| `RDNA_LIB_DIR` | the folder a script imports its helper modules from: `analysis/` for `a_lib.py`, and `common/fig07_figS7/` for `betabins.py`, `prof_smooth.py`, `landsc.py` and `figorder.py`, which `make_sourcedata_fig07.py` imports |
+| `RDNA_LIB_DIR` | the folder a script imports its helper modules from: `analysis/` for `a_lib.py`, and `common/fig07_figS7/` for `betabins.py`, `prof_smooth.py`, `landsc.py`, `figorder.py` and `tab_en.py`, which `make_sourcedata_fig07.py` imports |
 | `RDNA_SOURCEDATA_DIR` | where `make_sourcedata_fig07.py` writes its workbook |
 | `RDNA_CAPTION_DIR` | where `zzab_nucfree_bin.py` writes `TableS7_nucleosome_removed_occupancy.tsv` |
 | `RDNA_CELLS_DIR` | the cell-line Fiber-seq folder for K562 and GM12878: `cell_fhmm_units.py` writes `UNIT_<label>.tsv`, `FHMM_UNITS_<label>.tsv`, `FHMM_READCOV_<label>.tsv` and `SITE_M6A_<label>.tsv` there and the other `cell_*.py` scripts read them |
@@ -285,7 +285,7 @@ because they were launched from the directory that held it.
 
 ### What a sweep for baked-in paths found none of
 
-Over all 658 `.py` and `.sh` files: no absolute `/home/<user>` or `/Users/<user>`
+Over all 659 `.py` and `.sh` files: no absolute `/home/<user>` or `/Users/<user>`
 path, no Windows drive letter, no hardcoded IP address, no user or account
 name, and no absolute entry added to `sys.path` (every one is derived from
 `__file__` or from a variable). Every environment variable that still carries a
@@ -335,20 +335,18 @@ labels. This work was written in Korean.
 The column names and the category values are identifiers and data, not prose:
 changing them would change what the code compares and looks up.
 
-They reach 18 of the tables deposited here. Measured over this repository:
+They do not reach the result tables deposited here. Measured over this repository:
 
-* of the 196 deposited tables (`.tsv` and `.tsv.gz`), **176 contain no Korean character at all**;
-* two of the 20 that do are `common/fig02_figS2/EN_DICT.tsv` and
+* of the 196 deposited tables (`.tsv` and `.tsv.gz`), **194 contain no Korean character at all**;
+* the other two are `common/fig02_figS2/EN_DICT.tsv` and
   `common/fig02_figS2/EN_WRAP_MAP.tsv`, which are the Korean-to-English
-  dictionaries themselves, where the Korean is the data;
-* the other 18 are result tables of the Figure 5 and Figure 7 families in `tables/`,
-  deposited as the scripts write them, with Korean column names.
+  dictionaries themselves, where the Korean is the data.
 
-Apart from those 18, a producer that works internally in Korean names renames its columns to English
+A producer that works internally in Korean names renames its columns to English
 in the last step before `to_csv`, so the table it deposits is English; the other
 producers build their frames in English throughout. `analysis/fig3_sourcedata_en.py`
 does the reverse, mapping the English columns of a deposited table back to the
-internal names after reading it.
+internal names after reading it. For the Figure 7 family both directions are in `common/fig07_figS7/tab_en.py`: `to_en_file` where a table is written and `open_ko` where it is read.
 
 An intermediate table that a script writes and another script reads - one that
 is produced by running this code and is not deposited - does carry the Korean

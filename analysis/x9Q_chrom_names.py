@@ -22,7 +22,7 @@ def _need(k):
 
 NEW = _need("RDNA_OUT_DIR")
 sys.path.insert(0, NEW + "/code")
-import arch  # noqa
+import arch, tab_en  # noqa
 try:
     sys.stdout.reconfigure(encoding="utf-8")
 except Exception:
@@ -41,7 +41,7 @@ ROWS = [("CM054679.2", "수마트라오랑우탄", "Pongo abelii", "chr1", 23379
         ("CP116284.1", "애기장대", "Arabidopsis thaliana", "chr5", 30142610)]
 T = pd.DataFrame(ROWS, columns=["접근번호", "종", "NCBI_organism", "염색체번호", "NCBI_slen"])
 T["출처"] = "NCBI eutils esummary db=nuccore"
-M = pd.read_csv(NEW + "/tables/FIGDATA_A1_chrom_map.tsv", sep="\t")
+M = pd.read_csv(tab_en.open_ko(NEW + "/tables/FIGDATA_A1_chrom_map.tsv"), sep="\t")
 LEN = dict(zip(M.염색체이름.astype(str), M.염색체길이))
 T["우리표_길이"] = T.접근번호.map(LEN)
 T["길이일치"] = [("확인" if (pd.notna(a) and pd.notna(b) and int(a) == int(b)) else
@@ -49,7 +49,7 @@ T["길이일치"] = [("확인" if (pd.notna(a) and pd.notna(b) and int(a) == int
 TMP = os.environ.get("TEMP", ".") + "/x9Q"
 os.makedirs(TMP, exist_ok=True)
 T.to_csv(TMP + "/CHROM_NAMES.tsv", sep="\t", index=False, encoding="utf8", lineterminator="\n")
-arch.put(TMP + "/CHROM_NAMES.tsv", "tables/CHROM_NAMES.tsv", REASON)
+arch.put(tab_en.to_en_file(TMP + "/CHROM_NAMES.tsv"), "tables/CHROM_NAMES.tsv", REASON)
 print(T[["접근번호", "종", "염색체번호", "NCBI_slen", "우리표_길이", "길이일치"]].to_string(index=False))
 print()
 print("all 5 ape species are on chromosome 1: the same chromosome that carries the human 5S array")

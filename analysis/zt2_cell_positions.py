@@ -64,10 +64,10 @@ def slot_cell(ap, n):
 
 def lab(c):
     if c < E:
-        return "원위%d" % (c + 1)
+        return "distal%d" % (c + 1)
     if c < E + NB:
-        return "가운데 %d/%d" % (c - E + 1, NB)
-    return "근위%d" % (2 * E + NB - c)
+        return "interior %d/%d" % (c - E + 1, NB)
+    return "proximal%d" % (2 * E + NB - c)
 
 
 OBS = collections.Counter()                       # (source, cell) -> the number of read x unit observations
@@ -108,7 +108,7 @@ with io.open(OUT, "w", encoding="utf8", newline=chr(10)) as g:
             + chr(10))
     g.write("# depth per position = observations / positions: a measure not affected by bin width" + chr(10))
     g.write("# bin rule same as zg1 (both ends %d absolute, interior %d relative)" % (E, NB) + chr(10))
-    g.write(chr(9).join(["플랫폼", "자리", "칸번호", "관측수", "자리수", "자리당깊이"]) + chr(10))
+    g.write(chr(9).join(["platform", "position", "bin_index", "n_observations", "n_positions", "depth_per_position"]) + chr(10))
     for r in rows:
         g.write(chr(9).join([r[0], r[1], str(r[2]), str(r[3]), str(r[4]),
                              "%.2f" % r[5]]) + chr(10))

@@ -38,7 +38,7 @@ NEW = _need("RDNA_OUT_DIR")
 B = _need("RDNA_DATA_ROOT")
 OLD = _need("RDNA_PREV_OUT_DIR")
 sys.path.insert(0, NEW + "/code")
-import arch  # noqa
+import arch, tab_en  # noqa
 try:
     sys.stdout.reconfigure(encoding="utf-8")
 except Exception:
@@ -62,11 +62,11 @@ exec(compile(head, OLD + "/code/x11_coding_readunit.py", "exec"), G)
 read_fa, COMP = G["read_fa"], G["COMP"]
 
 ST = pd.read_csv(B + "/00_catalog/5S_array_structure.tsv", sep="\t")
-MT = pd.read_csv(NEW + "/tables/PERARRAY_META.tsv", sep="\t")
+MT = pd.read_csv(tab_en.open_ko(NEW + "/tables/PERARRAY_META.tsv"), sep="\t")
 SPK = dict(zip(MT.array_id, MT.종))
 
 # ─────────────────────────── centromere coordinates, the only ruler that sets proximal and distal
-CEN = pd.read_csv(NEW + "/tables/CENTROMERE.tsv", sep="\t")
+CEN = pd.read_csv(tab_en.open_ko(NEW + "/tables/CENTROMERE.tsv"), sep="\t")
 _cen_acc, _cen_sp = {}, {}
 for _r in CEN.itertuples(index=False):
     if pd.isna(_r.시작) or pd.isna(_r.끝):
@@ -74,7 +74,7 @@ for _r in CEN.itertuples(index=False):
     _cen_acc[str(_r.접근번호)] = (float(_r.시작), float(_r.끝))
     _cen_sp[(str(_r.종), str(_r.염색체))] = (float(_r.시작), float(_r.끝))
 # accession -> chromosome name, resolved through both the label (such as "chr4 · 36.2 Mb" or "chr9_mat") and CHROM_NAMES
-_CN = pd.read_csv(NEW + "/tables/CHROM_NAMES.tsv", sep="\t")
+_CN = pd.read_csv(tab_en.open_ko(NEW + "/tables/CHROM_NAMES.tsv"), sep="\t")
 _chrno = dict(zip(_CN.접근번호.astype(str), _CN.염색체번호.astype(str)))
 _lab = {}
 for _t in MT.itertuples(index=False):
@@ -136,7 +136,7 @@ for _r in O[O.끝자와같나 == "다름"].itertuples(index=False):
          _r.array시작 / 1e6, _r.array끝 / 1e6, _r.근위쪽,
          "높은 좌표" if _r.가까운끝 == "낮은 좌표" else "낮은 좌표"))
 P("")
-P("arrays that overlap the centromere, so proximal/distal cannot be assigned: %d" % int((O.중심절겹침 == "e.g.").sum()))
+P("arrays that overlap the centromere, so proximal/distal cannot be assigned: %d" % int((O.중심절겹침 == "예").sum()))
 for _r in O[O.중심절겹침 == "예"].itertuples(index=False):
     P("  %-9s %s" % (_r.종, _r.array_id))
 P("")
@@ -195,7 +195,7 @@ TMP = os.environ.get("TEMP", ".") + "/x41"
 os.makedirs(TMP, exist_ok=True)
 O.to_csv(TMP + "/ORIENTATION.tsv", sep="\t", index=False, encoding="utf8", lineterminator="\n")
 J.round(6).to_csv(TMP + "/ORIENTATION_FLANK_JACCARD.tsv", sep="\t", index=False, encoding="utf8", lineterminator="\n")
-arch.put(TMP + "/ORIENTATION.tsv", "tables/ORIENTATION.tsv", REASON)
+arch.put(tab_en.to_en_file(TMP + "/ORIENTATION.tsv"), "tables/ORIENTATION.tsv", REASON)
 arch.put(TMP + "/ORIENTATION_FLANK_JACCARD.tsv", "tables/ORIENTATION_FLANK_JACCARD.tsv", REASON)
 P("")
 P("tables: latest/tables/ORIENTATION.tsv, ORIENTATION_FLANK_JACCARD.tsv")

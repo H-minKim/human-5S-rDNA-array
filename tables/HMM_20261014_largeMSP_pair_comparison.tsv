@@ -1,3 +1,3 @@
-플랫폼	짝read	짝_저메틸	ci95_저	짝_고메틸	ci95_고	짝차이	wilcoxon_p	유닛수_저	유닛평균_저	유닛수_고	유닛평균_고
+platform	paired_reads	paired_low_meth	ci95_low	paired_high_meth	ci95_high	paired_diff	wilcoxon_p	n_units_low	unit_mean_low	n_units_high	unit_mean_high
 ONT	2111	0.089853	0.004281	0.024894	0.001666	0.064959	1.017e-210	23231	0.086222	63147	0.024284
 PacBio	1010	0.097161	0.008774	0.038433	0.005332	0.058728	3.518e-63	8356	0.106028	26652	0.037514

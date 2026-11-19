@@ -1,11 +1,11 @@
-접근번호	종	NCBI_organism	염색체번호	NCBI_slen	출처	우리표_길이	길이일치
-CM054679.2	수마트라오랑우탄	Pongo abelii	chr1	233795519	NCBI eutils esummary db=nuccore	233795519	확인
-CM054630.2	보르네오오랑우탄	Pongo pygmaeus	chr1	230807400	NCBI eutils esummary db=nuccore	230807400	확인
-CM055446.2	고릴라	Gorilla gorilla gorilla	chr1	243847345	NCBI eutils esummary db=nuccore	243847345	확인
-CM055472.2	보노보	Pan paniscus	chr1	227705052	NCBI eutils esummary db=nuccore	227705052	확인
-CM054434.2	침팬지	Pan troglodytes	chr1	231299448	NCBI eutils esummary db=nuccore	231299448	확인
-CP116280.1	애기장대	Arabidopsis thaliana	chr1	32637894	NCBI eutils esummary db=nuccore	32637894	확인
-CP116281.2	애기장대	Arabidopsis thaliana	chr2	27782540	NCBI eutils esummary db=nuccore	27782540	확인
-CP116282.1	애기장대	Arabidopsis thaliana	chr3	26149336	NCBI eutils esummary db=nuccore	26149336	확인
-CP116283.2	애기장대	Arabidopsis thaliana	chr4	25768865	NCBI eutils esummary db=nuccore	25768865	확인
-CP116284.1	애기장대	Arabidopsis thaliana	chr5	30142610	NCBI eutils esummary db=nuccore	30142610	확인
+accession	species	NCBI_organism	chromosome_number	NCBI_slen	source	chrom_map_length	length_match
+CM054679.2	Sumatran orangutan	Pongo abelii	chr1	233795519	NCBI eutils esummary db=nuccore	233795519	confirmed
+CM054630.2	Bornean orangutan	Pongo pygmaeus	chr1	230807400	NCBI eutils esummary db=nuccore	230807400	confirmed
+CM055446.2	gorilla	Gorilla gorilla gorilla	chr1	243847345	NCBI eutils esummary db=nuccore	243847345	confirmed
+CM055472.2	bonobo	Pan paniscus	chr1	227705052	NCBI eutils esummary db=nuccore	227705052	confirmed
+CM054434.2	chimpanzee	Pan troglodytes	chr1	231299448	NCBI eutils esummary db=nuccore	231299448	confirmed
+CP116280.1	Arabidopsis thaliana	Arabidopsis thaliana	chr1	32637894	NCBI eutils esummary db=nuccore	32637894	confirmed
+CP116281.2	Arabidopsis thaliana	Arabidopsis thaliana	chr2	27782540	NCBI eutils esummary db=nuccore	27782540	confirmed
+CP116282.1	Arabidopsis thaliana	Arabidopsis thaliana	chr3	26149336	NCBI eutils esummary db=nuccore	26149336	confirmed
+CP116283.2	Arabidopsis thaliana	Arabidopsis thaliana	chr4	25768865	NCBI eutils esummary db=nuccore	25768865	confirmed
+CP116284.1	Arabidopsis thaliana	Arabidopsis thaliana	chr5	30142610	NCBI eutils esummary db=nuccore	30142610	confirmed

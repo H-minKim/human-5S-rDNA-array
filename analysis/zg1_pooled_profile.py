@@ -151,10 +151,10 @@ print("bins %d (distal %d, interior %d, proximal %d)" % (NCELL, E, NB, E))
 
 def lab(c):
     if c < E:
-        return "원위%d" % (c + 1)
+        return "distal%d" % (c + 1)
     if c < E + NB:
-        return "가운데 %d/%d" % (c - E + 1, NB)
-    return "근위%d" % (2 * E + NB - c)
+        return "interior %d/%d" % (c - E + 1, NB)
+    return "proximal%d" % (2 * E + NB - c)
 
 
 rows = []
@@ -179,9 +179,9 @@ with io.open(OUT, "w", encoding="utf8", newline=chr(10)) as g:
             "(array_pos 1 = distal/DJ, N = proximal/centromere)" % (E, NB, E) + chr(10))
     g.write("# di-nuc = fraction of bases covered by >210bp nucleosomes, patch = fraction of bases covered by >150bp large MSP"
             + chr(10))
-    g.write(chr(9).join(["플랫폼", "자리", "칸번호", "dinuc_덮은%", "patch_덮은%",
-                         "dinuc_개수_per_kb", "patch_개수_per_kb", "beta",
-                         "분자수", "호출염기", "유닛수"]) + chr(10))
+    g.write(chr(9).join(["platform", "position", "bin_index", "dinuc_covered_pct", "patch_covered_pct",
+                         "dinuc_count_per_kb", "patch_count_per_kb", "beta",
+                         "n_molecules", "called_bases", "n_units"]) + chr(10))
     for r in rows:
         g.write(chr(9).join([r[0], r[1], str(r[2]), "%.3f" % r[3], "%.3f" % r[4],
                              "%.4f" % r[5], "%.4f" % r[6],

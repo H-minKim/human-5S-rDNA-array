@@ -1,4 +1,4 @@
-array_id	문맥	read유닛	자리수중앙	평균β
+array_id	context	read_units	median_n_sites	mean_beta
 arabidopsis_ColCC__CP116280.1_18614467_18617475	CG	570	20.0	0.8743
 arabidopsis_ColCC__CP116280.1_18614467_18617475	CHG	567	9.0	0.5532
 arabidopsis_ColCC__CP116280.1_18614467_18617475	CHH	572	66.0	0.2148

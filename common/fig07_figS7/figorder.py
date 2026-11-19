@@ -3,6 +3,7 @@
 #   Within a species: increasing chromosome number, then increasing array start coordinate, counted per locus, with the maternal and paternal copies merged.
 import re
 import pandas as pd
+import tab_en
 
 _CACHE = {}
 
@@ -11,9 +12,9 @@ def panel_order(NEW):
     """{group name : (chromosome number, start coordinate)}; smaller values come first"""
     if NEW in _CACHE:
         return _CACHE[NEW]
-    MT = pd.read_csv(NEW + "/tables/PERARRAY_META.tsv", sep="\t")
-    CN = pd.read_csv(NEW + "/tables/CHROM_NAMES.tsv", sep="\t")
-    G = pd.read_csv(NEW + "/tables/UNITBETA_PERARRAY_v13.tsv.gz", sep="\t",
+    MT = pd.read_csv(tab_en.open_ko(NEW + "/tables/PERARRAY_META.tsv"), sep="\t")
+    CN = pd.read_csv(tab_en.open_ko(NEW + "/tables/CHROM_NAMES.tsv"), sep="\t")
+    G = pd.read_csv(tab_en.open_ko(NEW + "/tables/UNITBETA_PERARRAY_v13.tsv.gz"), sep="\t",
                     usecols=["array_id", "묶음"]).drop_duplicates()
     chno = dict(zip(CN.접근번호.astype(str), CN.염색체번호.astype(str)))
     k = dict(zip(G.array_id, G.묶음))

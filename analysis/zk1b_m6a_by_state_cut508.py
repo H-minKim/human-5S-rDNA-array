@@ -129,7 +129,7 @@ with io.open(OUT, "w", encoding="utf8", newline=chr(10)) as g:
     g.write("# m6A by position within the unit: denominator is depth (number of molecules covering the position), by state" + chr(10))
     g.write("# m6A call = ML >= %d, check: difference from n_m6a of the table %.3f%%"
             % (ML, 100.0 * chk_m / max(1, chk_t)) + chr(10))
-    g.write(chr(9).join(["플랫폼", "상태", "unit_pos", "m6a_분자비율_%", "깊이"]) + chr(10))
+    g.write(chr(9).join(["platform", "state", "unit_pos", "m6a_molecule_fraction_pct", "depth"]) + chr(10))
     for r in rows:
         g.write(chr(9).join([r[0], r[1], str(r[2]), "%.4f" % r[3], str(r[4])]) + chr(10))
 print()

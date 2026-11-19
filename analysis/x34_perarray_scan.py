@@ -28,7 +28,7 @@ NEW = _need("RDNA_OUT_DIR")
 B = _need("RDNA_DATA_ROOT")
 OLD = _need("RDNA_PREV_OUT_DIR")
 sys.path.insert(0, NEW + "/code")
-import arch  # noqa
+import arch, tab_en  # noqa
 try:
     sys.stdout.reconfigure(encoding="utf-8")
 except Exception:
@@ -267,7 +267,7 @@ MTD.to_csv(TMP + "/PERARRAY_META.tsv", sep="\t", index=False, encoding="utf8", l
 for f, rel in ((TMP + "/PERARRAY_WITHIN_UNIT.tsv.gz", "tables/PERARRAY_WITHIN_UNIT.tsv.gz"),
                (TMP + "/PERARRAY_LANDSCAPE.tsv.gz", "tables/PERARRAY_LANDSCAPE.tsv.gz"),
                (TMP + "/PERARRAY_META.tsv", "tables/PERARRAY_META.tsv")):
-    arch.put(f, rel, REASON)
+    arch.put(tab_en.to_en_file(f), rel, REASON)
 P("")
 P("within-unit %s rows, landscape %s rows, arrays %d" % (format(len(WUD), ","), format(len(LSD), ","), len(MTD)))
 LOG.close()

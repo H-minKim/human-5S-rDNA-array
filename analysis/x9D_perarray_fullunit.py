@@ -80,7 +80,7 @@ NEW = _need("RDNA_OUT_DIR")
 B = _need("RDNA_DATA_ROOT")
 OLD = _need("RDNA_PREV_OUT_DIR")
 sys.path.insert(0, NEW + "/code")
-import arch  # noqa
+import arch, tab_en  # noqa
 import bbmix  # Weighted-likelihood fit of a one- and two-component beta-binomial (values identical to xa1; table BBMIX_CHECK.tsv).
 try:
     sys.stdout.reconfigure(encoding="utf-8")
@@ -586,7 +586,7 @@ arch.put(TMP + "/PROFILE_BP_PERARRAY_v13.tsv.gz", "tables/PROFILE_BP_PERARRAY_v1
 U.to_csv(TMP + "/UNITBETA_PERARRAY_v13.tsv.gz", sep="\t", index=False, encoding="utf8", lineterminator="\n")
 arch.put(TMP + "/PROFILE_BP_v13X.tsv.gz", "tables/PROFILE_BP_v13X.tsv.gz", REASON)
 arch.put(TMP + "/PROFILE_META_v13X.tsv", "tables/PROFILE_META_v13X.tsv", REASON)
-arch.put(TMP + "/UNITBETA_PERARRAY_v13.tsv.gz", "tables/UNITBETA_PERARRAY_v13.tsv.gz", REASON)
+arch.put(tab_en.to_en_file(TMP + "/UNITBETA_PERARRAY_v13.tsv.gz"), "tables/UNITBETA_PERARRAY_v13.tsv.gz", REASON)
 P("")
 P("groups %d, position rows %s" % (len(M), format(len(R), ",")))
 P("")

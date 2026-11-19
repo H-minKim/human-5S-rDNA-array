@@ -33,7 +33,7 @@ import pandas as pd
 
 NEW = _need("RDNA_OUT_DIR")
 sys.path.insert(0, NEW + "/code")
-import arch        # noqa: E402
+import arch, tab_en  # noqa: E402
 import figorder    # noqa: E402
 
 try:
@@ -46,7 +46,7 @@ CTX = ["CG", "CHG", "CHH"]
 CX = pd.read_csv(NEW + "/tables/ATH_READUNIT_CONTEXT.tsv.gz", sep="\t")
 CXM = pd.read_csv(NEW + "/tables/ATH_CONTEXT_PERARRAY.tsv", sep="\t")
 CXM = CXM[CXM.part == "whole"]
-G = pd.read_csv(NEW + "/tables/UNITBETA_PERARRAY_v13.tsv.gz", sep="\t",
+G = pd.read_csv(tab_en.open_ko(NEW + "/tables/UNITBETA_PERARRAY_v13.tsv.gz"), sep="\t",
                 usecols=["array_id", "묶음"]).drop_duplicates()
 GRP = dict(zip(G.array_id, G.묶음))
 ORD = figorder.panel_order(NEW)
@@ -70,7 +70,7 @@ TMP = os.environ.get("TEMP", ".") + "/x14"
 os.makedirs(TMP, exist_ok=True)
 T.to_csv(TMP + "/FIGDATA_SUPP4_ATH_CONTEXT.tsv", sep="\t", index=False, encoding="utf8",
          lineterminator="\n")
-arch.put(TMP + "/FIGDATA_SUPP4_ATH_CONTEXT.tsv", "tables/FIGDATA_SUPP4_ATH_CONTEXT.tsv", REASON)
+arch.put(tab_en.to_en_file(TMP + "/FIGDATA_SUPP4_ATH_CONTEXT.tsv"), "tables/FIGDATA_SUPP4_ATH_CONTEXT.tsv", REASON)
 
 mu = T.groupby("문맥").평균β.mean()
 print("arrays %d, rows %d" % (T.array_id.nunique(), len(T)))

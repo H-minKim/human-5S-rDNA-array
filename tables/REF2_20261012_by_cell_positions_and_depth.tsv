@@ -2,104 +2,104 @@
 # observations = number of read x unit rows in a13, positions = distinct (individual,slot,array_pos)
 # depth per position = observations / positions: a measure not affected by bin width
 # bin rule same as zg1 (both ends 20 absolute, interior 10 relative)
-플랫폼	자리	칸번호	관측수	자리수	자리당깊이
-ONT	원위1	0	1090	101	10.79
-ONT	원위2	1	1109	101	10.98
-ONT	원위3	2	1086	101	10.75
-ONT	원위4	3	1070	101	10.59
-ONT	원위5	4	1063	101	10.52
-ONT	원위6	5	1035	101	10.25
-ONT	원위7	6	1013	100	10.13
-ONT	원위8	7	1000	100	10.00
-ONT	원위9	8	993	100	9.93
-ONT	원위10	9	990	100	9.90
-ONT	원위11	10	982	100	9.82
-ONT	원위12	11	991	100	9.91
-ONT	원위13	12	984	100	9.84
-ONT	원위14	13	991	100	9.91
-ONT	원위15	14	977	100	9.77
-ONT	원위16	15	965	101	9.55
-ONT	원위17	16	943	101	9.34
-ONT	원위18	17	940	101	9.31
-ONT	원위19	18	925	101	9.16
-ONT	원위20	19	933	101	9.24
-ONT	가운데 1/10	20	5317	574	9.26
-ONT	가운데 2/10	21	4756	542	8.77
-ONT	가운데 3/10	22	4626	543	8.52
-ONT	가운데 4/10	23	4496	535	8.40
-ONT	가운데 5/10	24	4560	522	8.74
-ONT	가운데 6/10	25	5022	547	9.18
-ONT	가운데 7/10	26	4874	523	9.32
-ONT	가운데 8/10	27	5014	537	9.34
-ONT	가운데 9/10	28	5234	550	9.52
-ONT	가운데 10/10	29	4649	486	9.57
-ONT	근위20	30	967	100	9.67
-ONT	근위19	31	969	100	9.69
-ONT	근위18	32	985	100	9.85
-ONT	근위17	33	991	100	9.91
-ONT	근위16	34	997	100	9.97
-ONT	근위15	35	1031	100	10.31
-ONT	근위14	36	1045	100	10.45
-ONT	근위13	37	1059	100	10.59
-ONT	근위12	38	1071	100	10.71
-ONT	근위11	39	1085	100	10.85
-ONT	근위10	40	1091	100	10.91
-ONT	근위9	41	1096	100	10.96
-ONT	근위8	42	1097	100	10.97
-ONT	근위7	43	1102	100	11.02
-ONT	근위6	44	1115	101	11.04
-ONT	근위5	45	1132	101	11.21
-ONT	근위4	46	1174	101	11.62
-ONT	근위3	47	1187	101	11.75
-ONT	근위2	48	1202	101	11.90
-ONT	근위1	49	1224	101	12.12
-PacBio	원위1	0	680	87	7.82
-PacBio	원위2	1	657	87	7.55
-PacBio	원위3	2	644	87	7.40
-PacBio	원위4	3	608	87	6.99
-PacBio	원위5	4	562	87	6.46
-PacBio	원위6	5	516	86	6.00
-PacBio	원위7	6	459	84	5.46
-PacBio	원위8	7	421	85	4.95
-PacBio	원위9	8	399	84	4.75
-PacBio	원위10	9	391	82	4.77
-PacBio	원위11	10	365	79	4.62
-PacBio	원위12	11	345	75	4.60
-PacBio	원위13	12	309	73	4.23
-PacBio	원위14	13	315	68	4.63
-PacBio	원위15	14	302	67	4.51
-PacBio	원위16	15	292	67	4.36
-PacBio	원위17	16	288	64	4.50
-PacBio	원위18	17	292	66	4.42
-PacBio	원위19	18	291	70	4.16
-PacBio	원위20	19	296	69	4.29
-PacBio	가운데 1/10	20	1592	403	3.95
-PacBio	가운데 2/10	21	1599	387	4.13
-PacBio	가운데 3/10	22	1930	388	4.97
-PacBio	가운데 4/10	23	2016	409	4.93
-PacBio	가운데 5/10	24	1966	421	4.67
-PacBio	가운데 6/10	25	2021	456	4.43
-PacBio	가운데 7/10	26	1753	442	3.97
-PacBio	가운데 8/10	27	1936	426	4.54
-PacBio	가운데 9/10	28	2161	444	4.87
-PacBio	가운데 10/10	29	1987	416	4.78
-PacBio	근위20	30	390	83	4.70
-PacBio	근위19	31	385	85	4.53
-PacBio	근위18	32	386	84	4.60
-PacBio	근위17	33	399	85	4.69
-PacBio	근위16	34	398	85	4.68
-PacBio	근위15	35	387	83	4.66
-PacBio	근위14	36	384	84	4.57
-PacBio	근위13	37	391	82	4.77
-PacBio	근위12	38	398	82	4.85
-PacBio	근위11	39	404	81	4.99
-PacBio	근위10	40	417	87	4.79
-PacBio	근위9	41	426	88	4.84
-PacBio	근위8	42	440	91	4.84
-PacBio	근위7	43	460	91	5.05
-PacBio	근위6	44	472	92	5.13
-PacBio	근위5	45	471	92	5.12
-PacBio	근위4	46	482	90	5.36
-PacBio	근위3	47	485	88	5.51
-PacBio	근위2	48	475	89	5.34
-PacBio	근위1	49	473	88	5.38
+platform	position	bin_index	n_observations	n_positions	depth_per_position
+ONT	distal1	0	1090	101	10.79
+ONT	distal2	1	1109	101	10.98
+ONT	distal3	2	1086	101	10.75
+ONT	distal4	3	1070	101	10.59
+ONT	distal5	4	1063	101	10.52
+ONT	distal6	5	1035	101	10.25
+ONT	distal7	6	1013	100	10.13
+ONT	distal8	7	1000	100	10.00
+ONT	distal9	8	993	100	9.93
+ONT	distal10	9	990	100	9.90
+ONT	distal11	10	982	100	9.82
+ONT	distal12	11	991	100	9.91
+ONT	distal13	12	984	100	9.84
+ONT	distal14	13	991	100	9.91
+ONT	distal15	14	977	100	9.77
+ONT	distal16	15	965	101	9.55
+ONT	distal17	16	943	101	9.34
+ONT	distal18	17	940	101	9.31
+ONT	distal19	18	925	101	9.16
+ONT	distal20	19	933	101	9.24
+ONT	interior 1/10	20	5317	574	9.26
+ONT	interior 2/10	21	4756	542	8.77
+ONT	interior 3/10	22	4626	543	8.52
+ONT	interior 4/10	23	4496	535	8.40
+ONT	interior 5/10	24	4560	522	8.74
+ONT	interior 6/10	25	5022	547	9.18
+ONT	interior 7/10	26	4874	523	9.32
+ONT	interior 8/10	27	5014	537	9.34
+ONT	interior 9/10	28	5234	550	9.52
+ONT	interior 10/10	29	4649	486	9.57
+ONT	proximal20	30	967	100	9.67
+ONT	proximal19	31	969	100	9.69
+ONT	proximal18	32	985	100	9.85
+ONT	proximal17	33	991	100	9.91
+ONT	proximal16	34	997	100	9.97
+ONT	proximal15	35	1031	100	10.31
+ONT	proximal14	36	1045	100	10.45
+ONT	proximal13	37	1059	100	10.59
+ONT	proximal12	38	1071	100	10.71
+ONT	proximal11	39	1085	100	10.85
+ONT	proximal10	40	1091	100	10.91
+ONT	proximal9	41	1096	100	10.96
+ONT	proximal8	42	1097	100	10.97
+ONT	proximal7	43	1102	100	11.02
+ONT	proximal6	44	1115	101	11.04
+ONT	proximal5	45	1132	101	11.21
+ONT	proximal4	46	1174	101	11.62
+ONT	proximal3	47	1187	101	11.75
+ONT	proximal2	48	1202	101	11.90
+ONT	proximal1	49	1224	101	12.12
+PacBio	distal1	0	680	87	7.82
+PacBio	distal2	1	657	87	7.55
+PacBio	distal3	2	644	87	7.40
+PacBio	distal4	3	608	87	6.99
+PacBio	distal5	4	562	87	6.46
+PacBio	distal6	5	516	86	6.00
+PacBio	distal7	6	459	84	5.46
+PacBio	distal8	7	421	85	4.95
+PacBio	distal9	8	399	84	4.75
+PacBio	distal10	9	391	82	4.77
+PacBio	distal11	10	365	79	4.62
+PacBio	distal12	11	345	75	4.60
+PacBio	distal13	12	309	73	4.23
+PacBio	distal14	13	315	68	4.63
+PacBio	distal15	14	302	67	4.51
+PacBio	distal16	15	292	67	4.36
+PacBio	distal17	16	288	64	4.50
+PacBio	distal18	17	292	66	4.42
+PacBio	distal19	18	291	70	4.16
+PacBio	distal20	19	296	69	4.29
+PacBio	interior 1/10	20	1592	403	3.95
+PacBio	interior 2/10	21	1599	387	4.13
+PacBio	interior 3/10	22	1930	388	4.97
+PacBio	interior 4/10	23	2016	409	4.93
+PacBio	interior 5/10	24	1966	421	4.67
+PacBio	interior 6/10	25	2021	456	4.43
+PacBio	interior 7/10	26	1753	442	3.97
+PacBio	interior 8/10	27	1936	426	4.54
+PacBio	interior 9/10	28	2161	444	4.87
+PacBio	interior 10/10	29	1987	416	4.78
+PacBio	proximal20	30	390	83	4.70
+PacBio	proximal19	31	385	85	4.53
+PacBio	proximal18	32	386	84	4.60
+PacBio	proximal17	33	399	85	4.69
+PacBio	proximal16	34	398	85	4.68
+PacBio	proximal15	35	387	83	4.66
+PacBio	proximal14	36	384	84	4.57
+PacBio	proximal13	37	391	82	4.77
+PacBio	proximal12	38	398	82	4.85
+PacBio	proximal11	39	404	81	4.99
+PacBio	proximal10	40	417	87	4.79
+PacBio	proximal9	41	426	88	4.84
+PacBio	proximal8	42	440	91	4.84
+PacBio	proximal7	43	460	91	5.05
+PacBio	proximal6	44	472	92	5.13
+PacBio	proximal5	45	471	92	5.12
+PacBio	proximal4	46	482	90	5.36
+PacBio	proximal3	47	485	88	5.51
+PacBio	proximal2	48	475	89	5.34
+PacBio	proximal1	49	473	88	5.38

@@ -57,7 +57,7 @@ def _need(k):
 
 NEW = _need("RDNA_OUT_DIR")
 sys.path.insert(0, NEW + "/code")
-import arch  # noqa
+import arch, tab_en  # noqa
 try:
     sys.stdout.reconfigure(encoding="utf-8")
 except Exception:
@@ -99,6 +99,6 @@ OUT = T
 TMP = os.environ.get("TEMP", ".") + "/xa8"
 os.makedirs(TMP, exist_ok=True)
 OUT.to_csv(TMP + "/CENTROMERE.tsv", sep="\t", index=False, encoding="utf8", lineterminator="\n")
-arch.put(TMP + "/CENTROMERE.tsv", "tables/CENTROMERE.tsv", REASON)
+arch.put(tab_en.to_en_file(TMP + "/CENTROMERE.tsv"), "tables/CENTROMERE.tsv", REASON)
 print(OUT[["종", "염색체", "시작Mb", "끝Mb", "길이Mb"]].to_string(index=False))
 print("\nmethod: (1) apes %s\n       (2) Arabidopsis %s\n       (3) zebrafish %s" % (M1, M2, M3))

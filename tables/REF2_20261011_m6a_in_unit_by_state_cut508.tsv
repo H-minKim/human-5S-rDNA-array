@@ -1,6 +1,6 @@
 # m6A by position within the unit: denominator is depth (number of molecules covering the position), by state
 # m6A call = ML >= 128, check: difference from n_m6a of the table 0.000%
-플랫폼	상태	unit_pos	m6a_분자비율_%	깊이
+platform	state	unit_pos	m6a_molecule_fraction_pct	depth
 ONT	H	1	1.1637	33515
 ONT	H	2	0.8350	33533
 ONT	H	3	0.5839	33568
