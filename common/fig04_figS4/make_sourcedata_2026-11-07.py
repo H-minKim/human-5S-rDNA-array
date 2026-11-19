@@ -98,7 +98,7 @@ RT = {
     "P10_DXZ4_POLARITY_FINAL.tsv": (os.path.join(P10, "P10_DXZ4_POLARITY_FINAL.tsv"), "no producer preserved", "a6a120f498ee"),
 }
 BIG = {  # not copied into a sheet
-    "L1_READ_UNIT.parquet": ("983ea5625d32 (raw)", "upstream/v13_L1_read_unit.py", "Zenodo record of the code archive (tables/README.md)"),
+    "L1_READ_UNIT.parquet": ("b9980f6040a2 (raw)", "upstream/v13_L1_read_unit.py", "Zenodo record of the code archive (tables/README.md)"),
     "P10_FRAME_ALL.tsv": ("fdd03601f3cb (raw)", "analysis/p10_08_extract_frame.py", "Zenodo record of the code archive (tables/README.md)"),
     "P10_CPG_ALL.tsv.gz": ("4f9eea48a4c5 (raw)", "analysis/p10_12_extract_cpg.py", "Zenodo record of the code archive (tables/README.md)"),
     "P10_CPG_ADD3.tsv.gz": ("c11682f9e965 (raw)", "analysis/p10_12b_extract_cpg_DXZ4_RNU2_SST1.py", "Zenodo record of the code archive (tables/README.md)"),

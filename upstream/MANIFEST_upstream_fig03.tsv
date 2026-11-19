@@ -4,7 +4,7 @@ upstream/v11_node/meth_units_jx_v11.py	e3f29aa2d94f	7818	METH_READUNIT_<node>.ts
 upstream/v11_node/meth_units_ao_v11.py	4b54a95e4085	7821	the same two tables from the array-only placed BAMs	Figure 3D (through analysis/v13b_zone_10_21_2026-10-29.py)
 upstream/v11_local/merge_meth.py	e8a0a3825b33	4555	READMAP_METH_G8V4.tsv and METH_SITE_G8V4.tsv.gz, merging the per-node tables	Figure 3D (lineage)
 upstream/v1_build.py	5c75d6ebad4a	11842	ru_v11.parquet, one row per read x unit	Supplementary Figure 3B, C (through figx25_shape_prep.py)
-upstream/v13_L1_read_unit.py	ec21617dac7f	12583	L1_READ_UNIT.parquet, one row per read x unit after the completeness gate	Figure 3E; Supplementary Figure 3D
+upstream/v13_L1_read_unit.py	2b2b97364ac8	12583	L1_READ_UNIT.parquet, one row per read x unit after the completeness gate	Figure 3E; Supplementary Figure 3D
 upstream/v14_L2_hap_unit.py	aa42cb7d5d18	10824	L2_HAP_UNIT.parquet, one row per haplotype x unit	Figure 3F
 upstream/v143_junction_seq_annot.py	9510e5985456	5457	JUNCTION_SEQ_ANNOT.tsv, CpG and Alu-like counts per window	Supplementary Figure 3A (through analysis/fig3_supp_seq1k_prep.py)
 upstream/fig8_prep.py	3d89151089e9	5117	FIG8_PAIRS.tsv, the paired samples and their per-sample beta	Supplementary Figure 3E, F, G, H

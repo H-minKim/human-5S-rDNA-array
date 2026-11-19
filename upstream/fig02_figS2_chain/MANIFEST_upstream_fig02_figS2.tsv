@@ -85,7 +85,7 @@ U4_unit_methylation	17	upstream/fig02_figS2_chain/U4_unit_methylation/v11-fix4/m
 U4_unit_methylation	18	upstream/fig02_figS2_chain/U4_unit_methylation/v11-fix4/build_f4.py	99040a88f9d8	READMAP_METH_V11F4 = V11F2 with the HG008-T block replaced
 U7_read_level_tables	1	upstream/fig02_figS2_chain/U7_read_level_tables/v1_build.py	f4a5b73f13f3	read x unit table ru_v11 (METH_READUNIT cells moved to the reference frame with the map varlist, MLCUT 128)
 U7_read_level_tables	2	upstream/fig02_figS2_chain/U7_read_level_tables/v3_core.py	096e7d68d8b3	HAP_LENGTH_BOUNDARY read by v14
-U7_read_level_tables	3	upstream/fig02_figS2_chain/U7_read_level_tables/v13_L1_read_unit.py	7750d471b857	L1_READ_UNIT : HPRC only, gate frac_canon >= 0.9 and n_canon >= 150 ; varlist from map g8canonv10
+U7_read_level_tables	3	upstream/fig02_figS2_chain/U7_read_level_tables/v13_L1_read_unit.py	11cddc3c0b9f	L1_READ_UNIT : HPRC only, gate frac_canon >= 0.9 and n_canon >= 150 ; varlist from map g8canonv10
 U7_read_level_tables	4	upstream/fig02_figS2_chain/U7_read_level_tables/v14_L2_hap_unit.py	01774460712f	L2_HAP_UNIT (n_read = gated read-units)
 U7_read_level_tables	5	upstream/fig02_figS2_chain/U7_read_level_tables/v20_nxn_scan.py	139d84a53cf5	HAPFEAT : top 40 variable tokens after n_read >= 5
 U7_read_level_tables	6	upstream/fig02_figS2_chain/U7_read_level_tables/majref_build.py	2b0690091097	L2_MAJREF : majority-allele flip of 11 positions

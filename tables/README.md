@@ -75,7 +75,7 @@ unchanged, so the md5 recorded in the manifests still applies:
 | `K562_QUALGATE_NEWZONE_2026-10-13.tsv` | `c8a0b6b322da` | 22756 |
 | `K562_interaction_NEWZONE_withBDP1BRF1_2026-10-14.tsv` | `270dc585ce15` | 411 |
 | `K562_zoneratio_Q20_NEWZONE_withBDP1BRF1_2026-10-14.tsv` | `79afcf0bb43e` | 725 |
-| `L2_HAP_UNIT.parquet` | `2d0217ca81b8` | 9477685 |
+| `L2_HAP_UNIT.parquet` | `d601a7625495` | 9477790 |
 | `MAP_G8_GM12878FS.tsv` | `c5fa06b45060` | 9205700 |
 | `MAP_G8_K562r.tsv` | `a91b74d6df1b` | 9201404 |
 | `MAP_hapB_v4_110units.tsv` | `68f5caa084c2` | 18897 |
@@ -198,13 +198,13 @@ or the manifests of this repository read or name.
 | `REF2_20261011_m6a_in_unit_by_state_cut508.tsv` | `89f51425ccbe` | 173481 |
 | `REF2_20261012_by_cell_positions_and_depth.tsv` | `01b81d03d89c` | 3595 |
 | `SourceData_Fig1_FigS1.xlsx` | `7c52fab2395f` | 75290 |
-| `SourceData_Fig4.xlsx` | `23b22a87f1b0` | 99909 |
+| `SourceData_Fig4.xlsx` | `f236d91805d9` | 99908 |
 | `SourceData_Fig5_FigS7.xlsx` | `fa60ca0f025f` | 478510 |
 | `SourceData_Fig6_A-H.xlsx` | `923a8ce96f5c` | 11606 |
 | `SourceData_Fig6_I-L.xlsx` | `3e586b26fc82` | 16657 |
 | `SourceData_Fig7_FigS11_FigS12_FigS13.xlsx` | `6f10a3bbd0ef` | 2960661 |
 | `SourceData_FigS10.xlsx` | `54d0f6eb0492` | 241866 |
-| `SourceData_FigS4.xlsx` | `3473269d0f58` | 222450 |
+| `SourceData_FigS4.xlsx` | `96e66653224b` | 222451 |
 | `SourceData_FigS5.xlsx` | `4a90ca14e0ad` | 102396 |
 | `SourceData_FigS6.xlsx` | `83e89a7fc0a0` | 46800 |
 | `SourceData_FigS8.xlsx` | `4240475d19a7` | 10338 |

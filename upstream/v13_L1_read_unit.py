@@ -87,8 +87,8 @@ A = A[(A.ap >= 1) & (A.ad >= 1)].copy()
 A["side"] = np.where(A.ap.values <= A.ad.values, "prox", "dist")
 A["ord_near"] = np.minimum(A.ap.values, A.ad.values).astype("int32")
 A["pos_label"] = np.where(A.side.values == "prox",
-                          ["근위%d" % v for v in A.ord_near.values],
-                          ["원위%d" % v for v in A.ord_near.values])
+                          ["proximal%d" % v for v in A.ord_near.values],
+                          ["distal%d" % v for v in A.ord_near.values])
 A["rel"] = ((A.ap - 1) / np.maximum(A.N - 1, 1)).astype("float32")
 
 # --- the methylation
