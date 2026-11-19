@@ -8,9 +8,9 @@
 #    (1) `S4 A`: the recipe of `figx25_shape_prep.py` (H2 gate; unit beta = mean of b; `shape()`)
 #    (2) the valley of `Fig 4 a and b`: the gate of `valley_hardcall.py`
 #       (HPRC_ONT_submissions; n_cpg >= 20; H2 slots; ao/jx deduplicated with jx preferred; hard-call beta)
-# The HPRC release 2 ONT sequencing index this script reads is not part of this archive.
+# The HPRC release 2 ONT sequencing index is read from RDNA_HPRC_R2_ONT_INDEX.
 # Set RDNA_HPRC_R2_ONT_INDEX to a local copy; without it the script falls back to a file of
-# that name beside itself. The README says where the index comes from and gives its md5.
+# that name beside itself.
 import collections
 import csv
 import gzip
@@ -46,7 +46,7 @@ for r in csv.DictReader(io.open(os.environ.get("RDNA_HPRC_R2_ONT_INDEX",
     c = (r.get("sequencing_chemistry") or "").strip()
     if c:
         hp.setdefault(r["sample_id"], set()).add(c)
-HPCHEM = {k: (sorted(v)[0] if len(v) == 1 else "혼재") for k, v in hp.items()}
+HPCHEM = {k: (sorted(v)[0] if len(v) == 1 else "mixed") for k, v in hp.items()}
 kg = {}
 for r in csv.DictReader(io.open(os.path.join(V11, "03_figures", "paper_Fig", "00_figure_ledger",
                                              "source_evidence",
@@ -100,10 +100,10 @@ U = R.groupby(["fam", "sample", "hap", "ap", "N", "data_source"], as_index=False
 def stratum(row):
     f, s, d = row.fam, str(row["sample"]), str(row.data_source)
     if f == "1kGP":
-        return kg.get(s, "모름")
+        return kg.get(s, "unknown")
     if f == "GIAB":
-        return "종양(HG008-T)" if d == "GIAB_SOMATIC_ONT" else "정상(hg002-4)"
-    return HPCHEM.get(s, "모름(색인밖)")
+        return "tumour(HG008-T)" if d == "GIAB_SOMATIC_ONT" else "normal(hg002-4)"
+    return HPCHEM.get(s, "unknown (outside the index)")
 
 
 U["층"] = U.apply(stratum, axis=1)
@@ -114,7 +114,7 @@ print("|---|---|--:|--:|--:|--:|--:|--:|--:|--:|--:|")
 rows = []
 for f in ["1kGP", "GIAB", "HPRC"]:
     sub = U[U.fam == f]
-    groups = [("전체", sub)] + [(k, sub[sub["층"] == k]) for k in sorted(sub["층"].unique())]
+    groups = [("all", sub)] + [(k, sub[sub["층"] == k]) for k in sorted(sub["층"].unique())]
     for k, g in groups:
         if len(g) < 60:
             print("| %s | %s | %d | %d | %d | %.4f | too few units to measure | | | | |"
@@ -151,8 +151,8 @@ print("## (2) trough of `Fig 4 a, b`: same gate as valley_hardcall, split by che
 print()
 by = collections.defaultdict(list)
 for v in best.values():
-    by[HPCHEM.get(v[2], "모름(색인밖)")].append(v[1])
-    by["전체"].append(v[1])
+    by[HPCHEM.get(v[2], "unknown (outside the index)")].append(v[1])
+    by["all"].append(v[1])
 
 
 def valley(b, bw=0.002, smooth=5, lo=0.20, hi=0.80):
@@ -172,17 +172,17 @@ def valley(b, bw=0.002, smooth=5, lo=0.20, hi=0.80):
 
 print("| stratum | individuals | read-units | trough | low peak | high peak | trough/peak | difference from 0.508 |")
 print("|---|--:|--:|--:|--:|--:|--:|--:|")
-for k in ["전체"] + sorted(x for x in by if x != "전체"):
+for k in ["all"] + sorted(x for x in by if x != "all"):
     vals = by[k]
-    ns = len({v[2] for v in best.values() if HPCHEM.get(v[2], "모름(색인밖)") == k}) \
-        if k != "전체" else len({v[2] for v in best.values()})
+    ns = len({v[2] for v in best.values() if HPCHEM.get(v[2], "unknown (outside the index)") == k}) \
+        if k != "all" else len({v[2] for v in best.values()})
     if len(vals) < 500:
         print("| %s | %d | %s | too few to measure | | | | |" % (k, ns, format(len(vals), ",")))
         continue
     v, pl, ph, r = valley(vals)
     print("| %s | %d | %s | **%.4f** | %.3f | %.3f | %.4f | %+.4f |"
           % (k, ns, format(len(vals), ","), v, pl, ph, r, v - 0.508))
-    rows.append(["H2-골", k, "", ns, len(vals), round(float(v), 4), "", round(float(pl), 3),
+    rows.append(["H2-trough", k, "", ns, len(vals), round(float(v), 4), "", round(float(pl), 3),
                  round(float(ph), 3), "", round(r, 4)])
 
 P = os.path.join(SP, "chem_strata_2026-10-24.tsv")

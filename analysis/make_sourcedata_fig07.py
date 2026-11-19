@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Source Data workbook for Figure 7 and Supplementary Figures S11, S12 and S13.
+# Source Data workbook for Figure 7 and Supplementary Figures 11, S12 and S13.
 #
 #   The values are taken from the same result tables the figures read, through the same
 #   modules the figures use (betabins, prof_smooth, landsc), so a sheet cannot drift away

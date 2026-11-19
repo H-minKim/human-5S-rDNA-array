@@ -87,7 +87,7 @@ TR = {
  "하플로타입 534 · 유닛 30,268 (가운데 창 0.2–0.8)": "534 haplotypes, 30,268 units (central window 0.2 to 0.8)",
  # denominator text (supplement B)
  "하플로타입 534 (가운데 창 0.2–0.8 · Q2b·XB2) · 거리마다 유닛쌍 22,280~29,756 (XB2 · 거리 1–15) ‖ 2026-10-21 : 옛 판 '유닛 30,268' 은 X5·X6(하플로타입 533)의 수라 지웠다 · XB2 쌍 수로 거꾸로 세면 30,290 (쌍 세는 법 가정 · 미확정)":
-     "534 haplotypes (central window 0.2 to 0.8; tables Q2b and XB2); 22,280 to 29,756 unit pairs per separation (XB2; separations 1 to 15); counting back from the XB2 pair numbers gives 30,290 units, which assumes a pair-counting rule and is not confirmed",
+     "534 haplotypes (central window 0.2 to 0.8; tables Q2b and XB2); 22,280 to 29,756 unit pairs per separation (XB2; separations 1 to 15)",
  "거리마다 유닛쌍 4,000 · 사건 13,727~16,016 (X4 · 거리 1·2·3·5·8·12·18·25 · 최소는 거리 2) · 바닥은 무관 쌍 4,000 · 사건 19,384 (X9) ‖ 2026-10-21 : 옛 판 14,144 는 거리 1 값이었다":
      "4,000 unit pairs per separation; 13,727 to 16,016 events (X4; separations 1, 2, 3, 5, 8, 12, 18 and 25; the minimum is at separation 2); floor from 4,000 unrelated pairs, 19,384 events (X9)",
  "A 거리마다 유닛쌍 2,000 (값 눈금 0.0005 · P08_X2.py NP_=2000) · B 가운데 창 0.2–0.8 하플로타입 534 (Q2b) ‖ 2026-10-21 : 옛 판 '유닛 30,268' 은 X5·X6(하플로타입 533)의 수라 지웠다":

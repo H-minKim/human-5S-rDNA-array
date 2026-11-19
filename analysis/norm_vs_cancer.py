@@ -9,7 +9,7 @@ import io, os, sys
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 import numpy as np, pandas as pd
 from scipy import stats
-# Where the tables are read and written. The tables are not deposited next to the code, so these paths come from the environment.
+# Where the tables are read and written.
 HERE = os.environ.get("TABLE_DIR", os.path.dirname(os.path.abspath(__file__)))
 LOG = io.open(os.path.join(HERE, "NORM_VS_CANCER.txt"), "w", encoding="utf8", newline="\n")
 def P(s=""): print(s, flush=True); LOG.write(str(s) + "\n"); LOG.flush()

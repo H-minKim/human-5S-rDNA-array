@@ -3,9 +3,9 @@
 #    how many calls move if one cut (0.508) is applied to both chemistries.
 #  Ruler: a deep valley means few units move when the cut shifts a little, so that fraction is counted.
 #    The fraction of read-units inside [min(valleys), 0.508] = those that could flip wherever in between the cut is placed
-# The HPRC release 2 ONT sequencing index this script reads is not part of this archive.
+# The HPRC release 2 ONT sequencing index is read from RDNA_HPRC_R2_ONT_INDEX.
 # Set RDNA_HPRC_R2_ONT_INDEX to a local copy; without it the script falls back to a file of
-# that name beside itself. The README says where the index comes from and gives its md5.
+# that name beside itself.
 import collections
 import csv
 import gzip
@@ -38,7 +38,7 @@ for r in csv.DictReader(io.open(os.environ.get("RDNA_HPRC_R2_ONT_INDEX",
     c = (r.get("sequencing_chemistry") or "").strip()
     if c:
         hp.setdefault(r["sample_id"], set()).add(c)
-CH = {k: (sorted(v)[0] if len(v) == 1 else "혼재") for k, v in hp.items()}
+CH = {k: (sorted(v)[0] if len(v) == 1 else "mixed") for k, v in hp.items()}
 
 h2 = pd.read_parquet(os.path.join(V11, "02_tables", "L1_READ_UNIT.parquet"),
                      columns=["sample", "slot", "gate"])
@@ -60,8 +60,8 @@ for i, L in enumerate(gzip.open(os.path.join(W, "out_v11_fix4", "RU.tsv.gz"),
 
 by = collections.defaultdict(list)
 for v in best.values():
-    by[CH.get(v[2], "모름(색인밖)")].append(v[1])
-    by["전체"].append(v[1])
+    by[CH.get(v[2], "unknown (outside the index)")].append(v[1])
+    by["all"].append(v[1])
 
 LOW, CUT = 0.4470, 0.508          # The R10 valley and the published cut
 print("## share of read-units that can flip when the cut is moved within 0.4470 (R10 trough) ~ 0.508 (published cut)")
@@ -69,7 +69,7 @@ print()
 print("| stratum | read-units | within [0.4470, 0.508) | its share | share below 0.508 | share below 0.4470 | difference |")
 print("|---|--:|--:|--:|--:|--:|--:|")
 rows = []
-for k in ["전체", "R941", "R1041", "모름(색인밖)"]:
+for k in ["all", "R941", "R1041", "unknown (outside the index)"]:
     if k not in by:
         continue
     b = np.asarray(by[k])

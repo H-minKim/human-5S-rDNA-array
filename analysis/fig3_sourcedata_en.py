@@ -16,7 +16,7 @@ sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 #   They have no default: the script stops with a message if one is not set.
 DATA_ROOT = os.environ["DATA_ROOT"]
 
-# Where the tables are read and written. The tables are not deposited next to the code, so these paths come from the environment.
+# Where the tables are read and written.
 # The deposited table's column names and values are in English, so they are mapped back to this script's internal names after reading.
 #   The script is not word-substituted throughout: several of these names are also column names in other tables
 #   this script reads, so substituting everywhere would break those. The mapping happens at the single point of reading.
@@ -183,7 +183,7 @@ C.columns = ["array_length_stratum", "axis", "unit_number_from_that_end", "x_in_
 
 D = rd("FIG3_C_LOWCOUNT.tsv").copy()
 D = D[D.컷.astype(str).str.startswith("0.508")]
-# The submitted file must contain no Korean, so the cut values are translated.
+# The cut values are translated.
 D["컷"] = D.컷.map({"0.508(여기서 잴 골)": "0.508 (trough measured in this work)",
                    "0.508 (trough measured in this work)": "0.508 (trough measured in this work)"}).fillna(D.컷)
 D["층"] = D.층.replace({"N40-80": "40-80 units", "N81-110": "81-110 units",

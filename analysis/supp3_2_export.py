@@ -12,7 +12,7 @@ import numpy as np, pandas as pd
 DATA_ROOT = os.environ["DATA_ROOT"]
 
 S = DATA_ROOT + "/"
-# Where the tables are read and written. The tables are not deposited next to the code, so these paths come from the environment.
+# Where the tables are read and written.
 # Write the deposited table's column names and values in English.
 #   The renaming happens at a single point just before writing.
 _KO2EN_COL = {

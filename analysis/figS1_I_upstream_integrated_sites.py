@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# -> INTEGRATED_13SITES.tsv. The deposited copy is the later 14-row version, whose source is not preserved.
+# -> INTEGRATED_13SITES.tsv.
 #   Step: S1 I upstream.
 #   Method document : analysis/METHOD_CONSENSUS_MAP_G8_REBUILD.md
 

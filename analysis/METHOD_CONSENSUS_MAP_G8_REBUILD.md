@@ -240,8 +240,7 @@ for i in range(len(ends) - 1):
 - From the junction to the first gene end is `PARTIAL_PROX`, and from the last gene end to the
   junction is `PARTIAL_DIST`. **No variant is called in either** (they are not whole units,
   `verify=SKIP`).
-- If there are fewer than three gene HSPs, that haplotype is skipped and counted in `STAT` under
-  the key for too few gene HSPs, which the code spells in Korean.
+- If there are fewer than three gene HSPs, that haplotype is skipped and counted in `STAT`.
 - Note that the index of ② counts units by the gaps between gene **starts** while G8 cuts by the
   gaps between gene **ends**. They usually agree, but they can differ where an HSP was clipped, so
   compare `N` with the `units` of the index.

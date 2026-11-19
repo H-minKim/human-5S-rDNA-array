@@ -4,11 +4,11 @@
 #
 #   A further stage builds T1_final.tsv and T2_final.tsv.
 #     The computation below reads only column 0 of those two files, the sample name.
-#     The fourth column, done, is filled from node logs that are not part of this deposit, and
+#     The fourth column, done, is filled from node logs, and
 #     done does not affect which rows are included: for x in sorted(T) takes all of them.
-#     So the sample list comes out unchanged without those logs; only the done column is N throughout.
+#     Without those logs the done column is N throughout.
 #
-#   Inputs, all of which are present:
+#   Inputs:
 #     v11  02_canonical/hap_seq_node_v8.tsv, 02_canonical/CANON_V10_PATCH.tsv
 #          03_maps/g8canonv10/CONSENSUS_MAP_G8_full.tsv
 #          09_tests/2026-09-29_tier_test/log\*goctrl*.log, *go45*.log

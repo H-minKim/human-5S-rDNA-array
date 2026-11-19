@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-# The two supplementary tables of the cell line Results, Supplementary Table S2 and Supplementary Table S3.
+# The two supplementary tables of the cell line Results, Supplementary Table 2 and Supplementary Table 3.
 #   Table 1 (second Results paragraph): the fixed window evidence table, units 1 to 10 from each end against the interior, which is from the 21st unit inward, for whole unit beta against gene body beta.
 #        The seed is 20261029, and the numbers are asserted against the reference values in REF1.
-#   Table 2 (third Results paragraph): whole unit beta and gene body beta by change point zone, that is, the k of Figure 6I and Supplementary Figure S9A.
-#        The ruler is the read count weighted mean of unit beta, the same ruler as table 1. Supplementary Figure S9B holds the values of Source Data version 21 and may be on a different ruler, so the two are printed side by side.
+#   Table 2 (third Results paragraph): whole unit beta and gene body beta by change point zone, that is, the k of Figure 6I and Supplementary Figure 9A.
+#        The ruler is the read count weighted mean of unit beta, the same ruler as table 1. Supplementary Figure 9B holds the values of Source Data version 21 and may be on a different ruler, so the two are printed side by side.
 #   Inputs 02_tables/P11_K562_UNIT_BETA_v2.tsv, P11_GM12878FS_UNIT_BETA_v2.tsv and lowmeth_changepoint_4haplotypes_2026-10-12.tsv.
 #   array_pos 1 is the distal end, so the kth unit from the proximal end is N-k+1.
 import io, os, sys, csv, hashlib
@@ -72,7 +72,7 @@ for r in csv.DictReader(io.open(os.path.join(T, "lowmeth_changepoint_4haplotypes
     slot = 1 if ("hapA" in r["집합"] or "hap1" in r["집합"]) else 2
     KK[(cell, slot, r["끝"])] = int(r["k_hat(해당 틀)"])
 assert len(KK) == 8
-#   The ruler is the one used by Supplementary Figure S9A and B: the pooled beta of the read-unit CpG calls of the RU table summed within the zone, with the same filters as pooled() in the change point code.
+#   The ruler is the one used by Supplementary Figure 9A and B: the pooled beta of the read-unit CpG calls of the RU table summed within the zone, with the same filters as pooled() in the change point code.
 #     Gene body means read-units with at least 3 calls in 2122 to 2240 (and n_cpg >= 10). Whole unit means every call of a read-unit with n_cpg >= 10. A call counts as methylated at 128 or above.
 #     The gene body values must equal the S9B source data (version 21) to three decimal places (asserted). If they do not, the table is not written.
 import gzip, collections

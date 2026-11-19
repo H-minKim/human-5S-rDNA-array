@@ -3,6 +3,6 @@ analysis/fq2ubam.py	f7b745901e5a
 analysis/build_gene_all.py	2d9cdf7576ce
 analysis/cell_sig_run_all.py	2611d7346657
 analysis/cell_strata_all.py	711f29ce7279
-analysis/cell_nucfree.py	23b9d79db5e1
-upstream/cells/fiberhmm_call_records.tsv	98db0bd7b137
-upstream/cells/README.md	d2defbeef57e
+analysis/cell_nucfree.py	38e986c3da87
+upstream/cells/fiberhmm_call_records.tsv	950b24606c58
+upstream/cells/README.md	abb088cfb1f5

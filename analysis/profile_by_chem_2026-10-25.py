@@ -3,9 +3,9 @@
 #  Panel a is a profile by position, so its shape is measured here per stratum.
 #  The ruler: the hard-call beta (b_call) from L1_READ_UNIT.parquet is binned by ap, counting from the proximal end,
 #        and the mean and the hypomethylated fraction compared between strata. gate == 1 (H2) only.
-# The HPRC release 2 ONT sequencing index this script reads is not part of this archive.
+# The HPRC release 2 ONT sequencing index is read from RDNA_HPRC_R2_ONT_INDEX.
 # Set RDNA_HPRC_R2_ONT_INDEX to a local copy; without it the script falls back to a file of
-# that name beside itself. The README says where the index comes from and gives its md5.
+# that name beside itself.
 import collections
 import csv
 import io

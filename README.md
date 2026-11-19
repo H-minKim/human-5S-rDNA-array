@@ -14,7 +14,7 @@ chromatin accessibility one repeat unit at a time.
 | `upstream/` | the compute-node stages that produced the inputs of `analysis/` |
 | `tables/` | the result tables the figures read, and the Source Data workbooks |
 | `checks/` | two check tables on sequencing chemistry, written by `analysis/chem_flip_2026-10-24.py` and `analysis/chem_strata_2026-10-24.py` |
-| `fig01/` … `figS13/` | one manifest per figure, and nothing else |
+| `fig01/` … `figS13/` | one manifest per figure |
 | `array_acquisition_other_species/` | the cross-species array acquisition code |
 
 **Start from the manifests.** Every `figNN/MANIFEST_*.tsv` has one row per panel
@@ -23,34 +23,12 @@ the md5 of each, written as a path inside this repository. That is the route fro
 a number in the paper to the file it came from: the Index sheet of the paper's Source
 Data file lists every panel of every figure with the sheet that holds its values.
 
-## What is here and what is not
+Four result tables are too large for a repository and are in the Zenodo record,
+named with their sizes in `tables/README.md`.
 
-This repository holds **the code that produced the data**, and the result tables
-it produced. The code that takes a table and draws a figure is not here, so a
-manifest row may name a drawing script that this repository does not contain;
-the table that panel was drawn from is here, with its md5 and its row count.
+## Running the code
 
-Four result tables are too large for a repository and are in the Zenodo record
-instead, named with their sizes in `tables/README.md`. Image files
-(`*.png`, `*.pdf`, `*.svg`) are excluded by `.gitignore`, as the figures
-themselves are.
-
-How much of that is missing, counted: of the 252 manifest rows that name a
-script in a `script` column, 122 name a drawing script that is not here. Seven
-helper modules are imported by code that is here but are themselves not, all of
-them on the figure side or the node side: `cellstyle` (the shared style of the
-ten `analysis/CELL_F2*.py` figure cells), `FIG2_PREVIEW` and `ARCHIVE_OUT`
-(the Figure 2 build), `_symclean`, `_entrans` and `_width` (the figure-symbol
-hooks), and `bamtext` (two compute-node scripts). A script that imports one of
-them cannot be run from this repository alone; the table it produced is here.
-
-## Running this code: read this before the first run
-
-**Every default output path points at the live working tree, not at a scratch
-folder.** Running this deposit as it stands overwrites result tables in place.
-Nothing warns you first.
-
-To exercise the code without touching anything, point every output at an empty
+To run without writing over existing tables, point every output at an empty
 directory:
 
 ```
@@ -66,9 +44,8 @@ and SciPy; 28 scripts read BAMs through `pysam`.
 
 ## Environment variables
 
-Every root is taken from the environment, with no default, so that no absolute
-path of the machines that ran the analysis is baked into the code. A script
-stops with a message naming the variable it needs.
+Every root is taken from the environment, with no default. A script stops with
+a message naming the variable it needs.
 
 | Variable | What it points at |
 |---|---|
@@ -89,32 +66,32 @@ stops with a message naming the variable it needs.
 | `RDNA_OUT_DIR` | where a script writes when `FIGOUT` / `OUTDIR` is not given; must be outside this deposit |
 | `V11_CODE` | folder from which the hooks and producers import `v11_io` |
 | `V11_0913_CODE` | folder `S24_NOBETA.py` copies `S24_optimal_zoning.py` from |
-| `RDNA_FONT_DIR` | font folder (Korean figures only) |
+| `RDNA_FONT_DIR` | font folder |
 | `CHROME` | headless Chrome used for the composite png and pdf |
 | `P04_SRC` | folder holding `OUT_P04/` for `COSHARE_BSTRAT.py` |
 | `RDNA_WORK_ROOT` | the working data root: the per-array and per-CpG tables of the 1kGP-ONT (P10) analysis, the dispersed-site tables, and the extracted region BAMs under `P10/` |
 | `RDNA_OUT_ROOT` | the output root: `02_output_tables/` (the result tables the figures read) and `05_requests/Atlas_reply_2026-09-30/` (the transcript annotation) |
 | `RDNA_V11_ROOT` | the v11 read-variant root: `02_tables/` with the read-unit tables and the slot QC |
 | `RDNA_VERSION_ROOT` | the version root holding the consensus maps under `08_versions/v11/03_maps/` and the dispersed-site source under `05_checks/` |
-| `RDNA_HUMAN_L1_PARQUET` | the file `L1_READ_UNIT.parquet` (57 MB). **This archive cannot rebuild it** - it is an output of the `v11_readvar` analysis. The same variable name is used by the cross-species part of this work, so one copy serves both |
-| `RDNA_POP_PANEL` | the file `pop.panel`: the 1000 Genomes population panel, a public reference. It points at the file and not at its folder, because nothing else in that folder is read |
+| `RDNA_HUMAN_L1_PARQUET` | the file `L1_READ_UNIT.parquet` (57 MB), in the Zenodo record |
+| `RDNA_POP_PANEL` | the file `pop.panel`: the 1000 Genomes population panel, a public reference |
 | `RDNA_ACCESS_DIR` | the folder holding `a13_unit_state_gmm.tsv.gz` and `a01_tracks/` |
 | `RDNA_S6_DIR` | the s6 call folder holding its own `a13_unit_state_gmm.tsv.gz` |
 | `RDNA_V12_CANON_DIR` | the canonical layer: `02_canonical/`, `08_methylation_s5/`, `08_methylation_s6/` |
 | `RDNA_RESULTMAP_DIR` | the result-map folder: `r20_*`, `s01_*` tables |
 | `RDNA_A01_TRACKS_OUT_DIR` | where `a01_unit_tracks.py` writes its per-sample tracks |
-| `RDNA_PREV_OUT_DIR` | an earlier output root that a few scripts still read for inputs |
+| `RDNA_PREV_OUT_DIR` | an output root that a few scripts read for inputs |
 | `RDNA_SVG_DIR` | where figure SVGs are copied |
 | `RDNA_V11_READVAR_DIR` | the read-variant folder the chemistry-stratified checks read |
 | `RDNA_METH_BLOCKS_DIR` | the methylation-block folder, including `layer_v11_fix4_HPRC/out` |
 | `RDNA_ARRAY_METH_DIR` | the array-methylation folder holding `02_output_tables/` and `03_figures/` |
 | `RDNA_DEPOSIT_DIR` | this repository, when a script needs to read a file from it by absolute path |
-| `RDNA_FIGURE_CODE_DIR` | the figure-drawing code, which is not part of this repository |
+| `RDNA_FIGURE_CODE_DIR` | the figure-drawing code |
 | `RDNA_SUBMISSION_FIG_DIR` | the folder holding the submitted figure files |
-| `RDNA_FIG4_LEGEND_DIR` | the folder holding the Figure 4 and Supplementary Figure S4 legend files |
+| `RDNA_FIG4_LEGEND_DIR` | the folder holding the Figure 4 and Supplementary Figure 4 legend files |
 | `RDNA_OTHERSP_DIR` | the cross-species folder, whose `data_v2/` the acquisition scripts read |
 | `RDNA_V11_FIX4_DIR` | the v11-fix4 working tree the unit-methylation run used |
-| `NODE_HOME` | the home directory of the compute node, for the `upstream/` stages that ran there. The node scripts build every path under it, so it has no default and a script stops without it |
+| `NODE_HOME` | the home directory of the compute node, for the `upstream/` stages that ran there. |
 | `NODE_WORK_DIR` | the working directory of the compute node, for the cross-species scripts in `array_acquisition_other_species/code/` that read and write their tables there |
 | `RDNA_LIB_DIR` | the folder a script imports its helper modules from: `analysis/` for `a_lib.py`, and `common/fig07_figS7/` for `betabins.py`, `prof_smooth.py`, `landsc.py`, `figorder.py` and `tab_en.py`, which `make_sourcedata_fig07.py` imports |
 | `RDNA_SOURCEDATA_DIR` | where `make_sourcedata_fig07.py` writes its workbook |
@@ -176,21 +153,13 @@ that names it.
 `requirements.txt` lists the Python packages the code imports. `environment.yml`
 is a conda environment that adds the aligners.
 
-No Python package carries a version in either file: the releases that were
-used were not recorded. The external tool releases **were**
-recorded: Supplementary Table S1 (second sheet) of the paper gives every
-aligner, assembler, basecaller, m6A caller and segment caller with its release,
-and `environment.yml` repeats the compute-node ones and names the rest in its
-header. Those releases are a record of what ran, not a recommendation; a
-different release may give different numbers.
-
-Python itself: Python 3. The exact release was not recorded, and the code uses
-no syntax newer than Python 3 (no f-strings, no `:=`, no `match`).
+The releases of the external tools are in Supplementary Table 1 of the paper,
+and `environment.yml` repeats the compute-node ones. The code runs on Python 3.
 
 ## Tools the code relies on
 
 The releases are those the paper records in its Methods and in Supplementary
-Table S1 (second sheet).
+Table 1.
 
 | Tool | Release | Used for | Reference |
 |---|---|---|---|
@@ -206,12 +175,12 @@ Table S1 (second sheet).
 | jasmine | 2.3.0, 2.7.99, 26.1.3 | m6A calls of the HPRC PacBio Fiber-seq, made by the submitters | https://github.com/PacificBiosciences/jasmine |
 | fibertools-rs | 0.13.0, 0.1.4, 0.3.8 | fiber segments (`ft add-nucleosomes`) and the GM12878 FIRE release (`ft predict`, `ft fire`) | doi:10.1101/gr.279095.124 |
 | FiberHMM | 2.16.8 | nucleosome and MSP segments | https://github.com/fiberseq/FiberHMM |
-| NumPy, SciPy | not recorded | all analyses | doi:10.1038/s41586-020-2649-2, doi:10.1038/s41592-019-0686-2 |
+| NumPy, SciPy | | all analyses | doi:10.1038/s41586-020-2649-2, doi:10.1038/s41592-019-0686-2 |
 
 ## Data sources
 
 All input data are public. The Data availability statement and the Methods of
-the paper describe them in full; Supplementary Tables S1, S6 and S7 give the
+the paper describe them in full; Supplementary Tables 1, S6 and S7 give the
 per-sample detail.
 
 | Data | Accession or location |
@@ -229,82 +198,31 @@ per-sample detail.
 | HPRC Fiber-seq | `s3://human-pangenomics/submissions/`, submissions `UCSC_HPRC_ONT_YEAR1_FIBERSEQ` and `WUSTL_HPRC_PacBio_FiberSeq` |
 | K562 Fiber-seq | ENA PRJEB121523, run ERR17608832 |
 | GM12878 Fiber-seq | `s3://stergachis-manuscript-data/2024/Vollger_et_al/FIRE/GM12878/fire/GM12878.fire.bam` |
-| ENCODE ChIP-seq, ATAC-seq and whole-genome sequence of K562 and GM12878 | file accessions in Supplementary Table S6 |
+| ENCODE ChIP-seq, ATAC-seq and whole-genome sequence of K562 and GM12878 | file accessions in Supplementary Table 6 |
 | GM12878 whole-genome denominator | 1000 Genomes run ERR3239334 |
 | GM12878 GRO-cap | GEO GSE60453 |
 | Annotation sequences | EMBL X12811; RefSeq NR_002716, NM_001306068, NR_147172, NR_147173 |
-| Cross-species ONT reads and reference assemblies | per run in Supplementary Table S7 |
+| Cross-species ONT reads and reference assemblies | per run in Supplementary Table 7 |
 
-## Limits of reproduction
+## Paths of the `upstream/` stages
 
-What this repository can and cannot rebuild, stated plainly so that it does not
-have to be discovered by running it.
-
-- **`L1_READ_UNIT.parquet` cannot be rebuilt here.** It is an output of the
-  `v11_readvar` analysis, which runs on the compute-node side from the placed
-  SAM files that `upstream/v11_node/` produced; those SAM files are not
-  deposited, being intermediates of the public reads. The finished table is in
-  the Zenodo record, and `RDNA_HUMAN_L1_PARQUET` points a script at it.
-- **The figures cannot be redrawn here.** The code that turns a table into a
-  panel is not in this repository; see "What is here and what is not" for the
-  counts. Every panel's input table is here with its md5 and row count, so a
-  panel can be checked against its numbers without redrawing it.
-- **The `upstream/` stages do not run on a desktop.** They were written for the
-  compute nodes, take their paths from `NODE_HOME` and `NODE_WORK_DIR`, and
-  read the raw reads and BAM files at the public accessions the paper lists,
-  not files kept here.
-- **`analysis/` does run from the deposited tables**, given the environment
-  variables above. That is the part a reader can repeat: a result table in
-  `tables/` goes in, the same table comes out.
-- **Nothing writes inside this repository by default.** Every output root comes
-  from the environment with no default, so a run that forgets a variable stops
-  instead of overwriting a deposited table.
-
-### Where the `upstream/` paths come from
-
-The node stages do not hold absolute paths. They build their paths under the
-node's home directory with `os.path.expanduser("~/…")` - 364 such paths in 91
-files, under 78 top-level names, the largest being `~/s5s_tuc` (56),
-`~/rjrepro_c2` (28), `~/rjrepro` (26), `~/fix1` (14) and `~/s5s_ont` (12).
-`expanduser` reads `HOME`, so pointing `HOME` at a tree that reproduces that
-layout relocates all 364 at once. A node script that takes a folder or a
-table from a variable of its own instead (`WDIR`, `CMPD`, `HSN`, `MAPF`,
-`SUMF`, `READS`, `OUT` and the like) reads it with no default, and stops
-with a `KeyError` naming the variable when it is not set.
-
-Some intermediate tables carry a node hostname **inside the file name**, for
-example `AO_G8_UNITS_ip-172-31-32-12.pad.tsv` and
-`METH_READUNIT_ip-172-31-58-58_b_ao.tsv.gz` - 32 occurrences in 10 files. The
-work was split over three nodes and each wrote its share under its own name.
-These are fixed strings in the names of files, not addresses: nothing in this
-repository opens a network connection, and it holds no IP address.
+The node stages build their paths under the node's home directory with
+`os.path.expanduser("~/…")`. `expanduser` reads `HOME`, so pointing `HOME` at a
+tree that reproduces that layout relocates them. A node script that takes a
+folder or a table from a variable of its own (`WDIR`, `CMPD`, `HSN`, `MAPF`,
+`SUMF`, `READS`, `OUT` and the like) reads it with no default.
 
 A few node shell scripts under `array_acquisition_other_species/node_scripts/`
-read their region table (`zf_regions_parts.tsv`) from the current directory,
-because they were launched from the directory that held it.
+read their region table (`zf_regions_parts.tsv`) from the current directory.
 
-### What a sweep for baked-in paths found none of
+## Operating system
 
-Over all 659 `.py` and `.sh` files: no absolute `/home/<user>` or `/Users/<user>`
-path, no Windows drive letter, no hardcoded IP address, no user or account
-name, and no absolute entry added to `sys.path` (every one is derived from
-`__file__` or from a variable). Every environment variable that still carries a
-default takes either a path relative to the script or a plain value such as a
-number or a file-type name; none defaults to an absolute path.
-
-### These scripts expect a POSIX system
-
-The analysis was run on Linux, and the scripts assume it. Thirty-five of them
-write their scratch files to `/tmp` (for example `/tmp/re_<tag>.fa` in
-`recall_edge_f1.py`), and the shell scripts are written for `sh`/`bash` with the
-usual command-line tools. They will not run on Windows unchanged; use Linux,
-macOS or WSL.
+The scripts were run on Linux and assume a POSIX system. Some write scratch
+files to `/tmp`, and the shell scripts are written for `sh`/`bash`.
 
 ## Terms used in the code
 
-The code carries names from the working project that the paper does not use.
-They are identifiers (variable names, column names, file and folder names);
-this table is the translation.
+Names used in the code and the terms the paper uses for them.
 
 | In the code | What it means | In the paper |
 |---|---|---|
@@ -324,76 +242,18 @@ this table is the translation.
 | `NEWZONE` | table names that carry the zoning the paper reports | zone |
 | `readvar`, `edition`, `campaign`, `atlas`, `handover`, `S24` | working names that appear only in comments and file names | not used in the paper |
 
-### Korean names inside the analysis scripts
+## Scripts that produce no figure panel
 
-Every comment in this repository is in English, and so are the docstrings and
-the messages the scripts print, apart from the Korean names and values they
-quote. Most of the Python scripts carry Korean **column names** and
-**category values**, and some carry Korean text that they write into a working
-report or put on a working figure. Some of the shell scripts pass Korean sample
-labels. This work was written in Korean.
-The column names and the category values are identifiers and data, not prose:
-changing them would change what the code compares and looks up.
-
-They do not reach the result tables deposited here. Measured over this repository:
-
-* of the 196 deposited tables (`.tsv` and `.tsv.gz`), **194 contain no Korean character at all**;
-* the other two are `common/fig02_figS2/EN_DICT.tsv` and
-  `common/fig02_figS2/EN_WRAP_MAP.tsv`, which are the Korean-to-English
-  dictionaries themselves, where the Korean is the data.
-
-A producer that works internally in Korean names renames its columns to English
-in the last step before `to_csv`, so the table it deposits is English; the other
-producers build their frames in English throughout. `analysis/fig3_sourcedata_en.py`
-does the reverse, mapping the English columns of a deposited table back to the
-internal names after reading it. For the Figure 7 family both directions are in `common/fig07_figS7/tab_en.py`: `to_en_file` where a table is written and `open_ko` where it is read.
-
-An intermediate table that a script writes and another script reads - one that
-is produced by running this code and is not deposited - does carry the Korean
-column names. The producer and the reader are both in this repository, so the
-two agree.
-
-The internal column names that appear most often:
-
-| In the code | In English |
+| Script | What it does |
 |---|---|
-| `종` | species |
-| `개체` | individual |
-| `하플로`, `하플로타입` | haplotype |
-| `유닛` | unit |
-| `유닛길이` | unit length |
-| `구역` | zone |
-| `띠` | band |
-| `쪽` | side |
-| `묶음` | locus (a group of arrays treated as one) |
-| `무리` | cluster |
-| `자료원` | data source |
-| `호출수` | number of calls |
-| `평균β` | mean beta |
-| `지표` | measure |
-| `거리` | distance |
-| `이름표` | label |
-| `기준` | reference |
-| `비고` | note |
-| `근위쪽`, `원위쪽` | the proximal side, the distal side |
-| `중심절겹침` | overlaps the centromere |
-
-## Scripts with no manifest row
-
-Three scripts are not named by any `MANIFEST_*.tsv`, because a manifest has one
-row per figure panel and these produce no panel.
-
-| Script | What it is |
-|---|---|
-| `analysis/supp_tables_unit_vs_gene_beta_2026-11-01.py` | produces Supplementary Tables S2 and S3 |
-| `analysis/n_vs_chem_2026-10-25.py` | a check: whether the 1kGP curve wobbles because of mixed sequencing chemistry or because of the smaller number of units. It reports the answer and writes no table |
-| `analysis/profile_by_chem_2026-10-25.py` | a check: the positional methylation profile computed separately per sequencing chemistry |
+| `analysis/supp_tables_unit_vs_gene_beta_2026-11-01.py` | produces Supplementary Tables 2 and 3 |
+| `analysis/n_vs_chem_2026-10-25.py` | a check of whether the 1kGP curve depends on mixed sequencing chemistry or on the smaller number of units |
+| `analysis/profile_by_chem_2026-10-25.py` | the positional methylation profile computed separately per sequencing chemistry |
 
 ## Randomness
 
 Every randomized procedure is seeded in the source and the seed is given where
-it is used. Where a quantity was computed in more than one way, both values are
-reported rather than reconciled.
+it is used.
 
 ## Licence and citation
 

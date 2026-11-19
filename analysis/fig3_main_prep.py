@@ -24,7 +24,7 @@ import pandas as pd
 DATA_ROOT = os.environ["DATA_ROOT"]
 
 S = DATA_ROOT + "/"
-# Where the tables are read and written. The tables are not deposited next to the code, so these paths come from the environment.
+# Where the tables are read and written.
 # Writes the deposited table with English column names and values
 #   Renamed at a single point just before writing; the rest of this file uses the internal names.
 _KO2EN_COL = {

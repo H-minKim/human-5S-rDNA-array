@@ -11,7 +11,7 @@ re-run from this folder.
 | Figure | Through |
 |---|---|
 | **Fig. 5 A (lower profile), D, E** | `m6a_site/`, `m6a_readunit/` → `zg2_m6a_frac_profile.py`, `zk1b_m6a_by_state_cut508.py` |
-| **Fig. 5 B, C, F, G, H** and **Suppl. Fig. S7 A, B, C** | the placed unit tables → `a13_beta_mixture.py` → `zy7_make_hmm_tables.py`, `zg1_*`, `zt2_*` |
+| **Fig. 5 B, C, F, G, H** and **Suppl. Fig. 7 A, B, C** | the placed unit tables → `a13_beta_mixture.py` → `zy7_make_hmm_tables.py`, `zg1_*`, `zt2_*` |
 
 Other figures in this paper rest on the **v11** stage, which is archived separately in
 `upstream/v11_node/` and `upstream/v11_local/`. This folder is the **v12** stage only.
@@ -36,7 +36,7 @@ a different result:
 |---|---|
 | `merge_aojv.py` | `MINSITE = 10` is hardcoded. The data was produced by **`merge_aojv_v2.py`**, which takes `MINSITE` from the environment and was called as `MINSITE=5` in `run_s5.sh`. |
 | `run_fsmeth.sh` | writes `fsmeth_v12b`. The data files are `fsmeth_v12c_*` and `pbmeth_v12d_*`, which `run_meth_s5.sh` produced. |
-| `merge_aojv_v3.py` | a later `_s6` series used by other analyses. Figure 5 and Supplementary Figure S7 do not read it. |
+| `merge_aojv_v3.py` | a later `_s6` series used by other analyses. Figure 5 and Supplementary Figure 7 do not read it. |
 
 There is no job scheduler in this pipeline: `#SBATCH`, `srun`, `qsub`, `bsub`,
 `module load` and `conda activate` do not appear anywhere in it. The only

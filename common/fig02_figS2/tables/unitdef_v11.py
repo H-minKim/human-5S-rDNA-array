@@ -10,7 +10,7 @@ Source of the canonical sequence
 Definitions (those of fig_common.py, verbatim)
   ELEMENTS, element(), iscpg(), _blocks(), parse(), vclass(), zone(), ZONES
   The logic is that of fig_common.py down to the character. Only the source of CAN differs.
-  (load_map/two_stage/figure helpers of fig_common are not used in v11 and are not included.)
+
 """
 import re
 import v11_io as _G

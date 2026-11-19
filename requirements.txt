@@ -1,15 +1,10 @@
 # Python packages that the code in this repository imports.
 #
-# No version is pinned: the point releases that were used were not recorded.
-# What WAS recorded is the release of every external tool (aligners,
-# basecallers, assemblers, m6A and segment callers), and those are listed in
-# Supplementary Table S1 (second sheet) of the paper and in `environment.yml`
-# beside this file.
+# The releases of the external tools (aligners, basecallers, assemblers, m6A and
+# segment callers) are in Supplementary Table 1 of the paper and in
+# `environment.yml` beside this file.
 #
-# Python itself: Python 3. The exact release was not recorded. The code uses
-# no syntax newer than Python 3 - no f-strings, no assignment expressions
-# (`:=`) and no `match` statement - so any Python 3 release that the packages
-# below support will run it.
+# The code runs on Python 3.
 #
 # The list is every module imported by the 510 .py files in this repository,
 # without the standard library and the modules that live here.

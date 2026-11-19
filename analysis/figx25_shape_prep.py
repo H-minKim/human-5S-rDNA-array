@@ -30,7 +30,7 @@ from scipy.stats import gaussian_kde
 #   They have no default: the script stops with a message if one is not set.
 DATA_ROOT = os.environ["DATA_ROOT"]
 
-# Where the tables are read and written. The tables are not deposited next to the code, so these paths come from the environment.
+# Where the tables are read and written.
 HERE = os.environ.get("TABLE_DIR", os.path.dirname(os.path.abspath(__file__)))
 S = DATA_ROOT + "/"
 FAMS = ["1kGP", "GIAB", "HPRC"]

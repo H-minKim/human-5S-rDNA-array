@@ -12,7 +12,7 @@
 #   Everything is produced in one pass - 788 MB is read only once
 #     (1) BOUNDARY_WIDE on the new ruler (H2 and 0.508)
 #     (2) the same on the old ruler (no gate, 0.5) as well, for the reproduction test
-#     (3) the full table of clean 3+3 windows (new ruler) - for reselecting the numerator of Supplementary Figure S7
+#     (3) the full table of clean 3+3 windows (new ruler) - for reselecting the numerator of Supplementary Figure 7
 #     (4) the mean over the contrast-passing windows alone - to tell whether the grey curve is shallow because of (i) overlap or (ii) weak windows
 #     (5) the transition position of each window - turning "AluY 4/4" into a distribution
 #

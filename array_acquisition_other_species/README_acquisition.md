@@ -2,7 +2,7 @@
 
 This folder holds the code that produced the array catalogue, the canonical array
 references and the read placements for the eight non-human species of Figure 7 and
-Supplementary Figures S11 to S13.
+Supplementary Figures 11 to S13.
 
 Unlike the scripts under `upstream/`, these do not carry absolute paths; section 4 lists
 the variables they use in their place.

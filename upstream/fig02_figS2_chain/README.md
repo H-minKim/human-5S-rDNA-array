@@ -22,8 +22,8 @@ its md5 and what it does. The chains are summarised below.
 | `U4_unit_methylation` | per read × unit methylation parsed from MM/ML (ML ≥ 128), merged as Σmeth/Σcalls; fix1, fix2 and fix4 versions of `READMAP_METH` |
 | `U7_read_level_tables` | read-level tables behind Figure 2 M, N and Supplementary I (varlist from the U2 map `g8canonv10`) |
 | `U8_flank` | `flank_final2.tar`: 50 kb flanks from HPRC contigs, junction-read consensus and `hifiasm --ont` re-assembly |
-| `U9_trio_references` | the trio map of Supplementary Figure S2A (children from HPRC release 2; parents assembled here from 1kGP-ONT reads) |
-| `U10_cell_line_arrays` | the K562 and GM12878 arrays of Supplementary Figure S2O (K562: ERR17608832 HiFi + PRJNA1371648 ONT, `hifiasm --ul`; GM12878: GIAB HG001 HiFi, `hifiasm`) and the distal 20 units |
+| `U9_trio_references` | the trio map of Supplementary Figure 2A (children from HPRC release 2; parents assembled here from 1kGP-ONT reads) |
+| `U10_cell_line_arrays` | the K562 and GM12878 arrays of Supplementary Figure 2O (K562: ERR17608832 HiFi + PRJNA1371648 ONT, `hifiasm --ul`; GM12878: GIAB HG001 HiFi, `hifiasm`) and the distal 20 units |
 
 ## Paths
 

@@ -1,5 +1,5 @@
 # Command lines recorded in the @PG header of each calls.bam (read with pysam on the compute node).
-# BAMs used by the K562/GM12878 panels (Fig. 6 G-H, S9 C-H): K562all and GM12878all (whole pool). K562r and GM12878FS are the placed-read set of an earlier version and are not used by those panels.
+# BAMs used by the K562/GM12878 panels (Fig. 6 G-H, S9 C-H): K562all and GM12878all (whole pool). K562r and GM12878FS are not used by those panels.
 calls_bam	pn	vn	command_line
 K562all	samtools	1.19.2	samtools sort -o all/K562all.bam all/K562all.u.bam
 K562all	fiberhmm-call	2.16.8	$HOME/fhmm/venv/bin/fiberhmm-call -i all/K562all.bam -o out/K562all.calls.bam --enzyme hia5 --seq pacbio -c 8 --primary --no-qc

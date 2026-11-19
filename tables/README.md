@@ -8,8 +8,7 @@ Point the table roots at this folder when re-running the code, for example
 `TABLE_DIR`, `DATA_ROOT`, `P11_TABLE_DIR` and `REGISTRY_DIR`
 (the full list is in the repository README, section *Environment variables*).
 
-**4 tables are not here because of their size**; they are in the Zenodo record
-that archives this repository:
+**4 tables are in the Zenodo record** that archives this repository:
 
 | MB | table |
 |--:|---|
@@ -18,12 +17,7 @@ that archives this repository:
 | 57.0 | `L1_READ_UNIT.parquet` |
 | 54.0 | `P10_CPG_ALL.tsv.gz` |
 
-Of those four, `L1_READ_UNIT.parquet` is the one that **this repository cannot
-rebuild**: it is an output of the `v11_readvar` analysis, which runs on the
-compute-node side from the placed SAM files of `upstream/v11_node/`, and those
-SAM files are intermediates of the public reads and are not deposited. Take the
-file from the Zenodo record and point `RDNA_HUMAN_L1_PARQUET` at it. The other
-three are rebuildable from what is here; they are out only for their size.
+Point `RDNA_HUMAN_L1_PARQUET` at `L1_READ_UNIT.parquet` from the Zenodo record.
 
 **9 tables carry English names.** The content is
 unchanged, so the md5 recorded in the manifests still applies:
@@ -218,8 +212,8 @@ or the manifests of this repository read or name.
 | `UNITBETA_PERARRAY_v13.tsv.gz` | `56045d1c32ba` | 3334482 |
 | `XB2_band_all.npz` | `b40a3757dfb9` | 1877 |
 | `XB2_band_noodd.npz` | `e06b180d07a9` | 1888 |
-| `cells/nucfree_GM12878all.json` | `5e342d4eb87d` | 5239 |
-| `cells/nucfree_K562all.json` | `f3466e657600` | 4987 |
+| `cells/nucfree_GM12878all.json` | `75189bd73d5f` | 5230 |
+| `cells/nucfree_K562all.json` | `a7fc5f7a9acd` | 4978 |
 | `cells/sig_GM12878all.json` | `785e81f3cc2c` | 4349 |
 | `cells/sig_GM12878all.npz` | `91dd00c0a7ba` | 26226 |
 | `cells/sig_K562all.json` | `44e1a70e4c02` | 3600 |

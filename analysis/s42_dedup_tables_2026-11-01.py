@@ -30,8 +30,8 @@ PK = os.path.join(R, "05_paper_bundle_2026-10-09", "input_tables")
 R0 = os.path.join(_need("RDNA_VERSION_ROOT"), "05_checks", "2026-09-17_TUC_dropped_reads_5S_content_methylation")
 BW, NB, MINCPG, MINN = 0.02, 50, 10, 150
 DUP, KEEPNODE = "NA21133", _need("S42_KEEP_NODE")
-JA = (("하드콜", "beta_all_hard"), ("확률평균", "beta_all_prob"))
-GRPS = ("전체", "색조 낮음", "중간", "색조 높음")
+JA = (("hard call", "beta_all_hard"), ("probability mean", "beta_all_prob"))
+GRPS = ("all", "low tone", "middle tone", "high tone")
 
 
 def rd(p):
@@ -48,7 +48,7 @@ print("positions %d, individual hues %d, boundaries %.4f %.4f" % (len(INFO), len
 
 def grp_of(s):
     t = TONE.get(s)
-    return None if t is None else ("색조 낮음" if t <= q1 else ("색조 높음" if t > q2 else "중간"))
+    return None if t is None else ("low tone" if t <= q1 else ("high tone" if t > q2 else "middle tone"))
 
 
 def modes(v):
@@ -81,7 +81,7 @@ for p in sorted(glob.glob(os.path.join(N, "*", "LOCUS_BETA_V2.tsv"))):
             for ja, key in JA:
                 b = float(r[key])
                 SB[basis][(r["site"], ja)].append(b)
-                ST[basis][(r["site"], ja, "전체")].append(b)
+                ST[basis][(r["site"], ja, "all")].append(b)
                 if g:
                     ST[basis][(r["site"], ja, g)].append(b)
         if not (r["sample"] == DUP and node != KEEPNODE):
@@ -105,7 +105,7 @@ for basis in ("dup", "dedup"):
                 val, lm, hm, fh, mn, dep, h = modes(v)
                 ok = (lm < 0.35 and hm > 0.65 and 0.05 <= fh <= 0.95 and dep <= 0.5)
                 rs.append([s, ch, "%.2f" % (st / 1e6), ja, len(v), "%.3f" % lm, "%.3f" % hm, "%.3f" % val,
-                           "%.4f" % fh, "%.3f" % dep, "이봉" if ok else "단봉"])
+                           "%.4f" % fh, "%.3f" % dep, "bimodal" if ok else "unimodal"])
     for s in sorted(INFO):
         ch, st = INFO[s]
         for ja, _k in JA:
@@ -146,8 +146,8 @@ for f in NAMES[:2]:
             if x[k] != y[k]:
                 cnt[k] += 1
     print("   %s changed cells (by column) %s" % (f, dict(cnt)))
-A = [r for r in rd(os.path.join(OUT, "dup", NAMES[0])) if r["ruler"] == "하드콜"]
-B = [r for r in rd(os.path.join(OUT, "dedup", NAMES[0])) if r["ruler"] == "하드콜"]
+A = [r for r in rd(os.path.join(OUT, "dup", NAMES[0])) if r["ruler"] == "hard call"]
+B = [r for r in rd(os.path.join(OUT, "dedup", NAMES[0])) if r["ruler"] == "hard call"]
 print("   positions whose verdict changed:", [x["site"] for x, y in zip(A, B) if x["call_A4"] != y["call_A4"]],
       "- n of the three positions that drop out:", [(y["site"], x["n_loci"], y["n_loci"]) for x, y in zip(A, B) if y["site"] in ("S0285", "S0107", "S0108")])
 

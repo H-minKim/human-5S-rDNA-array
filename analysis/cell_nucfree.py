@@ -97,7 +97,7 @@ with io.open(os.path.join(DIR, "strata", "%s_gene.tsv" % LAB if LAB != "HEPG2" e
         k, v = l.rstrip(NL).split(TB)
         if k in ix:
             lab[ix[k]] = v
-SETS = {"전체": np.ones(N, bool), "low": lab == "low", "high": lab == "high"}
+SETS = {"all": np.ones(N, bool), "low": lab == "low", "high": lab == "high"}
 CN = np.concatenate([np.zeros((N, 1), np.int32), np.cumsum(NUC, 1, dtype=np.int32)], 1)
 CT = {s: np.concatenate([np.zeros((N, 1), np.int32), np.cumsum(TF[s], 1, dtype=np.int32)], 1) for s in SITE}
 
@@ -194,8 +194,8 @@ for site, d in SITE.items():
     ARR[site + "_nonuc"] = nonuc; ARR[site + "_hit"] = hit
     ARR["lab"] = labi; ARR["read"] = read_i
     R["sites"][site] = res
-    print("  [%s] window %d bp, fraction of all units without a nucleosome %.1f%%" % (site, W, 100 * res["sets"]["전체"]["nonuc_frac"]))
-    for k in ("전체", "low", "high"):
+    print("  [%s] window %d bp, fraction of all units without a nucleosome %.1f%%" % (site, W, 100 * res["sets"]["all"]["nonuc_frac"]))
+    for k in ("all", "low", "high"):
         r = res["sets"][k]
         print("    %-3s units %6d, no nucleosome %6d (%.0f%%), occupancy raw %.4f -> nucleosomes excluded %.4f (hit %d/%d), background median %s, p_bg %s, clean %d f=%.3f ceiling %.3f flank/core %.3f(raw %.3f)"
               % (k, r["n_all"], r["n_nonuc"], 100 * r["nonuc_frac"], r["occ_raw"], r["occ_nn"], r["hit_nn"], r["n_nonuc"],

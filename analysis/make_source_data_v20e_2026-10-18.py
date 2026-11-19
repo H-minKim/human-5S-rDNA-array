@@ -67,7 +67,7 @@ write("SourceData_Fig6_I-L.xlsx", "Figure 6 panels I-L (English SVG md5 2ed5c1dd
        ("K", "pre-gate counts (one ruler for both cell lines); proximal/interior = 14.7 (K562), 10.0 (GM12878); shares = sum_alt and sum_exp of proximal vs interior"),
        ("L", "base quality Q>=20; BDP1 rows from K562_zoneratio_Q20_NEWZONE_withBDP1BRF1_2026-10-14.tsv (same ruler; POLR3A identical in both tables); proximal/interior POLR3A 47.8, TBP 27.9, BDP1 8.1, SNAPC5 2.7"),
        ("denominators", "K562 = ENCODE K562 WGS; GM12878 = NA12878 WGS (1000 Genomes ERR3239334), both through the ChIP alignment gate")])
-# ---- Supplementary Figure S9, panels A and B
+# ---- Supplementary Figure 9, panels A and B
 src = io.open(os.path.join(C, "lowmeth_changepoint.py"), encoding="utf-8").read().split("SETS = []")[0]
 src = src.replace('sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")', ""); G = {}; exec(src, G)
 UK = G["pooled"]("RU_K562r.tsv.gz"); UG = G["pooled"]("RU_GM12878FS.tsv.gz")
@@ -97,7 +97,7 @@ write("SourceData_FigS9_A-B.xlsx", "Supplementary Figure S9 panels A and B (Engl
       [("A", "pooled gene-region (2122-2240) CpG calls (ML>=128 = methylated) from placed reads (n_cpg>=10, >=3 window calls); change point k = two-level binomial MLE, 95% interval by profile likelihood widened by φ (A_zone_k)"),
        ("A GM12878 hapB distal", "open symbols = reads placed by alignment anchored on unique units (unit 23 onward) or by private variants in the 8-unit repeat (units 5-22); shown only where placed reads are absent; the boundary k = 10 is unchanged (not re-estimated)"),
        ("B", "values from the cell-line Fiber-seq figure, copied value-for-value; GM12878 hap1/hap2 relabelled hapA/hapB; K562 hapB on the earlier 98-unit frame")])
-# ---- Supplementary Figure S10
+# ---- Supplementary Figure 10
 gmint = old_sheet("SourceData_SuppFig_S06.xlsx", "c_interaction_GM12878"); gmint[0] = ["target", "nc_interaction_OR", "nc_lo", "nc_hi", "proximal_markers", "interior_markers"]
 cr = io.open(os.path.join(C, "supple_fig2_criteria.py"), encoding="utf-8").read().split("fig = plt.figure")[0]; g2 = {}; exec(cr, g2)
 H2 = [["target", "criterion_1_expected_proximal_ChIP_reads", "criterion_1_pass(>=3)", "criterion_2_expected_proximal_input_reads", "criterion_2_pass(>=1)", "in_main"]]
@@ -107,7 +107,7 @@ want = {"POLR3A": 16.43, "TBP": 219.94, "BDP1": 3.47, "SNAPC5": 6.67, "BRF1": 1.
 for r in H2[1:]: assert round(r[1], 2) == want[r[0]], r
 assert round(g2["EIN"], 2) == 1.09
 
-# ---- Supplementary Figure S10 panel D, the methylation of units that carry a marker, from K562 reads with no assembly
+# ---- Supplementary Figure 10 panel D, the methylation of units that carry a marker, from K562 reads with no assembly
 _MK = {r["variant"]: r for r in csv.DictReader(io.open(os.path.join(T, "P11_K562_MARKERS_NEWZONE_2026-10-13.tsv"), encoding="utf-8"), delimiter="\t")}
 _ZN = {"근위(합)": "proximal", "가운데": "interior", "원위(합)": "distal"}
 FU = [["read", "q_start", "q_end", "strand", "n_call", "n_meth", "beta", "markers", "marker_zones"]]

@@ -21,7 +21,7 @@ DATA_ROOT = os.environ["DATA_ROOT"]
 V_ROOT = os.environ["V_ROOT"]
 S = DATA_ROOT + "/"
 SUMF = V_ROOT + "/03_maps/g8canonv10/CONSENSUS_SUM_G8_full.tsv"
-# Where the tables are read and written. The tables are not deposited next to the code, so these paths come from the environment.
+# Where the tables are read and written.
 HERE = os.environ.get("TABLE_DIR", os.path.dirname(os.path.abspath(__file__)))
 LOG = io.open(os.path.join(HERE, "FIG1_V5_PREP_HC.txt"), "w", encoding="utf8", newline="\n")
 def P(s=""): print(s, flush=True); LOG.write(str(s) + "\n"); LOG.flush()

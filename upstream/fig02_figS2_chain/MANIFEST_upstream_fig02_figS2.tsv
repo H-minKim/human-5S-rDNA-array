@@ -23,8 +23,8 @@ U1d_reference_repair	6	upstream/fig02_figS2_chain/U1d_reference_repair/v11-fix1/
 U1d_reference_repair	7	upstream/fig02_figS2_chain/U1d_reference_repair/v11-fix1/gap_polish_fix1.py	eddf0a276a67	backbone polishing (fix1 paths)
 U1d_reference_repair	8	upstream/fig02_figS2_chain/U1d_reference_repair/v11-fix1/splice_mid2_fix1.py	1a771f43f955	anchors at the first/last HSP
 U1d_reference_repair	9	upstream/fig02_figS2_chain/U1d_reference_repair/v11-fix1/patch_canon_fix1.py	8aebd27e93d8	writes ~/cmp4d_v11_fix1 (two haplotypes replaced)
-U1d_reference_repair	10	upstream/fig02_figS2_chain/U1d_reference_repair/readmap_repo/pilot_c2seq.py	e5a3f208835c	read-consensus references (cons2seq, 6) ; not confirmed to be the exact copy that made the v11 cons2seq files
-U1d_reference_repair	11	upstream/fig02_figS2_chain/U1d_reference_repair/readmap_repo/mkmap_c2seq.py	edf700d9a20d	map rows of the cons2seq references (same caveat)
+U1d_reference_repair	10	upstream/fig02_figS2_chain/U1d_reference_repair/readmap_repo/pilot_c2seq.py	e5a3f208835c	read-consensus references (cons2seq, 6)
+U1d_reference_repair	11	upstream/fig02_figS2_chain/U1d_reference_repair/readmap_repo/mkmap_c2seq.py	edf700d9a20d	map rows of the cons2seq references
 U2_unit_map_variant_calling	1	upstream/fig02_figS2_chain/U2_unit_map_variant_calling/consmapG8v4_fixdedup.py	6eb53b1014a8	Fig 2a calling : blastn 5S gene HSPs -> unit = gene end+1 .. next gene end (+100 bp) -> minimap2 -x asm20 -c --cs=long to the canonical unit with 200 bp context -> cs string to tokens (1096G, 437D1, 1493I4)
 U2_unit_map_variant_calling	2	upstream/fig02_figS2_chain/U2_unit_map_variant_calling/v11/rung8v10.sh	5afef649d892	runner for g8canonv10 (map 91816b9ca9d3 : read-level chain U7)
 U2_unit_map_variant_calling	3	upstream/fig02_figS2_chain/U2_unit_map_variant_calling/v11-fix1/run_map_fix1.sh	4f2a27730527	runner for g8canonv11f1 (map 34dc9870ee54 : every v11_io panel) : asm20 LO 2100 HI 2400 FRAG 5 PAD 100 CTX 200, 4 parts
@@ -116,8 +116,6 @@ U8_flank	-	upstream/fig02_figS2_chain/U8_flank/refmap/refmap_fill_plan_v2.py	1e8
 U8_flank	-	upstream/fig02_figS2_chain/U8_flank/refmap/refmap_fill_apply_v2.py	fe6f2135c18d	step 2: writes FASTA_REF_MAP_2026-10-07b.tsv from the plan (22 rows, method length_match_2026-10-07b)
 U9_trio_references	-	upstream/fig02_figS2_chain/U9_trio_references/trio_cut_maps_19slots.sh	149337347dc0	trio unit maps CONSENSUS_MAP_G8_trio.tsv / _trio2.tsv (Supplementary Fig 2A)
 U10_cell_line_arrays	-	upstream/fig02_figS2_chain/U10_cell_line_arrays/ul2_run.sh	0f6c0b705803	K562 UL2 assembly
-U10_cell_line_arrays	-	upstream/fig02_figS2_chain/U10_cell_line_arrays/k562_ont3_RECORDED_NOT_FINAL.sh	22aae61900fd	collects K562 ONT 5S reads (21 runs) for the UL2 assembly
-U10_cell_line_arrays	-	upstream/fig02_figS2_chain/U10_cell_line_arrays/patch_ont3.py	357b569e4bc1	node patch to k562_ont3.sh
 U1c_our_hifiasm	-	upstream/fig02_figS2_chain/U1c_our_hifiasm/node_scripts_recovered/resub.sh	4eff0fd652b4	reduced-coverage re-assembly (one 250 Mb draw by read order) for samples whose array split across contigs -> resub references (1 in H0)
 U1c_our_hifiasm	-	upstream/fig02_figS2_chain/U1c_our_hifiasm/node_scripts_recovered/resub2.sh	40afc5cd9e03	read-fraction sweep 1/2..1/6 by read order, union of arrays -> resub2 references (10 in H0)
 U1c_our_hifiasm	-	upstream/fig02_figS2_chain/U1c_our_hifiasm/node_scripts_recovered/nopurge.sh	1c5e2d664935	hifiasm --ont -l 0 (purge off) re-assembly to recover the shorter haplotype -> nopurge references (5 in H0)

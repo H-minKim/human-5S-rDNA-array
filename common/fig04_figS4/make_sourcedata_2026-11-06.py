@@ -125,7 +125,7 @@ if bad:
 
 os.makedirs(os.path.join(OUT, "panel_tables"), exist_ok=False)
 prov = io.open(os.path.join(OUT, "panel_tables", "00_provenance.tsv"), "w", encoding="utf-8", newline="\n")
-prov.write("file\tmd5\tdrawing script (not in this deposit)\tscript md5\tnote\n")
+prov.write("file\tmd5\tdrawing script\tscript md5\tnote\n")
 PTP = {}
 for n, src, scr in PT:
     q = os.path.join(OUT, "panel_tables", n)

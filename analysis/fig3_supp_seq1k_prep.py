@@ -23,7 +23,7 @@ DATA_ROOT = os.environ["DATA_ROOT"]
 V_ROOT = os.environ["V_ROOT"]
 S = DATA_ROOT + "/"
 SUMF = V_ROOT + "/03_maps/g8canonv10/CONSENSUS_SUM_G8_full.tsv"
-# Where the tables are read and written. The tables are not deposited next to the code, so these paths come from the environment.
+# Where the tables are read and written.
 HERE = os.environ.get("TABLE_DIR", os.path.dirname(os.path.abspath(__file__)))
 W = 1000.0
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
