@@ -83,7 +83,7 @@ r, _, _ = call(H.b_gene.values, float(H.n_gene.median()))
 r.update(group="사람", 종="사람 v11 (참고)", array_id="사람 510 하플로타입 합산", unit_len=2240, n_unit=np.nan,
          n=len(H), calls=float(H.n_gene.median()), off=(H.b_gene < 0.35).mean(), mean=H.b_gene.mean(),
          off_all=(H.b_call < 0.35).mean(), mean_sp=H.b_sp.mean(),
-         od=overdisp(H.b_gene.values, H.n_gene.values.astype(int), key.values), call_all="이봉")
+         od=overdisp(H.b_gene.values, H.n_gene.values.astype(int), key.values), call_all="bimodal")
 ROWS.append(r); PANEL[("사람", r["array_id"])] = (H.b_gene.values, r)
 
 for (sp, aid), g in D.groupby(["종", "array_id"]):
@@ -97,7 +97,7 @@ for (sp, aid), g in D.groupby(["종", "array_id"]):
              mean_sp=np.nanmean(g.bs), od=overdisp(x, g.n_calls_gene.values.astype(int), k),
              call_all=X10c.get(aid, "-"))
     if len(x) < 100:
-        r["call"] = "표본 부족 (" + r["call"] + ")"
+        r["call"] = "insufficient sample (" + r["call"] + ")"
     ROWS.append(r); PANEL[(grp, aid)] = (x, r)
 
 T = pd.DataFrame(ROWS)

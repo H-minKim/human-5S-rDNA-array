@@ -82,7 +82,7 @@ def call(x, ncall_med):
     far = [i for i in pk if abs(grid[i] - grid[i1]) >= SEP]
     out = dict(h=h, peak1=grid[i1], peak2=np.nan, trough_ratio=np.nan, minor_mass=0.0)
     if not far:
-        out["call"] = "단봉"
+        out["call"] = "unimodal"
         return out, grid, d
     i2 = max(far, key=lambda i: d[i])
     a, b = sorted((i1, i2))
@@ -92,11 +92,11 @@ def call(x, ncall_med):
     minor = float((x > xt).mean()) if grid[i2] > xt else float((x < xt).mean())
     out.update(peak2=grid[i2], trough_ratio=tr, minor_mass=minor)
     if tr <= TROUGH and minor >= MINOR:
-        out["call"] = "이봉"
+        out["call"] = "bimodal"
     elif tr <= TROUGH:
-        out["call"] = "단봉 + 소수 꼬리"
+        out["call"] = "unimodal + minor tail"
     else:
-        out["call"] = "단봉"
+        out["call"] = "unimodal"
     return out, grid, d
 
 
@@ -152,7 +152,7 @@ for (sp, aid), gdf in D.groupby(["종", "array_id"]):
              n=len(x), reads=gdf.read_id.nunique(), calls=cm, mean=x.mean(),
              off=(x < 0.35).mean(), mid=((x >= 0.35) & (x <= 0.65)).mean())
     if len(x) < 100:
-        r["call"] = "표본 부족 (" + r["call"] + ")"
+        r["call"] = "insufficient sample (" + r["call"] + ")"
     ROWS.append(r)
     PANEL[(grp, aid)] = (x, cm, r)
 

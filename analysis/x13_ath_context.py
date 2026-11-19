@@ -209,7 +209,7 @@ for (aid, c), g in D.groupby(["array_id", "context"]):
                  calls=float(np.median(nn)), mean=x.mean(), sd=x.std(), off=(x < 0.35).mean() if c == "CG" else np.nan,
                  q10=np.quantile(x, 0.1), q90=np.quantile(x, 0.9), od=od)
         if len(x) < 100:
-            r["call"] = "표본 부족 (" + r["call"] + ")"
+            r["call"] = "insufficient sample (" + r["call"] + ")"
         ROWS.append(r)
         PANEL[(aid, c, part)] = (x, r)
 T = pd.DataFrame(ROWS)

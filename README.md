@@ -335,17 +335,16 @@ labels. This work was written in Korean.
 The column names and the category values are identifiers and data, not prose:
 changing them would change what the code compares and looks up.
 
-They reach 19 of the tables deposited here. Measured over this repository:
+They reach 18 of the tables deposited here. Measured over this repository:
 
-* of the 196 deposited tables (`.tsv` and `.tsv.gz`), **175 contain no Korean character at all**;
-* two of the 21 that do are `common/fig02_figS2/EN_DICT.tsv` and
+* of the 196 deposited tables (`.tsv` and `.tsv.gz`), **176 contain no Korean character at all**;
+* two of the 20 that do are `common/fig02_figS2/EN_DICT.tsv` and
   `common/fig02_figS2/EN_WRAP_MAP.tsv`, which are the Korean-to-English
   dictionaries themselves, where the Korean is the data;
-* the other 19 are result tables of the Figure 5 and Figure 7 families in `tables/`,
-  deposited as the scripts write them: 18 have Korean column names and 1 has
-  Korean only in its values.
+* the other 18 are result tables of the Figure 5 and Figure 7 families in `tables/`,
+  deposited as the scripts write them, with Korean column names.
 
-Apart from those 19, a producer that works internally in Korean names renames its columns to English
+Apart from those 18, a producer that works internally in Korean names renames its columns to English
 in the last step before `to_csv`, so the table it deposits is English; the other
 producers build their frames in English throughout. `analysis/fig3_sourcedata_en.py`
 does the reverse, mapping the English columns of a deposited table back to the
