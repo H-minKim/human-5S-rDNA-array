@@ -323,7 +323,7 @@ for nm in ("참조", "다수형"):
                           pc1중앙=s.pc1.median(), pc2중앙=s.pc2.median()))
 GRP = pd.DataFrame(grows).sort_values(["기준", "하플로"], ascending=[True, False])
 P()
-P("[group summary] reference %d, majority type %d" % ((GRP.기준 == "reference").sum(), (GRP.기준 == "다수형").sum()))
+P("[group summary] reference %d, majority type %d" % ((GRP.기준 == "참조").sum(), (GRP.기준 == "다수형").sum()))
 P(GRP[GRP.기준 == "다수형"].head(8)[["무리", "하플로", "개체", "주집단", "주집단몫", "집단수",
                                    "CN중앙", "근위중앙", "가운데중앙", "원위중앙"]].round(3).to_string(index=False))
 

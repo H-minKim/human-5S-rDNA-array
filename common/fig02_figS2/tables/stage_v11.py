@@ -30,7 +30,7 @@ HSN = os.path.join(V0, "02_canonical", "hap_seq_node_v8.tsv")
 def cohort(s):
     """Carries over the rules of stage_all4.py as is (does not read the old table)"""
     if s in ("hg001", "hg002", "hg003", "hg004"): return "GIAB"
-    if s in ("COLO829-BL", "COLO829-T", "HG008-T"): return "암"
+    if s in ("COLO829-BL", "COLO829-T", "HG008-T"): return "cancer"
     return "HPRC"
 
 PUB = set(["asmunits3", "hgsvcunits"])
@@ -120,7 +120,7 @@ for x in rows:
                        str(x[12]), x[13], "%.1f" % x[14], "%.2f" % x[15], x[16]]) + "\n")
 o.close()
 
-CO = ["HPRC", "GIAB", "암"]
+CO = ["HPRC", "GIAB", "cancer"]
 print("individuals %d, haplotypes %d, map unit total %d" % (len(set(x[0][0] for x in rows)), len(rows), sum(x[3] for x in rows)))
 print("== union stage call")
 for s in sorted(set(x[11] for x in rows)):

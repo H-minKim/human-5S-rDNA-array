@@ -172,7 +172,7 @@ def load(preset="primary", check_md5=True, verbose=True, **kw):
     TS = tier_slots(opt["tier"], check_md5=check_md5) if opt.get("tier") else None
     def keep_slot(s, sl):
         if TS is not None and (s, sl) not in TS: return "tier:" + opt["tier"]
-        if opt.get("germline") and COH.get(s, "").startswith("암"): return "cancer"
+        if opt.get("germline") and COH.get(s, "").startswith("cancer"): return "cancer"
         st = STAGE.get((s, sl), ("?", "?"))[si]
         if opt.get("keep_stage") and not st.startswith(tuple(opt["keep_stage"])): return "stage"
         if opt.get("drop_stage") and st.startswith(tuple(opt["drop_stage"])): return "stage"
