@@ -7,7 +7,7 @@ Supplementary Figure S8	I, J	compute	analysis/zzab_nucfree_bin.py	cbb875c54caf m
 Supplementary Figure S8	K	compute	analysis/zzae_nucfree_span.py	05590c7f186e made the table(s) this figure reads
 Supplementary Figure S8	F	compute	analysis/zzz_binary_split.py	8fb0d2357d46 made the table(s) this figure reads
 Supplementary Figure S8	G	assembled from a table (no producer recorded)	(none in this deposit)	-	TableS3_alternative_explanations_predicted_vs_observed.tsv (7350a4eea9a7)	producer not recorded
-Supplementary Figure S8	C	compute	analysis/zzt_gridwide_rank.py	93e802dc0a4d made the table(s) this figure reads
+Supplementary Figure S8	C	compute	analysis/zzt_gridwide_rank.py	0857d873cd44 made the table(s) this figure reads
 Supplementary Figure S8	A	compute	analysis/fig_singlemol_fhmm.py	52edc28d89e5 made the table(s) this figure reads
 Supplementary Figure S8	E	compute	analysis/zzx_site_confirm_callerfree.py	a57dadf2b3fb made the table(s) this figure reads
 Supplementary Figure S8	D	compute	analysis/tf_untreated.py	a49ba684ab09 made the table(s) this figure reads

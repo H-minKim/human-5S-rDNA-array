@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # PacBio CpG methylation of the zebra finch 5S arrays (the submitted v0.3 bigwig; coordinates GCA_048771995.1 / GCA_048772025.1).
 #   These are PacBio aggregates, a percentage per position, not per-read ONT values. Per-read values require re-basecalling the pod5 files on a GPU.
-#   Unit boundary = the start of a cmsearch 5S hit; one unit spans two neighbouring hit starts. Never convert bp / period.
+#   Unit boundary = the start of a cmsearch 5S hit; one unit spans two neighbouring hit starts. bp / period is not used.
 #   Outputs: zfinch_5S_units_meth.tsv (CpG count and mean percentage per unit) and zfinch_5S_array_meth_summary.tsv (inside the array against 5 kb on each side).
 #   Arguments: the working folder, and the minimum copy number (default 10).
 import io

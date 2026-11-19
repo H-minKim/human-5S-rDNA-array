@@ -5,10 +5,10 @@ U1a_5S_read_extraction	4	upstream/fig02_figS2_chain/U1a_5S_read_extraction/local
 U1a_5S_read_extraction	5	upstream/fig02_figS2_chain/U1a_5S_read_extraction/local_scripts_v5/giab_seq_extract.sh	fd700cc67162	same extraction for GIAB ONT (s3://ont-open-data/giab_2023.05) with --k 25 --hdist 2
 U1a_5S_read_extraction	6	upstream/fig02_figS2_chain/U1a_5S_read_extraction/kgp_ont/kgp_region.sh	fcfd3357a05a	1kGP-ONT : array region (chr1:227644873-228124958) cut from the CHM13-aligned R10 BAMs -> out/<S>.array.fastq.gz (read source of our hifiasm for 1kGP and of the trio parents)
 U1a_5S_read_extraction	7	upstream/fig02_figS2_chain/U1a_5S_read_extraction/kgp_ont/manifest.tsv	109048953469	record : per-sample s3://1000g-ont BAM paths read by upstream/fig02_figS2_chain/U1a_5S_read_extraction/kgp_ont/kgp_region.sh (data list, not code)
-U1b_HPRC_array_cut	1	upstream/fig02_figS2_chain/U1b_HPRC_array_cut/asm_units4.py	3da1de4d61f5	HPRC release 2 assemblies (index assemblies_release2_v1.0.index.csv) : CHM13 proximal/distal 50 kb probes placed with minimap2 -x asm20, array = between the inner ends ; 400 references
+U1b_HPRC_array_cut	1	upstream/fig02_figS2_chain/U1b_HPRC_array_cut/asm_units4.py	77978a059312	HPRC release 2 assemblies (index assemblies_release2_v1.0.index.csv) : CHM13 proximal/distal 50 kb probes placed with minimap2 -x asm20, array = between the inner ends ; 400 references
 U1c_our_hifiasm	1	upstream/fig02_figS2_chain/U1c_our_hifiasm/local_scripts_v6_hifiasm/hifi_queue.sh	9a103a63c057	hifiasm --ont per sample on the 5S/array reads (kgp_ont, s5s_ont hits, giab_hits) then upstream/fig02_figS2_chain/U1c_our_hifiasm/local_scripts_v6_hifiasm/hiarr.py
 U1c_our_hifiasm	2	upstream/fig02_figS2_chain/U1c_our_hifiasm/local_scripts_v6_hifiasm/hiarr.py	2da905b9e2a2	array cut from the assembly with the CHM13 50 kb probes (minimap2 -x asm20 -N 20 -p 0.1), arrays < 4,000 bp dropped
-U1c_our_hifiasm	3	upstream/fig02_figS2_chain/U1c_our_hifiasm/local_scripts_v6_hifiasm/asm_arr_all.py	30c21b7715f1	array cut over all assemblies (step 1 of the reference build)
+U1c_our_hifiasm	3	upstream/fig02_figS2_chain/U1c_our_hifiasm/local_scripts_v6_hifiasm/asm_arr_all.py	73ea2209bdfb	array cut over all assemblies (step 1 of the reference build)
 U1c_our_hifiasm	4	upstream/fig02_figS2_chain/U1c_our_hifiasm/06_code/fill60.sh	9641465041fc	hifiasm for the 60 samples without a candidate (full reads, then read fraction sweep) -> fill60 references
 U1c_our_hifiasm	5	upstream/fig02_figS2_chain/U1c_our_hifiasm/06_code/fill60v2.sh	d42afe7527d4	second fill60 pass (55/60)
 U1c_our_hifiasm	6	upstream/fig02_figS2_chain/U1c_our_hifiasm/06_code/sweep31v2.sh	64f28cd4096e	read fraction sweep -> sweep31 references
@@ -25,20 +25,20 @@ U1d_reference_repair	8	upstream/fig02_figS2_chain/U1d_reference_repair/v11-fix1/
 U1d_reference_repair	9	upstream/fig02_figS2_chain/U1d_reference_repair/v11-fix1/patch_canon_fix1.py	8aebd27e93d8	writes ~/cmp4d_v11_fix1 (two haplotypes replaced)
 U1d_reference_repair	10	upstream/fig02_figS2_chain/U1d_reference_repair/readmap_repo/pilot_c2seq.py	e5a3f208835c	read-consensus references (cons2seq, 6) ; not confirmed to be the exact copy that made the v11 cons2seq files
 U1d_reference_repair	11	upstream/fig02_figS2_chain/U1d_reference_repair/readmap_repo/mkmap_c2seq.py	edf700d9a20d	map rows of the cons2seq references (same caveat)
-U2_unit_map_variant_calling	1	upstream/fig02_figS2_chain/U2_unit_map_variant_calling/consmapG8v4_fixdedup.py	565d2f8ff5d8	Fig 2a calling : blastn 5S gene HSPs -> unit = gene end+1 .. next gene end (+100 bp) -> minimap2 -x asm20 -c --cs=long to the canonical unit with 200 bp context -> cs string to tokens (1096G, 437D1, 1493I4)
+U2_unit_map_variant_calling	1	upstream/fig02_figS2_chain/U2_unit_map_variant_calling/consmapG8v4_fixdedup.py	6eb53b1014a8	Fig 2a calling : blastn 5S gene HSPs -> unit = gene end+1 .. next gene end (+100 bp) -> minimap2 -x asm20 -c --cs=long to the canonical unit with 200 bp context -> cs string to tokens (1096G, 437D1, 1493I4)
 U2_unit_map_variant_calling	2	upstream/fig02_figS2_chain/U2_unit_map_variant_calling/v11/rung8v10.sh	5afef649d892	runner for g8canonv10 (map 91816b9ca9d3 : read-level chain U7)
 U2_unit_map_variant_calling	3	upstream/fig02_figS2_chain/U2_unit_map_variant_calling/v11-fix1/run_map_fix1.sh	4f2a27730527	runner for g8canonv11f1 (map 34dc9870ee54 : every v11_io panel) : asm20 LO 2100 HI 2400 FRAG 5 PAD 100 CTX 200, 4 parts
 U3_read_placement_units	1	upstream/fig02_figS2_chain/U3_read_placement_units/v11/aoplace_v3fix.py	f8458cc35add	ARRAY_ONLY placement (K=12 DMIN=10)
 U3_read_placement_units	2	upstream/fig02_figS2_chain/U3_read_placement_units/v11/aoplace_v5fix.py	2e11bf1b4448	ARRAY_ONLY placement, AOJV5 and GIAB (minimap2 -a -x map-ont -K 100M)
-U3_read_placement_units	3	upstream/fig02_figS2_chain/U3_read_placement_units/v11/aoplace_v8fix.py	22f17cccbdde	ARRAY_ONLY placement with map/sequence overrides
+U3_read_placement_units	3	upstream/fig02_figS2_chain/U3_read_placement_units/v11/aoplace_v8fix.py	e4b1aa4e456e	ARRAY_ONLY placement with map/sequence overrides
 U3_read_placement_units	4	upstream/fig02_figS2_chain/U3_read_placement_units/v11/extract_ao_reads_env.py	020a433fa876	original reads of the accepted placements
-U3_read_placement_units	5	upstream/fig02_figS2_chain/U3_read_placement_units/v11/ao_g8cut.py	fa51a40a648a	ARRAY_ONLY unit cut (minimap2 -a -x map-ont -y, ±250 bp windows ; variants by minimap2 asm20 --cs=long)
-U3_read_placement_units	6	upstream/fig02_figS2_chain/U3_read_placement_units/v11/ao_blastcut.py	9b21ab5e7c7e	blast cut (supplement)
+U3_read_placement_units	5	upstream/fig02_figS2_chain/U3_read_placement_units/v11/ao_g8cut.py	1bacdbc2ebf1	ARRAY_ONLY unit cut (minimap2 -a -x map-ont -y, ±250 bp windows ; variants by minimap2 asm20 --cs=long)
+U3_read_placement_units	6	upstream/fig02_figS2_chain/U3_read_placement_units/v11/ao_blastcut.py	b0582fcc22e7	blast cut (supplement)
 U3_read_placement_units	7	upstream/fig02_figS2_chain/U3_read_placement_units/v11/build_ao_final_g.py	0388af3d6507	merge of the two cuts + relabel undo (must not be skipped)
 U3_read_placement_units	8	upstream/fig02_figS2_chain/U3_read_placement_units/v11/mkjxmap_v10.py	412c5509b8b3	junction coordinate frame
 U3_read_placement_units	9	upstream/fig02_figS2_chain/U3_read_placement_units/v11/jx_g8cut_v10b.py	10dfaa1ef87c	junction unit cut
 U3_read_placement_units	10	upstream/fig02_figS2_chain/U3_read_placement_units/v11/recall_edge_v10.py	dbecd5ba5490	variant re-call, AO
-U3_read_placement_units	11	upstream/fig02_figS2_chain/U3_read_placement_units/v11/recall_mid_v10.py	ac85bfa20803	variant re-call, AO
+U3_read_placement_units	11	upstream/fig02_figS2_chain/U3_read_placement_units/v11/recall_mid_v10.py	f08de4bf77a8	variant re-call, AO
 U3_read_placement_units	12	upstream/fig02_figS2_chain/U3_read_placement_units/v11/recall_pad2_v10.py	d5027a70a05d	variant re-call, AO (PAD 100 CTX 200)
 U3_read_placement_units	13	upstream/fig02_figS2_chain/U3_read_placement_units/v11/recall_edge.py	5aa4e4d7fb89	variant re-call, junction (original code)
 U3_read_placement_units	14	upstream/fig02_figS2_chain/U3_read_placement_units/v11/recall_mid.py	1caf6347690c	variant re-call, junction
@@ -57,12 +57,12 @@ U3_read_placement_units	26	upstream/fig02_figS2_chain/U3_read_placement_units/v1
 U3_read_placement_units	27	upstream/fig02_figS2_chain/U3_read_placement_units/v11-fix1/recall_mid_f1.py	4befc59777f5	re-call, fix1
 U3_read_placement_units	28	upstream/fig02_figS2_chain/U3_read_placement_units/v11-fix1/recall_pad2_f1.py	8279ff06399e	re-call, fix1
 U3_read_placement_units	29	upstream/fig02_figS2_chain/U3_read_placement_units/v11-fix1/recall_edge_f1b.py	8f47faf962a4	re-call, fix1 b
-U3_read_placement_units	30	upstream/fig02_figS2_chain/U3_read_placement_units/v11-fix1/recall_mid_f1b.py	0cb091ff14d8	re-call, fix1 b
+U3_read_placement_units	30	upstream/fig02_figS2_chain/U3_read_placement_units/v11-fix1/recall_mid_f1b.py	2f9d235a062d	re-call, fix1 b
 U3_read_placement_units	31	upstream/fig02_figS2_chain/U3_read_placement_units/v11-fix1/recall_pad2_f1b.py	6a6cb7a49683	re-call, fix1 b
 U3_read_placement_units	32	upstream/fig02_figS2_chain/U3_read_placement_units/v11-fix1/build_units_f1.py	313389e4a408	fix1 unit tables (06_units_final)
 U3_read_placement_units	33	upstream/fig02_figS2_chain/U3_read_placement_units/v11-fix2/run_fix2_ao.sh	6c3dec1f1269	fix2 AO run for 9 individuals : ao_g8cut -> ao_blastcut -> build_ao_final_g -> recall_*_f2 ; then mkbam_ao_f2 -> meth_units_ao_f2
 U3_read_placement_units	34	upstream/fig02_figS2_chain/U3_read_placement_units/v11-fix2/recall_edge_f2.py	8080e505450c	re-call, fix2
-U3_read_placement_units	35	upstream/fig02_figS2_chain/U3_read_placement_units/v11-fix2/recall_mid_f2.py	d7295034ad1b	re-call, fix2
+U3_read_placement_units	35	upstream/fig02_figS2_chain/U3_read_placement_units/v11-fix2/recall_mid_f2.py	6987e8c4fd0f	re-call, fix2
 U3_read_placement_units	36	upstream/fig02_figS2_chain/U3_read_placement_units/v11-fix2/recall_pad2_f2.py	8364f50671fd	re-call, fix2
 U3_read_placement_units	37	upstream/fig02_figS2_chain/U3_read_placement_units/v11-fix2/build_f2.py	2cd2e6f11c54	units mode : replaces the 9 individuals' ARRAY_ONLY rows ; meth mode : replaces the _ao raw tables
 U4_unit_methylation	1	upstream/fig02_figS2_chain/U4_unit_methylation/v11/mkbam_ao_v11.py	17b90628e737	AO BAM (samtools sort/index)

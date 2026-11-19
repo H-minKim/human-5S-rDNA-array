@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Zebrafish 5S array: the read x unit CpG methylation matrix, in the same format as the human HPRC analysis.
-#   Unit boundary = the start of a GRCz12tu cmsearch 5S hit; one unit spans two neighbouring hit starts within the array. Never convert bp / period.
+#   Unit boundary = the start of a GRCz12tu cmsearch 5S hit; one unit spans two neighbouring hit starts within the array. bp / period is not used.
 #   Inputs: modkit extract full (read, ref_position, mod_qual), the per-individual BAM for MAPQ, the array BED and the hit table.
 #   Calls: mod_qual >= 0.5 is methylated, below that unmethylated. modkit 0.6.4 with C+m? gives the m probability only.
 #   No MAPQ filter (mapq 0 is normal in a tandem array); mapq is kept as a column so it can be used later.

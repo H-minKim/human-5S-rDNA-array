@@ -7,7 +7,7 @@
 # A measured example for panel C: the local-best rate by position for one haplotype, untouched against with the middle 6 units inverted.
 # Output : EXAMPLE_PROFILE.tsv (the figure reads this table only)
 import io, os, glob, collections
-K = os.environ["RDNA_HANDOFF_DIR"]
+K = os.environ["RDNA_UPSTREAM_DIR"]
 OUT = os.path.join(K, "result_inversion_positive_control_20260930")
 S = os.path.dirname(os.path.abspath(__file__))
 MAPF = os.path.join(S, "pos_in", "CONSENSUS_MAP_G8_full.tsv")

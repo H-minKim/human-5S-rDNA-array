@@ -69,7 +69,7 @@ for r in sorted(rows, key=lambda x: (x["species_key"], x["array_id"])):
     if r["gate_result"].startswith("불통과"):
         e["unit_type_verdict"] = "한 종류(1 단계 탈락)"
         e["n_unit_types"] = "1"
-    elif r.get("stage2_result", "").startswith("사용자"):
+    elif r.get("stage2_result", "").startswith("검토"):
         e["unit_type_verdict"] = "한 종류(그룹핑 철회)"
         e["n_unit_types"] = "1"
     elif r.get("stage2_result", "").startswith("불통과"):

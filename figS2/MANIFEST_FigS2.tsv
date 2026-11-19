@@ -24,8 +24,8 @@ Supplementary Figure S2	B	common/fig02_figS2/tables/P04_S3.py	6303f26d25aa	-	-	-
 Supplementary Figure S2	B	common/fig02_figS2/tables/P08_X2.py	ee2241e5c712	-	-	-	-	common/fig02_figS2/tables/P08_X2.py	-	-
 Supplementary Figure S2	C	common/fig02_figS2/tables/COSHARE_BSTRAT.py	b0de83208757	-	-	-	-	common/fig02_figS2/tables/COSHARE_BSTRAT.py	-	-
 Supplementary Figure S2	E	common/fig02_figS2/tables/VTZONE4.py	3d4c0884a73e	-	-	-	-	common/fig02_figS2/tables/VTZONE4.py	-	-
-Figure 2	K	common/fig02_figS2/tables/S16_abs_vs_rel.py	a69c88d13497	-	-	-	-	common/fig02_figS2/tables/S16_abs_vs_rel.py	-	-
-Supplementary Figure S2	F	common/fig02_figS2/tables/S16_abs_vs_rel.py	a69c88d13497	-	-	-	-	common/fig02_figS2/tables/S16_abs_vs_rel.py	-	-
+Figure 2	K	common/fig02_figS2/tables/S16_abs_vs_rel.py	73ba70f828a0	-	-	-	-	common/fig02_figS2/tables/S16_abs_vs_rel.py	-	-
+Supplementary Figure S2	F	common/fig02_figS2/tables/S16_abs_vs_rel.py	73ba70f828a0	-	-	-	-	common/fig02_figS2/tables/S16_abs_vs_rel.py	-	-
 Figure 2	K	common/fig02_figS2/tables/S18_changepoint.py	55a6026fbb32	-	-	-	-	common/fig02_figS2/tables/S18_changepoint.py	-	-
 Figure 2	K	common/fig02_figS2/tables/S24_NOBETA.py	9e97d9a4b54f	-	-	-	-	common/fig02_figS2/tables/S24_NOBETA.py	-	-
 Supplementary Figure S2	D	common/fig02_figS2/tables/S24_NOBETA.py	9e97d9a4b54f	-	-	-	-	common/fig02_figS2/tables/S24_NOBETA.py	-	-
@@ -40,7 +40,7 @@ Supplementary Figure S2	F	common/fig02_figS2/tables/EXPORT_variant_groups.py	b04
 Supplementary Figure S2	F	common/fig02_figS2/tables/EXPORT_origin_call.py	53c23865cba2	-	-	-	-	common/fig02_figS2/tables/EXPORT_origin_call.py	-	-
 Supplementary Figure S2	F	common/fig02_figS2/tables/EXPORT_origin_finalize.py	b6eaeea4979f	-	-	-	-	common/fig02_figS2/tables/EXPORT_origin_finalize.py	-	-
 Supplementary Figure S2	F	common/fig02_figS2/tables/EXPORT_origin_stability.py	eb7d08a23a09	-	-	-	-	common/fig02_figS2/tables/EXPORT_origin_stability.py	-	-
-Supplementary Figure S2	G	common/fig02_figS2/tables/figx12_zone.py	fac4e3cd4df9	-	-	-	-	common/fig02_figS2/tables/figx12_zone.py	-	-
+Supplementary Figure S2	G	common/fig02_figS2/tables/figx12_zone.py	6c65849ab63a	-	-	-	-	common/fig02_figS2/tables/figx12_zone.py	-	-
 Supplementary Figure S2	I	common/fig02_figS2/tables/Y5_terminal_type_character.py	cf195037e36f	-	-	-	-	common/fig02_figS2/tables/Y5_terminal_type_character.py	-	-
 Supplementary Figure S2	K	common/fig02_figS2/tables/W15_any_minority_type.py	03f0aa174af1	-	-	-	-	common/fig02_figS2/tables/W15_any_minority_type.py	-	-
 Supplementary Figure S2	M	common/fig02_figS2/tables/Z_B_nomark_groups_and_divergence.py	c6a9cb0ce18e	-	-	-	-	common/fig02_figS2/tables/Z_B_nomark_groups_and_divergence.py	-	-

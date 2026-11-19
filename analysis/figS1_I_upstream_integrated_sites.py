@@ -7,7 +7,7 @@
 # Combined: insertions and deletions on the anchor and DP axes, together with structural anomalies on the placed-position axis including the inversion positive control, in one figure.
 # Output : INTEGRATED_STRUCTURAL.md and INTEGRATED_13SITES.tsv
 import io, os, collections, statistics
-K = os.environ["RDNA_HANDOFF_DIR"]; B = chr(92)
+K = os.environ["RDNA_UPSTREAM_DIR"]; B = chr(92)
 D = os.path.join(K, "result_placement_slot_anchor_20260930")
 A = os.path.join(os.environ["RDNA_V11"], "09_tests", "unit_indel_all_v2_20260916",
              "anchor_check_20260918", "results", "ANCHOR_SITES.tsv")
@@ -28,8 +28,8 @@ hub = {("HG01258","1","D1"):("모자이크","확정",10,6,"0.9865"), ("HG03516",
  ("NA20850","1","D6"):("read 동의","§3",12,5,"0.9364"), ("HG01081","2","D9"):("read 동의","§3",4,4,"0.9578"),
  ("HG02559","2","D6"):("read 동의","§3 · 정본형 0",6,0,"–"), ("HG03270","1","D1"):("read 동의","수리됨",7,2,"0.9850"),
  ("NA21133","2","D22"):("재현 안 됨","–",None,None,"–")}
-dec = {("HG03270","1"):"수리함 v11-수정1(09-17)", ("HG01081","2"):"수리 안 함 09-22 '냅두자'", ("HG01106","1"):"수리 안 함 09-22 '냅두자'",
- ("HG02559","2"):"수리 안 함 09-22 '냅두자'", ("NA20850","1"):"수리 안 함 09-22 '냅두자'", ("NA21133","2"):"수리 안 함(재현안됨)"}
+dec = {("HG03270","1"):"수리함 v11-수정1(09-17)", ("HG01081","2"):"수리 안 함", ("HG01106","1"):"수리 안 함",
+ ("HG02559","2"):"수리 안 함", ("NA20850","1"):"수리 안 함", ("NA21133","2"):"수리 안 함(재현안됨)"}
 out = []
 for r in rows(A):
     if not (int(r["n_reads"]) >= 3 and float(r["support_frac"]) >= 0.7) or r["sample"] == "HG00272": continue
@@ -39,7 +39,7 @@ for r in rows(A):
     mn = min(rate[(s, sl, ap)] for ap in aps) if aps else None
     med = statistics.median(byhap.get((s, sl), [0]))
     out.append((h[0], s, sl, t, lo, hi, int(r["n_reads"]), int(r["n_spanning"]), h[2], h[3], h[4],
-                dec.get((s, sl), "수리 안 함 09-22(모자이크·조립본 형 유지)"), mn, med))
+                dec.get((s, sl), "수리 안 함(모자이크·조립본 형 유지)"), mn, med))
 order = {"read 동의": 0, "모자이크": 1, "반박": 2, "재현 안 됨": 3}
 out.sort(key=lambda x: (order[x[0]], x[1]))
 g = io.open(os.path.join(D, "INTEGRATED_13SITES.tsv"), "w", encoding="utf8", newline=NL)

@@ -37,7 +37,7 @@ a1 = R[R.array_pos == 1].beta_call.median()
 aN = R[R.array_pos == R.N].beta_call.median()
 P()
 P("[direction] β median at array_pos 1 %.3f, β median at array_pos N %.3f -> %s"
-  % (a1, aN, "array_pos 1 = distal (same as the canonical rule)" if a1 < aN else "반대 — 아래 셈법을 뒤집어야 한다"))
+  % (a1, aN, "array_pos 1 = distal (same as the canonical rule)" if a1 < aN else "반대"))
 FLIP = a1 >= aN
 R["ad"] = R.N - R.array_pos + 1 if FLIP else R.array_pos      # index counted from the distal end
 R["ap"] = R.array_pos if FLIP else R.N - R.array_pos + 1      # index counted from the proximal end

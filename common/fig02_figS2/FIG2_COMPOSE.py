@@ -25,7 +25,7 @@ def resolve(figdir, name):
 
 SVG = S.SVG
 W = 414.4                 # pt, typeset coordinate width
-# spec figure Untitled-1.svg (= this composite x 1.022), published width 423.5 pt, all figures share one horizontal width
+# published width 423.5 pt (= this composite x 1.022), all figures share one horizontal width
 #   Only the outer <svg> width and height are enlarged and the viewBox is kept, so text, line widths, markers and margins all grow by the same factor (lines never fail to grow)
 OUT_W = 423.5
 SCALE = OUT_W / W

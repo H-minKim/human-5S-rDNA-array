@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 # Handle read units short by more than 10bp (run on the node)
-#   "if it is not the end of the read and there is a neighboring unit (a unit inside the array), mark it simply as a deletion even if 10bp or more"
+#   A unit that is not at the end of the read and has a unit next to it (a unit inside the array) is marked as a deletion even if it is short by 10bp or more.
 #   ① unit in the middle of a read (not the min or max unit number covered by that read, and with units before and after it in coordinates)
 #        -> write the shortfall as a deletion token and OK_MIDDEL  (start shortfall s -> "1Ds", end shortfall e -> "(2241-e)De", same tokens as rule B)
-#   ② units at either end of the read -> NO_FULL_READEND (discarded, as now)
+#   ② units at either end of the read -> NO_FULL_READEND (discarded)
 #   Also measured : for each neighbor on the side short by more than 10bp,
 #        the neighbor's check status, the read gap between the two units (overlap is negative), extra bases outside the canonical on the neighbor's facing side, and the neighbor's own shortfall
 #   unit sequence = taken from the saved SAM SEQ using the saved read coordinates (same as recall_edge.py, no re-cutting or realignment)

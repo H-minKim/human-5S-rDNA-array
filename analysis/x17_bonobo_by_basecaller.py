@@ -174,7 +174,7 @@ def od_of(g):
 for gname in ("혼합", "6.3.8", "6.3.7"):
     g = RU if gname == "혼합" else RU[RU.grp == gname]
     a = allcall if gname == "혼합" else allcall[allcall.grp == gname]
-    ROWS.append(dict(grp=gname, metric="array 호출가중 β (read_unit · 거름 없음 · CMD01 정의)", value=a.n_5mC.sum() / a.n_calls.sum(), n=int(a.read_id.nunique())))
+    ROWS.append(dict(grp=gname, metric="array 호출가중 β (read_unit · 거름 없음)", value=a.n_5mC.sum() / a.n_calls.sum(), n=int(a.read_id.nunique())))
     r, _, _ = call10(g.b.values, float(g.n_calls.median()))
     ROWS.append(dict(grp=gname, metric="A7 read-유닛 평균 β", value=g.b.mean(), n=len(g)))
     ROWS.append(dict(grp=gname, metric="A7 OFF(<0.35)", value=(g.b < 0.35).mean(), n=len(g)))
@@ -213,7 +213,7 @@ Nn = D.groupby("array_id").array_pos.transform("max")
 D["p_end"] = np.minimum(D.array_pos, Nn - D.array_pos + 1)
 E = []
 P()
-P("§5-C end mixing ratio (script version, same definition as the inline calculation)")
+P("end mixing ratio")
 for k, nm in NM.items():
     g = D[D.species_key == k]
     e, i = g[g.p_end <= 5], g[g.p_end >= 21]

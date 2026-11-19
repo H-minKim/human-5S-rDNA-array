@@ -340,7 +340,7 @@ def build(name, rows):
     except Exception as _e:
         print("     assembly svg is broken as XML: %s -> check the <g> pairs of the panel svg" % _e)
     print("%-46s %7.2f x %7.2f pt, cells %2d" % (name, PAGEW, H, len(labs)))
-    # -- measurements for the report
+    # -- measurements
     if not all(haspdf[b] for b in need):
         print("     panel without pdf: png and pdf skipped")
         return

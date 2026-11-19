@@ -5,7 +5,7 @@
 #       to run : export NODE_HOME=/home/<user>
 
 # -*- coding: utf-8 -*-
-# Revision 1: map g8canonv10, canonical cmp4d_v11, anchors given explicitly, input fix1/pol, output fix1/splice. Everything else unchanged.
+# Revision 1: map g8canonv10, canonical cmp4d_v11, anchors given explicitly, input fix1/pol, output fix1/splice.
 # Surgical replacement v2: the anchors are fixed by position.
 #
 #   Searching the whole consensus for the best-matching anchor unit lands on a different copy in the tandem array

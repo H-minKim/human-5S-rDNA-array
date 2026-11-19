@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 # Render the publication png and svg from the pdf.
 #
-#   The submitted Fig1_pipeline_EN.png/.svg and the merged SFig1_*.png/.svg
-#     were produced by hand and by no script; this fills that gap.
+#   Renders Fig1_pipeline_EN.png/.svg and the merged SFig1_*.png/.svg.
+#
 #     (The png and svg for SFig1_p1_* and SFig1_p2_* are written directly by matplotlib in the drawing script
 #      and are not re-rendered here.)
 #

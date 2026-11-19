@@ -24,7 +24,7 @@ this deposit, because the reads and the node-made inputs are on the node.
 (i) fig06/fig06_G-J_cell_lines.py , figS9/figS9_C-F_cell_lines_onerow.py
 ```
 
-`<L>` is `K562all` or `GM12878all`. Step (a) was made by another run; (b)-(d) belong to this stage.
+`<L>` is `K562all` or `GM12878all`. Step (a) was made in a separate stage; (b)-(d) belong to this stage.
 The hits fastq in (a) are named `K562r` and `GM12878FS` on the node; `fq2ubam.py` was run on them with the
 output names `all/K562all.u.bam` and `all/GM12878all.u.bam`.
 

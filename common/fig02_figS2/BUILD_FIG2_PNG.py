@@ -64,7 +64,7 @@ def build(figdir, which, out):
                 raise SystemExit('Errno 22: stop immediately (no retry) : %s' % e)
             print("      %s copy attempt %d : %s" % (os.path.basename(out), att + 1, e)); time.sleep(3.0)
     else:
-        raise OSError("%s could not be written to F: (four attempts)" % os.path.basename(out))
+        raise OSError("%s could not be written (four attempts)" % os.path.basename(out))
     # vector pdf for NAR submission, made in the same call as the png: print-to-pdf of the same svg with the same Chrome (page size = svg size in pt, margin 0)
     #   the pdf contains its creation time, so its md5 changes every time -> judge versions by the png
     body = io.open(svg, encoding="utf8").read()

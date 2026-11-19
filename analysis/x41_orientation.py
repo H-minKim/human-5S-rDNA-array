@@ -2,7 +2,7 @@
 # Measure the array orientation, proximal against distal, from the assembly, by two independent routes, and check that they agree.
 #   a) Centromere coordinates, from tables/CENTROMERE.tsv: the side carrying the centromere is proximal and the other distal.
 #
-#   Do not use the nearer-end ruler here, which takes the distal side to be the nearer chromosome end.
+#   The nearer-end ruler, which takes the distal side to be the nearer chromosome end, is not used here.
 #     Proximal and distal are set from the centromere coordinates alone.
 #     Measured over all 53 arrays, the two rulers agree in 46 and disagree in 6, and 1 array overlaps the centromere interval.
 #       - zebrafish chr4 three times (36.22, 36.24 and 37.10 Mb) and chr18 once (31.47 Mb):

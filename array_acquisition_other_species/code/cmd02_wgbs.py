@@ -3,7 +3,7 @@
 #   Per read: WGBS_PERREAD_input.tsv, the same file as the ADULT_PERREAD input to adult_stats.py in 12_zebrafish_devseries.
 #   The whole array is the coding part plus the spacer, summed within a read; the flank is not used.
 #   The difference is chr18 minus chr4, bootstrapped independently in the two groups, with the difference taken before any alignment.
-#   Citability: fewer than 10 reads on the chr18 side must not be cited, 10-29 is weak, and 30 or more is usable.
+#   Read support on the chr18 side: fewer than 10 reads is insufficient, 10-29 is weak, and 30 or more is usable.
 #   The stage III oocytes (GSE175951) are an author-processed CpG table with no reads, so only the per-site sum is reported, with no interval.
 # MIT License. Copyright (c) 2026 Hyungmin Kim
 import os
@@ -64,7 +64,7 @@ def boot(a):
 
 
 def cite(n):
-    return "인용금지" if n < 10 else ("약함" if n < 30 else "가능")
+    return "부족" if n < 10 else ("약함" if n < 30 else "가능")
 
 
 o = io.open(D + "WGBS_CHR18_VS_CHR4.tsv", "w", encoding="utf8", newline="\n")

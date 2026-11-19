@@ -13,7 +13,7 @@ chromatin accessibility one repeat unit at a time.
 | `common/` | shared libraries and the per-figure chains that several scripts import |
 | `upstream/` | the compute-node stages that produced the inputs of `analysis/` |
 | `tables/` | the result tables the figures read, and the Source Data workbooks |
-| `checks/` | `rulers.py`, which several scripts import so that a measurement and the thing it measures use the same ruler, and the two tables that read it |
+| `checks/` | two check tables on sequencing chemistry, written by `analysis/chem_flip_2026-10-24.py` and `analysis/chem_strata_2026-10-24.py` |
 | `fig01/` … `figS13/` | one manifest per figure, and nothing else |
 | `array_acquisition_other_species/` | the cross-species array acquisition code |
 
@@ -129,7 +129,7 @@ stops with a message naming the variable it needs.
 | `P11_TABLE_OUT_DIR` | where those scripts write |
 | `P11_ASSEMBLY_DIR` | the folder holding `MAP_hapB_v4_110units.tsv` |
 | `V11PIPE_DIR` | the folder holding `MAP_G8_K562r.tsv` and the read-unit tables of the Figure 6 zone scripts |
-| `ARRAYMETH_HANDOFF_ROOT` | the root whose `02_output_tables/P10/` is read by `p10_19c_steps_unitlevel.py` and written by `p10_20_array_bounds.py` |
+| `ARRAYMETH_ROOT` | the root whose `02_output_tables/P10/` is read by `p10_19c_steps_unitlevel.py` and written by `p10_20_array_bounds.py` |
 | `S42SET29_SITES_TSV` | a table whose first column lists the 29 sites that `s42_dedup_tables_2026-11-01.py` reports separately |
 | `S42_KEEP_NODE` | the node label of the NA21133 run that `s42_dedup_tables_2026-11-01.py` keeps when the sample is counted once |
 | `RDNA_S` | the working folder of the reference-set steps `refset_step0_*.py` and `refset_step3_assign_slots.py`: `units_all.tsv`, `seqidx_all.tsv` and `hap_clusters.tsv` are read from it, and `HAP_READ_GLOBAL.tsv`, `HAP_READ_FINAL.tsv` and `hap_seq.tsv` are written to it |
@@ -285,7 +285,7 @@ because they were launched from the directory that held it.
 
 ### What a sweep for baked-in paths found none of
 
-Over all 659 `.py` and `.sh` files: no absolute `/home/<user>` or `/Users/<user>`
+Over all 658 `.py` and `.sh` files: no absolute `/home/<user>` or `/Users/<user>`
 path, no Windows drive letter, no hardcoded IP address, no user or account
 name, and no absolute entry added to `sys.path` (every one is derived from
 `__file__` or from a variable). Every environment variable that still carries a

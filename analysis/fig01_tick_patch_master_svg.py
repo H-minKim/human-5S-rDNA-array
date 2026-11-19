@@ -8,7 +8,7 @@
 import io, os, re, sys, hashlib
 sys.stdout.reconfigure(encoding="utf-8")
 # -- (repo) paths come from the environment --------------------------------
-SRC = os.environ.get("USER_SVG", "USER_Fig1.svg")
+SRC = os.environ.get("MASTER_SVG", "Fig1_master.svg")
 OUT = os.environ.get("PATCHED_SVG", "Fig1_tickfix.svg")
 
 NEW = {

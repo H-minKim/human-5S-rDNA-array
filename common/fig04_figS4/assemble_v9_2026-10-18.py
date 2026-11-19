@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Version 9: the specification-conforming assembler.
-# a) No per-row scaling. Scaling makes the type size differ between rows, which violates specification b.
+# a) No per-row scaling. Scaling makes the type size differ between rows.
 # The row length is matched instead by distributing the leftover width into the gaps between cells, or by centring a single cell.
 # b) The panel letter is an 8.2 pt capital, positioned from the frame line rather than from the corner of the cell:
 # -22.5 pt to the left and a baseline 1.5 pt above the top of the frame.
@@ -197,7 +197,7 @@ def build(name, ROWS):
     for cs in rows:
         natw.append(sum(cell_size(c)[0] for c in cs) + PAD * (len(cs) - 1))
     target = max(natw + [TARGET_W - LABW])
-    scales = [1.0 for _w in natw]          # no scaling, per specification b
+    scales = [1.0 for _w in natw]          # no scaling
     slacks = [target - w for w in natw]    # the leftover width is distributed into the gaps
 
     # -- second pass: placement, per row

@@ -65,7 +65,7 @@ for lang, hook, budget in (("ko", _HK[0], False), ("en", _HK[1], True)):
     if os.environ.get("RETARGET_SPEC"):     # supplementary cell figure, run the original code as is and move only one panel into the cell frame
         cmd = [sys.executable, os.path.join(tmp, "_retarget.py"), os.path.join(tmp, CODEF),
                os.environ["RETARGET_SPEC"].replace("{L}", lang), out]
-    if os.environ.get("TRACE_OPEN"):        # record the files actually read (for the code repository list, the figure output is the same)
+    if os.environ.get("TRACE_OPEN"):        # record the files actually read (the figure output is the same)
         os.makedirs(os.environ["TRACE_OPEN"], exist_ok=True)
         cmd = [sys.executable, os.path.join(tmp, "_tracewrap.py"), os.path.join(os.environ["TRACE_OPEN"], "%s__%s__%s.tsv" % (TAG, CODEF, lang))] + cmd[1:]
     if os.environ.get("NOHOOK_FIGLANG"):    # code that picks the language with FIG_LANG without a hook, like FIG_COSHARE

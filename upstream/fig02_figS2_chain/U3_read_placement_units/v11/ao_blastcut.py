@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Cut ARRAY_ONLY reads into G8 units without alignment (run on local WSL)
+# Cut ARRAY_ONLY reads into G8 units without alignment
 #   ① raw reads : the saved fastq (aoreads/*.fastq.gz, raw 4-line check passed 12,862/12,862)
 #   ② unit boundaries : find the 5S gene (119bp) in the read sequence with blastn, same settings G8v3 used to cut the canonical
 #                 (-task blastn -word_size 9 -evalue 1e-5 -dust no, HSP extended to the full gene length)

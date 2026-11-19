@@ -25,7 +25,7 @@ def _need(_v):
 
 P = os.path.join(_need("RDNA_WORK_ROOT"), "P10")
 OUTD = os.path.join(_need("RDNA_WORK_ROOT"), "out", "P10")
-OUT = os.path.join(_need("ARRAYMETH_HANDOFF_ROOT"), "02_output_tables", "P10", "P10_ARRAY_BOUNDS.tsv")
+OUT = os.path.join(_need("ARRAYMETH_ROOT"), "02_output_tables", "P10", "P10_ARRAY_BOUNDS.tsv")
 K = 31
 #  the same values as p10_08_extract_frame.py
 FAM_UNIT = {"5S": "5S", "D4Z4_4q": "D4Z4_4q", "D4Z4_10q": "D4Z4_10q", "DXZ4": "DXZ4",

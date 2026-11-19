@@ -44,7 +44,7 @@ P("[partial unit length] distal median %d bp (10-90%% %d-%d), proximal median %d
      SUM.off_근위.median(), SUM.off_근위.quantile(.1), SUM.off_근위.quantile(.9)))
 
 J = pd.read_csv(S + "02_tables/JUNCTION_FINE_METH_HC.tsv", sep="\t", dtype={"slot": str})
-J = J[J["sample"].astype(str) != "HG008-T"].copy()   # The flank also uses HPRC data only (common rule 3); HG008-T is excluded as a cancer sample with mixed PacBio data.
+J = J[J["sample"].astype(str) != "HG008-T"].copy()   # The flank also uses HPRC data only; HG008-T is excluded as a cancer sample with mixed PacBio data.
 J = J[[t in HP for t in zip(J["sample"].astype(str), J.slot.astype(str))]].copy()
 A = pd.read_csv(S + "02_tables/JUNCTION_SEQ_ANNOT.tsv", sep="\t", dtype={"slot": str})
 A = A[[t in HP for t in zip(A["sample"].astype(str), A.slot.astype(str))]].copy()

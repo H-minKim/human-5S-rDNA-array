@@ -22,7 +22,7 @@ import glob
 import collections
 import numpy as np
 
-# The data and output roots are environment variables with no default (CONVENTIONS, "the deposited copy wins").
+# The data and output roots are environment variables with no default.
 #  Paths to files inside the repository are resolved relative to __file__: a_lib, bamlite and p02_lib are deposited in this folder.
 #  The table of variables is in README.md, section 'Environment variables'.
 _HERE = os.path.dirname(os.path.abspath(__file__))

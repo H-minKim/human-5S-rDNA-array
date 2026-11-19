@@ -11,7 +11,7 @@
 #     Such tokens raise the Jaccard of every pair together and change the Jaccard 0.90 grouping.
 #
 #   Gate (1): first reproduce the variant columns of `HAPFEAT.parquet` exactly, and stop if that fails.
-#   Never write to the canonical files, all outputs are written only under new names below the paper Fig subfolder of the 03 figures folder.
+#   All outputs are written under new names below the paper Fig subfolder of the 03 figures folder.
 import io, os, sys, hashlib, collections
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 import numpy as np, pandas as pd

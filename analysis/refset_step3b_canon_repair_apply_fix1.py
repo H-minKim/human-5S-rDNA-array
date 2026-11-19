@@ -5,7 +5,7 @@
 #       to run : export NODE_HOME=/home/<user>
 
 # -*- coding: utf-8 -*-
-# Revision 1: source cmp4d_v11, output cmp4d_v11_fix1 as a real copy and never a symbolic link, map g8canonv10, anchors given explicitly. Everything else unchanged.
+# Revision 1: source cmp4d_v11, output cmp4d_v11_fix1 as a real copy and never a symbolic link, map g8canonv10, anchors given explicitly.
 # Canonical unit v10: a surgical replacement.
 #   Starting from v8 (the original assembly), only the 7 broken sites are spliced as [assembly left anchor][read consensus middle][assembly right anchor].
 #   Stored orientation: the .fa from cmp4d holds the sequence before flipping, so a window built in map orientation is reverse-complemented before it is written.

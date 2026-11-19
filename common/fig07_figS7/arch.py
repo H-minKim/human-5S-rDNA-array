@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # Version-archiving helper
-#   The rule: whatever is changed, 1) the previous file is never deleted but copied into archive/<date>_v<edition>/,
-#          2) the new file goes only into latest/, and 3) the ledger records the md5, the date and the reason.
+#   What it does: 1) the previous file is copied into archive/<date>_v<edition>/,
+#          2) the new file goes into latest/, and 3) a table records the md5, the date and the reason.
 #
 #   Usage:
 #     python arch.py put <new file> <path relative to latest> --reason "..."   puts the new file into latest, moving any existing version into the archive

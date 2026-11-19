@@ -65,7 +65,7 @@ def sheet(name, header, rows, src_path, note=""):
 H, R = tsv(V11)
 hp = [r for r in R if r[H["cohort"]] == "HPRC" and r[H["N_units"]].isdigit()]
 # CANCER samples are excluded from the main cohort.
-# Read from the registry, do not hard-code: 4 haplotypes / 3 samples / 2 people.
+# Read from the registry: 4 haplotypes / 3 samples / 2 people.
 CANCER = set(r[H["sample"]].strip().lower() for r in R if r[H["cohort"]] == "cancer")
 
 # Fig 1B: cohort table
@@ -197,8 +197,8 @@ S1I_EN = {
               "모자이크": "Mosaic",
               "반박": "Contradicted, counted as Mosaic in the summary",
               "재현 안 됨": "Not reproduced, counted as Mosaic in the summary"},
-    "decision": {"수리 안 함(09-22 모자이크)": "not repaired (09-22, mosaic)",
-                 "수리 안 함(09-22)": "not repaired (09-22)",
+    "decision": {"수리 안 함(09-22 모자이크)": "not repaired (mosaic)",
+                 "수리 안 함(09-22)": "not repaired",
                  "수리 안 함(재현안됨)": "not repaired (not reproduced)",
                  "수리함 v11-수정1": "repaired in v11-fix1"},
 }

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# A test of the claim:
+# A test of the hypothesis:
 #   5S makes its transition by changing the proportion of bimodally separated weakly and highly methylated units,
 #    whereas in DXZ4 the methylation level itself rises in steps of about 0.3 at the level of the unit.
 #
@@ -15,10 +15,10 @@
 # Two questions are asked separately:
 #   [A] within an array, with the position band as the band: how the change proceeds along the array.
 #   [B] between chromosomes, with the chromosome as the band: the form of the difference in level between chromosomes.
-#       The claim that DXZ4's overall methylation rises in steps belongs to [B].
+#       The hypothesis that DXZ4's overall methylation rises in steps belongs to [B].
 #   Pooling a female's two X chromosomes would itself create a spurious mixture in DXZ4, so the state is split using the sex table and run separately as well.
 #
-# The canonical tables are not touched; output goes only to 02_output_tables/claim_test_MvsS/ .
+# Output goes to 02_output_tables/claim_test_MvsS/ .
 import io, os, math, json, collections, statistics
 import numpy as np
 from scipy.optimize import minimize
@@ -224,7 +224,7 @@ for fam in FAMS:
 
 print()
 print("=" * 118)
-print("[B] between chromosomes: chromosome is the band   (the DXZ4 'overall methylation rises like a staircase' belongs here)")
+print("[B] between chromosomes: chromosome is the band")
 print("=" * 118)
 for fam in FAMS:
     chs = sorted({(r[4], r[5]) for r in U[fam]})

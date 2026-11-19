@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 r"""Fig 2 M and Supplementary Fig 2 G: builds the array type groups on cohort zone windows
 
-   Nine-window mode: the majority-type path of figx9_12_prep.py (Fig 2 M table FIGX9_12_GROUPS) and answer_x12.py
+   Nine-window mode: the majority-type path of figx9_12_prep.py (Fig 2 M table FIGX9_12_GROUPS) and x12_group_measures.py
            variant windows = the 9 fixed-depth windows of v20_nxn_scan (proximal 1-3, 4-7, 8-12, 13-25, middle, and the four symmetric distal ones)
    Zone mode: variant windows = 4 cohort zones (S24 boundaries proximal 3|4, 17|18, distal 10|11 -> proximal 1-3, proximal 4-17, middle, distal 1-10)
            a unit that falls in two zones goes to the shallower one (same rule as zone_of in VTZONE.py)
@@ -31,7 +31,7 @@ def P(s=""):
 
 
 def win_nine(D):
-    """Identical, character for character, to figx9_12_prep.py and answer_x12.py"""
+    """Identical, character for character, to figx9_12_prep.py and x12_group_measures.py"""
     return [("근1_3", (D.ap <= 3)), ("근4_7", (D.ap >= 4) & (D.ap <= 7)),
             ("근8_12", (D.ap >= 8) & (D.ap <= 12)),
             ("근13_25", (D.ap >= 13) & (D.ap <= 25)),
@@ -154,7 +154,7 @@ for g, s in EMB[EMB.무리 > 0].groupby("무리"):
                       pc1중앙=s.pc1.median(), pc2중앙=s.pc2.median()))
 GRP = pd.DataFrame(grows).sort_values(["기준", "하플로"], ascending=[True, False])
 
-# ---------------------------------------------------------------- membership and separating tokens (answers 11 and 10 of answer_x12.py, unchanged)
+# ---------------------------------------------------------------- membership and separating tokens (as in x12_group_measures.py, unchanged)
 MEMD = pd.DataFrame([dict(무리=gid.get(lab[i], 0), hap=h, sample=h.rsplit("_", 1)[0], slot=h.rsplit("_", 1)[1],
                           무리크기=int(sz[lab[i]]), 보유토큰수=int(Xb[i].sum())) for i, h in enumerate(haps)]
                     ).sort_values(["무리", "hap"])
@@ -170,7 +170,7 @@ for k in big:
 DT = pd.DataFrame(drows).sort_values(["무리", "차"], ascending=[True, False])
 P("discriminating token rows %d, groups %d / %d" % (len(DT), DT.무리.nunique(), len(big)))
 
-# pairwise Jaccard within groups, single-linkage chain diagnosis (answer 9)
+# pairwise Jaccard within groups, single-linkage chain diagnosis
 CH = []
 for k in big:
     ii = [i for i in range(len(haps)) if lab[i] == k]
@@ -180,7 +180,7 @@ for k in big:
 CH = pd.DataFrame(CH)
 P("within-group Jaccard (5 or more haplotypes):\n" + CH[CH.하플로 >= 5].to_string(index=False))
 
-# the two haplotypes of the same individual (answer 12)
+# the two haplotypes of the same individual
 smp = pd.Series([h.rsplit("_", 1)[0] for h in haps]); cc = smp.value_counts()
 bothin = same = 0
 for s_ in [s for s, c in cc.items() if c == 2]:

@@ -2,8 +2,7 @@
 
 120 tables, 45.8 MB. Each one is the exact file a figure was drawn from: it was
 selected by matching the `input_table_md5` recorded in the `MANIFEST_*.tsv` files,
-not by file name, because several of these names exist in more than one version
-folder in the working tree with different content.
+not by file name.
 
 Point the table roots at this folder when re-running the code, for example
 `TABLE_DIR`, `DATA_ROOT`, `P11_TABLE_DIR` and `REGISTRY_DIR`
@@ -29,7 +28,7 @@ three are rebuildable from what is here; they are out only for their size.
 **9 tables carry English names.** The content is
 unchanged, so the md5 recorded in the manifests still applies:
 
-| name here | name in the working tree |
+| name here | original name |
 |---|---|
 | `GM12878_interaction_NEWZONE_GMWGS_2026-10-14.tsv` | `GM12878_interaction_NEWZONE_GMWGS_2026-10-14.tsv` |
 | `K562_interaction_NEWZONE_withBDP1BRF1_2026-10-14.tsv` | `K562_interaction_NEWZONE_with_BDP1BRF1_2026-10-14.tsv` |
@@ -76,7 +75,7 @@ unchanged, so the md5 recorded in the manifests still applies:
 | `FILTER_DECOMPOSE_GMATAC_2026-11-01.tsv` | `13f08b85afcd` | 76 |
 | `GM12878_interaction_NEWZONE_GMWGS_2026-10-14.tsv` | `b2355947b209` | 139 |
 | `GM_QUALGATE_2026-11-01.tsv` | `0a596a6b423b` | 32158 |
-| `INTEGRATED_13SITES.tsv` | `c4882945692a` | 1634 |
+| `INTEGRATED_13SITES.tsv` | `78059d773138` | 1553 |
 | `K562_QUALGATE_MIX.tsv` | `1414cf754e97` | 37510 |
 | `K562_QUALGATE_MIX_BDP1BRF1.tsv` | `c627d845531e` | 9931 |
 | `K562_QUALGATE_NEWZONE_2026-10-13.tsv` | `c8a0b6b322da` | 22756 |
@@ -182,8 +181,8 @@ or the manifests of this repository read or name.
 | `FIGX19_F_SEG.tsv` | `ea37d896bbd8` | 1132 |
 | `FIGX25_BIMODAL.tsv` | `aea480f5560d` | 418 |
 | `Fig2_SourceData.xlsx` | `4baaf42e4e07` | 161648 |
-| `Fig3_main_SourceData.xlsx` | `b468e2c9fded` | 173998 |
-| `Fig3_supp_SourceData.xlsx` | `11d18e79bcb8` | 206823 |
+| `Fig3_main_SourceData.xlsx` | `71909818b5cc` | 173984 |
+| `Fig3_supp_SourceData.xlsx` | `ee2c9d90b87a` | 206808 |
 | `FigS2_SourceData.xlsx` | `27ec7bead7c9` | 57592 |
 | `HMM_20261014_by_zone.tsv` | `d0cc563613cb` | 452 |
 | `HMM_20261014_largeMSP_pair_comparison.tsv` | `9ee647a67a1c` | 338 |
@@ -204,17 +203,17 @@ or the manifests of this repository read or name.
 | `REF2_20261010d_m6a_depth_denominator_by_position.tsv` | `ef38425678a7` | 4190 |
 | `REF2_20261011_m6a_in_unit_by_state_cut508.tsv` | `02b100ddae69` | 173477 |
 | `REF2_20261012_by_cell_positions_and_depth.tsv` | `0fbd2fb242c8` | 3524 |
-| `SourceData_Fig1_FigS1.xlsx` | `ae322e3f3ec8` | 75293 |
+| `SourceData_Fig1_FigS1.xlsx` | `7c52fab2395f` | 75290 |
 | `SourceData_Fig4.xlsx` | `23b22a87f1b0` | 99909 |
 | `SourceData_Fig5_FigS7.xlsx` | `fa60ca0f025f` | 478510 |
-| `SourceData_Fig6_A-H.xlsx` | `dd310666d04d` | 11649 |
+| `SourceData_Fig6_A-H.xlsx` | `923a8ce96f5c` | 11606 |
 | `SourceData_Fig6_I-L.xlsx` | `3e586b26fc82` | 16657 |
 | `SourceData_Fig7_FigS11_FigS12_FigS13.xlsx` | `efb88d00ded9` | 2960647 |
 | `SourceData_FigS10.xlsx` | `54d0f6eb0492` | 241866 |
 | `SourceData_FigS4.xlsx` | `3473269d0f58` | 222450 |
 | `SourceData_FigS5.xlsx` | `4a90ca14e0ad` | 102396 |
 | `SourceData_FigS6.xlsx` | `83e89a7fc0a0` | 46800 |
-| `SourceData_FigS8.xlsx` | `4baa203b6405` | 10372 |
+| `SourceData_FigS8.xlsx` | `4240475d19a7` | 10338 |
 | `SourceData_FigS9_A-B.xlsx` | `25f4953bb476` | 18265 |
 | `UNITBETA_PERARRAY_v13.tsv.gz` | `5d405e2a01b7` | 3341511 |
 | `XB2_band_all.npz` | `b40a3757dfb9` | 1877 |

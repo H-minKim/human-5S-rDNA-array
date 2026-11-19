@@ -93,7 +93,7 @@ def tuc_targets(smp):
     out = set()
     # giab_tuc must be in the list, or the 4 GIAB individuals are silently skipped.
     #   If even one TUC call table directory is left out, tuc_targets returns an empty set
-    #   and they disappear without error via "if not want: continue". Always check the directory list.
+    #   and they disappear without error via "if not want: continue".
     for d in ("s5s_ont_tuc", "new44_tuc", "kgp_tuc", "giab_tuc", "s5s_tuc"):
         p = os.path.expanduser("~/%s/out/%s.bound.tsv" % (d, smp))
         if not os.path.exists(p):

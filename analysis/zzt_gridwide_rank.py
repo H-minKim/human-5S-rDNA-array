@@ -59,7 +59,7 @@ GAP, FLANKW = 8, 17
 WIDTHS = [9, 15, 21, 27, 33, 41, 51, 61, 71]
 SHIFT = {("HG02559", "2"), ("HG03672", "1")}
 ZT, ZI = (-28, -10), (57, 68)          # canonical: the narrow peak taken by FWHM
-ZTW, ZIW = (-35, 0), (45, 90)          # the earlier wide measure, kept as one column of the table only
+ZTW, ZIW = (-35, 0), (45, 90)          # the wide measure, kept as one column of the table only
 rel = np.arange(LO, HI + 1)
 rng = np.random.default_rng(20261011)
 K = np.ones(SM) / SM
@@ -112,7 +112,7 @@ for t in range(NB):
 BASE = PROF.mean(0)
 ENR = OBSM / np.maximum(BASE, 1e-9)
 NR = PROF / np.maximum(BASE, 1e-9)
-FTHR_BIN = np.percentile(NR.max(2), 95, axis=0)          # the earlier method, per bin
+FTHR_BIN = np.percentile(NR.max(2), 95, axis=0)          # per bin
 FTHRG = float(np.percentile(NR.reshape(NB, -1).max(1), 95))   # the whole grid
 print("FiberHMM threshold : per bin %.2f~%.2f  ->  grid-wide %.2f"
       % (FTHR_BIN.min(), FTHR_BIN.max(), FTHRG))
@@ -209,7 +209,7 @@ for t in range(NB):
 sA, sM = A.sum(0).astype(float), M.sum(0).astype(float)
 DNULL = np.array([[np.nanmax(dprof(NULA[t], NULM[t], w)) for w in WIDTHS]
                   for t in range(NB)])
-DTHR_W = np.nanpercentile(DNULL, 95, axis=0)                 # the earlier method, per width
+DTHR_W = np.nanpercentile(DNULL, 95, axis=0)                 # per width
 DTHRG = float(np.nanpercentile(np.nanmax(DNULL, axis=1), 95))  # the whole grid
 print("Dubocanin threshold : per width %.3f~%.3f  ->  grid-wide %.3f"
       % (DTHR_W.min(), DTHR_W.max(), DTHRG))

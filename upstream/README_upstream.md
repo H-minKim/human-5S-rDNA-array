@@ -25,6 +25,4 @@ script takes from `hostname` at run time, as in
 a site as methylated at `ML >= 128`, and report sites with no tag separately.
 The 5mC calls are taken from the submitted tags rather than produced here.
 
-**Do not attribute a table to a script here without matching the written filename.**
-`merge_meth.py` writes `READMAP_METH_G8V4.tsv` and no other name. A similar name in
-a similar pipeline is not a provenance.
+`merge_meth.py` writes `READMAP_METH_G8V4.tsv` and no other name.

@@ -9,8 +9,8 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(HERE, "_fix"))
 W_USE, LM, RMS, FH = 414.4 - 12.0, 35.0, 36.0, 64.0
 # cell: (name, code, saved original name, axes, left {ko, en}, right, width ratio, split, options)
-# applied: axis titles in the English version on one line (shortened meanings go into the Legend text), in the Korean version on two lines if long. Legends without a box at upper left (upper right if there is no room, o at lower right)
-#   j: red explanatory text removed. v y max 1.2, w y max 0.2 (max plotted value v 1.0000, w 0.1765, no data clipped, measured from the value table)
+# layout: axis titles in the English version on one line (shortened meanings go into the Legend text), in the Korean version on two lines if long. Legends without a box at upper left (upper right if there is no room, o at lower right)
+#   j: no explanatory text. v y max 1.2, w y max 0.2 (max plotted value v 1.0000, w 0.1765, no data clipped, measured from the value table)
 _ETK = ["101–250", "251–500", "501–1,000", "1,001–2,240"]
 # rows a b e / g j / k l / m y / o q r / v w x (panel letters keep reading order)
 # For the first four rows the width-ratio slot holds the graph frame width (pt) directly (per row, sum = usable width - margins).

@@ -11,7 +11,7 @@
 # (`:=`) and no `match` statement - so any Python 3 release that the packages
 # below support will run it.
 #
-# The list is every module imported by the 511 .py files in this repository,
+# The list is every module imported by the 509 .py files in this repository,
 # without the standard library and the modules that live here.
 
 numpy

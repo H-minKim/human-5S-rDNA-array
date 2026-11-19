@@ -4,7 +4,7 @@
 
 # -*- coding: utf-8 -*-
 # The data registry: two tables, one row per haplotype and one row per individual.
-#   Every cell is measured. Anything unknown is left as "?" and never inferred.
+#   Every cell is measured. Anything unknown is left as "?".
 #   Inputs, all read-only:
 #     the canonical table 08_versions/v11/02_canonical/hap_seq_node_v8.tsv, for the source and file name;
 #     the map 08_versions/v11/03_maps/g8canonv10/CONSENSUS_SUM_G8_full.tsv, for the unit count, bp, revcomp and n_break;

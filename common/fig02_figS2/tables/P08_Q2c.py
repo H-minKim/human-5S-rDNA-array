@@ -221,11 +221,11 @@ for nm, a_, b_ in REG:
                  int(outr.max()) if len(outr) else 0, float(3 * aa), float(cib[0]), float(cib[1]), ident,
                  float(TMr[0]), float(TMr[1]), float(TMr[-1])))
 print("    gene / promoter / AluY / NTS2 have fewer than 1 mismatch per pair -> range cannot be estimated (Q0-3 resolution limit)")
-print("    usable statement : 'lambda is dominated by GA-rich. In the gene region it cannot be estimated at all.'")
+print("    lambda is dominated by GA-rich. In the gene region it cannot be estimated at all.")
 
 # ---------------- ⒞ λ vs n_copies ----------------
 print("\n" + "=" * 78)
-print("[c] λ vs n_copies: a calculation such as '93 copies, hence 7 zones' is not used (n ranges 14-239, a 17-fold spread)")
+print("[c] λ vs n_copies: n ranges 14-239, a 17-fold spread")
 lam_h, n_h = [], []
 for (s, sel, n), M in zip(PK, Ms):
     nn = NCOPY.get(s, 0)

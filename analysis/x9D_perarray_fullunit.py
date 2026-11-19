@@ -25,11 +25,11 @@
 #   and at a pass rate of 5% or more the group is not accepted as bimodal but treated as unimodal with the fraction split f. The pass rate is reported.
 #   (For the apes, zebra finch and Arabidopsis, which have many CpG sites, the pass rate is 0.0%.)
 #   1) Bimodality is decided per group (array): Ashman's D > 2 (two-component Gaussian EM), Sarle's bimodality coefficient > 0.555, minor component >= 5%.
-# Definition check: human 5S (P10) gives D 3.002, BC 0.8311, w_minor 0.306, matching the specification values 3.00 / 0.83 / 0.306
+# Definition check: human 5S (P10) gives D 3.002, BC 0.8311, w_minor 0.306, matching the reference values 3.00 / 0.83 / 0.306
 #   2) If bimodal, units are split by the likelihood ratio of that group's own two binomial components (EM); p_low, p_high and the equivalent cut are reported.
 #   3) If unimodal, the human 5S LOW fraction f is applied to that group's ranking (a complementary split, with no gap left in the middle).
 #      f comes from the human pool itself (25,644 complete units in P10): p_low 0.1580, p_high 0.7867, cut 0.4610, f = 0.2191.
-# (matches the specification values to the decimal; table HUMAN_RATIO_F.tsv)
+# (matches the reference values to the decimal; table HUMAN_RATIO_F.tsv)
 #   4) In zebra finch and zebrafish the contrast between a highly and a weakly methylated array is a difference between arrays, not bimodality of a pooled distribution, so the call is made per group.
 #   A complete unit is defined once: a read-unit with n_cpg >= MINC that observes at least 90% of that unit's reference CpG sites.
 #   - For each group, x10's own density/call functions are run on that group's complete-unit beta values to obtain the uni/bimodal call and the two peaks.

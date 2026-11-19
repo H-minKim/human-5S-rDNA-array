@@ -56,7 +56,7 @@ All three are in the compute node's home directory. A deposited copy of `asm_arr
 
 **The array itself is not put in the probe.** It is tandem, so it would stick anywhere.
 
-### 1-2 Find the contig that holds the array **by sequence**, never by guessing
+### 1-2 Find the contig that holds the array **by sequence**
 
 Take four 25-mers from the 5S gene (at offsets 5, 30, 55 and 80, on both strands, eight in all),
 sweep the assembly with `grep`, and take the **four contigs with the most motifs** as the
@@ -120,7 +120,7 @@ python3 ~/seqidx.py <number of parts> <this part>   # splits the file list by i 
 
 - The unit count is **the number of gaps between gene HSP start points that fall in 2,100 to 2,400,
   plus one** (the `UNITS` frame, the same as `hap_final2.tsv`).
-- **Never convert with `bp/2240`.** It can be off by a factor of two on a sequence whose chain
+- The count is not converted from `bp/2240`, which can be off by a factor of two on a sequence whose chain
   is broken.
 - Sort with **Python `sorted()`** only. The `asorti` of awk sorts as text and scrambles the
   coordinates.
@@ -170,15 +170,15 @@ individual when the slots are assigned again on a new assembly, every read goes 
 haplotype.**
 
 Pairing numbers must be checked against the assembly numbers before they are used. In the old
-set the slot and the file suffix **do not agree** (168 cases of slot 2 with `_1`). **Do not infer
-the slot from the suffix.**
+set the slot and the file suffix **do not agree** (168 cases of slot 2 with `_1`), so the slot is not
+taken from the suffix.
 
 **One of the two must be done:**
 
 - **(a) Keep the old numbers.** Align the new array against each of the two old slot arrays of the
   same individual (`minimap2 -x asm10 -c`, and without `-c` the identity is underestimated) and
   give it the number of **the closer one**. Where the difference to the two old slots is small and
-  the call is unclear, **record that individual separately** (no coin tosses).
+  the call is unclear, **record that individual separately**.
 - **(b) New numbers, and place the reads again.** Anchor the read groups **on the contigs of the
   new assembly** with `slotlib.anchor_slots()`, settle the slots again, and rebuild every
   downstream read table.
@@ -191,8 +191,8 @@ Either way, **write a `slot_space` column in the table**, and the reading side c
 ## §4 ④ Unifying the orientation
 
 **The orientation is decided by a majority vote of the gene HSP strands.** If more HSPs are on the
-`-` strand, the sequence is reverse complemented. **Do not flip the coordinates by hand.** Flip the
-sequence and **find the HSPs again**.
+`-` strand, the sequence is reverse complemented. The coordinates are not flipped by hand: the
+sequence is flipped and **the HSPs are found again**.
 
 As it stands, `consmapG8.py` first applies the `revcomp` column (`RCF`) of the old
 `CONSENSUS_SUM_G6.tsv` and then checks the strand and flips once more. The final orientation is
@@ -241,7 +241,7 @@ for i in range(len(ends) - 1):
   junction is `PARTIAL_DIST`. **No variant is called in either** (they are not whole units,
   `verify=SKIP`).
 - If there are fewer than three gene HSPs, that haplotype is skipped and counted in `STAT` under
-  the key for too few gene HSPs, which the code spells in Korean. **Always look at that count.**
+  the key for too few gene HSPs, which the code spells in Korean.
 - Note that the index of ② counts units by the gaps between gene **starts** while G8 cuts by the
   gaps between gene **ends**. They usually agree, but they can differ where an HSP was clipped, so
   compare `N` with the `units` of the index.
@@ -262,7 +262,7 @@ minimap2 -x asm20 -c --cs=long -t TH --secondary=no  unit_canon.fa  units.fa
 
 ### 5-4 The sequence check, in three layers
 
-**① Before starting**, doubt the canonical unit:
+**① Before starting**, check the canonical unit:
 ```python
 if len(CANSEQ) != 2240 or len(GENESEQ) != 119: raise SystemExit(1)
 if CANSEQ[2121:2240] != GENESEQ:               raise SystemExit(1)
@@ -303,13 +303,13 @@ not fully covered), `SEQ_MISMATCH` and `NOALN`. **Where it is not `OK` or `OK_FI
 TAG=full PRESET=asm20 TH=8 LO=2100 HI=2400 python3 consmapG8.py <the new hap_seq_node.tsv>
 ```
 
-> **Never run a test against a canonical path.** A run that writes where the canonical tables
+> A run that writes where the canonical tables
 > live overwrites them in place and nothing warns first. Put a new set in a **new folder**, and
 > record the md5 of the old set before running.
 
 ---
 
-## §6 The checks to pass before accepting it (all of them, or it is not canonical)
+## §6 The checks to pass before accepting it
 
 Use the check code of the old G8 as it is:
 
@@ -330,11 +330,10 @@ where the assembly did not, something is wrong.**
 
 ---
 
-## §7 What was left open in the old G8 (look at it again in the new set)
+## §7 What was left open in the old G8
 
 - **The `LO=2100` threshold discards short units.** There are five holes of exactly `1,820 bp`
   (HG01175 twice, NA20799 twice, NA20806). Whether these are genuinely short units is undecided.
-  Decide from the sequence before changing the threshold.
 - **`NO_FULL` 117 (0.20%)**, cause unknown.
 - **HG00116 slot 1** carries 30,360 bp of distal flank in the middle of the array (hg38
   chr1:228,646,039-228,676,039, MAPQ 60, 93.3% to the distal flank reference). **Whether it is
@@ -351,12 +350,3 @@ where the assembly did not, something is wrong.**
 from `CONSENSUS_MAP_G6.tsv`. Point them at the new G8, and filter on
 **`seg_type != "UNIT"`** (the G6 `UNIT_LAST` and the G8 `PARTIAL_DIST` have different names).
 **If the slot numbers of §3-3 were changed by route (b), rebuild the read placement tables first.**
-
----
-
-## §9 The hard rules
-
-- Do not estimate. Coordinates, lengths and identities are measured against the raw data.
-- Never convert with `bp/2240`. The boundaries come from the gene HSPs.
-- When building a map, **always check against the sequence**.
-- Report both denominators: per variant base and per base of the whole 2,240 bp.

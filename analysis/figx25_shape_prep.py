@@ -61,7 +61,7 @@ _TI = pd.read_csv(S + "02_tables/TIERS_H0H3_SLOTS_2026-10-05.tsv", sep="	", dtyp
 _H2 = set(_TI[_TI.tier == "H2"]["sample"] + "|" + _TI[_TI.tier == "H2"]["slot"])
 _before = R[R.fam == "HPRC"].hap.nunique()
 R = R[(R.fam != "HPRC") | (R.hap.isin(_H2))].copy()
-print("[H2 gate] HPRC haplotypes %d -> %d (ledger H2 %d); 1kGP and GIAB have no tier and are kept as they are"
+print("[H2 gate] HPRC haplotypes %d -> %d (tier list H2 %d); 1kGP and GIAB have no tier and are kept as they are"
       % (_before, R[R.fam == "HPRC"].hap.nunique(), len(_H2)))
 U = R.groupby(["fam", "sample", "hap", "ap", "N"], as_index=False).b.mean()
 U["ad"] = U.N - U.ap + 1

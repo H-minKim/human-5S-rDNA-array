@@ -182,7 +182,7 @@ if os.path.exists(Oldp):
     dn = (b.n_call_old - b.n_call_new).abs().max()
     dp = (b.sum_p_old - b.sum_p_new).abs().max()
     P("   n_call max difference %s, sum_p max difference %.5f  -> %s"
-      % (dn, dp, "same, parsing agrees" if (dn == 0 and dp < 0.02) else "다르다 — 멈추고 본다"))
+      % (dn, dp, "same, parsing agrees" if (dn == 0 and dp < 0.02) else "다르다"))
     P("   hard call vs probability: within-array β median hc %.4f vs prob %.4f"
       % (b.beta_hc.median(), b.beta_new.median() if "beta_new" in b else b.beta.median()))
 LOG.close()

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Cut ARRAY_ONLY placed reads in the G8 frame, run on local WSL
+# Cut ARRAY_ONLY placed reads in the G8 frame
 #   No re-placement: read, slot and unit numbers are from the saved v7 placement (AOJV)
 #   ① raw reads: fastq pulled from the nodes (header MM/ML, sequence and quality as is)
 #   ② alignment: to the canonical sequence of its own slot, in the saved unit range (shrunk into the canonical) +-250bp window (minimap2 -a -x map-ont --secondary=no -y)

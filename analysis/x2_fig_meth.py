@@ -104,7 +104,7 @@ ax.set_yticklabels([("%s\n(%s · array %d)"
 ax.set_xlim(0, 1.0)
 ax.set_xlabel("array 의 CpG 메틸 (5mC)")
 ax.set_title("(a) 종별 · array 별 메틸 — 점 = array (크기 = array 길이) · 회색 마름모 = 제 flank\n"
-             "종끼리 절대값을 비교하지 말 것 (시료·호출기가 다르다). 같은 줄 안에서만 읽는다.",
+             "종끼리 절대값은 비교할 수 없다 (시료·호출기가 다르다). 같은 줄 안에서만 읽는다.",
              fontsize=10.5)
 #  Labels: the hypomethylated arrays, and also any array substantially below its flank, with a delta under -0.10.
 labT = T[(T.meth < 0.35) | (T.delta < -0.10)].copy()

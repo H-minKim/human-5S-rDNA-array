@@ -4,11 +4,11 @@
 # The contig is found by sequence: the stream is scanned with grep for the contig carrying the 5S motif,
 #  then only that contig is fetched with remote faidx and the probes are aligned.
 #  The contig holding the array differs between assemblies (in HG01943 it is the 11th contig
-#  JBHIIK010000077.1), so it must not be guessed. The whole 3 GB assembly as the minimap2 query
+#  JBHIIK010000077.1), so it is not chosen by position. The whole 3 GB assembly as the minimap2 query
 #  takes 200 s per haplotype.
 #
 # Unit counting uses Python sorted().
-# URLs are always read from the index CSV.
+# URLs are read from the index CSV.
 import io, os, sys, subprocess, collections, time
 
 W = os.path.expanduser("~/asmunits3")

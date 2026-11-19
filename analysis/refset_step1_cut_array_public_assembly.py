@@ -10,7 +10,7 @@
 #   This is the raw material for the consensus map in assembly coordinates.
 #   The coordinates are kept so that bigwig methylation can later be attached at the same positions.
 #
-# The URLs are always read from the index CSV and never constructed by hand.
+# The URLs are read from the index CSV.
 # The units are counted using Python's sorted(); awk's asorti sorts as strings and scrambles the coordinates.
 import io
 import os

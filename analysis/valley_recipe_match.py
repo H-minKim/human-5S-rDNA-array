@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-# The two measurements differ : `haplotype effect` 0.508 (54,472 units) against 0.495 here (778,798 read-units)
+# The two measurements differ : 0.508 (54,472 units) against 0.495 here (778,798 read-units)
 #   The recipe is matched exactly: bin width 0.005, a 5-bin moving average, and a search over 0.20-0.80.
-#   The same recipe is then applied with the unit of aggregation changed between the read-unit and the unit,
-#      which must be done before any difference is attributed to an unknown cause.
+#   The same recipe is then applied with the unit of aggregation changed between the read-unit and the unit.
+#
 import collections
 import gzip
 import os

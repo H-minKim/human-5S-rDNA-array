@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Strip the statistics out of the legends, tick labels and annotations, per section 1 of the common rules for publication figures.
+# Strip the statistics out of the legends, tick labels and annotations.
 # What is removed:
 # a) statistical fragments: n=, N=, mean 0.65, median 0.047, p=, SD, the plus-minus sign
 # b) a bare number in parentheses: (298 ind.), (n=1,094), (N=44 units)

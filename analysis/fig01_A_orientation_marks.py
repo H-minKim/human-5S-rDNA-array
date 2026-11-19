@@ -7,7 +7,7 @@
 #       the row beneath shows the unit in the frame used here, and the direction of transcription is marked in every case.
 #     Three layers: the array, then the magnified unit in genome orientation, the X, and the unit in this frame.
 #     The X reads clearly because the boxes above and below it are the same width.
-#        (Earlier the upper vertex was only 6.4 pt wide and the X was invisible.)
+#
 #
 #   Why the two orientations are opposite, measured:
 #     - blastn over CHM13 chr1:227,740,000-228,030,000: 126 of the 127 5S genes lie on the minus strand
@@ -22,9 +22,9 @@
 #     So in genome orientation the gene is on the left, AluY on the right, and transcription runs leftwards;
 #        in the frame used here AluY is on the left, the gene on the right, and transcription runs rightwards.
 #
-#   The input is the current output, not the Illustrator original: fig1.pdf (md5 150ddf302139)
-#     is absent from the data and work roots to a depth of 6, so the main script cannot be re-run.
-#     This script therefore patches the output; once the original is available it should be folded into the main script.
+#   The input is the current output, not the Illustrator original.
+#
+#     This script therefore patches the output.
 import os
 import sys
 import fitz

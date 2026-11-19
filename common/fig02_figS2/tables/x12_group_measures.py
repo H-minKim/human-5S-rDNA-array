@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Reproduces the majority-type path of figx9_12_prep.py exactly, then measures Q9, Q10, Q11 and Q12
+# Reproduces the majority-type path of figx9_12_prep.py exactly, then measures the four quantities below
 import io, os, sys, collections
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 import numpy as np, pandas as pd
@@ -70,7 +70,7 @@ rep_sizes = sorted([sz[k] for k in big], reverse=True)
 pub_sizes = sorted(GM.하플로.tolist(), reverse=True)
 print("   group size sequence matches: %s" % (rep_sizes==pub_sizes))
 
-# ---------------- Q9 : within-cluster pairwise Jaccard (chaining diagnostic)
+# ---------------- within-cluster pairwise Jaccard (chaining diagnostic)
 rows=[]
 for k in big:
     ii=[i for i in range(len(haps)) if lab[i]==k]
@@ -84,7 +84,7 @@ CH.to_csv(os.path.join(OUTD,"ans9_within_cluster_pairwise_jaccard.tsv"), sep="\t
 print("\n[9] pairwise Jaccard within groups (single-linkage chaining diagnostic)")
 print(CH.head(13).to_string(index=False))
 
-# ---------------- Q11 : member list
+# ---------------- member list
 mem=[]
 for i,h in enumerate(haps):
     mem.append(dict(무리=gid.get(lab[i],0), hap=h, sample=h.rsplit("_",1)[0], slot=h.rsplit("_",1)[1],
@@ -94,7 +94,7 @@ MEMD.to_csv(os.path.join(OUTD,"ans11_cluster_haplotype_list.tsv"), sep="\t", ind
 print("\n[11] list saved: haplotypes in a group %d, group 0 (not in any) %d"
       % (int((MEMD.무리>0).sum()), int((MEMD.무리==0).sum())))
 
-# ---------------- Q12 : two slots of the same individual
+# ---------------- two slots of the same individual
 smp=pd.Series([h.rsplit("_",1)[0] for h in haps])
 cc=smp.value_counts()
 two=[s for s,c in cc.items() if c==2]
@@ -108,7 +108,7 @@ print("\n[12] individuals %d (two slots %d, one slot %d)" % (cc.size,len(two),in
 print("   individuals with both slots in a group %d, of which same group %d (%.0f%%)"
       % (bothin, same, 100*same/max(bothin,1)))
 
-# ---------------- Q10 : distinguishing tokens
+# ---------------- distinguishing tokens
 VF=V.fillna(0); hasz=(VF>0)
 drows=[]
 inb=np.array([lab[i] in big for i in range(len(haps))])

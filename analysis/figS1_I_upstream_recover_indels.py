@@ -17,7 +17,7 @@ S = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(S, "inv_out")
 A = os.path.join(os.environ["RDNA_V11"], "09_tests", "unit_indel_all_v2_20260916", "anchor_check_20260918")
 B = os.path.join(os.environ["RDNA_V11"], "09_tests", "unit_indel_all_v2_20260916")
-KRES = os.path.join(os.environ["RDNA_HANDOFF_DIR"], "result_")
+KRES = os.path.join(os.environ["RDNA_UPSTREAM_DIR"], "result_")
 TAB = chr(9); NL = chr(10)
 def rows(p):
     f = io.open(p, encoding="utf8"); h = f.readline().rstrip(NL).split(TAB)

@@ -107,7 +107,7 @@ def texts(s):
 
 # text replacements
 # a) the x-axis name of B: "beta (hardcall)" becomes "Unit methylation beta", the hard call being a matter for the legend
-# b) a middle dot is not allowed by the figure rules, so it becomes a comma
+# b) a middle dot becomes a comma
 WORD = ((chr(0x3b2) + " (hardcall)", "Unit methylation " + chr(0x3b2)),
         (" " + chr(0xb7) + " ", ", "))
 
@@ -204,7 +204,7 @@ while True:
     print("D1: ticks outside the window %s dropped" % gone)
 # c) remove the x-axis name, "array unit coordinate (v11 canonical; ...)", and
 # the panel title, "a) which part of the array unit ...".
-# (v11 is an internal release name, not a scientific term.)
+# (v11 is a release name.)
 # Instead, which position belongs to which segment is shown by a colour band below the axis, as in Figure 4F; see e) below.
 # Deleted from the back forwards: deleting from the front shifts the later offsets and cuts the wrong place.
 for _t in sorted([t for t in texts(s1)

@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 # The terminology dictionary for the publication figures, version 2.
 # It corrects three things in the figure text:
-# ① working upper-case emphasis (HIGH/LOW/OFF/THAT/FIRST/ALL/...) is not manuscript prose
+# ① upper-case emphasis (HIGH/LOW/OFF/THAT/FIRST/ALL/...)
 # 2) An axis named five different ways for the same thing (unit index, unit number, from the distal end, and so on).
-# ③ working tags (P10, canon, slot) are left in axis names
+# ③ internal tags (P10, canon, slot) in axis names
 # The rules: on word boundaries only, longest first, keeping an initial capital but never capitalising a Greek letter.
 # Anything inside $...$ is left alone, which would break mathtext.
 import re
@@ -128,7 +128,7 @@ LONG = {
 def _norm(x):
     """Normalise by removing line breaks, runs of spaces and ' / '.
 
-    The check table writes a line break as ' / ', so a dictionary key copied from that table
+    A line break written as ' / ' in a dictionary key
     does not match the real label (which has a line break).
     """
     return " ".join(x.replace(" / ", " ").split())
@@ -155,7 +155,7 @@ PHRASE = [
     (r"\bsub-unit beta\b", "sub-unit methylation " + BETA),
     (r"\braw methylation beta\b", "raw methylation " + BETA),
     (r"\bbeta\b", BETA),
-    # working tags are removed from the axis and moved to the legend
+    # internal tags are removed from the axis
     (r"\s*[-–—.]\s*P10,? \d+ individuals", ""),
     (r"\(P10,? \d+ ind\.?\)", ""),
     (r"\bunit_pos\b", "position inside the unit"),
@@ -168,7 +168,7 @@ PHRASE = [
     (r"\bDXZ4_M\b", "DXZ4, male"),
     (r"\bDUX4_ORF\b", "DUX4 ORF"),
     (r"\bSAT-VAR\b", "satellite variant"),
-    # abbreviations and working words
+    # abbreviations
     (r"\bprox\b", "proximal"),
     (r"\bdist\b", "distal"),
     (r"\bH2L\b", "high to low"),

@@ -127,7 +127,7 @@ COMMON = [
  "Orientation: ap counts units from the proximal end and ad from the distal end (L2_HAP_UNIT convention). "
  "The same name ap means the opposite end in the ru_v11 table.",
  "Canonical unit: canon_v2.fa (>5S_unit_canon_v2_2240bp_rebuilt), 2,240 bp, 199 CpG, gene body 2122-2240 (119 bp, 9 CpG).",
- "Denominators differ by panel and must be quoted with the number: see the per sheet notes.",
+ "Denominators differ by panel: see the per sheet notes.",
  "Every sheet is the table the figure reads. No value was recomputed for this workbook except panels E and F of the "
  "main figure, which the drawing code builds in place; those two are rebuilt with the same code and checked against "
  "the published numbers (see the CHECKS sheet).",

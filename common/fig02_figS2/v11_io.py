@@ -34,7 +34,7 @@ Analysis set filters
 import io, os, re, hashlib, collections
 import numpy as np
 
-# Version v11-fix2 - canonical and G8 map are fix1, ARRAY_ONLY units, merged table and methylation are fix2 (section 5 of each version definition .md)
+# Version v11-fix2 - canonical and G8 map are fix1, ARRAY_ONLY units, merged table and methylation are fix2
 V = (__import__("os").environ["RDNA_DATA_ROOT"] + r"/for_paper/08_versions/v11-fix2")            # merged table, methylation, read x unit methylation raw
 V1 = (__import__("os").environ["RDNA_DATA_ROOT"] + r"/for_paper/08_versions/v11-fix1")           # canonical, G8 map
 V0 = (__import__("os").environ["RDNA_DATA_ROOT"] + r"/for_paper/08_versions/v11")                 # canonical file list (hap_seq_node_v8 - file name unchanged in fix1 and fix2)
@@ -145,7 +145,7 @@ TIER_MD5 = "fc34c6326111d7ad797e34ed0a954b4c"
 _TIER_CACHE = {}
 
 def tier_slots(tier, check_md5=True):
-    """Return the (sample, slot) set from the control tier list. The original list is read only."""
+    """Return the (sample, slot) set from the tier list."""
     if tier in _TIER_CACHE: return _TIER_CACHE[tier]
     if check_md5:
         got = md5(TIERF)

@@ -62,7 +62,7 @@ TR = {
  "거의 항상 깊이 2 에서 시작하고 2-3 칸 간격 (HPRC 557 하플로타입)": "Terminal units almost always start at depth 2 and recur at gaps of 2-3 (HPRC, 557 haplotypes)",
  "말단형을 정의하는 변이 (상위 14) 말단형 묶음 첫 그림": "Variants that define the terminal-type unit (top 14)",
  "말단형만의 성질이다, 다른 소수형은 간격 1 이 오히려 많다": "The spacing is specific to terminal units; other minor types show more gaps of 1",
- "사람이 달라도 닮는다 (사용자가 말한 '말단형은 하플로간에 닮음')": "Terminal units are similar even between different people",
+ "사람이 달라도 닮는다": "Terminal units are similar even between different people",
  "말단형 보유 패턴 × 집단, 패턴 70 개 전부": "Terminal-unit carrier pattern by population, all 70 patterns",
  "array 유형이란 무엇인가 : 몇 개의 변이 토큰을 array 전체에 깔고 있는 하플로타입 묶음": "What an array type is: a group of haplotypes that carry a few variant tokens across the whole array",
  "개별 변이별": "By individual variant",

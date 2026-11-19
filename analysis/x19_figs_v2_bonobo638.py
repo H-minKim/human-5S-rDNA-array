@@ -46,7 +46,7 @@ def _save(fig, name):
         fig.savefig(base + ".pdf", format="pdf")
     for ext in (".svg", ".pdf"):
         shutil.copy2(base + ext, SVGDIR + "/" + name + ext)
-    P("  saved: figures/%s .png .svg .pdf (+ copy in '30_그림_SVG')" % name)
+    P("  saved: figures/%s .png .svg .pdf" % name)
 
 
 def run(fname, reps, tag):

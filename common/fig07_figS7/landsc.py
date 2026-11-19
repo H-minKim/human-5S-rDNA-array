@@ -221,11 +221,11 @@ def panel(ax, L, mt, fine_minc=FINE_MINC, ends=True, ylab=True, fs_small=6.0,
     if ux:
         # the marker edge width (mew) must be given explicitly: without it a default of 1.0 pt slips in
         #   and the outer diameter becomes ms + 1.0 (ms written as 0.28 gives an outer diameter of 1.28).
-        #   To keep the size chosen by eye, the specification value of 0.46 is written and ms is increased to match.
+        #   The value 0.46 is written and ms is increased to match.
         ax.plot(ux, uy, "-" + (marker or ""), color=(col_unit or UCOL), lw=lw_unit,
                 ms=ms_unit + 0.54, markeredgewidth=0.46, zorder=5)
     for xj in (X_J1, X_J2):
-        ax.axvline(xj, color="#111", lw=0.46, zorder=4)    # the specification value, 0.46
+        ax.axvline(xj, color="#111", lw=0.46, zorder=4)    # 0.46
     ax.axhline(OFFCUT, color="#888", lw=0.41, ls=(0, (4, 3)), zorder=2)   # a guide line is thinner than a data line at 0.46
     ax.set_xlim(0, XMAX)
     ax.set_ylim(0, 1.06)

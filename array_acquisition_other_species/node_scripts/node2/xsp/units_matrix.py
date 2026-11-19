@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # 5S array: read x unit methylation matrix, the cross-species version.
-#   Unit boundary = the start of a cmsearch 5S hit; one unit spans two neighbouring hit starts within an array. Never convert bp / period into a unit count.
+#   Unit boundary = the start of a cmsearch 5S hit; one unit spans two neighbouring hit starts within an array. bp / period is not converted into a unit count.
 #   Context is decided from the reference sequence (CG / CHG / CHH). For a C on the + strand: next base G -> CG, second next G -> CHG, otherwise CHH.
 #                                           For the - strand (reference G): previous base C -> CG, second previous C -> CHG, otherwise CHH.
 #   A call is mod_qual >= 0.5 for that modification (m = 5mC, h = 5hmC). modkit extract full emits separate m and h rows for the same position.

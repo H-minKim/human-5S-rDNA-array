@@ -5,4 +5,4 @@ analysis/cell_sig_run_all.py	2611d7346657
 analysis/cell_strata_all.py	711f29ce7279
 analysis/cell_nucfree.py	23b9d79db5e1
 upstream/cells/fiberhmm_call_records.tsv	98db0bd7b137
-upstream/cells/README.md	ce62ab5a835c
+upstream/cells/README.md	d2defbeef57e

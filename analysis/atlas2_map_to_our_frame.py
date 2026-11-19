@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-# Maps the Atlas transcribed-region table onto the unit frame used here
+# Maps the transcribed-region table onto the unit frame used here
 #   Input: 05_requests/Atlas_reply_2026-09-30/{CHM13_consensus_units.fa, transcribed_parts_for_drawing.tsv}
-#   Method: the coordinates are not taken on trust. The transcribed sequence is extracted and locally aligned to both strands of a doubled copy of our unit.
-#          (the same approach as Atlas's convert_coords.py; Bio.Align.PairwiseAligner)
+#   Method: the transcribed sequence is extracted and locally aligned to both strands of a doubled copy of our unit.
+#          (Bio.Align.PairwiseAligner)
 #   The whole consensus sequence is also aligned, to measure the phase offset between the two frames separately.
 #   Coordinate frame: our canonical = the canon of P10_SUBUNIT_FRAMES.json
 #            (RNU2, SST1 and DXZ4 are the identity; 5S is 1357-p reversed; D4Z4 is rotated by +336 / +826)

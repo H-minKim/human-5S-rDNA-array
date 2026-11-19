@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-r"""Records the files a script actually read, and runs the original command unchanged (for the code repository listing, figure output is identical)
+r"""Records the files a script actually read, and runs the original command unchanged (figure output is identical)
    Usage: python _tracewrap.py <log.tsv> <original script.py> [args ...]
    Collects the paths of files opened in read mode from the 'open' event of sys.addaudithook (writes are marked separately)."""
 import os, sys, runpy, atexit

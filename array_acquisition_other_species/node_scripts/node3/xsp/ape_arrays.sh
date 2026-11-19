@@ -1,6 +1,6 @@
 #!/bin/bash
 # Additional species including the great apes: download the T2T assembly -> cmsearch with Rfam RF00001 -> the 5S array catalogue, under the same rules as the other species.
-#   The rules do not depend on the species: hits within 10 kb form one array, at least 3 copies, and copy number equals the hit count. Never derive it from bp / period.
+#   The rules do not depend on the species: hits within 10 kb form one array, at least 3 copies, and copy number equals the hit count. It is not derived from bp / period.
 #   Only the seed differs between species; here the covariance model RF00001 plays that role, and the human NTS seed is not used.
 #   Arguments: a list file of "accession:name", and the number of cmsearch cores.
 #   Outputs: cms/<name>.tbl and 5S_array_catalog_apes.tsv (appended to).

@@ -10,12 +10,12 @@
 #  querying the whole 3 GB assembly with minimap2 takes 200 seconds per haplotype, which is slow;
 #  narrowing to the last 45 Mb of the largest contig takes 6 seconds, but the contig holding the array
 #      differs between assemblies (in HG01943 it is the eleventh contig, JBHIIK010000077.1),
-#      so the contig must not be guessed.
+#      so the contig is not chosen by position.
 #  Instead the contig is found by sequence: the stream is scanned with grep for a 5S motif,
 #      and only that contig is fetched by remote faidx and aligned against the probes.
 #
 # The units are counted using Python's sorted(). awk's asorti sorts indices as strings and scrambles the coordinates.
-# The URLs are always read from the index CSV and never constructed by hand.
+# The URLs are read from the index CSV.
 import io, os, sys, subprocess, collections, time
 
 W = os.path.expanduser("~/asmunits3")

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# A test of the claim:
+# A test of the hypothesis:
 #   5S makes its transition by changing the proportion of bimodally separated weakly and highly methylated units,
 #    whereas in DXZ4 the methylation level itself rises in steps of about 0.3 at the level of the unit.
 #
@@ -25,7 +25,7 @@ def _need(_v):
 
 
 
-H = _need("ARRAYMETH_HANDOFF_ROOT")
+H = _need("ARRAYMETH_ROOT")
 SRC = os.path.join(H, "02_output_tables", "P10")
 OUT = os.path.join(H, "02_output_tables", "array_steps_extended")
 os.makedirs(OUT, exist_ok=True)

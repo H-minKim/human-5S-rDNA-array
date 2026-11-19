@@ -2,7 +2,7 @@
 r"""Writes the finished combined Fig 2 and Supplementary into one folder.
    - Publication = SVG (width 414.4 pt, text stays as text and is editable)
    - The preview PNG is for checking only (the published 300 dpi PNG cut and pasted into the same place)
-   - Ledger: file md5, number of cells, height, and for each cell which panel of which figure it is"""
+   - Manifest: file md5, number of cells, height, and for each cell which panel of which figure it is"""
 import io, os, sys, csv, shutil, hashlib, time
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 sys.stdout.reconfigure(encoding="utf-8")

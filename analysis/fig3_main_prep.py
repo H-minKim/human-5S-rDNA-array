@@ -159,7 +159,7 @@ P()
 ov = ((L2.ap <= 30) & (L2.ad <= 30)).sum()
 P("   note: in a short array one unit falls in both P and D: %d units (%.1f%%)"
   % (ov, 100 * ov / len(L2)))
-P("     state this in the legend. The interior is defined separately as ap>25 AND ad>25 (no overlap).")
+P("     The interior is defined separately as ap>25 AND ad>25 (no overlap).")
 
 # ================================================================ C
 P()
@@ -335,10 +335,10 @@ P("   haplotypes %d, individuals %d, element md5 (concatenated) %s"
   % (len(CO), CO["sample"].nunique(), el[:12]))
 P("   => the same number as the H2 stratum (510 / 280). The symmetric difference of the element sets is 0.")
 P()
-P("   chemistry strata: must be stated in the legend (HPRC ONT release2 public index md5 f24b361a62b4)")
+P("   chemistry strata (HPRC ONT release2 public index md5 f24b361a62b4)")
 P("      R941 143 individuals (guppy 6.5.7 / 6.4.6), R1041 41 individuals (dorado 0.6.0), not in the index 96 individuals")
 P("      per-stratum troughs are not reported.")
 P("      (1) the pooled value of that estimator is 0.4582, so it does not split 0.508; (2) the R1041 stratum has only 6,721 units (R941 23,674), so")
 P("      the trough bins are empty, argmin is tied, and the location is set by scan order.")
-P("      -> the only reportable statement is 'moving the cut 0.45->0.55 changes the low-methylation share 0.208->0.234'")
+P("      -> moving the cut 0.45->0.55 changes the low-methylation share 0.208->0.234")
 LOG.close()

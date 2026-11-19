@@ -36,7 +36,7 @@ HK = sorted(U)
 NH = len(HK)
 NG = len(GROUPS)
 
-# ---------- coarse 11 types (panel C only, do not change) ----------
+# ---------- coarse 11 types (panel C only) ----------
 CTY = [("1bp 결실", "#c0392b"), ("반복블록 결실", "#e67e22"), ("산화 C>A·G>T", "#f1c40f"),
        ("탈아미노 비CpG", "#2471a3"), ("탈아미노 CpG", "#5dade2"),
        ("그 밖 전이 T>C·A>G", "#117a65"), ("그 밖 전환", "#aab7b8"), ("긴 결실", "#7d3c98"),

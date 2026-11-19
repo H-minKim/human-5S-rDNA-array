@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
-# Fig 1 - patches applied on top of fig1.ai, which the author laid out to the journal's format
+# Fig 1 - patches applied on top of fig1.ai
 #   Built fresh from the original (.ai) every time, so patches do not accumulate.
 #
 #   (1) text below 8 pt raised to 8 pt (6 tick labels and 2 ellipses)
 #   (2) awkward wording: "Hifiasm -ont" -> "hifiasm --ont"; "array pos" -> "array position"
 #   (3) the v11 reference-sequence table (cohort and the source of the ONT reads)
-#   (4) overlaps fixed
-#        - the 2122 and 2240 ticks overlapped and 2240 had dropped to a second line -> 2122 removed and the rest kept on one line
-#        - the table caption ran into the assembly bar (y197-206) -> the table moved down and the line spacing tightened
+#   (4) overlaps removed
+#        - the 2122 tick removed and the rest kept on one line
+#        - the table moved down and the line spacing tightened
 import fitz, os, sys
 sys.stdout.reconfigure(encoding="utf-8")
 
@@ -85,8 +85,8 @@ CHANGE = {
     # dy -2.4: only the re-inserted text sinks by the descent correction, putting its baseline
     #           out of line with its counterpart at y 176.1 (measured 178.5). The pair is returned to one baseline.
     (_IHA, 133.9): (_IHB, -2.4, _IHX, None),
-    # The panel letters a and b were 9.0 pt while c to e were 11.5 pt.
-    #   One figure must not carry two panel-letter sizes, so both become 11.5 pt with the left edge at 85.7, matching c.
+    # The panel letters a and b are set to 11.5 pt, the size of c to e,
+    #   with the left edge at 85.7, matching c.
     ("a", 84.0): ("a", 0.0, 85.7 + FB.text_length("a", 11.5), 11.5),
     ("b", 87.1): ("b", 0.0, 85.7 + FB.text_length("b", 11.5), 11.5),
     # The unit schematic is redrawn below in six segments, so the old text is only deleted here.
@@ -109,8 +109,8 @@ CHANGE = {
     #   pipeline, the unit-length series matches when reversed (paternal 68/68, maternal 101/103).
     #   The figure convention that proximal is on the left is kept, and only the numbering starts from the right, the distal end.
     # A pair that must share a baseline is re-inserted together; inserting one alone offsets it by the descent.
-    # The first label sat 3.03 pt right of the centre of its bar
-    #   (bar 180.37..256.82, centre 218.60; text centre 221.63), so it is centred.
+    # The first label is centred on its bar
+    #   (bar 180.37..256.82, centre 218.60).
     ("5S rDNA array", 195.8): ("5S rDNA array", 0.0,
                                218.60 + FH.text_length("5S rDNA array", 8.0) / 2.0, None),
     ("5S rDNA array", 192.2): ("5S rDNA array", 0.0, None, None),     # left branch (the baseline reference)
@@ -180,8 +180,8 @@ for k, (new, dy, rightx, newsz) in CHANGE.items():
 page.draw_line(fitz.Point(440.9, 154.38), fitz.Point(444.6, 154.38),
                color=(1, 1, 1), width=1.6)
 
-# -- redraw the unit schematic in the agreed six segments --
-# : the agreed structure places 5'-flanking between spacer-2 and the 5S gene
+# -- redraw the unit schematic in six segments --
+# : the structure places 5'-flanking between spacer-2 and the 5S gene
 # boundary source : `s01_element_bounds.tsv` (TSS 2,123)
 #   Note: that table ends the gene at 2,241, summing to 2,241 bp. The unit here is 2,240 bp, so
 #          only the last segment ends at 2,240.
@@ -245,7 +245,7 @@ for bp in (1, 319, 1179, 1552, 2240):
                      fontname="helv", fontsize=8.0, color=(0.36, 0.38, 0.41))
 print("unit schematic: redrawn with 6 segments (our frame 2,240, TSS 2122, 5'-flanking 2,032-2,121)")
 
-# -- The array-references table is not drawn here. It became panel c,
+# -- The array-references table is not drawn here. It is panel c,
 #     produced by mk_Fig1_panelC_TABLE.py.
 #   The Illustrator original does not contain that table either.
 

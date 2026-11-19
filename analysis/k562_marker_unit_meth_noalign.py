@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # . K562: are the marker variants in units whose methylation state is the expected one? Measured inside the reads, with no assembly and no placement (read only, new folder).
-#   The question this script answers: looking at the K562 methylation reads without alignment, do all the marker variants fall in units with the methylation we expect? Look unit by unit, and among those take the ones that carry a marker variant. Is it close to what we expect?
+#   The question this script answers: looking at the K562 methylation reads without alignment, do all the marker variants fall in units with the methylation we expect?
 #   ① Reads (K562r.hit.fq with 5mC MM/ML) are aligned to the canonical unit only (unit_canon, 2240 bp) and cut into units (minimap2, query = read, target = canonical unit, aligned canonical unit length >= 1800).
 #   ② For each unit, the base at every marker position (canonical unit coordinates, 70 K562 markers) gives the markers that unit carries.
 #   ③ For each unit, gene body (2122 to 2240) CpG methylation: ML >= 128 counts as methylated, and only units with at least 3 calls are used.

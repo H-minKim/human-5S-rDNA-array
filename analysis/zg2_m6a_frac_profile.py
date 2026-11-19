@@ -24,7 +24,7 @@ import glob
 import collections
 import numpy as np
 
-# The data and output roots are environment variables with no default (CONVENTIONS, "the deposited copy wins").
+# The data and output roots are environment variables with no default.
 #  The table of variables is in README.md, section 'Environment variables'.
 
 def _need(k):

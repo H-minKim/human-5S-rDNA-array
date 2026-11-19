@@ -36,16 +36,16 @@ FIX = {
         "MIXED", "지도 두 개 : 177 단량체 구역 + 477 이중 구역(.k2)",
         "간격이 164/313 교대인 구역(이중 유닛 160 개 · 일치도 100%)과 164 만 이어지는 구역(188 유닛)으로 갈린다"),
     "rhesus_T2T_MMU8v2__CM111659.2_86347364_86428918": (
-        "LOW_QUALITY", "지도 유지 · 유닛별 결론 금지",
+        "LOW_QUALITY", "지도 유지 · 유닛별 결론 내리지 않음",
         "직접 반복 비율 0.14 · 유닛 동질성 중앙 78.8% · G8 끊김 22/34"),
     "rhesus_T2T_MMU8v2__CM111659.2_86448017_86604726": (
-        "LOW_QUALITY", "지도 유지 · 유닛별 결론 금지",
+        "LOW_QUALITY", "지도 유지 · 유닛별 결론 내리지 않음",
         "직접 반복 비율 0.11 · 유닛 동질성 중앙 77.6% · G8 끊김 45/63"),
     "rhesus_T2T_MMU8v2__CM111677.2_38968264_39012812": (
         "NON_5S", "5S array 아님 (이미 기각) · 275 bp 위성 반복",
         "옵셋 사다리 5 단·비율 0.96 로 진짜 탠덤이나 유닛 동질성 77.6% · 5S 유전자와 78-82 bp 만 84-88% 일치"),
     "rhesus_T2T_MMU8v2__CM111659.2_103988607_104060482": (
-        "NO_UNIT", "대표 유닛 쓰지 말 것",
+        "NO_UNIT", "대표 유닛 사용 안 함",
         "옵셋 칸 867 개에 최상위도 조각의 6% · G8 도 '유전자가 끝 아님' 으로 부적격"),
     "zebrafish_GRCz12tu__CM111182.1_50334795_50356311": (
         "SPARSE", "유닛(177)은 맞음 · array 의 9% 만 반복",
@@ -83,7 +83,7 @@ for aid in sorted(US):
     elif r[iu["status"]].startswith("확인"):
         st, act, ev = "CONFIRMED", "없음", "직접 주기 %s = 유닛 %s · 반복 비율 %s" % (r[iu["period_direct"]], rl, r[iu["repeat_frac"]])
     elif r[iu["status"]].startswith("유닛 동질성"):
-        st, act, ev = "LOW_QUALITY", "유닛별 결론 조심", "유닛 동질성 중앙 %s%% (직접 주기 %s = 유닛 %s)" % (mid, r[iu["period_direct"]], rl)
+        st, act, ev = "LOW_QUALITY", "유닛별 결론 불확실", "유닛 동질성 중앙 %s%% (직접 주기 %s = 유닛 %s)" % (mid, r[iu["period_direct"]], rl)
     else:
         pdv = int(r[iu["period_direct"]]) if r[iu["period_direct"]].isdigit() else 0
         rlv = int(rl) if rl.isdigit() else 0

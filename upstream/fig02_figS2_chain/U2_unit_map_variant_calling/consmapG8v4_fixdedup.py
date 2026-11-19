@@ -84,7 +84,7 @@ GENESEQ = rd(GENE).upper()
 if len(GENESEQ) != 119:
     sys.stderr.write("유전자 질의 길이가 119 가 아니다: %d%s" % (len(GENESEQ), NL))
     raise SystemExit(1)
-# check with sequence that the gene is at 2122..2240 within the canonical unit (do not assume it)
+# check with sequence that the gene is at 2122..2240 within the canonical unit
 if CANSEQ[2121:2240] != GENESEQ:
     sys.stderr.write("정본 2122-2240 이 유전자와 다르다 — 중단%s" % NL)
     raise SystemExit(1)
@@ -258,7 +258,7 @@ for line in io.open(sys.argv[1], encoding="utf8"):
         a = rc(a)
     hits, isrc = gene_hits(a, "%s_%s_%s" % (TAG, smp, sl))
     if isrc:
-        # if the orientation is flipped, flip the sequence and search again (do not flip coordinates by hand)
+        # if the orientation is flipped, flip the sequence and search again
         a = rc(a)
         FLIP.add((smp, sl))
         hits, isrc = gene_hits(a, "%s_%s_%s_r" % (TAG, smp, sl))
