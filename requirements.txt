@@ -6,7 +6,7 @@
 #
 # The code runs on Python 3.
 #
-# The list is every module imported by the 510 .py files in this repository,
+# The list is every module imported by the 514 .py files in this repository,
 # without the standard library and the modules that live here.
 
 numpy
